@@ -20,16 +20,19 @@ from two_factor.urls import urlpatterns as tf_urls
 from django.conf.urls.static import static
 from . import settings
 # Volunteen/urls.py
-
 from django.contrib import admin
 from django.urls import path, include
 from captcha import urls as captcha_urls  # Import captcha URLs
-
+from two_factor.urls import urlpatterns as tf_urls
+# 2FA
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('teenApp.urls')),
     # Include captcha URLs
     path('captcha/', include(captcha_urls)),
+    # 2FA
+    path('', include(tf_urls)),
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

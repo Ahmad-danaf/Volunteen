@@ -38,18 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
     'captcha',
-
-     # 2FA
-
+    
+    # 2FA
     'django_otp',
     'django_otp.plugins.otp_static',
     'django_otp.plugins.otp_totp',
     'two_factor',
-
+    'crispy_bootstrap4',
     'crispy_forms',
 ]
+
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -59,7 +59,7 @@ LOGIN_URL = 'two_factor:login'
 
 # this one is optional
 
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'index'
 
 # reCAPTCHA keys 
 

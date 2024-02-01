@@ -17,8 +17,10 @@ from .forms import TaskForm, UpdateTaskForm
 
 # Create your views here.
 def home(request):
+    return redirect('two_factor:login')
 
-    return render(request, 'index.html')
+def index(request):
+    return render(request,'index.html')
 
 def register(request):
 
