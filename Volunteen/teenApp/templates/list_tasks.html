@@ -9,8 +9,10 @@
         <a href="{% url 'update' task.id %}">Edit</a>
         {% if not task.completed %}
           <a href="{% url 'complete' task.id %}">Mark as Completed</a>
+          <small>{{task.deadline}}</small>
         {% endif %}
       </li>
     {% endfor %}
   </ul>
+  <a href="{% url 'index' %}">Home Page</a>
 {% endblock %}

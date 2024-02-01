@@ -34,7 +34,7 @@ def register(request):
 
             form.save()
 
-            return redirect("")
+            return redirect("two_factor:login")
 
 
     context = {'form': form}
