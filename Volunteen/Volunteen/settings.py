@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 import os
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
-#DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
@@ -101,13 +101,10 @@ WSGI_APPLICATION = 'Volunteen.wsgi.application'
 
 DATABASES = {
  'default': {
- 'ENGINE': 'django.db.backends.postgresql',
- 'NAME': os.getenv('DB_NAME'),
- 'USER': os.getenv('DB_USER'),
- 'PASSWORD': os.getenv('DB_PASSWORD'),
- 'HOST': os.getenv('DB_HOST'),
- 'PORT': os.getenv('DB_PORT'),
+ 'ENGINE': 'django.db.backends.sqlite3',
+ 'NAME': BASE_DIR / 'db.sqlite3',
  }
+
 }
 
 # Password validation
@@ -142,13 +139,24 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+
+
+import os
+
+# נתיב לתיקיית הבסיס של הפרויקט
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# נתיב לתיקיית הסטטיק
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# רשימת נתיבים לתיקיות הסטטיק
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-MEDIA_URL = '/images/'
+# נתיב לתיקיית המדיה
+MEDIA_URL = '/media/'
 
-MEDIA_ROOT = BASE_DIR / 'static/images'
+# נתיב לתיקיית המדיה
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

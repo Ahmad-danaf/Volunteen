@@ -16,9 +16,9 @@ class CreateUserForm(UserCreationForm):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['description', 'deadline']
+        fields = ['title','description', 'deadline','img','points']
 
 class UpdateTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['description', 'deadline', 'completed']
+        fields = ['title','description', 'deadline','img','points', 'completed']

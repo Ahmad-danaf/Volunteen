@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile of Adam</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f7f7f7;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #555;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            background: #eee;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .points {
+            font-weight: bold;
+            color: #2a9d8f;
+        }
+        .status {
+            float: right;
+            font-weight: bold;
+            color: #e76f51;
+        }
+        .clear {
+            clear: both;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: white;
+            background-color: #007bff; /* Blue */
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #0056b3; /* Darker blue */
+        }
+        .button.green {
+            background-color: #28a745; /* Green */
+        }
+        .button.green:hover {
+            background-color: #1e7e34; /* Darker green */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Profile of Yousef</h1>
+        <p class="points">Points in Wallet: 350</p>
+        <!-- כפתורי ניווט -->
+        <a href="/tasks" class="button">Go to Task List</a>
+        <a href="/rewards" class="button">Go to Reward List</a>
+        <h2>Completed Tasks</h2>
+        <ul>
+            <li>
+                <span class="points">Make Care Packages for the Homeless - 150 Points</span>
+                <span class="status">Completed</span>
+                <div class="clear"></div>
+            </li>
+            <li>
+                <span class="points">Read to Elderly People - 100 Points</span>
+                <span class="status">Completed</span>
+                <div class="clear"></div>
+            </li>
+            <li>
+                <span class="points">Plant trees or flowers - 90 Points</span>
+                <span class="status">Completed</span>
+                <div class="clear"></div>
+            </li>
+            <li>
+                <span class="points">Create Artwork for Hospitalized Children - 100 Points</span>
+                <span class="status">Completed</span>
+                <div class="clear"></div>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
