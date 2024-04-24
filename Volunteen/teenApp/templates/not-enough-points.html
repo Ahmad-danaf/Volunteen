@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insufficient Points</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .error-message {
+            color: #d9534f; /* Red color for the error message */
+            padding: 20px;
+            margin: 20px auto;
+            border: 1px solid #ebccd1;
+            border-radius: 5px;
+            background-color: #f2dede;
+            width: 80%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-message">
+        <h1>Insufficient Points</h1>
+        <p>You do not have enough points to redeem this reward.</p>
+        <p>Points required: <strong>{{ points_required }}</strong></p>
+        <p>Your current points: <strong>{{ current_points }}</strong></p>
+        <p>Please earn more points and try again.</p>
+    </div>
+</body>
+</html>

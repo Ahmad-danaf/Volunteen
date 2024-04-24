@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import Task
 
 from captcha.fields import CaptchaField
+
 class CreateUserForm(UserCreationForm):
     captcha = CaptchaField()
 
@@ -16,9 +17,9 @@ class CreateUserForm(UserCreationForm):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title','description', 'deadline','img','points']
+        fields = ['title','description', 'deadline','img','points','duration','additional_details']
 
 class UpdateTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title','description', 'deadline','img','points', 'completed']
+        fields = ['title','description', 'deadline','img','points', 'duration','additional_details']
