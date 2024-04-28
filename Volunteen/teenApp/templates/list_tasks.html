@@ -23,11 +23,9 @@
       <tr>
         <th scope="col">#</th>
         <th scope="col">Image</th>
-        <th scope="col">Task</th>
+        <th scope="col">TITLE</th>
         <th scope="col">Description</th>
         <th scope="col">Points</th> 
-        <th scope="col">Status</th>
-        <th scope="col">Actions</th>
         <th scope="col">Deadline</th>
       </tr>
     </thead>
@@ -37,8 +35,8 @@
           <th scope="row">{{ forloop.counter }}</th>
           <td>
             <!-- Placeholder for task image; replace with actual image URLs -->
-            {% if task.img %}
-              <img src="{{ task.img.url }}" alt="Task Image" class="task-image" />
+            {% if task.image %}
+              <img src="{{ task.image }}" alt="Task Image" class="task-image" />
             {% else %}
                 <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
             {% endif %}
@@ -47,19 +45,19 @@
           <td>{{ task.description }}</td>
           <td>{{ task.points }}</td> 
           <td>
-            {% if task.completed %}
-              <span class="badge bg-success">Completed</span>
-            {% else %}
-              <span class="badge bg-secondary">In Progress</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{% url 'update' task.id %}" class="btn btn-primary btn-sm">Edit</a>
-            {% if not task.completed %}
-              <a href="{% url 'complete' task.id %}" class="btn btn-success btn-sm">Complete</a>
-            {% endif %}
-          </td>
-          <td>{{ task.deadline|date:"SHORT_DATE_FORMAT" }}</td>
+            <script>
+                var deadlineStr = "{{ task.deadline }}";
+                // Split the date string into day, month, and year parts
+                var parts = deadlineStr.split('/');
+                // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
+                var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
+                 // Format the date as DD/MM/YYYY
+                var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
+                document.write(formattedDeadline);
+            </script>
+        </td>
+        
+        
         </tr>
       {% endfor %}
       {% if tasks|length == 0 %}

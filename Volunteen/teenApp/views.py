@@ -1,19 +1,14 @@
 from email import message
 from django.shortcuts import redirect, render
-
 from .forms import CreateUserForm
-
 from django.contrib.auth.models import auth
-
-
 from django.contrib.auth.decorators import login_required
-
-
 from django.contrib import messages
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, Reward
 from .forms import TaskForm, UpdateTaskForm
+import requests
+
 
 # Create your views here.
 def home(request):
@@ -45,9 +40,21 @@ def register(request):
 def dashboard(request):
 
     return render(request, 'dashboard.html')
+
+# def list_view(request):
+#     tasks = Task.objects.filter(completed=False)
+#     return render(request, 'list_tasks.html', {'tasks': tasks})
+
 def list_view(request):
-    tasks = Task.objects.filter(completed=False)
+    tasks = []
+    url = 'https://api.sheety.co/376dda55bc979408041d482218850b94/volunteenTasks/sheet1'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        tasks = data['sheet1']
+
     return render(request, 'list_tasks.html', {'tasks': tasks})
+
 
 def reward(request):
     # Retrieve all rewards from the database
