@@ -5,14 +5,12 @@ from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from datetime import datetime
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, Reward
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import Reward, Child
 from django.contrib.auth.decorators import login_required
-
-
+import requests
 
 
 @login_required
