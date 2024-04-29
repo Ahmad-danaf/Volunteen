@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 20px;
+            margin: 20px auto;
+            border: 1px solid #d6e9c6;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-message">
+        <h1>Success!</h1>
+        <p>You have successfully purchased the reward from <strong>{{ reward_title }}</strong>.</p>
+        <p>You have now used <strong>{{ points_used }}</strong> points.</p>
+        <p>Points remaining: <strong>{{ points_remaining }}</strong>.</p>
+        <p>Purchase Time: <strong>{{ current_datetime|date:"d/m/Y H:i" }}</strong></p>
+    </div>
+</body>
+</html>

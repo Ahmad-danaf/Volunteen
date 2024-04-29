@@ -27,6 +27,8 @@
         <th scope="col">Description</th>
         <th scope="col">Points</th> 
         <th scope="col">Deadline</th>
+        <th scope="col">Duration</th>
+        <th scope="col">Additional Details</th>
       </tr>
     </thead>
     <tbody>
@@ -57,7 +59,8 @@
             </script>
         </td>
         
-        
+        <td>{{ task.duration }}</td> 
+        <td>{{ task.additional_details }}</td> 
         </tr>
       {% endfor %}
       {% if tasks|length == 0 %}

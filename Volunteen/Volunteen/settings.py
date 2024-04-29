@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'two_factor',
     'crispy_bootstrap4',
     'crispy_forms',
+    'qr_code',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
