@@ -2,64 +2,89 @@
 {% load static %}
 {% block content %}
 <style>
-  /* Custom styles */
-  .task-table {
-    font-size: 1.2em;
-    width: 100%;
-    table-layout: fixed;
-  }
-  .task-image {
-    width: 100px;
-    height: auto;
-  }
-  .task-table td, .task-table th {
-    vertical-align: middle;
-    padding: 12px;
-    text-align: center;
-  }
+    .task-table {
+        font-size: 0.9em;
+        width: 100%;
+        table-layout: auto;
+        white-space: nowrap;
+    }
+    .task-image {
+        max-width: 40px;
+        height: auto;
+    }
+    .task-table td, .task-table th {
+        vertical-align: middle;
+        padding: 4px;
+        text-align: center;
+    }
+    .task-table-container {
+        overflow-x: auto;
+    }
+    @media (max-width: 768px) {
+        .task-table {
+            font-size: 0.8em;
+        }
+        .task-image {
+            max-width: 30px;
+        }
+        .task-table th,
+        .task-table td {
+            padding: 3px;
+        }
+        .task-table th:nth-child(5),
+        .task-table td:nth-child(5),
+        .task-table th:nth-child(7),
+        .task-table td:nth-child(7),
+        .task-table th:nth-child(8),
+        .task-table td:nth-child(8) {
+            display: none;
+        }
+    }
 </style>
 
 <div class="container mt-5">
-  <h2>Task List</h2>
-  <table class="table task-table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Image</th>
-        <th scope="col">Task</th>
-        <th scope="col">Description</th>
-        <th scope="col">Points</th>
-        <th scope="col">Deadline</th>
-        <th scope="col">Duration</th>
-        <th scope="col">Additional Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for task in tasks %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>
-            {% if task.img %}
-              <img src="{{ task.img.url }}" alt="Task Image" class="task-image" />
-            {% else %}
-              <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
-            {% endif %}
-          </td>
-          <td>{{ task.title }}</td>
-          <td>{{ task.description }}</td>
-          <td>{{ task.points }}</td>
-          <td>{{ task.deadline|date:"SHORT_DATE_FORMAT" }}</td>
-          <td>{{ task.duration }}</td> <!-- שדה טקסט חדש -->
-          <td>{{ task.additional_details }}</td> <!-- שדה טקסט חדש -->
-        </tr>
-      {% endfor %}
-      {% if tasks|length == 0 %}
-        <tr>
-          <td colspan="8" class="text-center">No Tasks Found</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
-  <a href="{% url 'index' %}" class="btn btn-secondary">Home Page</a>
+    <h2>Task List</h2>
+    <div class="task-table-container">
+        <table class="table task-table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Image</th>
+                    <th scope="col">Task</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Points</th>
+                    <th scope="col">Deadline</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Additional Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>
+                        {% if task.img %}
+                        <img src="{{ task.img.url }}" alt="Task Image" class="task-image">
+                        {% else %}
+                        <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image">
+                        {% endif %}
+                    </td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.points }}</td>
+                    <td>{{ task.deadline|date:"SHORT_DATE_FORMAT" }}</td>
+                    <td>{{ task.duration }}</td>
+                    <td>{{ task.additional_details }}</td>
+                </tr>
+                {% endfor %}
+                {% if tasks|length == 0 %}
+                <tr>
+                    <td colspan="8" class="text-center">No Tasks Found</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}

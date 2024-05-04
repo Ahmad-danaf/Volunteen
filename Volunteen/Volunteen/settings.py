@@ -57,7 +57,7 @@ LOGIN_URL = 'two_factor:login'
 
 # this one is optional
 
-LOGIN_REDIRECT_URL = 'index'
+LOGIN_REDIRECT_URL = 'home_redirect'
 
 # reCAPTCHA keys 
 
