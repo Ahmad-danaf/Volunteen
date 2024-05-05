@@ -44,6 +44,13 @@ class Child(models.Model):
 
     def _str_(self):
         return self.user.username
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Add user to "Mentor" group
+        children_group, created = Group.objects.get_or_create(name='Children')
+        self.user.groups.add(children_group)
 
 
 class Mentor(models.Model):
@@ -60,6 +67,13 @@ class Mentor(models.Model):
 
     def _str_(self):
         return self.user.username
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Add user to "Mentor" group
+        mentors_group, created = Group.objects.get_or_create(name='Mentors')
+        self.user.groups.add(mentors_group)
     
     
     

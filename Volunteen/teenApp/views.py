@@ -7,6 +7,13 @@ from datetime import datetime
 from .models import Task, Reward, Child, Mentor, Redemption, Shop
 import requests
 from django.http import HttpResponse
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('two_factor:login')
 
 @login_required
 def home_redirect(request):
@@ -17,7 +24,12 @@ def home_redirect(request):
     elif request.user.groups.filter(name='Shops').exists():
         return redirect('shop_home')
     else:
-        return redirect('two_factor:login')
+        # Redirect to a default page if the user is not in any of the specified groups
+        return redirect('default_home')
+    
+    
+def default_home(request):
+    return HttpResponse("Home")
 
 @login_required
 def child_home(request):
