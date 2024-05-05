@@ -23,3 +23,11 @@ class UpdateTaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = ['title','description', 'deadline','img','points', 'duration','additional_details']
+        
+
+class IdentifyChildForm(forms.Form):
+    identifier = forms.CharField(max_length=5, label='Child Identifier')
+    secret_code = forms.CharField(max_length=3, label='Secret Code', widget=forms.PasswordInput())
+
+class RedemptionForm(forms.Form):
+    points = forms.IntegerField(label='Points to Redeem', min_value=1)

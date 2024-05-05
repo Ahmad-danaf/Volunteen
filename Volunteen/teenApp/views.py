@@ -1,6 +1,6 @@
 from email import message
 from django.shortcuts import redirect, render
-from .forms import CreateUserForm
+from .forms import CreateUserForm, RedemptionForm, IdentifyChildForm
 from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,9 +8,11 @@ from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, Reward
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Reward, Child
+from .models import Reward, Child, Redemption, Shop
 from django.contrib.auth.decorators import login_required
 import requests
+from django.http import HttpResponse
+
 
 
 @login_required
@@ -137,3 +139,69 @@ def complete_task(request, task_id):
     task.completed = True
     task.save()
     return redirect('list')  # Replace 'list' with the actual name of your task list view
+
+
+
+@login_required
+def redeem_points(request):
+    if request.method == 'POST':
+        if 'identifier' in request.POST:
+            # Handle identifier form
+            id_form = IdentifyChildForm(request.POST)
+            if id_form.is_valid():
+                identifier = id_form.cleaned_data['identifier']
+                secret_code = id_form.cleaned_data['secret_code']
+                try:
+                    child = Child.objects.get(identifier=identifier, secret_code=secret_code)
+                    return render(request, 'shop_redeem_points.html', {'child': child, 'id_form': id_form, 'points_form': RedemptionForm()})
+                except Child.DoesNotExist:
+                    return HttpResponse('Invalid identifier or secret code', status=400)
+        else:
+            # Handle redemption form
+            points_form = RedemptionForm(request.POST)
+            if points_form.is_valid():
+                points = points_form.cleaned_data['points']
+                child_id = request.POST['child_id']
+                child = get_object_or_404(Child, id=child_id)
+                if child.points >= points:
+                    child.subtract_points(points)
+                    shop = Shop.objects.get(user=request.user)
+                    Redemption.objects.create(child=child, points_used=points, shop=shop)
+                    return HttpResponse('Redemption successful')
+                else:
+                    return HttpResponse('Not enough points', status=400)
+    else:
+        id_form = IdentifyChildForm()
+        points_form = RedemptionForm()
+
+    return render(request, 'shop_redeem_points.html', {'id_form': id_form, 'points_form': points_form})
+
+@login_required
+def home_redirect(request):
+    if request.user.groups.filter(name='Children').exists():
+        return redirect('child_home')
+    elif request.user.groups.filter(name='Mentors').exists():
+        return redirect('mentor_home')
+    elif request.user.groups.filter(name='Shops').exists():
+        return redirect('shop_home')
+    else:
+        return redirect('two_factor:login')
+
+
+@login_required
+def shop_home(request):
+    # Check if the user belongs to the Shops group
+    if not request.user.groups.filter(name='Shops').exists():
+         return redirect('two_factor:login')
+
+    # Get the shop associated with the current user
+    shop = Shop.objects.get(user=request.user)
+
+    # Get recent redemptions for this shop
+    recent_redemptions = Redemption.objects.filter(shop=shop).order_by('-date_redeemed')[:10]
+
+    return render(request, 'shop_home.html', {
+        'shop': shop,
+        'recent_redemptions': recent_redemptions,
+    })
+    

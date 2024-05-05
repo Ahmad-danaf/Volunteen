@@ -54,10 +54,11 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 #2FA
 LOGIN_URL = 'two_factor:login'
+LOGIN_REDIRECT_URL = '/redeem/'
 
 # this one is optional
 
-LOGIN_REDIRECT_URL = 'index'
+LOGIN_REDIRECT_URL = 'home_redirect'
 
 # reCAPTCHA keys 
 
@@ -131,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jerusalem'
 
 USE_I18N = True
 

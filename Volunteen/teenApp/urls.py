@@ -4,7 +4,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.home_redirect, name='home_redirect'),
     path('index', views.index, name='index'),
     path('register', views.register, name='register'),
     #path('create/',  views.create_task, name='create'),
@@ -16,4 +16,8 @@ urlpatterns = [
     path('redeem/<int:reward_id>/', views.redeem_reward, name='redeem-reward'),
     path('doTask/<int:task_id>/', views.do_task, name='do_task'),
     path('profile/adam/', views.adam_profile, name='adam_profile'),
+    path('shop_redeem/', views.redeem_points, name='redeem_points'),
+    path('shop_home/', views.shop_home, name='shop_home'),
+
+
 ]

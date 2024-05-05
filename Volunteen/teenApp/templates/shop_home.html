@@ -1,0 +1,25 @@
+{% extends 'shop_base.html' %}
+
+{% block title %}Shop Home{% endblock %}
+
+{% block content %}
+<h2>Welcome {{ shop.name }}</h2>
+
+<div>
+    <h3>Redeem Points</h3>
+    <a href="{% url 'redeem_points' %}">Go to Redeem Points</a>
+</div>
+
+<div>
+    <h3>Recent Redemptions</h3>
+    <ul>
+        {% for redemption in recent_redemptions %}
+            <li>
+                {{ redemption.date_redeemed }}: {{ redemption.child.user.username }} redeemed {{ redemption.points_used }} points for {{ redemption.reward.title }}
+            </li>
+        {% empty %}
+            <li>No redemptions yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
