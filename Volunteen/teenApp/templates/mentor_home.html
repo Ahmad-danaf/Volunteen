@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mentor Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f7f7f7;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .button {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: white;
+            background-color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        form input, form select, form button {
+            margin: 5px 0;
+            padding: 8px;
+            width: 100%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .button {
+                padding: 8px;
+                font-size: 1em;
+            }
+            form label {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ mentor.user.username }}</h1>
+        <a href="{% url 'list' %}" class="button">Go to Active Tasks</a>
+        <a href="{% url 'mentor_points_summary' %}" class="button">View Children's Points</a>
+
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h2>Assign Task to Children</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label for="child_identifiers">Enter Child Identifiers (comma-separated):</label>
+            <input type="text" name="child_identifiers" id="child_identifiers" required>
+            
+            <label for="task">Select Task:</label>
+            <select name="task" id="task">
+                {% for task in tasks %}
+                    <option value="{{ task.id }}">{{ task.title }} ({{ task.points }} Points)</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Assign Task</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -81,7 +81,6 @@ class Shop(models.Model):
     
 class Redemption(models.Model):
     child = models.ForeignKey('Child', on_delete=models.CASCADE, verbose_name='Child')
-    # reward = models.ForeignKey('Reward', on_delete=models.CASCADE, verbose_name='Reward')
     points_used = models.IntegerField(verbose_name='Points Used')
     date_redeemed = models.DateTimeField(auto_now_add=True, verbose_name='Date Redeemed')
     shop = models.ForeignKey('Shop', on_delete=models.CASCADE, verbose_name='Shop')  # Add the shop reference

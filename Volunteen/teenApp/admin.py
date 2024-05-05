@@ -34,3 +34,5 @@ class RedemptionAdmin(admin.ModelAdmin):
 class ShopAdmin(admin.ModelAdmin):
     list_display = ('name', 'user')
     search_fields = ('name', 'user__username')
+    
+admin.site.register(Mentor)

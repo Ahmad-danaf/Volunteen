@@ -5,17 +5,12 @@ from . import views
 
 urlpatterns = [
     path('', views.home_redirect, name='home_redirect'),
-    path('index', views.index, name='index'),
+    path('child/', views.child_home, name='child_home'),
+    path('mentor/', views.mentor_home, name='mentor_home'),
+    path('mentor/points-summary/', views.mentor_points_summary, name='mentor_points_summary'),
     path('register', views.register, name='register'),
-    #path('create/',  views.create_task, name='create'),
     path('list/', views.list_view, name='list'),
-    #path('update/<int:task_id>/', views.update_task, name='update'),
-    #path('delete/<int:task_id>/', views.delete_task, name='delete'),
-    path('complete/<int:task_id>/', views.complete_task, name='complete'),
     path('reward/', views.reward, name='reward'),
-    path('redeem/<int:reward_id>/', views.redeem_reward, name='redeem-reward'),
-    path('doTask/<int:task_id>/', views.do_task, name='do_task'),
-    path('profile/adam/', views.adam_profile, name='adam_profile'),
     path('shop_redeem/', views.redeem_points, name='redeem_points'),
     path('shop_home/', views.shop_home, name='shop_home'),
 

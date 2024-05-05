@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile of Adam</title>
+    <title>Profile of {{ child.user.username }}</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -13,15 +13,17 @@
             color: #333;
         }
         .container {
-            max-width: 800px;
+            width: 90%;
+            max-width: 600px;
             margin: 20px auto;
-            padding: 20px;
+            padding: 15px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         h1, h2 {
             color: #555;
+            text-align: center;
         }
         ul {
             list-style: none;
@@ -46,56 +48,39 @@
             clear: both;
         }
         .button {
-            display: inline-block;
-            padding: 10px 20px;
+            display: block;
+            padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
             color: white;
-            background-color: #007bff; /* Blue */
+            background-color: #007bff;
             text-decoration: none;
             font-weight: bold;
             text-align: center;
         }
         .button:hover {
-            background-color: #0056b3; /* Darker blue */
-        }
-        .button.green {
-            background-color: #28a745; /* Green */
-        }
-        .button.green:hover {
-            background-color: #1e7e34; /* Darker green */
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Profile of Yousef</h1>
-        <p class="points">Points in Wallet: 350</p>
-        <!-- כפתורי ניווט -->
-        <a href="/tasks" class="button">Go to Task List</a>
-        <a href="/rewards" class="button">Go to Reward List</a>
+        <h1>Welcome {{ child.user.username }} :)</h1>
+        <p class="points">Let's earn more Points!</p>
+        <p class="points">Points in your Wallet: {{ child.points }}</p>
+        <a href="{% url 'list' %}" class="button">Go to Task List</a>
+        <a href="/reward" class="button">Go to Reward List</a>
         <h2>Completed Tasks</h2>
         <ul>
+            {% for task in child.completed_tasks.all %}
             <li>
-                <span class="points">Make Care Packages for the Homeless - 150 Points</span>
+                <span class="points">{{ task.title }} - {{ task.points }} Points</span>
                 <span class="status">Completed</span>
                 <div class="clear"></div>
             </li>
-            <li>
-                <span class="points">Read to Elderly People - 100 Points</span>
-                <span class="status">Completed</span>
-                <div class="clear"></div>
-            </li>
-            <li>
-                <span class="points">Plant trees or flowers - 90 Points</span>
-                <span class="status">Completed</span>
-                <div class="clear"></div>
-            </li>
-            <li>
-                <span class="points">Create Artwork for Hospitalized Children - 100 Points</span>
-                <span class="status">Completed</span>
-                <div class="clear"></div>
-            </li>
+            {% empty %}
+            <li>No completed tasks yet.</li>
+            {% endfor %}
         </ul>
     </div>
 </body>

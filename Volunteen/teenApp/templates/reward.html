@@ -2,55 +2,53 @@
 {% load static %}
 {% block content %}
 <style>
-  /* Custom styles */
-  .task-table {
-    font-size: 1.2em;
-  }
-  .reward-image {
-    max-width: 100px; /* Set maximum width for the image */
-    height: auto; /* Maintain aspect ratio */
-  }
-  .task-table td, .task-table th {
-    vertical-align: middle;
-    padding: 12px;
-  }
+    .task-table {
+        font-size: 1em;
+    }
+    .reward-image {
+        max-width: 60px;
+        height: auto;
+    }
+    .task-table td, .task-table th {
+        vertical-align: middle;
+        padding: 8px;
+    }
 </style>
 
 <div class="container mt-5">
-  <h2>Reward List</h2>
-  <table class="table task-table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Image</th>
-        <th scope="col">Title</th>
-        <th scope="col">Description</th>
-        <th scope="col">Points Required</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for reward in rewards %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>
-            <!-- Placeholder for task image; replace with actual image URLs -->
-            {% if reward.img %}
-              <img src="{{ reward.img.url }}" alt="Reward Image" class="reward-image" />
-            {% else %}
-                <img src="{% static 'alt.jpeg' %}" alt="Default Reward Image" class="reward-image" />
-            {% endif %}
-          </td>
-          <td>{{ reward.title }}</td>
-          <td>{{ reward.description }}</td>
-          <td>{{ reward.points_required }}</td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="4" class="text-center">No Rewards Found</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <a href="{% url 'index' %}" class="btn btn-secondary">Home Page</a>
+    <h2>Reward List</h2>
+    <table class="table task-table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Image</th>
+                <th scope="col">Title</th>
+                <th scope="col">Description</th>
+                <th scope="col">Points Required</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reward in rewards %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>
+                    {% if reward.img %}
+                    <img src="{{ reward.img.url }}" alt="Reward Image" class="reward-image">
+                    {% else %}
+                    <img src="{% static 'alt.jpeg' %}" alt="Default Reward Image" class="reward-image">
+                    {% endif %}
+                </td>
+                <td>{{ reward.title }}</td>
+                <td>{{ reward.description }}</td>
+                <td>{{ reward.points_required }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No Rewards Found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}

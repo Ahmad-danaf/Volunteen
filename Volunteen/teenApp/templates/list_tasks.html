@@ -2,18 +2,44 @@
 {% load static %}
 {% block content %}
 <style>
-  /* Custom styles */
-  .task-table {
-    font-size: 1.2em;
-  }
-  .task-image {
-    width: 100px;
-    height: auto;
-  }
-  .task-table td, .task-table th {
-    vertical-align: middle;
-    padding: 12px;
-  }
+    .task-table {
+        font-size: 0.9em;
+        width: 100%;
+        table-layout: auto;
+        white-space: nowrap;
+    }
+    .task-image {
+        max-width: 40px;
+        height: auto;
+    }
+    .task-table td, .task-table th {
+        vertical-align: middle;
+        padding: 4px;
+        text-align: center;
+    }
+    .task-table-container {
+        overflow-x: auto;
+    }
+    @media (max-width: 768px) {
+        .task-table {
+            font-size: 0.8em;
+        }
+        .task-image {
+            max-width: 30px;
+        }
+        .task-table th,
+        .task-table td {
+            padding: 3px;
+        }
+        .task-table th:nth-child(5),
+        .task-table td:nth-child(5),
+        .task-table th:nth-child(7),
+        .task-table td:nth-child(7),
+        .task-table th:nth-child(8),
+        .task-table td:nth-child(8) {
+            display: none;
+        }
+    }
 </style>
 
 <div class="container mt-5">
@@ -23,9 +49,9 @@
       <tr>
         <th scope="col">#</th>
         <th scope="col">Image</th>
-        <th scope="col">TITLE</th>
+        <th scope="col">Task</th>
         <th scope="col">Description</th>
-        <th scope="col">Points</th> 
+        <th scope="col">Points</th>
         <th scope="col">Deadline</th>
         <th scope="col">Duration</th>
         <th scope="col">Additional Details</th>
@@ -36,40 +62,36 @@
         <tr>
           <th scope="row">{{ forloop.counter }}</th>
           <td>
-            <!-- Placeholder for task image; replace with actual image URLs -->
-            {% if task.image %}
-              <img src="{{ task.image }}" alt="Task Image" class="task-image" />
+            {% if task.img %}
+              <img src="{{ task.img }}" alt="Task Image" class="task-image" />
             {% else %}
-                <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
+              <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
             {% endif %}
           </td>
           <td>{{ task.title }}</td>
           <td>{{ task.description }}</td>
-          <td>{{ task.points }}</td> 
-          <td>
-            <script>
-                var deadlineStr = "{{ task.deadline }}";
-                // Split the date string into day, month, and year parts
-                var parts = deadlineStr.split('/');
-                // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
-                var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
-                 // Format the date as DD/MM/YYYY
-                var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
-                document.write(formattedDeadline);
-            </script>
-        </td>
-        
-        <td>{{ task.duration }}</td> 
-        <td>{{ task.adddetails }}</td> 
+          <td>{{ task.points }}</td>
+          <td> <script>
+            var deadlineStr = "{{ task.deadline }}";
+            // Split the date string into day, month, and year parts
+            var parts = deadlineStr.split('/');
+            // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
+            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
+             // Format the date as DD/MM/YYYY
+            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
+            document.write(formattedDeadline);
+        </script></td>
+          <td>{{ task.duration }}</td> 
+          <td>{{ task.adddetails }}</td> 
         </tr>
       {% endfor %}
       {% if tasks|length == 0 %}
         <tr>
-          <td colspan="7" class="text-center">No Tasks Found</td>
+          <td colspan="8" class="text-center">No Tasks Found</td>
         </tr>
       {% endif %}
     </tbody>
   </table>
-  <a href="{% url 'index' %}" class="btn btn-secondary">Home Page</a>
+  <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}
