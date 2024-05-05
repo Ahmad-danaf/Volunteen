@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils.translation import gettext_lazy as _
 
 class Reward(models.Model):
@@ -7,7 +7,7 @@ class Reward(models.Model):
     description = models.TextField(verbose_name='Reward Description', help_text='Enter the reward details')
     points_required = models.IntegerField(verbose_name='Points Required', help_text='Enter the points required for this reward')
     img = models.ImageField(_("Image"), upload_to='media/images/', null=True, blank=True)
-    def __str__(self):
+    def _str_(self):
         return self.title
 class Task(models.Model):
     reward = models.ForeignKey('Reward', on_delete=models.CASCADE, verbose_name='Reward', help_text='Select reward for this task', blank=True, null=True)
@@ -20,17 +20,18 @@ class Task(models.Model):
     duration = models.TextField(verbose_name='Duration', help_text='Enter the duration of the task')
     additional_details = models.TextField(verbose_name='Additional Details', help_text='Enter any additional details about the task', blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.title
     
 class Child(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0, verbose_name='Points')
     completed_tasks = models.ManyToManyField('Task', related_name='completed_by', blank=True, verbose_name='Completed Tasks')
-    identifier = models.CharField(max_length=5, unique=True, verbose_name='Identifier')
-    secret_code = models.CharField(max_length=3, verbose_name='Secret Code')
+    identifier = models.CharField(max_length=5, unique=True, verbose_name='Identifier', default='00000')
+    secret_code = models.CharField(max_length=3, verbose_name='Secret Code', default='000')
 
     def add_points(self, points):
+        
         self.points += points
         self.save()
 
@@ -41,7 +42,7 @@ class Child(models.Model):
         else:
             raise ValueError("Not enough points to subtract")
 
-    def __str__(self):
+    def _str_(self):
         return self.user.username
 
 
@@ -57,5 +58,32 @@ class Mentor(models.Model):
             except Child.DoesNotExist:
                 print(f"Child with identifier {identifier} does not exist.")
 
-    def __str__(self):
+    def _str_(self):
         return self.user.username
+    
+    
+    
+class Shop(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Add user to "Shops" group
+        shops_group, created = Group.objects.get_or_create(name='Shops')
+        self.user.groups.add(shops_group)
+    
+    
+class Redemption(models.Model):
+    child = models.ForeignKey('Child', on_delete=models.CASCADE, verbose_name='Child')
+    points_used = models.IntegerField(verbose_name='Points Used')
+    date_redeemed = models.DateTimeField(auto_now_add=True, verbose_name='Date Redeemed')
+    shop = models.ForeignKey('Shop', on_delete=models.CASCADE, verbose_name='Shop')  # Add the shop reference
+
+    def __str__(self):
+        return f'{self.child} redeemed {self.reward} for {self.points_used} points at {self.shop} on {self.date_redeemed}'

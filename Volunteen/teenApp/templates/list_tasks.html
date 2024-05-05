@@ -43,48 +43,55 @@
 </style>
 
 <div class="container mt-5">
-    <h2>Task List</h2>
-    <div class="task-table-container">
-        <table class="table task-table">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Image</th>
-                    <th scope="col">Task</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Points</th>
-                    <th scope="col">Deadline</th>
-                    <th scope="col">Duration</th>
-                    <th scope="col">Additional Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in tasks %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>
-                        {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="Task Image" class="task-image">
-                        {% else %}
-                        <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image">
-                        {% endif %}
-                    </td>
-                    <td>{{ task.title }}</td>
-                    <td>{{ task.description }}</td>
-                    <td>{{ task.points }}</td>
-                    <td>{{ task.deadline|date:"SHORT_DATE_FORMAT" }}</td>
-                    <td>{{ task.duration }}</td>
-                    <td>{{ task.additional_details }}</td>
-                </tr>
-                {% endfor %}
-                {% if tasks|length == 0 %}
-                <tr>
-                    <td colspan="8" class="text-center">No Tasks Found</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-    <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
+  <h2>Task List</h2>
+  <table class="table task-table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Image</th>
+        <th scope="col">Task</th>
+        <th scope="col">Description</th>
+        <th scope="col">Points</th>
+        <th scope="col">Deadline</th>
+        <th scope="col">Duration</th>
+        <th scope="col">Additional Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>
+            {% if task.img %}
+              <img src="{{ task.img }}" alt="Task Image" class="task-image" />
+            {% else %}
+              <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
+            {% endif %}
+          </td>
+          <td>{{ task.title }}</td>
+          <td>{{ task.description }}</td>
+          <td>{{ task.points }}</td>
+          <td> <script>
+            var deadlineStr = "{{ task.deadline }}";
+            // Split the date string into day, month, and year parts
+            var parts = deadlineStr.split('/');
+            // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
+            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
+             // Format the date as DD/MM/YYYY
+            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
+            document.write(formattedDeadline);
+        </script></td>
+          <td>{{ task.duration }}</td> 
+          <td>{{ task.adddetails }}</td> 
+        </tr>
+      {% endfor %}
+      {% if tasks|length == 0 %}
+        <tr>
+          <td colspan="8" class="text-center">No Tasks Found</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}
