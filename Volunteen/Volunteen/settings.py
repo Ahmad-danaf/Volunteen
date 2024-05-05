@@ -47,21 +47,15 @@ INSTALLED_APPS = [
     'two_factor',
     'crispy_bootstrap4',
     'crispy_forms',
-    'qr_code',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 #2FA
 LOGIN_URL = 'two_factor:login'
-LOGIN_REDIRECT_URL = '/redeem/'
-
-# this one is optional
-
 LOGIN_REDIRECT_URL = 'home_redirect'
 
 # reCAPTCHA keys 
-
 RECAPTCHA_PUBLIC_KEY = '6LetRF4pAAAAAMssM8IvwXNDeLq5JfhPQf79Wa_1' # - Enter your ReCAPTCHA keys here
 RECAPTCHA_PRIVATE_KEY = '6LetRF4pAAAAAIyO-TaXHs6dlpDbJQ4DAJAErifT' # - Enter your ReCAPTCHA keys here
 

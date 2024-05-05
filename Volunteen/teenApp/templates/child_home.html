@@ -61,6 +61,12 @@
         .button:hover {
             background-color: #0056b3;
         }
+        .button-logout {
+            background-color: #dc3545; /* Bootstrap's danger color */
+        }
+        .button-logout:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -70,6 +76,7 @@
         <p class="points">Points in your Wallet: {{ child.points }}</p>
         <a href="{% url 'list' %}" class="button">Go to Task List</a>
         <a href="/reward" class="button">Go to Reward List</a>
+        <a href="{% url 'logout_view' %}" class="button button-logout">Logout</a> <!-- Added Logout Button -->
         <h2>Completed Tasks</h2>
         <ul>
             {% for task in child.completed_tasks.all %}

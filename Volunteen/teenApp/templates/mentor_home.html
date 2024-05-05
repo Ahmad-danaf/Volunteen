@@ -62,6 +62,7 @@
         <h1>Welcome, {{ mentor.user.username }}</h1>
         <a href="{% url 'list' %}" class="button">Go to Active Tasks</a>
         <a href="{% url 'mentor_points_summary' %}" class="button">View Children's Points</a>
+        <a href="{% url 'logout_view' %}" class="button" style="background-color: #dc3545;">Logout</a> <!-- Logout Button Added -->
 
         {% if messages %}
             <div>
