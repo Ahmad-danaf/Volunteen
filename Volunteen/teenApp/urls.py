@@ -8,7 +8,6 @@ urlpatterns = [
     path('child/', views.child_home, name='child_home'),
     path('mentor/', views.mentor_home, name='mentor_home'),
     path('mentor/points-summary/', views.mentor_points_summary, name='mentor_points_summary'),
-    path('register', views.register, name='register'),
     path('list/', views.list_view, name='list'),
     path('reward/', views.reward, name='reward'),
     path('shop_redeem/', views.redeem_points, name='redeem_points'),
