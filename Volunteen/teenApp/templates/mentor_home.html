@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Page title indicating mentor's home page -->
     <title>Mentor Home</title>
+    
+    <!-- Meta tag for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Internal CSS styling -->
     <style>
         /* General styles */
         body {
@@ -59,11 +64,15 @@
 </head>
 <body>
     <div class="container">
+        <!-- Mentor's welcome message -->
         <h1>Welcome, {{ mentor.user.username }}</h1>
+
+        <!-- Navigation buttons -->
         <a href="{% url 'list' %}" class="button">Go to Active Tasks</a>
         <a href="{% url 'mentor_points_summary' %}" class="button">View Children's Points</a>
-        <a href="{% url 'logout_view' %}" class="button" style="background-color: #dc3545;">Logout</a> <!-- Logout Button Added -->
+        <a href="{% url 'logout_view' %}" class="button" style="background-color: #dc3545;">Logout</a> <!-- Logout Button -->
 
+        <!-- Display any messages -->
         {% if messages %}
             <div>
                 {% for message in messages %}
@@ -74,6 +83,7 @@
             </div>
         {% endif %}
 
+        <!-- Form to assign a task to children -->
         <h2>Assign Task to Children</h2>
         <form method="post">
             {% csrf_token %}
@@ -82,11 +92,13 @@
             
             <label for="task">Select Task:</label>
             <select name="task" id="task">
+                <!-- Loop through available tasks for selection -->
                 {% for task in tasks %}
                     <option value="{{ task.id }}">{{ task.title }} ({{ task.points }} Points)</option>
                 {% endfor %}
             </select>
             
+            <!-- Button to assign task -->
             <button type="submit">Assign Task</button>
         </form>
     </div>

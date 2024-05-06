@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Page title showing the child's username -->
     <title>Profile of {{ child.user.username }}</title>
+
+    <!-- Internal CSS styling -->
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -74,9 +78,13 @@
         <h1>Welcome {{ child.user.username }} :)</h1>
         <p class="points">Let's earn more Points!</p>
         <p class="points">Points in your Wallet: {{ child.points }}</p>
+        
+        <!-- Navigation buttons -->
         <a href="{% url 'list' %}" class="button">Go to Task List</a>
         <a href="/reward" class="button">Go to Reward List</a>
         <a href="{% url 'logout_view' %}" class="button button-logout">Logout</a> <!-- Added Logout Button -->
+
+        <!-- Completed tasks section -->
         <h2>Completed Tasks</h2>
         <ul>
             {% for task in child.completed_tasks.all %}

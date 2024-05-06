@@ -3,21 +3,26 @@
 {% block title %}Shop Home{% endblock %}
 
 {% block content %}
+<!-- Shop's welcome message -->
 <h2>Welcome {{ shop.name }}</h2>
 
+<!-- Section for redeeming points -->
 <div>
     <h3>Redeem Points</h3>
     <a href="{% url 'redeem_points' %}">Go to Redeem Points</a>
 </div>
 
+<!-- Section for recent redemptions -->
 <div>
     <h3>Recent Redemptions</h3>
     <ul>
+        <!-- Loop through recent redemptions and display their details -->
         {% for redemption in recent_redemptions %}
             <li>
                 {{ redemption.date_redeemed }}: {{ redemption.child.user.username }} redeemed {{ redemption.points_used }} points for {{ redemption.reward.title }}
             </li>
         {% empty %}
+            <!-- Message if there are no redemptions -->
             <li>No redemptions yet.</li>
         {% endfor %}
     </ul>
