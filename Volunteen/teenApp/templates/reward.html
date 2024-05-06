@@ -3,20 +3,23 @@
 {% block content %}
 <style>
     .task-table {
-        font-size: 1em;
+        font-size: 1em; /* Set the font size for the task table */
     }
     .reward-image {
-        max-width: 60px;
-        height: auto;
+        max-width: 60px; /* Set the maximum width of the reward image */
+        height: auto; /* Maintain aspect ratio */
     }
     .task-table td, .task-table th {
-        vertical-align: middle;
-        padding: 8px;
+        vertical-align: middle; /* Align table cells vertically */
+        padding: 8px; /* Add padding to table cells */
     }
 </style>
 
 <div class="container mt-5">
+    <!-- Page header -->
     <h2>Reward List</h2>
+    
+    <!-- Table displaying the rewards -->
     <table class="table task-table">
         <thead>
             <tr>
@@ -28,13 +31,16 @@
             </tr>
         </thead>
         <tbody>
+            <!-- Loop through each reward and display its data -->
             {% for reward in rewards %}
             <tr>
                 <th scope="row">{{ forloop.counter }}</th>
                 <td>
                     {% if reward.img %}
+                    <!-- Show reward image if available -->
                     <img src="{{ reward.img.url }}" alt="Reward Image" class="reward-image">
                     {% else %}
+                    <!-- Show default image if reward image not available -->
                     <img src="{% static 'alt.jpeg' %}" alt="Default Reward Image" class="reward-image">
                     {% endif %}
                 </td>
@@ -43,12 +49,15 @@
                 <td>{{ reward.points_required }}</td>
             </tr>
             {% empty %}
+            <!-- Display message if no rewards found -->
             <tr>
                 <td colspan="5" class="text-center">No Rewards Found</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    
+    <!-- Button to navigate back to the home page -->
     <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}

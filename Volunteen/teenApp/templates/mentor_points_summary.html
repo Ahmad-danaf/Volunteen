@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    
+    <!-- Page title indicating children's points summary -->
     <title>Children's Points Summary</title>
+    
+    <!-- Meta tag for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Internal CSS styling -->
     <style>
         /* General styles */
         body {
@@ -61,7 +67,10 @@
 </head>
 <body>
     <div class="container">
+        <!-- Page header -->
         <h1>Children's Points Summary</h1>
+        
+        <!-- Table displaying the children's points -->
         <table>
             <thead>
                 <tr>
@@ -70,6 +79,7 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- Loop through each child and display their data -->
                 {% for child in children %}
                     <tr>
                         <td>{{ child.user.username }}</td>

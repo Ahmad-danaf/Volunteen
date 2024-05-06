@@ -56,8 +56,8 @@ LOGIN_URL = 'two_factor:login'
 LOGIN_REDIRECT_URL = 'home_redirect'
 
 # reCAPTCHA keys 
-RECAPTCHA_PUBLIC_KEY = '6LetRF4pAAAAAMssM8IvwXNDeLq5JfhPQf79Wa_1' # - Enter your ReCAPTCHA keys here
-RECAPTCHA_PRIVATE_KEY = '6LetRF4pAAAAAIyO-TaXHs6dlpDbJQ4DAJAErifT' # - Enter your ReCAPTCHA keys here
+RECAPTCHA_PUBLIC_KEY = '6LetRF4pAAAAAMssM8IvwXNDeLq5JfhPQf79Wa_1' 
+RECAPTCHA_PRIVATE_KEY = '6LetRF4pAAAAAIyO-TaXHs6dlpDbJQ4DAJAErifT'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,19 +139,19 @@ USE_TZ = True
 
 import os
 
-# נתיב לתיקיית הבסיס של הפרויקט
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# נתיב לתיקיית הסטטיק
+
 STATIC_URL = '/static/'
 
-# רשימת נתיבים לתיקיות הסטטיק
+
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# נתיב לתיקיית המדיה
+
 MEDIA_URL = '/media/'
 
-# נתיב לתיקיית המדיה
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type

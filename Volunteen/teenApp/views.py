@@ -1,22 +1,22 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .forms import CreateUserForm, RedemptionForm, IdentifyChildForm
-from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from datetime import datetime
 from .models import Task, Reward, Child, Mentor, Redemption, Shop
 import requests
 from django.http import HttpResponse
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from .forms import IdentifyChildForm
+from .forms import RedemptionForm
 
 @login_required
 def logout_view(request):
+    # Handles user logout and redirects to login page
     logout(request)
     return redirect('two_factor:login')
 
 @login_required
 def home_redirect(request):
+    # Redirects users to different home pages based on their group
     if request.user.groups.filter(name='Children').exists():
         return redirect('child_home')
     elif request.user.groups.filter(name='Mentors').exists():
@@ -26,18 +26,20 @@ def home_redirect(request):
     else:
         # Redirect to a default page if the user is not in any of the specified groups
         return redirect('default_home')
-    
-    
+
 def default_home(request):
+    # Default home page response
     return HttpResponse("Home")
 
 @login_required
 def child_home(request):
+    # Child home page view
     child = Child.objects.get(user=request.user)
     return render(request, 'child_home.html', {'child': child})
 
 @login_required
 def mentor_home(request):
+    # Mentor home page view
     mentor = Mentor.objects.get(user=request.user)
     tasks = Task.objects.all()
 
@@ -56,15 +58,17 @@ def mentor_home(request):
             except Task.DoesNotExist:
                 messages.error(request, f"Task with id {task_id} does not exist.")
 
-        return redirect('mentor_home') 
+        return redirect('mentor_home')
     return render(request, 'mentor_home.html', {'mentor': mentor, 'tasks': tasks})
 
 @login_required
 def mentor_points_summary(request):
+    # Displays a summary of children's points for mentors
     children = Child.objects.all().order_by('-points')
     return render(request, 'mentor_points_summary.html', {'children': children})
 
 def list_view(request):
+    # Retrieves and lists tasks from an external API
     tasks = []
     url = 'https://api.sheety.co/376dda55bc979408041d482218850b94/volunteenTasks/sheet1'
     response = requests.get(url)
@@ -75,11 +79,13 @@ def list_view(request):
     return render(request, 'list_tasks.html', {'tasks': tasks})
 
 def reward(request):
+    # Displays available rewards
     rewards = Reward.objects.all()
     return render(request, 'reward.html', {'rewards': rewards})
 
 @login_required
 def redeem_points(request):
+    # Handles points redemption process for children
     if request.method == 'POST':
         if 'identifier' in request.POST:
             id_form = IdentifyChildForm(request.POST)
@@ -112,6 +118,7 @@ def redeem_points(request):
 
 @login_required
 def shop_home(request):
+    # Shop home page view
     if not request.user.groups.filter(name='Shops').exists():
          return redirect('two_factor:login')
 

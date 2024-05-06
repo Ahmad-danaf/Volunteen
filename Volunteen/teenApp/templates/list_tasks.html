@@ -2,6 +2,7 @@
 {% load static %}
 {% block content %}
 <style>
+    /* Styles for the task table */
     .task-table {
         font-size: 0.9em;
         width: 100%;
@@ -21,6 +22,7 @@
         overflow-x: auto;
     }
     @media (max-width: 768px) {
+        /* Adjustments for smaller screens */
         .task-table {
             font-size: 0.8em;
         }
@@ -31,6 +33,7 @@
         .task-table td {
             padding: 3px;
         }
+        /* Hide specific columns on smaller screens */
         .task-table th:nth-child(5),
         .task-table td:nth-child(5),
         .task-table th:nth-child(7),
@@ -43,55 +46,60 @@
 </style>
 
 <div class="container mt-5">
-  <h2>Task List</h2>
-  <table class="table task-table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Image</th>
-        <th scope="col">Task</th>
-        <th scope="col">Description</th>
-        <th scope="col">Points</th>
-        <th scope="col">Deadline</th>
-        <th scope="col">Duration</th>
-        <th scope="col">Additional Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for task in tasks %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>
-            {% if task.img %}
-              <img src="{{ task.img }}" alt="Task Image" class="task-image" />
-            {% else %}
-              <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
+    <!-- Task List Heading -->
+    <h2>Task List</h2>
+    <!-- Table displaying the tasks -->
+    <table class="table task-table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Image</th>
+                <th scope="col">Task</th>
+                <th scope="col">Description</th>
+                <th scope="col">Points</th>
+                <th scope="col">Deadline</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Additional Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop through each task and display its data -->
+            {% for task in tasks %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>
+                        {% if task.img %}
+                            <img src="{{ task.img }}" alt="Task Image" class="task-image" />
+                        {% else %}
+                            <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
+                        {% endif %}
+                    </td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.points }}</td>
+                    <td>
+                        <!-- JavaScript to format and display the deadline -->
+                        <script>
+                            var deadlineStr = "{{ task.deadline }}";
+                            var parts = deadlineStr.split('/');
+                            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
+                            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
+                            document.write(formattedDeadline);
+                        </script>
+                    </td>
+                    <td>{{ task.duration }}</td>
+                    <td>{{ task.adddetails }}</td>
+                </tr>
+            {% endfor %}
+            <!-- Display a message if no tasks are found -->
+            {% if tasks|length == 0 %}
+                <tr>
+                    <td colspan="8" class="text-center">No Tasks Found</td>
+                </tr>
             {% endif %}
-          </td>
-          <td>{{ task.title }}</td>
-          <td>{{ task.description }}</td>
-          <td>{{ task.points }}</td>
-          <td> <script>
-            var deadlineStr = "{{ task.deadline }}";
-            // Split the date string into day, month, and year parts
-            var parts = deadlineStr.split('/');
-            // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
-            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
-             // Format the date as DD/MM/YYYY
-            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
-            document.write(formattedDeadline);
-        </script></td>
-          <td>{{ task.duration }}</td> 
-          <td>{{ task.adddetails }}</td> 
-        </tr>
-      {% endfor %}
-      {% if tasks|length == 0 %}
-        <tr>
-          <td colspan="8" class="text-center">No Tasks Found</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
-  <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
+        </tbody>
+    </table>
+    <!-- Button to navigate back to the home page -->
+    <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
 </div>
 {% endblock %}
