@@ -2,14 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    
-    <!-- Page title indicating children's points summary -->
     <title>Children's Points Summary</title>
-    
-    <!-- Meta tag for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Internal CSS styling -->
     <style>
         /* General styles */
         body {
@@ -54,6 +48,23 @@
             background-color: #f2f2f2;
         }
 
+        /* Button styles */
+        .back-button {
+            display: block;
+            padding: 10px;
+            margin: 20px auto;
+            border-radius: 5px;
+            color: white;
+            background-color: #28a745;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            width: 150px;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 600px) {
             h1 {
@@ -67,23 +78,33 @@
 </head>
 <body>
     <div class="container">
-        <!-- Page header -->
         <h1>Children's Points Summary</h1>
         
-        <!-- Table displaying the children's points -->
+        <!-- Back to Home Button -->
+        <a href="{% url 'home_redirect' %}" class="back-button">Back to Home</a>
+        
         <table>
             <thead>
                 <tr>
                     <th>Child</th>
                     <th>Points</th>
+                    <th>Last Three Tasks</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Loop through each child and display their data -->
                 {% for child in children %}
                     <tr>
                         <td>{{ child.user.username }}</td>
                         <td>{{ child.points }}</td>
+                        <td>
+                            <ul>
+                                {% for task in child.last_three_tasks %}
+                                    <li>{{ task.title }} ({{ task.points }} Points)</li>
+                                {% empty %}
+                                    <li>No tasks completed yet</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
