@@ -11,4 +11,6 @@ urlpatterns = [
     path('default_home/', views.default_home, name='default_home'),  # Default home page
     path('shop_home/', views.shop_home, name='shop_home'),  # Shop home page
     path('logout/', views.logout_view, name='logout_view'),  # Handle user logout
+    path('redemption-history/', views.redemption_history, name='redemption_history'),
+    path('completed-tasks/', views.completed_tasks, name='completed_tasks'),
 ]

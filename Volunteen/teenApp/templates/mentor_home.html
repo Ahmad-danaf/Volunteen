@@ -38,6 +38,17 @@
             font-weight: bold;
             text-align: center;
         }
+        .button1 {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: white;
+            background-color: #119b0c;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+        }
         .button:hover {
             background-color: #0056b3;
         }
@@ -68,7 +79,7 @@
         <h1>Welcome, {{ mentor.user.username }}</h1>
 
         <!-- Navigation buttons -->
-        <a href="{% url 'list' %}" class="button">Go to Active Tasks</a>
+        <a href="{% url 'list' %}" class="button1">Go to Active Tasks</a>
         <a href="{% url 'mentor_points_summary' %}" class="button">View Children's Points</a>
         <a href="{% url 'logout_view' %}" class="button" style="background-color: #dc3545;">Logout</a> <!-- Logout Button -->
 
