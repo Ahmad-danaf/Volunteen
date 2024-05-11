@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .forms import CreateUserForm, RedemptionForm, IdentifyChildForm
+from .forms import RedemptionForm, IdentifyChildForm, TaskImageForm 
 from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,6 +9,9 @@ import requests
 from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+import random
+
+
 
 @login_required
 def logout_view(request):
@@ -39,25 +42,56 @@ def child_home(request):
 @login_required
 def mentor_home(request):
     mentor = Mentor.objects.get(user=request.user)
-    tasks = Task.objects.all()
+    available_tasks = get_all_tasks()  # Fetch tasks from Google Sheets
 
     if request.method == 'POST':
         child_identifiers = request.POST.get('child_identifiers', '').split(',')
         task_id = request.POST.get('task')
 
         if task_id:
-            try:
-                task = Task.objects.get(id=task_id)
-                mentor.assign_points_to_children(child_identifiers, task)
-                messages.success(
-                    request,
-                    f"Points successfully assigned for task '{task.title}' to children: {', '.join(child_identifiers)}"
-                )
-            except Task.DoesNotExist:
-                messages.error(request, f"Task with id {task_id} does not exist.")
+            # Check if task already exists in the database, otherwise create it
+            task_data = next((task for task in available_tasks if task['taskId'] == int(task_id)), None)
+            if task_data:
+                # Convert deadline to YYYY-MM-DD format
+                try:
+                    deadline_str = task_data['deadline']
+                    deadline = datetime.strptime(deadline_str, "%d/%m/%Y").date()
+                except ValueError:
+                    messages.error(request, f"Invalid date format for task deadline: {deadline_str}")
+                    return redirect('mentor_home')
 
-        return redirect('mentor_home') 
-    return render(request, 'mentor_home.html', {'mentor': mentor, 'tasks': tasks})
+                task, created = Task.objects.get_or_create(
+                    task_id=task_data['taskId'],
+                     defaults={
+                        'title': task_data.get('title', 'Untitled Task'),
+                        'description': task_data.get('description', 'No description available'),
+                        'points': task_data.get('points', 0),
+                        'duration': task_data.get('duration', 'Not specified'),
+                        'deadline': deadline, 
+                        'additional_details': task_data.get('adddetails', 'No additional details')
+                    }
+                )
+
+                # Assign points and mark task as completed for each child
+                for identifier in child_identifiers:
+                    try:
+                        child = Child.objects.get(identifier=identifier)
+                        child.add_points(task.points)
+                        task.completed_by.add(child)
+                        messages.success(
+                    request,
+                    f"Points successfully assigned for task '{task.title}' to child: {child.user.first_name} {child.user.last_name}"
+                    )
+                    except Child.DoesNotExist:
+                        messages.error(request, f"Child with identifier {identifier} does not exist.")
+
+               
+            else:
+                messages.error(request, f"Task with id {task_id} does not exist in the available tasks.")
+
+        return redirect('mentor_home')
+
+    return render(request, 'mentor_home.html', {'mentor': mentor, 'tasks': available_tasks})
 
 @login_required
 def mentor_points_summary(request):
@@ -88,9 +122,11 @@ def redeem_points(request):
                 secret_code = id_form.cleaned_data['secret_code']
                 try:
                     child = Child.objects.get(identifier=identifier, secret_code=secret_code)
+                    child.secret_code=get_random_digits()
+                    child.save()
                     return render(request, 'shop_redeem_points.html', {'child': child, 'id_form': id_form, 'points_form': RedemptionForm()})
                 except Child.DoesNotExist:
-                    return HttpResponse('Invalid identifier or secret code', status=400)
+                    return render(request, 'shop_invalid_identifier.html')
         else:
             points_form = RedemptionForm(request.POST)
             if points_form.is_valid():
@@ -101,9 +137,9 @@ def redeem_points(request):
                     child.subtract_points(points)
                     shop = Shop.objects.get(user=request.user)
                     Redemption.objects.create(child=child, points_used=points, shop=shop)
-                    return HttpResponse('Redemption successful')
+                    return render(request, 'shop_redemption_success.html', {'child': child, 'points_used': points})
                 else:
-                    return HttpResponse('Not enough points', status=400)
+                    return render(request, 'shop_not_enough_points.html')
     else:
         id_form = IdentifyChildForm()
         points_form = RedemptionForm()
@@ -122,3 +158,39 @@ def shop_home(request):
         'shop': shop,
         'recent_redemptions': recent_redemptions,
     })
+
+def get_random_digits(n=3):
+    return ''.join(str(random.randint(0, 9)) for _ in range(n))
+
+def get_all_tasks():
+    tasks = []
+    url = 'https://api.sheety.co/376dda55bc979408041d482218850b94/volunteenTasks/sheet1'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        tasks = data['sheet1']
+        
+    return tasks
+
+@login_required
+def mentor_completed_tasks_view(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        task = Task.objects.get(id=task_id)
+        form = TaskImageForm(request.POST, request.FILES, instance=task)
+        if form.is_valid():
+            form.save()
+        return redirect('mentor_completed_tasks')
+
+    tasks = Task.objects.all()
+    task_data = []
+    for task in tasks:
+        task_info = {
+            'task': task,
+            'form': TaskImageForm(instance=task),
+            'completed_by': task.completed_by.all(),
+            'completed_count': task.completed_by.count(),
+        }
+        task_data.append(task_info)
+
+    return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data})

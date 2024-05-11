@@ -13,17 +13,10 @@ class CreateUserForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 
-
-class TaskForm(forms.ModelForm):
+class TaskImageForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title','description', 'deadline','img','points','duration','additional_details']
-
-class UpdateTaskForm(forms.ModelForm):
-    class Meta:
-        model = Task
-        fields = ['title','description', 'deadline','img','points', 'duration','additional_details']
-        
+        fields = ['img']
 
 class IdentifyChildForm(forms.Form):
     identifier = forms.CharField(max_length=5, label='Child Identifier')

@@ -10,7 +10,6 @@ class Reward(models.Model):
     def _str_(self):
         return self.title
 class Task(models.Model):
-    reward = models.ForeignKey('Reward', on_delete=models.CASCADE, verbose_name='Reward', help_text='Select reward for this task', blank=True, null=True)
     description = models.TextField(verbose_name='Task Description', help_text='Enter the task details')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)
     completed = models.BooleanField(default=False, verbose_name='Completed', help_text='Mark as completed')
@@ -19,6 +18,8 @@ class Task(models.Model):
     points = models.IntegerField(verbose_name='Points', help_text='Enter the points for the task')
     duration = models.TextField(verbose_name='Duration', help_text='Enter the duration of the task')
     additional_details = models.TextField(verbose_name='Additional Details', help_text='Enter any additional details about the task', blank=True, null=True)
+    task_id = models.IntegerField(unique=True, default=0, verbose_name='Task ID', help_text='Unique Task ID')
+    completed_by = models.ManyToManyField('Child', related_name='tasks_completed', blank=True, verbose_name='Completed By')
 
     def _str_(self):
         return self.title
@@ -26,7 +27,7 @@ class Task(models.Model):
 class Child(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0, verbose_name='Points')
-    completed_tasks = models.ManyToManyField('Task', related_name='completed_by', blank=True, verbose_name='Completed Tasks')
+    completed_tasks = models.ManyToManyField('Task', related_name='children_completed', blank=True, verbose_name='Completed Tasks')
     identifier = models.CharField(max_length=5, unique=True, verbose_name='Identifier', default='00000')
     secret_code = models.CharField(max_length=3, verbose_name='Secret Code', default='000')
 

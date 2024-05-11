@@ -1,94 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Mentor Home</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        /* General styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f7f7f7;
-            color: #333;
-        }
-        .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .button {
-            display: block;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            color: white;
-            background-color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-            text-align: center;
-        }
-        .button:hover {
-            background-color: #0056b3;
-        }
-        form input, form select, form button {
-            margin: 5px 0;
-            padding: 8px;
-            width: 100%;
-        }
+{% extends 'mentor_base.html' %}
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5em;
-            }
-            .button {
-                padding: 8px;
-                font-size: 1em;
-            }
-            form label {
-                font-size: 0.9em;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome, {{ mentor.user.username }}</h1>
-        <a href="{% url 'list' %}" class="button">Go to Active Tasks</a>
-        <a href="{% url 'mentor_points_summary' %}" class="button">View Children's Points</a>
-        <a href="{% url 'logout_view' %}" class="button" style="background-color: #dc3545;">Logout</a> <!-- Logout Button Added -->
+{% block title %}Mentor Home{% endblock %}
 
-        {% if messages %}
-            <div>
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+{% block content %}
+    <h1>Welcome, {{ mentor.user.username }}</h1>
+    <a href="{% url 'list' %}" class="button active-tasks">Go to Active Tasks</a>
+    <a href="{% url 'mentor_completed_tasks' %}" class="button completed-tasks">Go to Completed Tasks</a>
+    <a href="{% url 'mentor_points_summary' %}" class="button points-view">View Children's Points</a>
+    <a href="{% url 'logout_view' %}" class="button logout">Logout</a>
 
-        <h2>Assign Task to Children</h2>
-        <form method="post">
-            {% csrf_token %}
-            <label for="child_identifiers">Enter Child Identifiers (comma-separated):</label>
-            <input type="text" name="child_identifiers" id="child_identifiers" required>
-            
-            <label for="task">Select Task:</label>
-            <select name="task" id="task">
-                {% for task in tasks %}
-                    <option value="{{ task.id }}">{{ task.title }} ({{ task.points }} Points)</option>
-                {% endfor %}
-            </select>
-            
-            <button type="submit">Assign Task</button>
-        </form>
-    </div>
-</body>
-</html>
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h2>Assign Task to Children</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="child_identifiers">Enter Child Identifiers (comma-separated):</label>
+        <input type="text" name="child_identifiers" id="child_identifiers" required>
+        
+        <label for="task">Select Task:</label>
+        <select name="task" id="task">
+            {% for task in tasks %}
+                <option value="{{ task.taskId }}">{{ task.title }} ({{ task.points }} Points)</option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit" class="button assign-task">Assign Task</button>
+    </form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .button {
+        padding: 10px 15px;
+        border: none;
+        color: white;
+        font-size: 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .active-tasks {
+        background-color: #007bff; /* Blue for primary actions */
+    }
+
+    .completed-tasks {
+        background-color: #28a745; /* Green for completed tasks */
+    }
+
+    .points-view {
+        background-color: #17a2b8; /* Soft teal for secondary information */
+    }
+
+    .logout {
+        background-color: #dc3545; /* Red for important actions like logout */
+    }
+
+    .assign-task {
+        background-color: #28a745; /* Green for assigning tasks */
+    }
+
+    .button:hover {
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

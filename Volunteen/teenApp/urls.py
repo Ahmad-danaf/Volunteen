@@ -14,5 +14,6 @@ urlpatterns = [
     path('default_home/', views.default_home, name='default_home'),
     path('shop_home/', views.shop_home, name='shop_home'),
     path('logout/', views.logout_view, name='logout_view'),
+    path('completed_tasks/', views.mentor_completed_tasks_view, name='mentor_completed_tasks'),
 
 ]

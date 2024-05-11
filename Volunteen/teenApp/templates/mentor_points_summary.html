@@ -1,27 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Children's Points Summary</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends 'mentor_base.html' %}
+
+{% block title %}Children's Points Summary{% endblock %}
+
+{% block extra_css %}
     <style>
-        /* General styles */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f7f7f7;
-            color: #333;
-        }
-        .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
         h1 {
             text-align: center;
             font-size: 1.8em;
@@ -58,26 +40,24 @@
             }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Children's Points Summary</h1>
-        <table>
-            <thead>
+{% endblock %}
+
+{% block content %}
+    <h1>Children's Points Summary</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Child</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in children %}
                 <tr>
-                    <th>Child</th>
-                    <th>Points</th>
+                    <td>{{ child.user.username }}</td>
+                    <td>{{ child.points }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for child in children %}
-                    <tr>
-                        <td>{{ child.user.username }}</td>
-                        <td>{{ child.points }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

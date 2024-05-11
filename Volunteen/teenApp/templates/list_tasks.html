@@ -3,95 +3,105 @@
 {% block content %}
 <style>
     .task-table {
-        font-size: 0.9em;
+        font-size: 1em;
         width: 100%;
-        table-layout: auto;
-        white-space: nowrap;
-    }
-    .task-image {
-        max-width: 40px;
-        height: auto;
+        border-collapse: collapse;
     }
     .task-table td, .task-table th {
+        border: 1px solid #ddd;
         vertical-align: middle;
-        padding: 4px;
+        padding: 8px;
+        text-align: left;
+    }
+    .task-table th {
+        background-color: #ffe6cc; /* Header background color */
+        color: #333;
         text-align: center;
     }
     .task-table-container {
         overflow-x: auto;
     }
+    .task-image {
+        max-width: 40px;
+        height: auto;
+        margin-right: 10px;
+    }
+    .details-row {
+        display: none;
+    }
     @media (max-width: 768px) {
         .task-table {
-            font-size: 0.8em;
+            font-size: 0.9em;
         }
-        .task-image {
-            max-width: 30px;
-        }
-        .task-table th,
-        .task-table td {
-            padding: 3px;
-        }
-        .task-table th:nth-child(5),
-        .task-table td:nth-child(5),
-        .task-table th:nth-child(7),
-        .task-table td:nth-child(7),
-        .task-table th:nth-child(8),
-        .task-table td:nth-child(8) {
-            display: none;
+    }
+    @media (max-width: 480px) {
+        .task-table {
+            font-size: 0.85em;
         }
     }
 </style>
 
 <div class="container mt-5">
-  <h2>Task List</h2>
-  <table class="table task-table">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Image</th>
-        <th scope="col">Task</th>
-        <th scope="col">Description</th>
-        <th scope="col">Points</th>
-        <th scope="col">Deadline</th>
-        <th scope="col">Duration</th>
-        <th scope="col">Additional Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for task in tasks %}
-        <tr>
-          <th scope="row">{{ forloop.counter }}</th>
-          <td>
-            {% if task.img %}
-              <img src="{{ task.img }}" alt="Task Image" class="task-image" />
-            {% else %}
-              <img src="{% static 'alt.jpeg' %}" alt="Default Image" class="task-image" />
-            {% endif %}
-          </td>
-          <td>{{ task.title }}</td>
-          <td>{{ task.description }}</td>
-          <td>{{ task.points }}</td>
-          <td> <script>
-            var deadlineStr = "{{ task.deadline }}";
-            // Split the date string into day, month, and year parts
-            var parts = deadlineStr.split('/');
-            // Create a new Date object with year, month (subtract 1 as JS months are 0-based), and day
-            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
-             // Format the date as DD/MM/YYYY
-            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
-            document.write(formattedDeadline);
-        </script></td>
-          <td>{{ task.duration }}</td> 
-          <td>{{ task.adddetails }}</td> 
-        </tr>
-      {% endfor %}
-      {% if tasks|length == 0 %}
-        <tr>
-          <td colspan="8" class="text-center">No Tasks Found</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
-  <a href="{% url 'home_redirect' %}" class="btn btn-secondary">Home Page</a>
+    <h2 style="color: #ff6600;">Volunteen Task List</h2>
+    <div class="task-table-container">
+        <table class="table task-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Deadline</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr onclick="toggleDetails({{ forloop.counter }})" style="cursor: pointer;">
+                    <td>
+                        {% if task.image %}
+                            <img src="{{ task.image }}" alt="Task {{ task.title }} Image" class="task-image" />
+                        {% else %}
+                            <img src="{% static 'images/logo.png' %}" alt="logo Image" class="task-image" />
+                        {% endif %}
+                    </td>
+                    <td>{{ task.title }}</td>
+                    <td>
+                        <script>
+                            var deadlineStr = "{{ task.deadline }}";
+                            var parts = deadlineStr.split('/');
+                            var deadline = new Date(parts[2], parts[1] - 1, parts[0]);
+                            var formattedDeadline = (deadline.getDate() < 10 ? '0' : '') + deadline.getDate() + '/' + ((deadline.getMonth() + 1) < 10 ? '0' : '') + (deadline.getMonth() + 1) + '/' + deadline.getFullYear();
+                            document.write(formattedDeadline);
+                        </script>
+                    </td>
+                </tr>
+                <tr id="details-{{ forloop.counter }}" class="details-row">
+                    <td colspan="3">
+                        <b>Description:</b> {{ task.description }}<br>
+                        <b>Points:</b> {{ task.points }}<br>
+                        <b>Duration:</b> {{ task.duration }}<br>
+                        <b>Additional Details:</b> {{ task.adddetails }}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if tasks|length == 0 %}
+                <tr>
+                    <td colspan="3" class="text-center">No Tasks Found</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'home_redirect' %}" class="btn btn-primary mt-4">Home Page</a>
 </div>
+
+<script>
+    function toggleDetails(counter) {
+        var detailsRow = document.getElementById('details-' + counter);
+        if (!detailsRow.style.display || detailsRow.style.display === 'none') {
+            detailsRow.style.display = 'table-row';
+        } else {
+            detailsRow.style.display = 'none';
+        }
+    }
+    
+</script>
 {% endblock %}
