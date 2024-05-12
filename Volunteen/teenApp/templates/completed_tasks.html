@@ -1,0 +1,29 @@
+{% extends 'child_base.html' %}
+
+{% block title %}Completed Tasks{% endblock %}
+
+{% block content %}
+    <h1>Completed Tasks</h1>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #007bff; color: white;">
+                <th style="padding: 8px; text-align: left;">Task Title</th>
+                <th style="padding: 8px; text-align: left;">Points</th>
+                <th style="padding: 8px; text-align: left;">Completion Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in child.completed_tasks.all %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;">{{ task.title }}</td>
+                    <td style="padding: 8px;">{{ task.points }}</td>
+                    <td style="padding: 8px;">{{ task.completed_date|date:"Y-m-d H:i" }}</td> <!-- Adjust this field based on your model -->
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" style="padding: 8px; text-align: center;">No completed tasks yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Reward Redemption</title>
+    
+    <!-- Page title indicating task confirmation -->
+    <title>Confirm Task Completion</title>
+
+    <!-- Internal CSS styling -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,17 +39,26 @@
         .cancel-button {
             background-color: #f0ad4e;
             color: white;
+            text-decoration: none; /* Ensure it's styled like a button */
+            padding: 10px 20px; /* Add padding to make it look like a button */
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            display: inline-block; /* Make it inline-block for proper spacing */
         }
     </style>
 </head>
 <body>
     <div class="confirmation-box">
-        <h1>Confirm Redemption</h1>
+        <h1>Confirm Task Completion</h1>
+        <!-- Display the task being confirmed -->
         <p>Are you sure you did the task: <strong>{{ task.title }}</strong>?</p>
+        
+        <!-- Form to confirm task completion -->
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="confirm-button">Yes, I did it</button>
-            <a href="{% url 'index' %}" class="cancel-button">No, I did not</a>
+            <a href="{% url 'index' %}" class="cancel-button">No, I did not</a> <!-- Link to cancel task completion -->
         </form>
     </div>
 </body>

@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Page title indicating reward redemption confirmation -->
     <title>Confirm Reward Redemption</title>
+
+    <!-- Internal CSS styling -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,17 +39,26 @@
         .cancel-button {
             background-color: #f0ad4e;
             color: white;
+            text-decoration: none; /* Make the cancel button look like a button */
+            padding: 10px 20px; /* Add padding to the anchor element */
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            display: inline-block; /* Make it inline-block for proper spacing */
         }
     </style>
 </head>
 <body>
     <div class="confirmation-box">
         <h1>Confirm Redemption</h1>
+        <!-- Display the reward being redeemed -->
         <p>Are you sure you want to redeem the reward: <strong>{{ reward.title }}</strong>?</p>
+        
+        <!-- Form to submit reward redemption confirmation -->
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="confirm-button">Yes, redeem it</button>
-            <a href="{% url 'index' %}" class="cancel-button">No, cancel</a>
+            <a href="{% url 'index' %}" class="cancel-button">No, cancel</a> <!-- Link to cancel redemption -->
         </form>
     </div>
 </body>

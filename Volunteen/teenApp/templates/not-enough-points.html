@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Page title indicating insufficient points -->
     <title>Insufficient Points</title>
+
+    <!-- Internal CSS styling -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,11 +28,15 @@
     </style>
 </head>
 <body>
+    <!-- Error message for insufficient points -->
     <div class="error-message">
         <h1>Insufficient Points</h1>
         <p>You do not have enough points to redeem this reward.</p>
+        
+        <!-- Display points required and current points -->
         <p>Points required: <strong>{{ points_required }}</strong></p>
         <p>Your current points: <strong>{{ current_points }}</strong></p>
+        
         <p>Please earn more points and try again.</p>
     </div>
 </body>
