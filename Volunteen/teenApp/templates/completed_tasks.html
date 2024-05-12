@@ -17,7 +17,7 @@
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 8px;">{{ task.title }}</td>
                     <td style="padding: 8px;">{{ task.points }}</td>
-                    <td style="padding: 8px;">{{ task.completed_date|date:"Y-m-d H:i" }}</td> <!-- Adjust this field based on your model -->
+                    <td style="padding: 8px;">{{ task.deadline }}</td> <!-- Adjust this field based on your model -->
                 </tr>
             {% empty %}
                 <tr>

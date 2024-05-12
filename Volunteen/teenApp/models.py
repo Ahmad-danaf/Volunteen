@@ -31,7 +31,7 @@ class Child(models.Model):
     # Model representing a child
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     points = models.IntegerField(default=0, verbose_name='Points')
-    completed_tasks = models.ManyToManyField('Task', related_name='completed_by', blank=True, verbose_name='Completed Tasks')
+    completed_tasks = models.ManyToManyField('Task', related_name='completed_by_children', blank=True, verbose_name='Completed Tasks')
     identifier = models.CharField(max_length=5, unique=True, verbose_name='Identifier')
     secret_code = models.CharField(max_length=3, verbose_name='Secret Code')
 

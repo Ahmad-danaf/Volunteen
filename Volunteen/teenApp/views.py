@@ -108,6 +108,7 @@ def mentor_home(request):
                         child = Child.objects.get(identifier=identifier)
                         child.add_points(task.points)
                         task.completed_by.add(child)
+                        child.completed_tasks.add(task)
                         messages.success(
                     request,
                     f"Points successfully assigned for task '{task.title}' to child: {child.user.first_name} {child.user.last_name}"
