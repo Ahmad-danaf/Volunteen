@@ -38,5 +38,5 @@ class RedemptionAdmin(admin.ModelAdmin):
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
     # Admin configuration for the Shop model
-    list_display = ('name', 'user')
+    list_display = ('name', 'user', 'max_points')
     search_fields = ('name', 'user__username')

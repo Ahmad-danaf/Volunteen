@@ -2,12 +2,30 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 # Removed unnecessary import of `gettext_lazy` as it's not used
 
+class Shop(models.Model):
+    # Model representing a shop
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, unique=True)
+    max_points = models.IntegerField(default=1000, verbose_name='Max Points')
+    img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True)
+
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Add user to "Shops" group
+        shops_group, created = Group.objects.get_or_create(name='Shops')
+        self.user.groups.add(shops_group)
+
 class Reward(models.Model):
     # Model representing a reward
     title = models.CharField(max_length=200)
     description = models.TextField(verbose_name='Reward Description', help_text='Enter the reward details')
     points_required = models.IntegerField(verbose_name='Points Required', help_text='Enter the points required for this reward')
-    img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True)
+    img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True, default='defaults/no-image.png')
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='rewards')  
 
     def __str__(self):
         return self.title
@@ -17,7 +35,7 @@ class Task(models.Model):
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)
     completed = models.BooleanField(default=False, verbose_name='Completed', help_text='Mark as completed')
     title = models.CharField(max_length=200, verbose_name='Title')
-    img = models.ImageField(verbose_name="Image", upload_to='media/images/', null=True, blank=True)
+    img = models.ImageField(verbose_name="Image", upload_to='media/images/', null=True, blank=True, default='defaults/no-image.png')
     points = models.IntegerField(verbose_name='Points', help_text='Enter the points for the task')
     duration = models.TextField(verbose_name='Duration', help_text='Enter the duration of the task')
     additional_details = models.TextField(verbose_name='Additional Details', help_text='Enter any additional details about the task', blank=True, null=True)
@@ -79,20 +97,6 @@ class Mentor(models.Model):
         # Add user to "Mentor" group
         mentors_group, created = Group.objects.get_or_create(name='Mentors')
         self.user.groups.add(mentors_group)
-
-class Shop(models.Model):
-    # Model representing a shop
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # Add user to "Shops" group
-        shops_group, created = Group.objects.get_or_create(name='Shops')
-        self.user.groups.add(shops_group)
 
 class Redemption(models.Model):
     # Model representing a redemption

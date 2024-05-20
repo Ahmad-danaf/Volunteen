@@ -5,14 +5,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Task, Reward, Child, Mentor, Redemption, Shop
 import requests
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import logout
 from .forms import IdentifyChildForm
 from .forms import RedemptionForm
 from datetime import datetime
 from django.shortcuts import redirect
 import random
-
+from django.utils.timezone import now
+from django.db.models import Sum, F
+from django.db.models.functions import TruncMonth
+from django.templatetags.static import static
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 
 @login_required
@@ -147,11 +151,6 @@ def list_view(request):
 
     return render(request, 'list_tasks.html', {'tasks': tasks})
 
-def reward(request):
-    # Displays available rewards
-    rewards = Reward.objects.all()
-    return render(request, 'reward.html', {'rewards': rewards})
-
 @login_required
 def redeem_points(request):
     # Handles points redemption process for children
@@ -189,17 +188,18 @@ def redeem_points(request):
 
 @login_required
 def shop_home(request):
-    # Shop home page view
-    if not request.user.groups.filter(name='Shops').exists():
-         return redirect('two_factor:login')
-
     shop = Shop.objects.get(user=request.user)
-    recent_redemptions = Redemption.objects.filter(shop=shop).order_by('-date_redeemed')[:10]
+    start_of_month = now().replace(day=1)
+    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
+    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    points_left_to_redeem = max(0, shop.max_points - points_used_this_month)
 
-    return render(request, 'shop_home.html', {
+    context = {
         'shop': shop,
-        'recent_redemptions': recent_redemptions,
-    })
+        'points_used_this_month': points_used_this_month,
+        'points_left_to_redeem': points_left_to_redeem,
+    }
+    return render(request, 'shop_home.html', context)
 
 def get_random_digits(n=3):
     return ''.join(str(random.randint(0, 9)) for _ in range(n))
@@ -236,3 +236,62 @@ def mentor_completed_tasks_view(request):
         task_data.append(task_info)
 
     return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data})
+
+@login_required
+def shop_redemption_history(request):
+    shop = request.user.shop
+    redemptions = Redemption.objects.filter(shop=shop).order_by('-date_redeemed')
+    monthly_redemptions = (
+        redemptions.annotate(month=TruncMonth('date_redeemed'))
+                   .values('month')
+                   .annotate(total_points=Sum('points_used'))
+                   .annotate(max_points=F('shop__max_points')) 
+                   .order_by('-month')
+    )
+
+    last_redemptions = redemptions[:10]  # Get the last 10 redemptions
+    
+
+    context = {
+        'shop': shop,
+        'monthly_redemptions': monthly_redemptions,
+        'recent_redemptions': last_redemptions,
+    }
+    return render(request, 'shop_redemption_history.html', context)
+
+
+def rewards_view(request):
+    # Prefetch related rewards to minimize database hits
+    shops = Shop.objects.prefetch_related('rewards').all()
+
+    # Prepare a new list to hold shops with modified data
+    shops_with_images = []
+    for shop in shops:
+        start_of_month = now().replace(day=1)
+        redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
+        points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+        # Assign default image if none exists
+        shop_image = shop.img if shop.img else None
+        
+        # Prepare rewards, assigning default images if necessary
+        rewards_with_images = [
+            {
+                'title': reward.title,
+                'img_url': reward.img if reward.img else static('images/logo.png'),
+                'points' : reward.points_required
+            }
+            for reward in shop.rewards.all() if reward.points_required <= points_used_this_month
+        ]
+        
+        # Append modified shop data to the list
+        shops_with_images.append({
+            'name': shop.name,
+            'img': shop_image,
+            'rewards': rewards_with_images,
+            'used_points':points_used_this_month
+        })
+
+    context = {'shops': shops_with_images}
+    return render(request, 'reward.html', context)
+
+

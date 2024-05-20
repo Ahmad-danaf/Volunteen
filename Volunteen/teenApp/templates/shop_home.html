@@ -5,77 +5,136 @@
 {% block content %}
     <h2>Welcome {{ shop.name }}</h2>
 
-    <div>
+    <div class="section">
         <h3>Redeem Points</h3>
-        <a href="{% url 'redeem_points' %}" class="btn">Go to Redeem Points</a>
+        <a href="{% url 'redeem_points' %}" class="btn blue-btn">Go to Redeem Points</a>
     </div>
 
-    <div>
-        <h3>Recent Redemptions</h3>
-        <table class="redemption-table">
-            <thead>
-                <tr>
-                    <th>Date Redeemed</th>
-                    <th>Child</th>
-                    <th>Points Redeemed</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for redemption in recent_redemptions %}
-                    <tr>
-                        <td>{{ redemption.date_redeemed }}</td>
-                        <td>{{ redemption.child.user.username }}</td>
-                        <td>{{ redemption.points_used }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="4">No redemptions yet.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="section">
+        <h3>Points Information</h3>
+        <p>Max Points: {{ shop.max_points }}</p>
+        <p class="points-used">Points Used This Month: {{ points_used_this_month }}</p>
+        <p class="points-left">Points Left to Redeem: {{ points_left_to_redeem }}</p>
+        <div class="chart-container">
+            <canvas id="pointsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Redemption History</h3>
+        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">View Redemption History</a>
     </div>
 {% endblock %}
 
 {% block extra_css %}
-    <style>
+<style>
+    body, h2, h3, p {
+        margin: 0;
+        padding: 0 10px;
+    }
+
+    h2 {
+        font-size: 22px;
+        margin-top: 20px;
+    }
+
+    h3 {
+        font-size: 18px;
+        color: #333;
+    }
+
+    p {
+        font-size: 16px;
+    }
+
+    .points-used {
+        color: #007bff; /* Blue color for points used */
+    }
+
+    .points-left {
+        color: #28a745; /* Green color for points left */
+    }
+
+    .btn {
+        display: block; /* Make buttons block level for easier touch */
+        width: 90%; /* Slightly smaller width for aesthetics */
+        margin: 10px auto; /* Center buttons */
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        background-color: #4CAF50;
+        text-align: center;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+        opacity: 0.9;
+    }
+
+    .blue-btn {
+        background-color: #007bff;
+    }
+
+    .orange-btn {
+        background-color: #fd7e14;
+    }
+
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .chart-container {
+        position: relative;
+        margin: 20px auto;
+        height: 200px;
+        width: 100%;
+    }
+
+    @media (max-width: 600px) {
+        h2, h3, p {
+            font-size: 90%; /* Smaller text on very small devices */
+        }
         .btn {
-            display: inline-block;
-            margin: 10px 0;
-            padding: 10px 20px;
-            color: white;
-            background-color: #4CAF50;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            font-size: 14px;
+            padding: 10px;
         }
+    }
+</style>
+{% endblock %}
 
-        .btn:hover {
-            background-color: #45a049;
-        }
 
-        .redemption-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('pointsChart').getContext('2d');
+        var pointsUsed = {{ points_used_this_month }};
+        var maxPoints = {{ shop.max_points }};
+        var pointsLeft = maxPoints - pointsUsed;
 
-        .redemption-table th, .redemption-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .redemption-table th {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            .redemption-table th, .redemption-table td {
-                font-size: 14px;
-                padding: 6px;
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Points Used', 'Points Left'],
+                datasets: [{
+                    data: [pointsUsed, pointsLeft],
+                    backgroundColor: ['#007bff', '#28a745'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Points Usage'
+                }
             }
-        }
-    </style>
+        });
+    });
+</script>
 {% endblock %}

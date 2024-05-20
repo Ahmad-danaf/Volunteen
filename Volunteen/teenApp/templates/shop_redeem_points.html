@@ -12,7 +12,6 @@
         {% if child %}
             <!-- Display the child's name and current points if identified -->
             <h3>{{ child.user.first_name }} {{ child.user.last_name }}</h3>
-            <p>Current Points: {{ child.points }}</p>
 
             <!-- Points redemption form -->
             {{ points_form.as_p }}
