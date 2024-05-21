@@ -2,7 +2,6 @@
 {% load static %}
 {% block content %}
 <style>
-    /* Styles for the task table */
     .task-table {
         font-size: 1em;
         width: 100%;
@@ -15,7 +14,7 @@
         text-align: left;
     }
     .task-table th {
-        background-color: #ffe6cc; /* Header background color */
+        background-color: #ffe6cc;
         color: #333;
         text-align: center;
     }
@@ -23,7 +22,7 @@
         overflow-x: auto;
     }
     .task-image {
-        max-width: 100px; /* Adjusted the max-width */
+        max-width: 100px;
         height: auto;
         margin-right: 10px;
     }
@@ -31,7 +30,6 @@
         display: none;
     }
     @media (max-width: 768px) {
-        /* Adjustments for smaller screens */
         .task-table {
             font-size: 0.9em;
         }
@@ -44,7 +42,7 @@
 </style>
 
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">Volunteen Task List</h2>
+    <h2 style="color: #ff6600;">Mentor Task List</h2>
     <div class="task-table-container">
         <table class="table task-table">
             <thead>
@@ -52,6 +50,8 @@
                     <th>Image</th>
                     <th>Title</th>
                     <th>Deadline</th>
+                    <th>Assign Task</th>
+                    <th>Assign Points</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,9 +66,11 @@
                     </td>
                     <td>{{ task.title }}</td>
                     <td>{{ task.deadline|date:"d/m/Y" }}</td>
+                    <td><a href="{% url 'assign_task' task.id %}" class="btn btn-primary">Assign Task</a></td>
+                    <td><a href="{% url 'assign_points' task.id %}" class="btn btn-primary">Assign Points</a></td>
                 </tr>
                 <tr id="details-{{ forloop.counter }}" class="details-row">
-                    <td colspan="3">
+                    <td colspan="5">
                         <b>Description:</b> {{ task.description }}<br>
                         <b>Points:</b> {{ task.points }}<br>
                         <b>Duration:</b> {{ task.duration }}<br>
@@ -78,7 +80,7 @@
                 {% endfor %}
                 {% if tasks|length == 0 %}
                 <tr>
-                    <td colspan="3" class="text-center">No Tasks Found</td>
+                    <td colspan="5" class="text-center">No Tasks Found</td>
                 </tr>
                 {% endif %}
             </tbody>

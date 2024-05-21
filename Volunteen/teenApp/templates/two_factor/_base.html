@@ -4,19 +4,83 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Login{% endblock %}</title>
+    <title>
+        {% block title %}
+        <span class="orange-text">Volunteen</span>
+        {% endblock %}
+    </title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #ff6600 !important;
+        }
+        .navbar-brand, .nav-link {
+            color: #ffffff !important;
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28, 8, 8, 8, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        }
+        .container {
+            max-width: 500px;
+            margin-top: 50px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #ff6600;
+            color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            text-align: center;
+        }
+        .btn-primary {
+            background-color: #ff6600;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #e65c00;
+        }
+        .form-control:focus {
+            border-color: #ff6600;
+            box-shadow: none;
+        }
+        .logo {
+            max-width: 200px; /* Adjust the size here */
+            height: auto;
+            display: block;
+            margin: 20px auto 0; /* Adjust the margin as needed */
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #6c757d;
+        }
+        .orange-text {
+            color: #ff6600; /* Orange color */
+        }
+        body > div > h1 {
+            color: #e65c00;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <a class="navbar-brand" href="/">Volunteen</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
@@ -26,18 +90,23 @@
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'two_factor:login' %}">Login</a>
+                    <a class="nav-link" href="{% url 'two_factor:login' %}" style="color:#e65c00;">Login</a>
                 </li>
                 {% endif %}
             </ul>
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container">
         {% block content %}
         <!-- Page specific content will go here -->
         {% endblock %}
+        <img src="{% static 'images/logo.png' %}" alt="Volunteen Logo" class="logo">
     </div>
+
+    <footer>
+        <p>&copy; 2024 Volunteen</p>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>

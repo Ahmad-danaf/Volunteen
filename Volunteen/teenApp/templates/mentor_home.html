@@ -4,9 +4,9 @@
 
 {% block content %}
     <h1>Welcome, {{ mentor.user.username }}</h1>
-    <a href="{% url 'list' %}" class="button active-tasks">Go to Active Tasks</a>
+    <a href="{% url 'mentor_task_list' %}" class="button active-tasks">Go to Assigned Tasks</a>
     <a href="{% url 'mentor_completed_tasks' %}" class="button completed-tasks">Go to Completed Tasks</a>
-    <a href="{% url 'mentor_points_summary' %}" class="button points-view">View Children's Points</a>
+    <a href="{% url 'mentor_children_details' %}" class="button children-details">View Children Details</a>
     <a href="{% url 'logout_view' %}" class="button logout">Logout</a>
 
     {% if messages %}
@@ -18,22 +18,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    <h2>Assign Task to Children</h2>
-    <form method="post">
-        {% csrf_token %}
-        <label for="child_identifiers">Enter Child Identifiers (comma-separated):</label>
-        <input type="text" name="child_identifiers" id="child_identifiers" required>
-        
-        <label for="task">Select Task:</label>
-        <select name="task" id="task">
-            {% for task in tasks %}
-                <option value="{{ task.taskId }}">{{ task.title }} ({{ task.points }} Points)</option>
-            {% endfor %}
-        </select>
-        
-        <button type="submit" class="button assign-task">Assign Task</button>
-    </form>
 {% endblock %}
 
 {% block extra_css %}
@@ -58,16 +42,16 @@
         background-color: #28a745; /* Green for completed tasks */
     }
 
-    .points-view {
-        background-color: #17a2b8; /* Soft teal for secondary information */
+    .children-details {
+        background-color: #ffc107; /* Yellow for viewing children details */
+    }
+
+    .assign-points {
+        background-color: #17a2b8; /* Soft teal for assigning points */
     }
 
     .logout {
         background-color: #dc3545; /* Red for important actions like logout */
-    }
-
-    .assign-task {
-        background-color: #28a745; /* Green for assigning tasks */
     }
 
     .button:hover {

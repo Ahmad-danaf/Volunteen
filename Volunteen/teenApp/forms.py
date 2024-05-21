@@ -8,11 +8,18 @@ from captcha.fields import CaptchaField
 class CreateUserForm(UserCreationForm):
     # Form to create a new user with captcha verification
     captcha = CaptchaField()
+    phone = forms.CharField(max_length=10, required=False, help_text='Enter a valid phone number.')
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'email', 'phone', 'password1', 'password2']
 
+    def save(self, commit=True):
+        user = super(CreateUserForm, self).save(commit=False)
+        user.phone = self.cleaned_data['phone']
+        if commit:
+            user.save()
+        return user
 
 class TaskImageForm(forms.ModelForm):
     class Meta:

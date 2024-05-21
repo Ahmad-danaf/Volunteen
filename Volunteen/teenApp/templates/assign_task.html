@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .button {
+        padding: 10px 15px;
+        border: none;
+        color: white;
+        font-size: 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .assign-task {
+        background-color: #28a745;
+    }
+
+    .button:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div class="container mt-5">
+    <h2 style="color: #ff6600;">Assign Task: {{ task.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="children">Select Children:</label>
+            <div class="checkbox-group">
+                {% for child in children %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="children" value="{{ child.id }}" id="child-{{ child.id }}">
+                        <label class="form-check-label" for="child-{{ child.id }}">
+                            {{ child.user.username }} ({{ child.points }} Points)
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <button type="submit" class="button assign-task">Assign Task</button>
+    </form>
+</div>
+{% endblock %}

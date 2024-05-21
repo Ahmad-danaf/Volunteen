@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 # Removed unnecessary import of `gettext_lazy` as it's not used
 
+User.add_to_class('phone', models.CharField(unique=True,max_length=10, blank=True, null=True))
+
+
 class Shop(models.Model):
     # Model representing a shop
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -39,8 +42,9 @@ class Task(models.Model):
     points = models.IntegerField(verbose_name='Points', help_text='Enter the points for the task')
     duration = models.TextField(verbose_name='Duration', help_text='Enter the duration of the task')
     additional_details = models.TextField(verbose_name='Additional Details', help_text='Enter any additional details about the task', blank=True, null=True)
-    task_id = models.IntegerField(unique=True, default=0, verbose_name='Task ID', help_text='Unique Task ID')
     completed_by = models.ManyToManyField('Child', related_name='tasks_completed', blank=True, verbose_name='Completed By')
+    assigned_children = models.ManyToManyField('Child', related_name='assigned_tasks', blank=True, verbose_name='Assigned Children')
+    assigned_mentors = models.ManyToManyField('Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
 
     def __str__(self):
         return self.title
@@ -48,6 +52,7 @@ class Task(models.Model):
 class Child(models.Model):
     # Model representing a child
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    mentors = models.ManyToManyField('Mentor', related_name='children', blank=True, verbose_name='Mentors')
     points = models.IntegerField(default=0, verbose_name='Points')
     completed_tasks = models.ManyToManyField('Task', related_name='completed_by_children', blank=True, verbose_name='Completed Tasks')
     identifier = models.CharField(max_length=5, unique=True, verbose_name='Identifier')
@@ -86,6 +91,14 @@ class Mentor(models.Model):
                 child = Child.objects.get(identifier=identifier)
                 child.add_points(task.points)
                 child.completed_tasks.add(task)
+            except Child.DoesNotExist:
+                print(f"Child with identifier {identifier} does not exist.")
+                
+    def assign_task_to_children(self, task, children_identifiers):
+        for identifier in children_identifiers:
+            try:
+                child = Child.objects.get(identifier=identifier)
+                task.assigned_children.add(child)
             except Child.DoesNotExist:
                 print(f"Child with identifier {identifier} does not exist.")
 

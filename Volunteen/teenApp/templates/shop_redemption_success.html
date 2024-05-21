@@ -12,7 +12,7 @@
             <p><strong>Remaining Points:</strong> {{ child.points }}</p>
             <p><strong>Points Redeemed:</strong> {{ points_used }}</p>
         </div>
-        <a href="{% url 'redeem_points' %}" class="btn">Redeem More Points</a>
+        <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Points</a>
         <a href="{% url 'shop_home' %}" class="btn">Go to Dashboard</a>
     </div>
 {% endblock %}
