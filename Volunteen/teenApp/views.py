@@ -17,7 +17,7 @@ from django.db.models import Sum, F
 from django.db.models.functions import TruncMonth
 from django.templatetags.static import static
 import json
-from utils import NotificationManager
+from .utils import NotificationManager
 
 @login_required
 def logout_view(request):
