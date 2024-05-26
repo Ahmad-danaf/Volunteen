@@ -1,8 +1,8 @@
 from django import forms
+from .models import Task, Child
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Task
-
 from captcha.fields import CaptchaField
 
 class CreateUserForm(UserCreationForm):
@@ -34,3 +34,9 @@ class IdentifyChildForm(forms.Form):
 class RedemptionForm(forms.Form):
     # Form to redeem points
     points = forms.IntegerField(label='Points to Redeem', min_value=1)
+
+
+class BonusPointsForm(forms.Form):
+    task = forms.ModelChoiceField(queryset=Task.objects.all(), label="Select Task")
+    child = forms.ModelChoiceField(queryset=Child.objects.all(), label="Select Child")
+    bonus_points = forms.IntegerField(label="Bonus Points", min_value=1)

@@ -1,0 +1,103 @@
+{% extends 'mentor_base.html' %}
+
+{% block title %}All Tasks{% endblock %}
+
+{% block content %}
+    <h1>All Tasks</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Deadline</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in task_data %}
+                <tr>
+                    <td><a href="#" class="task-title" data-task-id="{{ data.task.id }}">{{ data.task.title }}</a></td>
+                    <td>{{ data.task.deadline }}</td>
+                    <td>
+                        <button class="toggle-details" data-task-id="{{ data.task.id }}">View Details</button>
+                    </td>
+                </tr>
+                <tr class="task-details" data-task-id="{{ data.task.id }}" style="display: none;">
+                    <td colspan="3">
+                        <div>
+                            <p>{{ data.task.description }}</p>
+                            <p><strong>Points:</strong> {{ data.task.points }}</p>
+                            <p><strong>Duration:</strong> {{ data.task.duration }}</p>
+                            <p><strong>Additional Details:</strong> {{ data.task.additional_details }}</p>
+                            <p><strong>Completed by ({{ data.completed_count }}):</strong></p>
+                            <ul>
+                                {% for child in data.completed_by %}
+                                    <li>{{ child.user.username }}</li>
+                                {% endfor %}
+                            </ul>
+                            <form method="post" enctype="multipart/form-data" class="image-form">
+                                {% csrf_token %}
+                                {{ data.form.as_p }}
+                                <input type="hidden" name="task_id" value="{{ data.task.id }}">
+                                <button type="submit" class="button" style="background-color: #28a745;">Update Image</button>
+                            </form>
+                            {% if data.task.img %}
+                                <img src="{{ data.task.img.url }}" alt="{{ data.task.title }}" style="max-width: 100px; height: auto;">
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .task-title {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .task-title:hover {
+            text-decoration: underline;
+        }
+        .task-details {
+            background-color: #f9f9f9;
+        }
+        .image-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggles = document.querySelectorAll('.toggle-details, .task-title');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const taskId = this.getAttribute('data-task-id');
+                    const detailsRow = document.querySelector(`.task-details[data-task-id="${taskId}"]`);
+                    detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+                });
+            });
+        });
+    </script>
+{% endblock %}

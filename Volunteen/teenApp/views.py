@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from .forms import RedemptionForm, IdentifyChildForm, TaskImageForm 
+from .forms import RedemptionForm, IdentifyChildForm, TaskImageForm, BonusPointsForm 
 from django.contrib.auth.models import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,11 +7,7 @@ from .models import Task, Reward, Child, Mentor, Redemption, Shop
 import requests
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import logout
-from .forms import IdentifyChildForm
-from .forms import RedemptionForm
 from datetime import datetime
-from django.shortcuts import redirect
-import random
 from django.utils.timezone import now
 from django.db.models import Sum, F
 from django.db.models.functions import TruncMonth
@@ -40,11 +36,8 @@ def home_redirect(request):
 def default_home(request):
     # Default home page response
     return HttpResponse("Home")
-
-
 @login_required
 def child_home(request):
-    # Child home page view
     child = Child.objects.get(user=request.user)
 
     greetings = {
@@ -59,7 +52,15 @@ def child_home(request):
     
     today = datetime.today().weekday()+1
     greeting = greetings.get(today, f"Hey {child.user.username}, have a great day!")
-    return render(request, 'child_home.html', {'child': child, 'greeting': greeting})
+    
+    new_tasks = child.assigned_tasks.filter(new_task=True, viewed=False)
+    new_tasks_count = new_tasks.count()
+
+    if request.method == 'POST' and 'close_notification' in request.POST:
+        new_tasks.update(viewed=True)
+        new_tasks.update(new_task=False)
+
+    return render(request, 'child_home.html', {'child': child, 'greeting': greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
 
 @login_required
 def child_redemption_history(request):
@@ -74,9 +75,43 @@ def child_completed_tasks(request):
 
 @login_required
 def mentor_home(request):
-    mentor = Mentor.objects.get(user=request.user)
-    available_tasks = Task.objects.all()
-    return render(request, 'mentor_home.html', {'mentor': mentor, 'tasks': available_tasks})
+    mentor = get_object_or_404(Mentor, user=request.user)
+    tasks = Task.objects.filter(assigned_mentors=mentor)
+
+    # עדכון סטטוס של משימות שהדדליין שלהן עבר
+    for task in tasks:
+        if task.is_overdue():
+            task.completed = True
+            task.save()
+
+    total_tasks = tasks.count()
+    completed_tasks = tasks.filter(completed=True).count()
+    open_tasks = total_tasks - completed_tasks
+    efficiency_rate = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+
+    children = []
+    for child in mentor.children.all():
+        completed = child.completed_tasks.count()
+        assigned = child.assigned_tasks.count()
+        efficiency = (completed / assigned) * 100 if assigned > 0 else 0
+        performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
+        children.append({
+            'child': child,
+            'efficiency_rate': efficiency,
+            'performance_color': performance_color,
+        })
+
+    context = {
+        'mentor': mentor,
+        'total_tasks': total_tasks,
+        'open_tasks': open_tasks,
+        'completed_tasks': completed_tasks,
+        'efficiency_rate': efficiency_rate,
+        'children': children,
+        'tasks': tasks,  # הוספת המשימות לקונטקסט
+    }
+    return render(request, 'mentor_home.html', context)
+
 
 @login_required
 def mentor_children_details(request):
@@ -237,10 +272,14 @@ def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
         tasks = Task.objects.filter(assigned_children=child, completed=False)
+        
+        # Update tasks to mark them as not new
+        tasks.update(new_task=False)
+        
         return render(request, 'list_tasks.html', {'tasks': tasks})
     except Child.DoesNotExist:
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
-    
+
     
 @login_required
 def mentor_task_list(request):
@@ -259,6 +298,8 @@ def assign_task(request, task_id):
         for child_id in selected_children_ids:
             child = get_object_or_404(Child, id=child_id)
             task.assigned_children.add(child)
+            task.new_task = True
+            task.save()
         task.assigned_mentors.add(mentor)
         messages.success(request, f"Task '{task.title}' successfully assigned to selected children.")
         return redirect('mentor_task_list')
@@ -278,6 +319,44 @@ def assign_points(request, task_id):
             child.add_points(task.points)
             task.completed_by.add(child)
         messages.success(request, f"Points successfully assigned for task '{task.title}' to selected children.")
-        return redirect('mentor_task_list')
+        return redirect('points_assigned_success', task_id=task.id)
 
     return render(request, 'assign_points.html', {'task': task, 'children': children})
+
+@login_required
+def points_assigned_success(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    children = task.completed_by.all()
+    return render(request, 'points_assigned_success.html', {'task': task, 'children': children})
+
+@login_required
+def child_points_history(request):
+    child = Child.objects.get(user=request.user)
+    tasks = child.tasks_completed.all().order_by('-id')  # Assuming tasks_completed is the correct related name
+    return render(request, 'child_points_history.html', {'child': child, 'tasks': tasks})
+
+
+from django.shortcuts import render, redirect
+from .forms import BonusPointsForm
+from .models import Task, Child
+
+def assign_bonus(request):
+    if request.method == 'POST':
+        form = BonusPointsForm(request.POST)
+        if form.is_valid():
+            task = form.cleaned_data['task']
+            child = form.cleaned_data['child']
+            bonus_points = form.cleaned_data['bonus_points']
+            
+            # הוספת הבונוס לנקודות של הילד
+            child.points += bonus_points
+            child.save()
+            
+            # שמירת המידע שהילד קיבל בונוס עבור המשימה
+            child.completed_tasks.add(task)
+            
+            return redirect('mentor_home')
+    else:
+        form = BonusPointsForm()
+    
+    return render(request, 'assign_bonus.html', {'form': form})
