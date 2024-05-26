@@ -2,7 +2,6 @@
 {% load static %}
 {% block content %}
 <style>
-    /* Styles for the task table */
     .task-table {
         font-size: 1em;
         width: 100%;
@@ -15,7 +14,7 @@
         text-align: left;
     }
     .task-table th {
-        background-color: #ffe6cc; /* Header background color */
+        background-color: #ffe6cc;
         color: #333;
         text-align: center;
     }
@@ -23,7 +22,7 @@
         overflow-x: auto;
     }
     .task-image {
-        max-width: 100px; /* Adjusted the max-width */
+        max-width: 100px;
         height: auto;
         margin-right: 10px;
     }
@@ -31,7 +30,6 @@
         display: none;
     }
     @media (max-width: 768px) {
-        /* Adjustments for smaller screens */
         .task-table {
             font-size: 0.9em;
         }
@@ -41,30 +39,19 @@
             font-size: 0.85em;
         }
     }
-    .badge-new {
-        background-color: #ff9800;
-        color: white;
-        padding: 3px 7px;
-        border-radius: 5px;
-        font-size: 0.8em;
-        margin-left: 5px;
-    }
-    .points-column {
-        color: #28a745;
-        font-weight: bold;
-    }
 </style>
 
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">Volunteen Task List</h2>
+    <h2 style="color: #ff6600;">Mentor Task List</h2>
     <div class="task-table-container">
         <table class="table task-table">
             <thead>
                 <tr>
                     <th>Image</th>
                     <th>Title</th>
-                    <th>Points</th>
                     <th>Deadline</th>
+                    <th>Assign Task</th>
+                    <th>Assign Points</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,18 +64,15 @@
                             <img src="{% static 'images/logo.png' %}" alt="logo Image" class="task-image" />
                         {% endif %}
                     </td>
-                    <td>
-                        {{ task.title }}
-                        {% if task.new_task %}
-                            <span class="badge-new">New</span>
-                        {% endif %}
-                    </td>
-                    <td class="points-column">{{ task.points }}</td>
+                    <td>{{ task.title }}</td>
                     <td>{{ task.deadline|date:"d/m/Y" }}</td>
+                    <td><a href="{% url 'assign_task' task.id %}" class="btn btn-primary">Assign Task</a></td>
+                    <td><a href="{% url 'assign_points' task.id %}" class="btn btn-primary">Assign Points</a></td>
                 </tr>
                 <tr id="details-{{ forloop.counter }}" class="details-row">
-                    <td colspan="4">
+                    <td colspan="5">
                         <b>Description:</b> {{ task.description }}<br>
+                        <b>Points:</b> {{ task.points }}<br>
                         <b>Duration:</b> {{ task.duration }}<br>
                         <b>Additional Details:</b> {{ task.additional_details }}
                     </td>
@@ -96,12 +80,13 @@
                 {% endfor %}
                 {% if tasks|length == 0 %}
                 <tr>
-                    <td colspan="4" class="text-center">No Tasks Found</td>
+                    <td colspan="5" class="text-center">No Tasks Found</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
+    <a href="{% url 'home_redirect' %}" class="btn btn-primary mt-4">Home Page</a>
 </div>
 
 <script>

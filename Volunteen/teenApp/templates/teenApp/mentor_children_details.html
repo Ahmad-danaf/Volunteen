@@ -1,0 +1,124 @@
+{% extends 'mentor_base.html' %}
+
+{% block title %}Children Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        padding: 10px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 0.9em;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    table thead {
+        background-color: #007bff;
+        color: white;
+    }
+    table th, table td {
+        padding: 8px 10px;
+        text-align: left;
+        word-wrap: break-word;
+    }
+    table tr {
+        border-bottom: 1px solid #ddd;
+    }
+    table tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+    table tr:last-of-type {
+        border-bottom: 2px solid #007bff;
+    }
+    .hidden {
+        display: none;
+    }
+    .view-tasks-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 0.9em;
+        width: 100%;
+        max-width: 150px; /* Added to keep the button within the table cell */
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .view-tasks-btn:hover {
+        background-color: #218838;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    @media (max-width: 768px) {
+        table {
+            font-size: 0.8em;
+        }
+        table th, table td {
+            padding: 6px 8px;
+        }
+        .view-tasks-btn {
+            font-size: 0.8em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Children Details</h1>
+    <div class="table-responsive"> <!-- Add this wrapper for responsiveness -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Child Name</th>
+                    <th>Phone</th>
+                    <th>Points</th>
+                    <th>Completed Tasks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for child in children %}
+                    <tr>
+                        <td>{{ child.user.first_name }} {{ child.user.last_name }}</td>
+                        <td>{{ child.user.phone }}</td> <!-- Assuming phone is in the user profile -->
+                        <td>{{ child.points }}</td>
+                        <td><button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">View Tasks</button></td>
+                    </tr>
+                    <tr id="tasks-{{ child.id }}" class="hidden">
+                        <td colspan="5">
+                            <ul>
+                                {% for task in child.completed_tasks.all %}
+                                    <li>{{ task.title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'mentor_home' %}" class="button">Back to Home</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleTasks(childId) {
+        var row = document.getElementById('tasks-' + childId);
+        if (row.classList.contains('hidden')) {
+            row.classList.remove('hidden');
+        } else {
+            row.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}

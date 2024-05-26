@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
-# Removed unnecessary import of `gettext_lazy` as it's not used
+from django.utils import timezone
 
 User.add_to_class('phone', models.CharField(unique=True,max_length=10, blank=True, null=True))
 
@@ -32,6 +32,7 @@ class Reward(models.Model):
 
     def __str__(self):
         return self.title
+    
 
 class Task(models.Model):
     description = models.TextField(verbose_name='Task Description', help_text='Enter the task details')
@@ -45,9 +46,14 @@ class Task(models.Model):
     completed_by = models.ManyToManyField('Child', related_name='tasks_completed', blank=True, verbose_name='Completed By')
     assigned_children = models.ManyToManyField('Child', related_name='assigned_tasks', blank=True, verbose_name='Assigned Children')
     assigned_mentors = models.ManyToManyField('Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
+    new_task = models.BooleanField(default=True, verbose_name='New Task', help_text='Indicates if the task is new for the child')
+    viewed = models.BooleanField(default=False, verbose_name='Viewed', help_text='Indicates if the child has viewed the task')
 
     def __str__(self):
         return self.title
+
+    def is_overdue(self):
+        return timezone.now().date() > self.deadline
 
 class Child(models.Model):
     # Model representing a child

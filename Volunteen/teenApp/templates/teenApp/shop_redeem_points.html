@@ -1,0 +1,26 @@
+{% extends 'shop_base.html' %}
+
+{% block title %}Redeem Points{% endblock %}
+
+{% block content %}
+    <!-- Page heading -->
+    <h2>Redeem Points</h2>
+
+    <!-- Form for redeeming points -->
+    <form method="post">
+        {% csrf_token %}
+        {% if child %}
+            <!-- Display the child's name and current points if identified -->
+            <h3>{{ child.user.first_name }} {{ child.user.last_name }}</h3>
+
+            <!-- Points redemption form -->
+            {{ points_form.as_p }}
+            <input type="hidden" name="child_id" value="{{ child.id }}">
+            <button type="submit">Redeem Points</button>
+        {% else %}
+            <!-- Display form to identify the child -->
+            {{ id_form.as_p }}
+            <button type="submit">Identify Child</button>
+        {% endif %}
+    </form>
+{% endblock %}

@@ -23,6 +23,7 @@ urlpatterns = [
     path('mentor/task-list/', views.mentor_task_list, name='mentor_task_list'),
     path('mentor/assign-task/<int:task_id>/', views.assign_task, name='assign_task'),
     path('cancel_transaction/', views.shop_cancel_transaction, name='shop_cancel_transaction'),
-
-
+    path('child/points-history/', views.child_points_history, name='child_points_history'),
+    path('mentor/assign-points/success/<int:task_id>/', views.points_assigned_success, name='points_assigned_success'),
+    path('assign-bonus/', views.assign_bonus, name='assign_bonus'),
 ]
