@@ -7,7 +7,9 @@
 
     <div class="section">
         <h3>Redeem Points</h3>
-        <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn">Go to Redeem Points</a>
+        <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn">
+            <i class="fas fa-gift"></i> Go to Redeem Points
+        </a>
     </div>
 
     <div class="section">
@@ -22,11 +24,14 @@
 
     <div class="section">
         <h3>Redemption History</h3>
-        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">View Redemption History</a>
+        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">
+            <i class="fas fa-history"></i> View Redemption History
+        </a>
     </div>
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <style>
     body, h2, h3, p {
         margin: 0;
@@ -66,6 +71,10 @@
         color: white;
         background-color: #4CAF50;
         text-align: center;
+    }
+
+    .btn i {
+        margin-right: 8px; /* Add space between icon and text */
     }
 
     .btn:hover {

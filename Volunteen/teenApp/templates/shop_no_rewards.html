@@ -1,0 +1,33 @@
+{% extends 'shop_base.html' %}
+
+{% block title %}No Rewards Available{% endblock %}
+
+{% block content %}
+    <div class="no-rewards-container">
+        <h2>No Rewards Available</h2>
+        <p>Either the child does not have enough points or the shop has reached its maximum points limit.</p>
+        <a href="{% url 'shop_home' %}" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .no-rewards-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            color: white;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+{% endblock %}

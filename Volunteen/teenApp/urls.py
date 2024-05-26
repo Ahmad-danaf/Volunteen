@@ -22,5 +22,7 @@ urlpatterns = [
     path('mentor/assign-points/<int:task_id>/', views.assign_points, name='assign_points'),  # Assign points to children for a specific task
     path('mentor/task-list/', views.mentor_task_list, name='mentor_task_list'),
     path('mentor/assign-task/<int:task_id>/', views.assign_task, name='assign_task'),
+    path('cancel_transaction/', views.shop_cancel_transaction, name='shop_cancel_transaction'),
+
 
 ]

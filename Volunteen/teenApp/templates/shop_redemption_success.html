@@ -9,8 +9,15 @@
         <div class="child-info">
             <p><strong>Name:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
             <p><strong>Identifier:</strong> {{ child.identifier }}</p>
-            <p><strong>Remaining Points:</strong> {{ child.points }}</p>
             <p><strong>Points Redeemed:</strong> {{ points_used }}</p>
+        </div>
+        <div class="receipt">
+            <h3>Receipt</h3>
+            <ul>
+                {% for reward in receipt %}
+                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} points</li>
+                {% endfor %}
+            </ul>
         </div>
         <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Points</a>
         <a href="{% url 'shop_home' %}" class="btn">Go to Dashboard</a>
@@ -32,6 +39,22 @@
 
         .child-info p {
             margin: 5px 0;
+        }
+
+        .receipt {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .receipt ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .receipt li {
+            border-bottom: 1px solid #ddd;
+            padding: 5px 0;
         }
 
         .btn {
@@ -56,7 +79,7 @@
                 margin: 10px auto;
             }
 
-            .child-info {
+            .child-info, .receipt {
                 text-align: center;
                 width: 100%;
             }
