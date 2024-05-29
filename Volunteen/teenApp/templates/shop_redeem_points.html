@@ -1,5 +1,5 @@
 {% extends 'shop_base.html' %}
-
+{% load static %}
 {% block title %}Redeem Points{% endblock %}
 
 {% block content %}
@@ -185,4 +185,12 @@
             padding: 5px 0;
         }
     </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/shop_redeem_points.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop_redeem_points.css' %}">
 {% endblock %}

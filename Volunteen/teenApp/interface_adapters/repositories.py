@@ -1,4 +1,6 @@
-from .models import Task, Child, Mentor
+from teenApp.entities.task import Task
+from teenApp.entities.child import Child
+from teenApp.entities.mentor import Mentor
 
 class TaskRepository:
     @staticmethod
@@ -21,8 +23,6 @@ class TaskRepository:
     def get_completed_tasks_by_mentor(mentor):
         return Task.objects.filter(assigned_mentors=mentor, completed=True)
 
-from .models import Child
-
 class ChildRepository:
     @staticmethod
     def get_child_by_identifier(identifier):
@@ -30,3 +30,9 @@ class ChildRepository:
             return Child.objects.get(identifier=identifier)
         except Child.DoesNotExist:
             raise Child.DoesNotExist(f"Child with identifier {identifier} does not exist.")
+    def get_child_by_id(self, child_id):
+        return Child.objects.get(id=child_id)
+
+class MentorRepository:
+    def get_mentor_by_id(self, mentor_id):
+        return Mentor.objects.get(id=mentor_id)

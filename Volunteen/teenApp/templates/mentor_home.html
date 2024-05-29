@@ -1,5 +1,5 @@
 {% extends 'mentor_base.html' %}
-
+{% load static %}
 {% block title %}Mentor Home{% endblock %}
 
 {% block content %}
@@ -11,6 +11,7 @@
         <a href="{% url 'mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> View Children Details</a>
         <a href="{% url 'logout_view' %}" class="btn red-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <a href="{% url 'assign_bonus' %}" class="btn yellow-btn"><i class="fas fa-star"></i> Assign Bonus Points</a>
+        <a href="{% url 'add_task' %}" class="btn purple-btn"><i class="fas fa-plus"></i> Add Task</a> <!-- New button for adding tasks -->
     </div>
 
     <div class="section">
@@ -46,116 +47,8 @@
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    body, h2, h3, p {
-        margin: 0;
-        padding: 0 10px;
-    }
-
-    h2 {
-        font-size: 22px;
-        margin-top: 20px;
-    }
-
-    h3 {
-        font-size: 18px;
-        color: #333;
-    }
-
-    p {
-        font-size: 16px;
-    }
-
-    .tasks-open {
-        color: #007bff; /* Blue color for open tasks */
-    }
-
-    .tasks-completed {
-        color: #28a745; /* Green color for completed tasks */
-    }
-
-    .tasks-efficiency {
-        color: #ffc107; /* Yellow color for efficiency rate */
-    }
-
-    .btn {
-        display: block;
-        width: 90%;
-        margin: 10px auto;
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 5px;
-        text-decoration: none;
-        color: white;
-        text-align: center;
-    }
-
-    .btn:hover {
-        opacity: 0.9;
-    }
-
-    .blue-btn {
-        background-color: #007bff;
-    }
-
-    .green-btn {
-        background-color: #28a745;
-    }
-
-    .orange-btn {
-        background-color: #fd7e14;
-    }
-
-    .red-btn {
-        background-color: #dc3545;
-    }
-
-    .purple-btn {
-        background-color: #6f42c1;
-    }
-
-    .yellow-btn {
-        background-color: #ffc107;
-    }
-
-    .section {
-        margin-bottom: 20px;
-    }
-
-    .chart-container {
-        position: relative;
-        margin: 20px auto;
-        height: 200px;
-        width: 100%;
-    }
-
-    .performance-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .performance-table th, .performance-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    .performance-table th {
-        background-color: #f2f2f2;
-    }
-
-    @media (max-width: 600px) {
-        h2, h3, p {
-            font-size: 90%;
-        }
-        .btn {
-            font-size: 14px;
-            padding: 10px;
-        }
-    }
-</style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_home.css' %}">
 {% endblock %}
-
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

@@ -1,5 +1,5 @@
 {% extends 'child_base.html' %}
-
+{% load static %}
 {% block title %}Completed Tasks{% endblock %}
 
 {% block content %}
@@ -13,11 +13,11 @@
             </tr>
         </thead>
         <tbody>
-            {% for task in child.completed_tasks.all %}
+            {% for task in tasks_with_bonus %}
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 8px;">{{ task.title }}</td>
                     <td style="padding: 8px;">{{ task.points }}</td>
-                    <td style="padding: 8px;">{{ task.deadline }}</td> <!-- Adjust this field based on your model -->
+                    <td style="padding: 8px;">{{ task.completion_date|date:"F d, Y" }}</td>
                 </tr>
             {% empty %}
                 <tr>

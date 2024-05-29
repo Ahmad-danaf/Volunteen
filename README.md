@@ -16,25 +16,117 @@ To install Volunteen, follow these steps:
 6. [Any additional installation steps, such as configuring environment variables]
 
 ## Structure
-volunteen/
+Volunteen/
+│
 ├── README.md
 ├── requirements.txt
-├── src/
-│ ├── main.py
-│ ├── module1/
-│ │ ├── init.py
-│ │ ├── file1.py
-│ │ └── file2.py
-│ ├── module2/
-│ │ ├── init.py
-│ │ ├── file1.py
-│ │ └── file2.py
-├── tests/
-│ ├── test_module1.py
-│ └── test_module2.py
-└── docs/
-├── design.md
-└── usage.md
+│
+├── Volunteen/
+│   ├── __pycache__/
+│   ├── frameworks_and_drivers/
+│   │   ├── __pycache__/
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   │
+│   ├── static/
+│   │   ├── css/
+│   │   │   ├── assign_task.css
+│   │   │   ├── child_home.css
+│   │   │   ├── list_tasks.css
+│   │   │   ├── mentor_children_details.css
+│   │   │   ├── mentor_home.css
+│   │   │   ├── not_enough_points.css
+│   │   │   ├── reward.css
+│   │   │   ├── shop_home.css
+│   │   │   ├── shop_no_rewards.css
+│   │   │   ├── shop_redeem_points.css
+│   │   │   └── shop_redemption_success.css
+│   │   │
+│   │   ├── images/
+│   │   │   ├── volunteen_logo.jpeg
+│   │   │   ├── volunteen.jpg
+│   │   │   └── logo.png
+│   │   │
+│   │   └── js/
+│   │       ├── child_home.js
+│   │       ├── list_tasks.js
+│   │       ├── mentor_children_details.js
+│   │       ├── mentor_completed_task_view.js
+│   │       ├── mentor_home.js
+│   │       ├── mentor_task.js
+│   │       ├── reward.js
+│   │       ├── scripts.js
+│   │       ├── shop_home.js
+│   │       └── shop_redemption_history.js
+│   │
+│   ├── teenApp/
+│   │   ├── __pycache__/
+│   │   ├── entities/
+│   │   │   ├── __pycache__/
+│   │   │   ├── __init__.py
+│   │   │   ├── child.py
+│   │   │   ├── mentor.py
+│   │   │   ├── redemption.py
+│   │   │   ├── reward.py
+│   │   │   ├── shop.py
+│   │   │   └── task.py
+│   │   │
+│   │   ├── interface_adapters/
+│   │   │   ├── __pycache__/
+│   │   │   ├── __init__.py
+│   │   │   ├── forms.py
+│   │   │   ├── repositories.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   │
+│   │   ├── templates/
+│   │   │   ├── two_factor/
+│   │   │   ├── add_task.html
+│   │   │   ├── assign_bonus.html
+│   │   │   ├── assign_points.html
+│   │   │   ├── assign_task.html
+│   │   │   ├── base.html
+│   │   │   ├── child_active_list.html
+│   │   │   ├── child_completed_tasks.html
+│   │   │   ├── child_home.html
+│   │   │   ├── child_points_history.html
+│   │   │   ├── confirm_reward.html
+│   │   │   ├── edit_task.html
+│   │   │   ├── list_tasks.html
+│   │   │   ├── mentor_children_details.html
+│   │   │   ├── mentor_completed_tasks_view.html
+│   │   │   ├── mentor_home.html
+│   │   │   ├── not_enough_points.html
+│   │   │   ├── points_assigned_success.html
+│   │   │   ├── points_leaderboard.html
+│   │   │   ├── shop_base.html
+│   │   │   ├── shop_invalid_identifier.html
+│   │   │   ├── shop_no_rewards.html
+│   │   │   ├── shop_not_enough_points.html
+│   │   │   ├── shop_redemption_history.html
+│   │   │   └── shop_redemption_success.html
+│   │   │
+│   │   ├── use_cases/
+│   │   │   ├── __pycache__/
+│   │   │   ├── __init__.py
+│   │   │   ├── assign_bonus_points.py
+│   │   │   ├── assign_points.py
+│   │   │   ├── assign_task.py
+│   │   │   └── manage_child.py
+│   │   │
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── tests.py
+│   │   └── views.py
+│   │
+│   └── db.sqlite3
+│
+├── media/
+│
+└── manage.py
 
 
 ## Usage

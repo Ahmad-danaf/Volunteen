@@ -1,16 +1,20 @@
 from django.contrib import admin
-from .models import Child, Reward, Task, Mentor, Redemption, Shop
+from teenApp.entities.child import Child
+from teenApp.entities.reward import Reward
+from teenApp.entities.task import Task
+from teenApp.entities.mentor import Mentor
+from teenApp.entities.redemption import Redemption
+from teenApp.entities.shop import Shop
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-
 # Define a new User admin
 class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'phone')
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_phone')
     search_fields = ('username', 'first_name', 'last_name', 'email', 'phone')
 
-    def phone(self, instance):
+    def get_phone(self, instance):
         return instance.phone
-    phone.short_description = 'Phone'
+    get_phone.short_description = 'Phone'
 
 # Re-register UserAdmin
 admin.site.unregister(User)

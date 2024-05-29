@@ -1,81 +1,15 @@
 {% extends 'mentor_base.html' %}
-
+{% load static %}
 {% block title %}Children Details{% endblock %}
 
 {% block extra_css %}
-<style>
-    .container {
-        padding: 10px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        font-size: 0.9em;
-        background: #fff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    table thead {
-        background-color: #007bff;
-        color: white;
-    }
-    table th, table td {
-        padding: 8px 10px;
-        text-align: left;
-        word-wrap: break-word;
-    }
-    table tr {
-        border-bottom: 1px solid #ddd;
-    }
-    table tr:nth-of-type(even) {
-        background-color: #f3f3f3;
-    }
-    table tr:last-of-type {
-        border-bottom: 2px solid #007bff;
-    }
-    .hidden {
-        display: none;
-    }
-    .view-tasks-btn {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        cursor: pointer;
-        border-radius: 5px;
-        font-size: 0.9em;
-        width: 100%;
-        max-width: 150px; /* Added to keep the button within the table cell */
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .view-tasks-btn:hover {
-        background-color: #218838;
-    }
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    @media (max-width: 768px) {
-        table {
-            font-size: 0.8em;
-        }
-        table th, table td {
-            padding: 6px 8px;
-        }
-        .view-tasks-btn {
-            font-size: 0.8em;
-        }
-    }
-</style>
+<link rel="stylesheet" type="text/css" href="{% static 'css/mentor_children_details.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <h1>Children Details</h1>
-    <div class="table-responsive"> <!-- Add this wrapper for responsiveness -->
+    <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
@@ -103,6 +37,11 @@
                         </td>
                     </tr>
                 {% endfor %}
+                {% if children|length == 0 %}
+                <tr>
+                    <td colspan="4" class="text-center">No Children Found</td>
+                </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
@@ -111,14 +50,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function toggleTasks(childId) {
-        var row = document.getElementById('tasks-' + childId);
-        if (row.classList.contains('hidden')) {
-            row.classList.remove('hidden');
-        } else {
-            row.classList.add('hidden');
-        }
-    }
-</script>
+<script src="{% static 'js/mentor_children_details.js' %}"></script>
 {% endblock %}
