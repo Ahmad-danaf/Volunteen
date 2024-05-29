@@ -1,0 +1,53 @@
+/* static/css/list_tasks.css */
+
+/* Styles for the task table */
+.task-table {
+    font-size: 1em;
+    width: 100%;
+    border-collapse: collapse;
+}
+.task-table td, .task-table th {
+    border: 1px solid #ddd;
+    vertical-align: middle;
+    padding: 8px;
+    text-align: left;
+}
+.task-table th {
+    background-color: #ffe6cc; /* Header background color */
+    color: #333;
+    text-align: center;
+}
+.task-table-container {
+    overflow-x: auto;
+}
+.task-image {
+    max-width: 100px; /* Adjusted the max-width */
+    height: auto;
+    margin-right: 10px;
+}
+.details-row {
+    display: none;
+}
+@media (max-width: 768px) {
+    /* Adjustments for smaller screens */
+    .task-table {
+        font-size: 0.9em;
+    }
+}
+@media (max-width: 480px) {
+    .task-table {
+        font-size: 0.85em;
+    }
+}
+.badge-new {
+    background-color: #ff9800;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+.points-column {
+    color: #28a745;
+    font-weight: bold;
+}

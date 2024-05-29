@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,25 +8,8 @@
     <!-- Page title indicating insufficient points -->
     <title>Insufficient Points</title>
 
-    <!-- Internal CSS styling -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            text-align: center;
-            padding-top: 50px;
-        }
-        .error-message {
-            color: #d9534f; /* Red color for the error message */
-            padding: 20px;
-            margin: 20px auto;
-            border: 1px solid #ebccd1;
-            border-radius: 5px;
-            background-color: #f2dede;
-            width: 80%;
-            max-width: 600px;
-        }
-    </style>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/not_enough_points.css' %}">
 </head>
 <body>
     <!-- Error message for insufficient points -->

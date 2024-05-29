@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Points Assigned{% endblock %}
 
 {% block content %}
@@ -14,21 +14,8 @@
     <a href="{% url 'mentor_task_list' %}" class="btn btn-primary mt-4">Back to Task List</a>
     <a href="{% url 'mentor_home' %}" class="btn btn-secondary mt-4">Back to Home</a>
 </div>
+{% endblock %}
 
-<style>
-    @media only screen and (max-width: 600px) {
-        .container {
-            padding: 10px;
-        }
-        h2 {
-            font-size: 1.5em;
-        }
-        p {
-            font-size: 1em;
-        }
-        ul {
-            padding-left: 20px;
-        }
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/points_assigned_success.css' %}">
 {% endblock %}

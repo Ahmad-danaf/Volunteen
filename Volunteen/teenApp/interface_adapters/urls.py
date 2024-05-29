@@ -1,5 +1,9 @@
 from django.urls import path
-from . import views
+from teenApp.interface_adapters import views
+from django.contrib.auth.models import User
+from django.db import models
+
+User.add_to_class('phone', models.CharField(unique=True, max_length=10, blank=True, null=True))
 
 urlpatterns = [
     path('', views.home_redirect, name='home_redirect'),  # Redirects users to the appropriate home page
@@ -25,4 +29,8 @@ urlpatterns = [
     path('child/points-history/', views.child_points_history, name='child_points_history'),
     path('mentor/assign-points/success/<int:task_id>/', views.points_assigned_success, name='points_assigned_success'),
     path('assign-bonus/', views.assign_bonus, name='assign_bonus'),
+    path('cancel_transaction/', views.shop_cancel_transaction, name='shop_cancel_transaction'),
+    path('add-task/', views.add_task, name='add_task'),
+    path('points-leaderboard/', views.points_leaderboard, name='points_leaderboard'),
+     path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
 ]

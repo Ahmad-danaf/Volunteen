@@ -1,0 +1,15 @@
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}No Rewards Available{% endblock %}
+
+{% block content %}
+    <div class="no-rewards-container">
+        <h2>No Rewards Available</h2>
+        <p>Either the child does not have enough points or the shop has reached its maximum points limit.</p>
+        <a href="{% url 'shop_home' %}" class="btn btn-primary">Go to Dashboard</a>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop_no_rewards.css' %}">
+{% endblock %}

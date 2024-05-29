@@ -1,26 +1,60 @@
 {% extends 'shop_base.html' %}
-
+{% load static %}
 {% block title %}Redeem Points{% endblock %}
 
 {% block content %}
     <!-- Page heading -->
     <h2>Redeem Points</h2>
 
-    <!-- Form for redeeming points -->
-    <form method="post">
+    <form method="post" id="redeem-form">
         {% csrf_token %}
         {% if child %}
             <!-- Display the child's name and current points if identified -->
             <h3>{{ child.user.first_name }} {{ child.user.last_name }}</h3>
+            <h3>Points: {{ child.points }}</h3>
 
-            <!-- Points redemption form -->
-            {{ points_form.as_p }}
+            <!-- Rewards available for redemption -->
+            <div class="rewards">
+                {% for reward in rewards %}
+                    <div class="reward-item card">
+                        <div class="card-body">
+                            <img src="{{ reward.img.url }}" alt="{{ reward.title }}" class="reward-img">
+                            <h4>{{ reward.title }}</h4>
+                            <p>{{ reward.points_required }} points</p>
+                            <div class="reward-actions">
+                                <button type="button" class="btn btn-secondary" onclick="updateQuantity({{ reward.id }}, 'sell')">Sell</button>
+                                <span id="quantity-{{ reward.id }}">0</span>
+                                <button type="button" class="btn btn-primary" onclick="updateQuantity({{ reward.id }}, 'buy')">Buy</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Receipt section -->
+            <h3>Your Receipt</h3>
+            <ul id="receipt"></ul>
+
+            <div class="action-buttons">
+                <button type="button" class="btn btn-success" onclick="completeTransaction()">Complete Transaction</button>
+                <button type="button" class="btn btn-danger" onclick="cancelTransaction()">Cancel Purchase</button>
+            </div>
+
             <input type="hidden" name="child_id" value="{{ child.id }}">
-            <button type="submit">Redeem Points</button>
+            <input type="hidden" name="selected_rewards" id="selected_rewards">
+            <input type="hidden" name="complete_transaction" value="true">
         {% else %}
             <!-- Display form to identify the child -->
             {{ id_form.as_p }}
-            <button type="submit">Identify Child</button>
+            <button type="submit" class="btn btn-primary">Identify Child</button>
         {% endif %}
     </form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/shop_redeem_points.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop_redeem_points.css' %}">
 {% endblock %}

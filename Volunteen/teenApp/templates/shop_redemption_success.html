@@ -1,5 +1,5 @@
 {% extends 'shop_base.html' %}
-
+{% load static %}
 {% block title %}Redemption Successful{% endblock %}
 
 {% block content %}
@@ -9,8 +9,15 @@
         <div class="child-info">
             <p><strong>Name:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
             <p><strong>Identifier:</strong> {{ child.identifier }}</p>
-            <p><strong>Remaining Points:</strong> {{ child.points }}</p>
             <p><strong>Points Redeemed:</strong> {{ points_used }}</p>
+        </div>
+        <div class="receipt">
+            <h3>Receipt</h3>
+            <ul>
+                {% for reward in receipt %}
+                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} points</li>
+                {% endfor %}
+            </ul>
         </div>
         <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Points</a>
         <a href="{% url 'shop_home' %}" class="btn">Go to Dashboard</a>
@@ -18,48 +25,5 @@
 {% endblock %}
 
 {% block extra_css %}
-    <style>
-        .success-container {
-            text-align: center;
-            margin-top: 50px;
-        }
-
-        .child-info {
-            margin-top: 20px;
-            text-align: left;
-            display: inline-block;
-        }
-
-        .child-info p {
-            margin: 5px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            color: white;
-            background-color: #4CAF50;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #45a049;
-        }
-
-        @media (max-width: 600px) {
-            .btn {
-                display: block;
-                width: 80%;
-                margin: 10px auto;
-            }
-
-            .child-info {
-                text-align: center;
-                width: 100%;
-            }
-        }
-    </style>
+<link rel="stylesheet" href="{% static 'css/shop_redemption_success.css' %}">
 {% endblock %}

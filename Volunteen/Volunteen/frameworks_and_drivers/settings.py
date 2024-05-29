@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Volunteen.urls'
+ROOT_URLCONF = 'Volunteen.frameworks_and_drivers.urls'
 
 TEMPLATES = [
     {
@@ -90,7 +90,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Volunteen.wsgi.application'
+WSGI_APPLICATION = 'Volunteen.frameworks_and_drivers.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -140,18 +140,17 @@ USE_TZ = True
 import os
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 STATIC_URL = '/static/'
 
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 MEDIA_URL = '/media/'
-
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type

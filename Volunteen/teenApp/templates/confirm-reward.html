@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,46 +8,8 @@
     <!-- Page title indicating reward redemption confirmation -->
     <title>Confirm Reward Redemption</title>
 
-    <!-- Internal CSS styling -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            text-align: center;
-            padding-top: 50px;
-        }
-        .confirmation-box {
-            background-color: #fff;
-            padding: 20px;
-            margin: 20px auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 80%;
-            max-width: 600px;
-        }
-        button {
-            padding: 10px 20px;
-            margin-top: 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-        }
-        .confirm-button {
-            background-color: #5cb85c;
-            color: white;
-        }
-        .cancel-button {
-            background-color: #f0ad4e;
-            color: white;
-            text-decoration: none; /* Make the cancel button look like a button */
-            padding: 10px 20px; /* Add padding to the anchor element */
-            border-radius: 5px;
-            font-size: 16px;
-            margin-top: 20px;
-            display: inline-block; /* Make it inline-block for proper spacing */
-        }
-    </style>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/confirm_reward.css' %}">
 </head>
 <body>
     <div class="confirmation-box">

@@ -1,5 +1,5 @@
 {% extends 'shop_base.html' %}
-
+{% load static %}
 {% block title %}Shop Home{% endblock %}
 
 {% block content %}
@@ -7,7 +7,9 @@
 
     <div class="section">
         <h3>Redeem Points</h3>
-        <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn">Go to Redeem Points</a>
+        <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn">
+            <i class="fas fa-gift"></i> Go to Redeem Points
+        </a>
     </div>
 
     <div class="section">
@@ -22,119 +24,22 @@
 
     <div class="section">
         <h3>Redemption History</h3>
-        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">View Redemption History</a>
+        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">
+            <i class="fas fa-history"></i> View Redemption History
+        </a>
     </div>
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    body, h2, h3, p {
-        margin: 0;
-        padding: 0 10px;
-    }
-
-    h2 {
-        font-size: 22px;
-        margin-top: 20px;
-    }
-
-    h3 {
-        font-size: 18px;
-        color: #333;
-    }
-
-    p {
-        font-size: 16px;
-    }
-
-    .points-used {
-        color: #007bff; /* Blue color for points used */
-    }
-
-    .points-left {
-        color: #28a745; /* Green color for points left */
-    }
-
-    .btn {
-        display: block; /* Make buttons block level for easier touch */
-        width: 90%; /* Slightly smaller width for aesthetics */
-        margin: 10px auto; /* Center buttons */
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 5px;
-        text-decoration: none;
-        color: white;
-        background-color: #4CAF50;
-        text-align: center;
-    }
-
-    .btn:hover {
-        background-color: #45a049;
-        opacity: 0.9;
-    }
-
-    .blue-btn {
-        background-color: #007bff;
-    }
-
-    .orange-btn {
-        background-color: #fd7e14;
-    }
-
-    .section {
-        margin-bottom: 20px;
-    }
-
-    .chart-container {
-        position: relative;
-        margin: 20px auto;
-        height: 200px;
-        width: 100%;
-    }
-
-    @media (max-width: 600px) {
-        h2, h3, p {
-            font-size: 90%; /* Smaller text on very small devices */
-        }
-        .btn {
-            font-size: 14px;
-            padding: 10px;
-        }
-    }
-</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/shop_home.css' %}">
 {% endblock %}
-
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById('pointsChart').getContext('2d');
-        var pointsUsed = {{ points_used_this_month }};
-        var maxPoints = {{ shop.max_points }};
-        var pointsLeft = maxPoints - pointsUsed;
-
-        var chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Points Used', 'Points Left'],
-                datasets: [{
-                    data: [pointsUsed, pointsLeft],
-                    backgroundColor: ['#007bff', '#28a745'],
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                legend: {
-                    position: 'bottom'
-                },
-                title: {
-                    display: true,
-                    text: 'Points Usage'
-                }
-            }
-        });
-    });
+    var pointsUsedData = {{ points_used_this_month }};
+    var maxPointsData = {{ shop.max_points }};
 </script>
+<script src="{% static 'js/shop_home.js' %}"></script>
 {% endblock %}
