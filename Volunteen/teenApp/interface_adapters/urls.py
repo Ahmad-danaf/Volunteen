@@ -33,5 +33,8 @@ urlpatterns = [
     path('cancel_transaction/', views.shop_cancel_transaction, name='shop_cancel_transaction'),
     path('add-task/', views.add_task, name='add_task'),
     path('points-leaderboard/', views.points_leaderboard, name='points_leaderboard'),
-     path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('identify-child/', views.shop_identify_child, name='shop_identify_child'),
+    path('complete-transaction/', views.shop_complete_transaction, name='shop_complete_transaction'),
+
 ]

@@ -26,6 +26,7 @@ from django.templatetags.static import static
 from django.http import HttpResponse
 import json
 from django.contrib.auth import logout
+from teenApp.utils import NotificationManager
 
 @login_required
 def logout_view(request):
@@ -143,119 +144,92 @@ def mentor_home(request):
 @login_required
 def mentor_children_details(request):
     mentor = Mentor.objects.get(user=request.user)
-    children = mentor.children.all()
+    children = mentor.children.all().order_by('-points')  
     return render(request, 'mentor_children_details.html', {'children': children})
 
 @login_required
 def shop_redeem_points(request):
+    if request.method == 'POST':
+        if 'selected_rewards' in request.POST:
+            selected_rewards = request.POST.get('selected_rewards')
+            request.session['selected_rewards'] = selected_rewards
+            return redirect('shop_identify_child')
+        
+    shop = Shop.objects.get(user=request.user)
+    now = datetime.now()
+    start_of_month = now.replace(day=1)
+    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
+    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    remaining_points = shop.max_points - points_used_this_month
+
+    rewards = Reward.objects.filter(
+        shop=shop,
+        points_required__lte=remaining_points
+    )
+
+    return render(request, 'shop_redeem_points.html', {'rewards': rewards, 'remaining_points': remaining_points})
+
+
+@login_required
+def shop_identify_child(request):
     id_form = IdentifyChildForm()
 
     if request.method == 'POST':
-        if 'identifier' in request.POST:
-            id_form = IdentifyChildForm(request.POST)
-            if id_form.is_valid():
-                identifier = id_form.cleaned_data['identifier']
-                secret_code = id_form.cleaned_data['secret_code']
-                try:
-                    child = Child.objects.get(identifier=identifier, secret_code=secret_code)
-                    child.secret_code = get_random_digits()
-                    child.save()
-                    shop = Shop.objects.get(user=request.user)
+        id_form = IdentifyChildForm(request.POST)
+        if id_form.is_valid():
+            identifier = id_form.cleaned_data['identifier']
+            secret_code = id_form.cleaned_data['secret_code']
+            try:
+                child = Child.objects.get(identifier=identifier, secret_code=secret_code)
+                # Update secret code
+                child.secret_code=get_random_digits()
+                child.save()
+                request.session['child_id'] = child.id
+                return redirect('shop_complete_transaction')
+            except Child.DoesNotExist:
+                return render(request, 'shop_invalid_identifier.html', {'id_form': id_form})
 
-                    # Calculate the points used by the shop in the current month
-                    now = datetime.now()
-                    start_of_month = now.replace(day=1)
-                    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-                    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    return render(request, 'shop_identify_child.html', {'id_form': id_form})
 
-                    remaining_points = shop.max_points - points_used_this_month
 
-                    rewards = Reward.objects.filter(
-                        shop=shop,
-                        points_required__lte=min(child.points, remaining_points)
-                    )
-                    if not rewards.exists():
-                        return render(request, 'shop_no_rewards.html')
-                    request.session['child_id'] = child.id  # Save child ID to session
-                    request.session['selected_rewards'] = json.dumps([])  # Reset selected rewards
-                    return render(request, 'shop_redeem_points.html', {
-                        'child': child,
-                        'id_form': id_form,
-                        'rewards': rewards,
-                        'selected_rewards': []
-                    })
-                except Child.DoesNotExist:
-                    return render(request, 'shop_invalid_identifier.html')
-        elif 'complete_transaction' in request.POST:
-            child_id = request.session.get('child_id')
-            if not child_id:
-                return redirect('shop_redeem_points')  # Redirect if child_id is not found in session
+@login_required
+def shop_complete_transaction(request):
+    child_id = request.session.get('child_id')
+    if not child_id:
+        return redirect('shop_identify_child')
 
-            child = get_object_or_404(Child, id=child_id)
-            shop = Shop.objects.get(user=request.user)
+    selected_rewards_json = request.session.get('selected_rewards')
+    if not selected_rewards_json:
+        return redirect('shop_redeem_points')
 
-            # Calculate the points used by the shop in the current month
-            now = datetime.now()
-            start_of_month = now.replace(day=1)
-            redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-            points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    selected_rewards = json.loads(selected_rewards_json)
+    child = get_object_or_404(Child, id=child_id)
+    shop = Shop.objects.get(user=request.user)
 
-            remaining_points = shop.max_points - points_used_this_month
+    now = datetime.now()
+    start_of_month = now.replace(day=1)
+    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
+    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
 
-            selected_rewards = request.POST.get('selected_rewards')
-            selected_rewards = json.loads(selected_rewards)
-            total_points = sum(r['quantity'] * r['points'] for r in selected_rewards)
+    remaining_points = shop.max_points - points_used_this_month
+    total_points = sum(r['quantity'] * r['points'] for r in selected_rewards)
 
-            if child.points >= total_points and total_points <= remaining_points:
-                points_used = 0
-                for reward in selected_rewards:
-                    reward_obj = get_object_or_404(Reward, id=reward['reward_id'])
-                    points_used += reward['quantity'] * reward['points']
-                    child.subtract_points(reward['quantity'] * reward['points'])
-                    Redemption.objects.create(child=child, points_used=reward['quantity'] * reward['points'], shop=reward_obj.shop)
-                request.session['selected_rewards'] = json.dumps([])
-                request.session.pop('child_id', None)  # Clear child_id from session
-                
-                if child.user.email:
-                    NotificationManager.sent_mail(f'Dear {child.user.first_name}, your redemption is complete. You have redeemed {points_used} points.', child.user.email)
-                
-                return render(request, 'shop_redemption_success.html', {'child': child, 'points_used': points_used, 'receipt': selected_rewards})
-            else:
-                return render(request, 'shop_not_enough_points.html')
+    if child.points >= total_points and total_points <= remaining_points:
+        points_used = 0
+        for reward in selected_rewards:
+            reward_obj = get_object_or_404(Reward, id=reward['reward_id'])
+            points_used += reward['quantity'] * reward['points']
+            child.subtract_points(reward['quantity'] * reward['points'])
+            Redemption.objects.create(child=child, points_used=reward['quantity'] * reward['points'], shop=reward_obj.shop)
+        request.session['selected_rewards'] = json.dumps([])
+        request.session.pop('child_id', None)  # Clear child_id from session
 
-    if request.method == 'GET':
-        if 'child_id' in request.session:
-            child_id = request.session.get('child_id')
-            child = get_object_or_404(Child, id=child_id)
-            shop = Shop.objects.get(user=request.user)
+        if child.user.email:
+            NotificationManager.sent_mail(f'Dear {child.user.first_name}, your redemption is complete. You have redeemed {points_used} points.', child.user.email)
 
-            # Calculate the points used by the shop in the current month
-            now = datetime.now()
-            start_of_month = now.replace(day=1)
-            redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-            points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-
-            remaining_points = shop.max_points - points_used_this_month
-
-            rewards = Reward.objects.filter(
-                shop=shop,
-                points_required__lte=min(child.points, remaining_points)
-            )
-            if not rewards.exists():
-                return render(request, 'shop_no_rewards.html')
-            selected_rewards = json.loads(request.session.get('selected_rewards', '[]'))
-            return render(request, 'shop_redeem_points.html', {
-                'child': child,
-                'id_form': id_form,
-                'rewards': rewards,
-                'selected_rewards': selected_rewards
-            })
-
-    # Clear session when loading the page initially or when transaction is complete
-    request.session.pop('child_id', None)
-    request.session['selected_rewards'] = json.dumps([])
-
-    return render(request, 'shop_redeem_points.html', {'id_form': id_form})
+        return render(request, 'shop_redemption_success.html', {'child': child, 'points_used': points_used, 'receipt': selected_rewards})
+    else:
+        return render(request, 'shop_not_enough_points.html')
 
 
 @login_required
@@ -379,7 +353,7 @@ def mentor_active_list(request):
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-        tasks = Task.objects.filter(assigned_children=child, completed=False)
+        tasks = Task.objects.filter(assigned_children=child, completed=False).order_by('deadline') 
         tasks.update(new_task=False)
         return render(request, 'list_tasks.html', {'tasks': tasks})
     except Child.DoesNotExist:
@@ -389,7 +363,7 @@ def child_active_list(request):
 def mentor_task_list(request):
     current_date = now().date()
     mentor = Mentor.objects.get(user=request.user)
-    tasks = Task.objects.filter(assigned_mentors=mentor, deadline__gte=current_date)  
+    tasks = Task.objects.filter(assigned_mentors=mentor, deadline__gte=current_date).order_by('deadline') 
     return render(request, 'mentor_task_list.html', {'tasks': tasks})
 
 
@@ -406,6 +380,11 @@ def assign_task(request, task_id):
             task.assigned_children.add(child)
             task.new_task = True
             task.save()
+            if child.user.email:
+                NotificationManager.sent_mail(
+                    f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
+                    child.user.email
+                )
         task.assigned_mentors.add(mentor)
         messages.success(request, f"Task '{task.title}' successfully assigned to selected children.")
         return redirect('mentor_task_list')

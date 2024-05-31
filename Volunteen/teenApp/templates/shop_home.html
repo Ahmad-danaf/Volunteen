@@ -3,43 +3,112 @@
 {% block title %}Shop Home{% endblock %}
 
 {% block content %}
-    <h2>Welcome {{ shop.name }}</h2>
-
-    <div class="section">
-        <h3>Redeem Points</h3>
-        <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn">
-            <i class="fas fa-gift"></i> Go to Redeem Points
-        </a>
-    </div>
-
-    <div class="section">
-        <h3>Points Information</h3>
-        <p>Max Points: {{ shop.max_points }}</p>
-        <p class="points-used">Points Used This Month: {{ points_used_this_month }}</p>
-        <p class="points-left">Points Left to Redeem: {{ points_left_to_redeem }}</p>
-        <div class="chart-container">
-            <canvas id="pointsChart"></canvas>
+    <div class="container mt-3">
+        <div class="text-center">
+            <h2>Welcome {{ shop.name }}</h2>
+            {% if shop.img %}
+                <img src="{{ shop.img.url }}" alt="{{ shop.name }}" class="shop-icon img-fluid rounded-circle mt-3">
+            {% else %}
+                <i class="fas fa-store fa-4x mt-3"></i>
+            {% endif %}
         </div>
-    </div>
 
-    <div class="section">
-        <h3>Redemption History</h3>
-        <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn">
-            <i class="fas fa-history"></i> View Redemption History
-        </a>
+        <div class="section mt-4">
+            <h3>Redeem Teen Coins</h3>
+            <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn btn-block">
+                <i class="fas fa-gift"></i> Redeem TeenCoins
+            </a>
+        </div>
+
+        <div class="section mt-4">
+            <h3>Teen Coins Information</h3>
+            <p>
+                Max TeenCoins: {{ shop.max_points }} 
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Max Teen Coins is the maximum number of Teen Coins you can redeem this month."></i>
+            </p>
+            <p class="points-used">
+                TeenCoins Used This Month: {{ points_used_this_month }}
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Teen Coins used so far this month."></i>
+            </p>
+            <p class="points-left">
+                TeenCoins Left to Redeem: {{ points_left_to_redeem }}
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Teen Coins left that you can redeem to kids this month."></i>
+            </p>
+            <div class="chart-container mt-3">
+                <canvas id="pointsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section mt-4">
+            <h3>Redemption History</h3>
+            <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn btn-block">
+                <i class="fas fa-history"></i> View Redemption History
+            </a>
+        </div>
     </div>
 {% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <link rel="stylesheet" type="text/css" href="{% static 'css/shop_home.css' %}">
+<style>
+    .info-icon {
+        font-size: 1rem;
+        color: #007bff;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+    .chart-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .section {
+        margin-bottom: 2rem;
+    }
+    .shop-icon {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    var pointsUsedData = {{ points_used_this_month }};
-    var maxPointsData = {{ shop.max_points }};
+    document.addEventListener('DOMContentLoaded', function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
+        var pointsUsedData = {{ points_used_this_month|default:0 }};
+        var maxPointsData = {{ shop.max_points|default:0 }};
+        var pointsLeftData = maxPointsData - pointsUsedData;
+
+        var ctx = document.getElementById('pointsChart').getContext('2d');
+        var pointsChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Points Used', 'Points Left'],
+                datasets: [{
+                    data: [pointsUsedData, pointsLeftData],
+                    backgroundColor: ['#007bff', '#28a745'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Points Usage'
+                }
+            }
+        });
+    });
 </script>
-<script src="{% static 'js/shop_home.js' %}"></script>
 {% endblock %}

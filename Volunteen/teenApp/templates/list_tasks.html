@@ -63,7 +63,7 @@
                 <tr>
                     <th>Image</th>
                     <th>Title</th>
-                    <th>Points</th>
+                    <th>TeenCoins</th>
                     <th>Deadline</th>
                 </tr>
             </thead>
@@ -89,8 +89,18 @@
                 <tr id="details-{{ forloop.counter }}" class="details-row">
                     <td colspan="4">
                         <b>Description:</b> {{ task.description }}<br>
-                        <b>Duration:</b> {{ task.duration }}<br>
-                        <b>Additional Details:</b> {{ task.additional_details }}
+                        <b>Additional Details:</b> {{ task.additional_details }}<br>
+                        <b>The assigned Mentors are:
+                           {% for mentor in task.assigned_mentors.all %}
+                           <li>
+                                {% if mentor.user.first_name %}
+                                    {{mentor.user.username}} ({{mentor.user.first_name }}) phone: {{ mentor.user.phone }}
+                                {% else %}
+                                    {{mentor.user.username}} phone: {{ mentor.user.phone }}
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        <br>
                     </td>
                 </tr>
                 {% endfor %}

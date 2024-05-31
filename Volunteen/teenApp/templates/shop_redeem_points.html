@@ -1,18 +1,13 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Redeem Points{% endblock %}
+{% block title %}Redeem TCoins{% endblock %}
 
 {% block content %}
     <!-- Page heading -->
-    <h2>Redeem Points</h2>
+    <h2>Redeem Teen Coins</h2>
 
     <form method="post" id="redeem-form">
         {% csrf_token %}
-        {% if child %}
-            <!-- Display the child's name and current points if identified -->
-            <h3>{{ child.user.first_name }} {{ child.user.last_name }}</h3>
-            <h3>Points: {{ child.points }}</h3>
-
             <!-- Rewards available for redemption -->
             <div class="rewards">
                 {% for reward in rewards %}
@@ -20,7 +15,7 @@
                         <div class="card-body">
                             <img src="{{ reward.img.url }}" alt="{{ reward.title }}" class="reward-img">
                             <h4>{{ reward.title }}</h4>
-                            <p>{{ reward.points_required }} points</p>
+                            <p>{{ reward.points_required }} Teen Coins</p>
                             <div class="reward-actions">
                                 <button type="button" class="btn btn-secondary" onclick="updateQuantity({{ reward.id }}, 'sell')">Sell</button>
                                 <span id="quantity-{{ reward.id }}">0</span>
@@ -43,11 +38,6 @@
             <input type="hidden" name="child_id" value="{{ child.id }}">
             <input type="hidden" name="selected_rewards" id="selected_rewards">
             <input type="hidden" name="complete_transaction" value="true">
-        {% else %}
-            <!-- Display form to identify the child -->
-            {{ id_form.as_p }}
-            <button type="submit" class="btn btn-primary">Identify Child</button>
-        {% endif %}
     </form>
 
     <script>
@@ -88,7 +78,7 @@
             receipt.innerHTML = '';
             selectedRewards.forEach(reward => {
                 let li = document.createElement('li');
-                li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} points`;
+                li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} Teen Coins`;
                 receipt.appendChild(li);
             });
         }
@@ -187,10 +177,3 @@
     </style>
 {% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'js/shop_redeem_points.js' %}"></script>
-{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/shop_redeem_points.css' %}">
-{% endblock %}

@@ -5,7 +5,7 @@
 {% block content %}
     <div class="success-container">
         <h2>Redemption Successful</h2>
-        <p>Points have been successfully redeemed for:</p>
+        <p>Teen Coins have been successfully redeemed for:</p>
         <div class="child-info">
             <p><strong>Name:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
             <p><strong>Identifier:</strong> {{ child.identifier }}</p>
@@ -15,11 +15,11 @@
             <h3>Receipt</h3>
             <ul>
                 {% for reward in receipt %}
-                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} points</li>
+                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} Teen Coins</li>
                 {% endfor %}
             </ul>
         </div>
-        <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Points</a>
+        <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Teen Coins</a>
         <a href="{% url 'shop_home' %}" class="btn">Go to Dashboard</a>
     </div>
 {% endblock %}

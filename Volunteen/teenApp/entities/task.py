@@ -16,6 +16,7 @@ class Task(models.Model):
     new_task = models.BooleanField(default=True, verbose_name='New Task', help_text='Indicates if the task is new for the child')
     viewed = models.BooleanField(default=False, verbose_name='Viewed', help_text='Indicates if the child has viewed the task')
     total_bonus_points = models.IntegerField(default=0, verbose_name='Total Bonus Points', help_text='Total bonus points assigned to this task')
+    completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
     def __str__(self):
         return self.title
 
