@@ -30,10 +30,10 @@
 {% endif %}
 
 <a href="{% url 'child_active_list' %}" class="button" style="background-color: #28a745;">
-    <i class="fas fa-tasks"></i> Go to Task List
+    <i class="fas fa-tasks"></i> Task List
 </a>
 <a href="{% url 'reward' %}" class="button" style="background-color: #1755b8;">
-    <i class="fas fa-gift"></i> Go to Reward List
+    <i class="fas fa-gift"></i> Reward List
 </a>
 <a href="{% url 'child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
     <i class="fas fa-history"></i> Redemption History
@@ -42,13 +42,15 @@
     <i class="fas fa-check-circle"></i> Completed Tasks
 </a>
 <a href="{% url 'child_points_history' %}" class="button" style="background-color: #9175c8;">
-    <i class="fas fa-coins"></i> Points History
+    <i class="fas fa-coins"></i> TeenCoins History
     <a href="{% url 'points_leaderboard' %}" class="button" style="background-color: #ff9800;">
         <i class="fas fa-trophy"></i> Points Leaderboard
 </a>
 <a href="{% url 'logout_view' %}" class="button button-logout">
     <i class="fas fa-sign-out-alt"></i> Logout
 </a>
+<a href="{% url 'monthly_wall_of_fame' %}" class="btn btn-primary">View Monthly Wall of Fame</a>
+
 
 <script>
 function showSecretCode() {

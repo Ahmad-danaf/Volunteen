@@ -31,7 +31,9 @@ urlpatterns = [
     path('mentor/assign-points/success/<int:task_id>/', views.points_assigned_success, name='points_assigned_success'),
     path('assign-bonus/', views.assign_bonus, name='assign_bonus'),
     path('cancel_transaction/', views.shop_cancel_transaction, name='shop_cancel_transaction'),
-    path('add-task/', views.add_task, name='add_task'),
     path('points-leaderboard/', views.points_leaderboard, name='points_leaderboard'),
-     path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('ajax/load-children/', views.load_children, name='load_children'),
+    path('monthly-wall-of-fame/', views.monthly_wall_of_fame, name='monthly_wall_of_fame'),
+    path('update-monthly-top-children/', views.update_monthly_top_children, name='update_monthly_top_children'),
 ]

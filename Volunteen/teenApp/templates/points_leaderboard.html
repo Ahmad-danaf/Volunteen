@@ -4,6 +4,10 @@
 
 {% block content %}
     <h1>Points Leaderboard</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background-color: #007bff; color: white;">
@@ -17,7 +21,7 @@
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 8px;">{{ forloop.counter }}</td>
                     <td style="padding: 8px;">{{ child.user.username }}</td>
-                    <td style="padding: 8px;">{{ child.points }}</td>
+                    <td style="padding: 8px;">{{ child.points_within_range|default:child.points }}</td>
                 </tr>
             {% empty %}
                 <tr>

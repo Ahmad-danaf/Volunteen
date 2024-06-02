@@ -4,6 +4,10 @@
 
 {% block content %}
     <h1>All Tasks</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
     <table>
         <thead>
             <tr>
@@ -16,7 +20,7 @@
             {% for data in task_data %}
                 <tr>
                     <td><a href="#" class="task-title" data-task-id="{{ data.task.id }}">{{ data.task.title }}</a></td>
-                    <td>{{ data.task.deadline }}</td>
+                    <td>{{ data.task.deadline|date:"d/m/Y" }}</td>
                     <td>
                         <button class="toggle-details" data-task-id="{{ data.task.id }}">View Details</button>
                     </td>

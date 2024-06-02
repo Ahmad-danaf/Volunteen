@@ -9,4 +9,29 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Assign Bonus</button>
     </form>
+    {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% endif %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#id_task').change(function () {
+                var url = "{% url 'load_children' %}";  // get the url of the `load_children` view
+                var taskId = $(this).val();  // get the selected task ID from the HTML input
+
+                $.ajax({
+                    url: url,
+                    data: {
+                        'task_id': taskId  // add the task ID to the GET parameters
+                    },
+                    success: function (data) {
+                        $("#id_child").html('');  // clear the existing options in the child select input
+                        for (var i = 0; i < data.length; i++) {
+                            $("#id_child").append('<option value="' + data[i].id + '">' + data[i]['user__username'] + '</option>');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

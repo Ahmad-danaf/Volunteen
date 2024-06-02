@@ -26,6 +26,7 @@ from django.templatetags.static import static
 from django.http import HttpResponse
 import json
 from django.contrib.auth import logout
+from teenApp.interface_adapters.forms import DateRangeForm,DateRangeMForm
 
 @login_required
 def logout_view(request):
@@ -71,35 +72,62 @@ def child_home(request):
         new_tasks.update(new_task=False)
 
     return render(request, 'child_home.html', {'child': child, 'greeting': greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
+
 @login_required
 def child_redemption_history(request):
     child = Child.objects.get(user=request.user)
+    form = DateRangeForm(request.GET or None)
     redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
-    return render(request, 'child_redemption_history.html', {'redemptions': redemptions})
+    default_date = date(2201, 1, 1)  # תאריך ברירת מחדל
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+    else:
+        start_date = None
+        end_date = None
+
+    if start_date and end_date:
+        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
+
+    return render(request, 'child_redemption_history.html', {'redemptions': redemptions, 'form': form})
+
 
 @login_required
 def child_completed_tasks(request):
     child = Child.objects.get(user=request.user)
-    completed_tasks = child.tasks_completed.all().order_by('-id')
-
+    form = DateRangeForm(request.GET or None)
     tasks_with_bonus = []
-    for task in completed_tasks:
-        task_title = task.title
+    default_date = date(2201, 1, 1)  # תאריך ברירת מחדל
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+    else:
+        start_date = None
+        end_date = None
+
+    tasks = child.tasks_completed.all()
+    if start_date and end_date:
+        tasks = tasks.filter(completed_date__range=(start_date, end_date))
+
+    for task in tasks:
+        completion_date = task.completed_date.date() if task.completed_date else default_date
         tasks_with_bonus.append({
-            'title': task_title,
+            'title': task.title,
             'points': task.points,
-            'completion_date': task.deadline
+            'completion_date': completion_date,
+            'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
         })
-        # Add bonus points as separate rows
         if task.total_bonus_points > 0:
             tasks_with_bonus.append({
                 'title': f"{task.title} - Bonus",
                 'points': task.total_bonus_points,
-                'completion_date': task.deadline
+                'completion_date': completion_date,
+                'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
             })
 
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus})
-
+    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form})
 
 
 @login_required
@@ -285,18 +313,21 @@ def get_random_digits(n=3):
 
 @login_required
 def mentor_completed_tasks_view(request):
-    mentor = Mentor.objects.get(user=request.user)
+    mentor = get_object_or_404(Mentor, user=request.user)
+    form = DateRangeForm(request.GET or None)
+    task_data = []
 
-    if request.method == 'POST':
-        task_id = request.POST.get('task_id')
-        task = Task.objects.get(id=task_id)
-        form = TaskImageForm(request.POST, request.FILES, instance=task)
-        if form.is_valid():
-            form.save()
-        return redirect('mentor_completed_tasks_view')
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+    else:
+        start_date = None
+        end_date = None
 
     tasks = Task.objects.filter(assigned_mentors=mentor, completed=True)
-    task_data = []
+    if start_date and end_date:
+        tasks = tasks.filter(deadline__range=(start_date, end_date))
+
     for task in tasks:
         task_info = {
             'task': task,
@@ -306,8 +337,7 @@ def mentor_completed_tasks_view(request):
         }
         task_data.append(task_info)
 
-    return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data})
-
+    return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data, 'form': form})
 @login_required
 def shop_redemption_history(request):
     shop = request.user.shop
@@ -329,10 +359,12 @@ def shop_redemption_history(request):
     }
     return render(request, 'shop_redemption_history.html', context)
 
-
 def rewards_view(request):
     # Prefetch related rewards to minimize database hits
     shops = Shop.objects.prefetch_related('rewards').all()
+
+    # Get current child from request user
+    child = request.user.child
 
     # Prepare a new list to hold shops with modified data
     shops_with_images = []
@@ -341,16 +373,17 @@ def rewards_view(request):
         redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
         points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
         # Assign default image if none exists
-        shop_image = shop.img if shop.img else None
+        shop_image = shop.img.url if shop.img else static('images/logo.png')
         
         # Prepare rewards, assigning default images if necessary
         rewards_with_images = [
             {
                 'title': reward.title,
-                'img_url': reward.img if reward.img else static('images/logo.png'),
-                'points': reward.points_required
+                'img_url': reward.img.url if reward.img else static('images/logo.png'),
+                'points': reward.points_required,
+                'sufficient_points': child.points >= reward.points_required
             }
-            for reward in shop.rewards.all() if reward.points_required <= points_used_this_month
+            for reward in shop.rewards.all()
         ]
         
         # Append modified shop data to the list
@@ -361,7 +394,7 @@ def rewards_view(request):
             'used_points': points_used_this_month
         })
 
-    context = {'shops': shops_with_images}
+    context = {'shops': shops_with_images, 'child_points': child.points}
     return render(request, 'reward.html', context)
 
 @login_required
@@ -385,13 +418,20 @@ def child_active_list(request):
     except Child.DoesNotExist:
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
 
+
 @login_required
 def mentor_task_list(request):
-    current_date = now().date()
-    mentor = Mentor.objects.get(user=request.user)
-    tasks = Task.objects.filter(assigned_mentors=mentor, deadline__gte=current_date)  
-    return render(request, 'mentor_task_list.html', {'tasks': tasks})
+    current_date = timezone.now().date()
+    mentor = get_object_or_404(Mentor, user=request.user)
+    form = DateRangeForm(request.GET or None)
+    tasks = Task.objects.filter(assigned_mentors=mentor)
 
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        tasks = tasks.filter(deadline__range=(start_date, end_date))
+
+    return render(request, 'mentor_task_list.html', {'tasks': tasks, 'form': form})
 
 @login_required
 def assign_task(request, task_id):
@@ -434,13 +474,68 @@ def points_assigned_success(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     children = task.completed_by.all()
     return render(request, 'points_assigned_success.html', {'task': task, 'children': children})
+from datetime import datetime
+
+from datetime import datetime
+from django.utils import timezone
+
+from datetime import datetime, date
+from django.utils import timezone
 
 @login_required
 def child_points_history(request):
     child = Child.objects.get(user=request.user)
-    tasks = child.tasks_completed.all().order_by('-id')
-    return render(request, 'child_points_history.html', {'child': child, 'tasks': tasks})
+    form = DateRangeForm(request.GET or None)
+    points_history = []
+    current_points = 0
+    default_date = date(2201, 1, 1)  # תאריך ברירת מחדל
 
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+    else:
+        start_date = None
+        end_date = None
+
+    tasks = child.tasks_completed.all()
+    if start_date and end_date:
+        tasks = tasks.filter(completed_date__range=(start_date, end_date))
+
+    for task in tasks:
+        completed_date = task.completed_date.date() if task.completed_date else default_date
+        current_points += task.points
+        points_history.append({
+            'description': f"Completed Task: {task.title}",
+            'points': f"+{task.points}",
+            'date': completed_date,
+            'balance': current_points
+        })
+        if task.total_bonus_points > 0:
+            current_points += task.total_bonus_points
+            points_history.append({
+                'description': f"Bonus Points for Task: {task.title}",
+                'points': f"+{task.total_bonus_points}",
+                'date': completed_date,
+                'balance': current_points
+            })
+
+    redemptions = Redemption.objects.filter(child=child)
+    if start_date and end_date:
+        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
+
+    for redemption in redemptions:
+        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
+        current_points -= redemption.points_used
+        points_history.append({
+            'description': f"Redeemed: {redemption.shop.name}",
+            'points': f"-{redemption.points_used}",
+            'date': date_redeemed.date(),  # המרת datetime ל date
+            'balance': current_points
+        })
+
+    points_history.sort(key=lambda x: x['date'])  # סידור לפי תאריך
+
+    return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
 
 from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 assign_bonus_points = AssignBonusPoints(
@@ -473,6 +568,12 @@ def assign_bonus(request):
     
     return render(request, 'assign_bonus.html', {'form': form})
 
+@login_required
+def load_children(request):
+    task_id = request.GET.get('task_id')
+    children = Child.objects.filter(assigned_tasks=task_id).order_by('user__username')
+    return JsonResponse(list(children.values('id', 'user__username')), safe=False)
+
 from django.shortcuts import render, redirect
 from .forms import TaskForm  # Assuming you have a form for Task
 @login_required
@@ -492,20 +593,79 @@ def add_task(request):
 
     return render(request, 'add_task.html', {'form': form})
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from teenApp.entities.task import Task
+from teenApp.entities.mentor import Mentor
+
 @login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     mentor = get_object_or_404(Mentor, user=request.user)
     if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
+        form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
         if form.is_valid():
             form.save()
             return redirect('mentor_task_list')  # Redirect to mentor task list or another appropriate page
     else:
-        form = TaskForm(instance=task)
+        form = TaskForm(instance=task, mentor=mentor)
     return render(request, 'edit_task.html', {'form': form, 'task': task})
 
 def points_leaderboard(request):
     children = Child.objects.all().order_by('-points')
     return render(request, 'points_leaderboard.html', {'children': children})
 
+
+@login_required
+def monthly_wall_of_fame(request):
+    form = DateRangeMForm(request.GET or None)
+    top_children = []
+
+    if form.is_valid():
+        selected_month = form.cleaned_data['month']
+        top_children = MonthlyTopChild.objects.filter(month=selected_month).order_by('position')
+
+    return render(request, 'monthly_wall_of_fame.html', {'form': form, 'top_children': top_children})
+
+def update_monthly_top_children():
+    current_date = now()
+    first_day_of_current_month = current_date.replace(day=1)
+    first_day_of_next_month = (first_day_of_current_month + timedelta(days=32)).replace(day=1)
+    
+    children = Child.objects.all().order_by('-points')[:3]
+    positions = [20, 10, 5]  # בונוסים לפי מיקום
+
+    for i, child in enumerate(children):
+        MonthlyTopChild.objects.create(
+            child=child,
+            points=child.points,
+            month=first_day_of_current_month,
+            position=i + 1
+        )
+        child.points += positions[i]
+        child.save()
+
+@login_required
+def points_leaderboard(request):
+    form = DateRangeForm(request.GET or None)
+    children = Child.objects.all()
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        
+        # Calculate points within the date range
+        children = children.annotate(
+            points_within_range=Sum(
+                Case(
+                    When(tasks_completed__completed_date__range=(start_date, end_date), then='tasks_completed__points'),
+                    When(redemptions__date_redeemed__range=(start_date, end_date), then=-F('redemptions__points_used')),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            )
+        ).order_by('-points_within_range')
+    else:
+        children = children.order_by('-points')
+
+    return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
