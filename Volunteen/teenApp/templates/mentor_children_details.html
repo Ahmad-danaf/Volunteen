@@ -15,15 +15,15 @@
                 <tr>
                     <th>Child Name</th>
                     <th>Phone</th>
-                    <th>Points</th>
+                    <th>TeenCoins</th>
                     <th>Completed Tasks</th>
                 </tr>
             </thead>
             <tbody>
                 {% for child in children %}
                     <tr>
-                        <td>{{ child.user.first_name }} {{ child.user.last_name }}</td>
-                        <td>{{ child.user.phone }}</td> <!-- Assuming phone is in the user profile -->
+                        <td>{{ child.user.username }}</td>
+                        <td>{{ child.user.phone }}</td> 
                         <td>{{ child.points }}</td>
                         <td><button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">View Tasks</button></td>
                     </tr>
@@ -31,7 +31,7 @@
                         <td colspan="5">
                             <ul>
                                 {% for task in child.completed_tasks.all %}
-                                    <li>{{ task.title }}</li>
+                                    <li>{{ task.title }} - Completed on: {{ task.completed_date|date:"F j, Y" }} - TeenCoins: {{ task.points }}</li>
                                 {% endfor %}
                             </ul>
                         </td>

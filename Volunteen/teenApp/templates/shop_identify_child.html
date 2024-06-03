@@ -1,0 +1,122 @@
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}Identify Child{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2>Identify Child</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">To complete the redemption, please identify the child by entering their Identifier and Secret Code.</p>
+
+                <form method="post" id="identify-child-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ id_form.identifier.label_tag }}
+                        {{ id_form.identifier }}
+                        <div class="invalid-feedback">Please enter a valid identifier.</div>
+                    </div>
+                    <div class="form-group">
+                        {{ id_form.secret_code.label_tag }}
+                        {{ id_form.secret_code }}
+                        <div class="invalid-feedback">Please enter a valid secret code.</div>
+                    </div>
+                    <div class="action-buttons mt-4">
+                        <button type="submit" class="btn btn-success btn-block">Identify Child</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .card-header {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    .card-body {
+        padding: 30px;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .action-buttons .btn {
+        padding: 10px 20px;
+        font-size: 1.2rem;
+    }
+    .lead {
+        font-size: 1.25rem;
+        font-weight: 300;
+    }
+    .invalid-feedback {
+        display: none;
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('identify-child-form');
+        var identifierInput = form.querySelector('[name="identifier"]');
+        var secretCodeInput = form.querySelector('[name="secret_code"]');
+
+        form.addEventListener('submit', function(event) {
+            var isValid = true;
+
+            // Reset feedback
+            identifierInput.classList.remove('is-invalid');
+            secretCodeInput.classList.remove('is-invalid');
+
+            // Check identifier
+            if (!identifierInput.value.trim()) {
+                identifierInput.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // Check secret code
+            if (!secretCodeInput.value.trim()) {
+                secretCodeInput.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // If the form is not valid, prevent submission
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
+            // Display loading spinner
+            var submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Identifying... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+        });
+
+        // Remove invalid feedback on input
+        identifierInput.addEventListener('input', function() {
+            if (identifierInput.value.trim()) {
+                identifierInput.classList.remove('is-invalid');
+            }
+        });
+
+        secretCodeInput.addEventListener('input', function() {
+            if (secretCodeInput.value.trim()) {
+                secretCodeInput.classList.remove('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %}

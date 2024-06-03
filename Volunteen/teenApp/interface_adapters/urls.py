@@ -36,4 +36,8 @@ urlpatterns = [
     path('ajax/load-children/', views.load_children, name='load_children'),
     path('monthly-wall-of-fame/', views.monthly_wall_of_fame, name='monthly_wall_of_fame'),
     path('update-monthly-top-children/', views.update_monthly_top_children, name='update_monthly_top_children'),
+    path('mentor/edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('identify-child/', views.shop_identify_child, name='shop_identify_child'),
+    path('complete-transaction/', views.shop_complete_transaction, name='shop_complete_transaction'),
+
 ]
