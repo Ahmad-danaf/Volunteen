@@ -62,13 +62,12 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'points', 'deadline', 'duration', 'img', 'additional_details', 'assigned_children']
+        fields = ['title', 'description', 'points', 'deadline', 'img', 'additional_details', 'assigned_children']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'points': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'duration': forms.TextInput(attrs={'class': 'form-control'}),
             'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
         }
