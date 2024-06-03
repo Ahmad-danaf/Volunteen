@@ -53,15 +53,16 @@ def child_home(request):
     child = Child.objects.get(user=request.user)
 
     greetings = {
-        0: f"Wishing you a strong start to the week to collect points!",  # Sunday
-        1: f"It's Monday! Stay positive and keep working towards your goals!",
-        2: f"It's Tuesday! Keep pushing forward and make today count!",
-        3: f"It's Wednesday! You're halfway through the week, stay focused!",
-        4: f"It's Thursday! Almost there, finish the week strong!",
-        5: f"Happy Friday! Enjoy your day and make the most out of it!",  # Friday
-        6: f"It's Saturday! Relax and recharge for the upcoming week!",
+        0: f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",  # יום ראשון
+        1: f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
+        2: f"זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!",
+        3: f"זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!",
+        4: f"זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!",
+        5: f"שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!",  # יום שישי
+        6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
-    
+
+
     today = datetime.today().weekday()+1
     greeting = greetings.get(today, f"Hey {child.user.username}, have a great day!")
     
@@ -467,7 +468,7 @@ def child_points_history(request):
     form = DateRangeForm(request.GET or None)
     points_history = []
     current_points = 0
-    default_date = date(2201, 1, 1)  # תאריך ברירת מחדל
+    default_date = date(2201, 1, 1) 
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']
@@ -483,19 +484,23 @@ def child_points_history(request):
     for task in tasks:
         completed_date = task.completed_date.date() if task.completed_date else default_date
         current_points += task.points
+        string=f" ביצוע משימה : {task.title }"
         points_history.append({
             'description': f"Completed Task: {task.title}",
             'points': f"+{task.points}",
             'date': completed_date,
-            'balance': current_points
+            'balance': current_points,
+            'string':string
         })
         if task.total_bonus_points > 0:
             current_points += task.total_bonus_points
+            string=f"{task.title } :בונוס"
             points_history.append({
                 'description': f"Bonus Points for Task: {task.title}",
                 'points': f"+{task.total_bonus_points}",
                 'date': completed_date,
-                'balance': current_points
+                'balance': current_points,
+                'string':string
             })
 
     redemptions = Redemption.objects.filter(child=child)
@@ -505,11 +510,13 @@ def child_points_history(request):
     for redemption in redemptions:
         date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
         current_points -= redemption.points_used
+        string=f" רכישה :{redemption.shop.name}"
         points_history.append({
             'description': f"Redeemed: {redemption.shop.name}",
             'points': f"-{redemption.points_used}",
-            'date': date_redeemed.date(),  # המרת datetime ל date
-            'balance': current_points
+            'date': date_redeemed.date(),
+            'balance': current_points,
+            'string':string
         })
 
     points_history.sort(key=lambda x: x['date'])  # סידור לפי תאריך

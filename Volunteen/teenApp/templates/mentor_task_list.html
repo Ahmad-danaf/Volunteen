@@ -41,19 +41,19 @@
     }
 </style>
 
-<div class="container mt-5">
-    <h2 style="color: #ff6600;">Mentor Task List</h2>
+<div class="container mt-5" dir="rtl">
+    <h2 style="color: #ff6600;">רשימת משימות לחונך</h2>
     <form method="get">
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn btn-primary">סנן</button>
     </form>
     <div class="task-table-container">
         <table class="table task-table">
             <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th>Deadline</th>
+                    <th>תמונה</th>
+                    <th>כותרת</th>
+                    <th>תאריך יעד</th>
                     <th>TeenCoins</th>
                 </tr>
             </thead>
@@ -62,9 +62,9 @@
                 <tr onclick="toggleDetails({{ forloop.counter }})" style="cursor: pointer;">
                     <td>
                         {% if task.img %}
-                            <img src="{{ task.img.url }}" alt="Task {{ task.title }} Image" class="task-image" />
+                            <img src="{{ task.img.url }}" alt="תמונה של משימה {{ task.title }}" class="task-image" />
                         {% else %}
-                            <img src="{% static 'images/logo.png' %}" alt="logo Image" class="task-image" />
+                            <img src="{% static 'images/logo.png' %}" alt="תמונה לוגו" class="task-image" />
                         {% endif %}
                     </td>
                     <td>{{ task.title }}</td>
@@ -73,28 +73,28 @@
                 </tr>
                 <tr id="details-{{ forloop.counter }}" class="details-row">
                     <td colspan="3">
-                        <b>Description:</b> {{ task.description }}<br>
-                        <b>Additional Details:</b> {{ task.additional_details }}<br>
-                        <b> The assigned children are:
+                        <b>תיאור:</b> {{ task.description }}<br>
+                        <b>פרטים נוספים:</b> {{ task.additional_details }}<br>
+                        <b>הילדים שהוקצו למשימה:
                             {% for child in task.assigned_children.all %}
-                            <li> {{child.user.username}} </li>
+                            <li>{{child.user.username}}</li>
                             {% endfor %}
                         <br>
-                        <a href="{% url 'assign_task' task.id %}" class="btn btn-primary mt-2">Assign Task</a>
-                        <a href="{% url 'assign_points' task.id %}" class="btn btn-primary mt-2">Credit TeenCoins</a>
-                        <a href="{% url 'edit_task' task.id %}" class="btn btn-warning mt-2">Edit Task</a>
+                        <a href="{% url 'assign_task' task.id %}" class="btn btn-primary mt-2">הקצה משימה</a>
+                        <a href="{% url 'assign_points' task.id %}" class="btn btn-primary mt-2">מתן TeenCoins</a>
+                        <a href="{% url 'edit_task' task.id %}" class="btn btn-warning mt-2">ערוך משימה</a>
                     </td>
                 </tr>
                 {% endfor %}
                 {% if tasks|length == 0 %}
                 <tr>
-                    <td colspan="3" class="text-center">No Tasks Found</td>
+                    <td colspan="3" class="text-center">לא נמצאו משימות</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
-    <a href="{% url 'home_redirect' %}" class="btn btn-primary mt-4">Home Page</a>
+    <a href="{% url 'home_redirect' %}" class="btn btn-primary mt-4">דף הבית</a>
 </div>
 
 <script>

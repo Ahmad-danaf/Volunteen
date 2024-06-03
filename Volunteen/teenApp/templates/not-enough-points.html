@@ -1,27 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Page title indicating insufficient points -->
-    <title>Insufficient Points</title>
-
-    <!-- Link to external CSS file -->
+    <title>נקודות לא מספיקות</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/not_enough_points.css' %}">
 </head>
 <body>
-    <!-- Error message for insufficient points -->
     <div class="error-message">
-        <h1>Insufficient Points</h1>
-        <p>You do not have enough points to redeem this reward.</p>
-        
-        <!-- Display points required and current points -->
-        <p>Points required: <strong>{{ points_required }}</strong></p>
-        <p>Your current points: <strong>{{ current_points }}</strong></p>
-        
-        <p>Please earn more points and try again.</p>
+        <h1>נקודות לא מספיקות</h1>
+        <p>אין לך מספיק נקודות כדי לממש את הפרס הזה.</p>
+        <p>נקודות נדרשות: <strong>{{ points_required }}</strong></p>
+        <p>הנקודות הנוכחיות שלך: <strong>{{ current_points }}</strong></p>
+        <p>אנא הרוויח יותר נקודות ונסה שוב.</p>
     </div>
 </body>
 </html>

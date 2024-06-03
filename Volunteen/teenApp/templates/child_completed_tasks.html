@@ -1,20 +1,20 @@
 {% extends 'child_base.html' %}
 {% load static %}
-{% block title %}Completed Tasks{% endblock %}
+{% block title %}משימות מושלמות{% endblock %}
 
 {% block content %}
-    <h1>Completed Tasks</h1>
+    <h1>משימות מושלמות</h1>
     <form method="get">
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn btn-primary">סנן</button>
     </form>
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background-color: #007bff; color: white;">
-                <th style="padding: 8px; text-align: left;">Task Title</th>
-                <th style="padding: 8px; text-align: left;">Points</th>
-                <th style="padding: 8px; text-align: left;">Completion Date</th>
-                <th style="padding: 8px; text-align: left;">Mentor</th>
+                <th style="padding: 8px; text-align: left;">שם המשימה</th>
+                <th style="padding: 8px; text-align: left;">טינקוינס</th>
+                <th style="padding: 8px; text-align: left;">תאריך השלמה</th>
+                <th style="padding: 8px; text-align: left;">מנטור</th>
             </tr>
         </thead>
         <tbody>
@@ -27,7 +27,7 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="4" style="padding: 8px; text-align: center;">No completed tasks yet.</td>
+                    <td colspan="4" style="padding: 8px; text-align: center;"> .אין משימות שהושלמו </td>
                 </tr>
             {% endfor %}
         </tbody>

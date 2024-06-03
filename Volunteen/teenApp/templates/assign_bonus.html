@@ -1,13 +1,13 @@
 {% extends 'mentor_base.html' %}
 
-{% block title %}Assign Bonus Points{% endblock %}
+{% block title %}מתן נקודות בונוס{% endblock %}
 
 {% block content %}
-    <h2>Assign Bonus Points</h2>
+    <h2>הקצה נקודות בונוס</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Assign Bonus</button>
+        <button type="submit" class="btn btn-primary">מתן בונוס</button>
     </form>
     {% if error %}
         <div class="alert alert-danger" role="alert">{{ error }}</div>
@@ -16,16 +16,16 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('#id_task').change(function () {
-                var url = "{% url 'load_children' %}";  // get the url of the `load_children` view
-                var taskId = $(this).val();  // get the selected task ID from the HTML input
+                var url = "{% url 'load_children' %}";  
+                var taskId = $(this).val(); 
 
                 $.ajax({
                     url: url,
                     data: {
-                        'task_id': taskId  // add the task ID to the GET parameters
+                        'task_id': taskId  
                     },
                     success: function (data) {
-                        $("#id_child").html('');  // clear the existing options in the child select input
+                        $("#id_child").html(''); 
                         for (var i = 0; i < data.length; i++) {
                             $("#id_child").append('<option value="' + data[i].id + '">' + data[i]['user__username'] + '</option>');
                         }

@@ -1,13 +1,13 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Not Enough Teen Coins{% endblock %}
+{% block title %}אין מספיק טינקוינס{% endblock %}
 
 {% block content %}
-    <div class="container">
+    <div class="container" dir="rtl">
         <div class="error-section">
-            <h2>Error</h2>
-            <p class="error-message">Either the child does not have enough Teen Coins or the shop has reached its maximum Teen Coins limit.</p>
-            <a class="btn btn-primary" href="{% url 'shop_redeem_points' %}">Back to Redeem Teen Coins</a>
+            <h2>שגיאה</h2>
+            <p class="error-message">או שהילד אין מספיק טינקוינס או שהבית עסק הגיע למגבלת טינקוינס מקסימלית.</p>
+            <a class="btn btn-primary" href="{% url 'shop_redeem_points' %}">חזרה למימוש טינקוינס</a>
         </div>
     </div>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% load static %}
 {% block content %}
 <style>
-    /* Styles for the task table */
+    /* סגנונות עבור טבלת המשימות */
     .task-table {
         font-size: 1em;
         width: 100%;
@@ -15,7 +15,7 @@
         text-align: left;
     }
     .task-table th {
-        background-color: #ffe6cc; /* Header background color */
+        background-color: #ffe6cc; /* צבע רקע לכותרת */
         color: #333;
         text-align: center;
     }
@@ -23,7 +23,7 @@
         overflow-x: auto;
     }
     .task-image {
-        max-width: 100px; /* Adjusted the max-width */
+        max-width: 100px; /* גודל מקסימלי מותאם */
         height: auto;
         margin-right: 10px;
     }
@@ -31,7 +31,7 @@
         display: none;
     }
     @media (max-width: 768px) {
-        /* Adjustments for smaller screens */
+        /* התאמות למסכים קטנים יותר */
         .task-table {
             font-size: 0.9em;
         }
@@ -56,15 +56,15 @@
 </style>
 
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">Volunteen Task List</h2>
+    <h2 style="color: #ff6600;">רשימת המשימות</h2>
     <div class="task-table-container">
         <table class="table task-table">
             <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th>TeenCoins</th>
-                    <th>Deadline</th>
+                    <th>תמונה</th>
+                    <th>כותרת</th>
+                    <th>טינקוינס</th>
+                    <th>תאריך יעד</th>
                 </tr>
             </thead>
             <tbody>
@@ -72,15 +72,15 @@
                 <tr onclick="toggleDetails({{ forloop.counter }})" style="cursor: pointer;">
                     <td>
                         {% if task.img %}
-                            <img src="{{ task.img.url }}" alt="Task {{ task.title }} Image" class="task-image" />
+                            <img src="{{ task.img.url }}" alt="תמונה למשימה {{ task.title }}" class="task-image" />
                         {% else %}
-                            <img src="{% static 'images/logo.png' %}" alt="logo Image" class="task-image" />
+                            <img src="{% static 'images/logo.png' %}" alt="תמונת לוגו" class="task-image" />
                         {% endif %}
                     </td>
                     <td>
                         {{ task.title }}
                         {% if task.new_task %}
-                            <span class="badge-new">New</span>
+                            <span class="badge-new">חדש</span>
                         {% endif %}
                     </td>
                     <td class="points-column">{{ task.points }}</td>
@@ -88,15 +88,15 @@
                 </tr>
                 <tr id="details-{{ forloop.counter }}" class="details-row">
                     <td colspan="4">
-                        <b>Description:</b> {{ task.description }}<br>
-                        <b>Additional Details:</b> {{ task.additional_details }}<br>
-                        <b>The assigned Mentors are:
+                        <b>תיאור:</b> {{ task.description }}<br>
+                        <b>פרטים נוספים:</b> {{ task.additional_details }}<br>
+                        <b>חונכים משויכים:
                            {% for mentor in task.assigned_mentors.all %}
                            <li>
                                 {% if mentor.user.first_name %}
-                                    {{mentor.user.username}} ({{mentor.user.first_name }}) phone: {{ mentor.user.phone }}
+                                    {{mentor.user.username}} ({{mentor.user.first_name }}) טלפון: {{ mentor.user.phone }}
                                 {% else %}
-                                    {{mentor.user.username}} phone: {{ mentor.user.phone }}
+                                    {{mentor.user.username}} טלפון: {{ mentor.user.phone }}
                                 {% endif %}
                             </li>
                             {% endfor %}
@@ -106,7 +106,7 @@
                 {% endfor %}
                 {% if tasks|length == 0 %}
                 <tr>
-                    <td colspan="4" class="text-center">No Tasks Found</td>
+                    <td colspan="4" class="text-center">לא נמצאו משימות</td>
                 </tr>
                 {% endif %}
             </tbody>

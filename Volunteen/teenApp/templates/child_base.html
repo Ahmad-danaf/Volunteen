@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Child Profile{% endblock %}</title>
+    <title>{% block title %}פרופיל ילד{% endblock %}</title>
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -13,10 +13,11 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/child_base.css' %}">
 </head>
 <body>
-    <div class="container">
+    
+    <div class="container" dir="rtl">
         <!-- Back to Home Button -->
         <a href="{% url 'home_redirect' %}" class="button">
-            <i class="fas fa-home"></i> Back to Home
+            <i class="fas fa-home"></i> חזרה למסך הבית
         </a>
 
         {% block content %}{% endblock %}
@@ -26,7 +27,7 @@
     <footer>
         &copy; 2024 Volunteen
         <div class="support-email">
-            For support or help, contact us at: <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a>
+            <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> -לעזרה או תמיכה, צרו קשר ב 
         </div>
     </footer>
 </body>

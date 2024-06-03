@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rewards Page</title>
+    <title>דף פרסים</title>
     <link rel="stylesheet" href="https://bootswatch.com/5/lux/bootstrap.min.css">
 
     <style>
@@ -90,7 +90,6 @@
             filter: grayscale(100%);
         }
 
-        /* Custom styles for buttons */
         .btn-custom {
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
@@ -108,15 +107,14 @@
     </style>
 </head>
 <body>
-    <!-- Navbar with home and logout buttons -->
     <nav class="navbar navbar-light navbar-custom">
         <div class="container-fluid d-flex justify-content-between">
-            <a class="btn btn-custom btn-home" href="{% url 'home_redirect' %}">Home</a>
-            <a class="btn btn-custom btn-logout" href="{% url 'logout_view' %}">Logout</a>
+            <a class="btn btn-custom btn-home" href="{% url 'home_redirect' %}">דף הבית</a>
+            <a class="btn btn-custom btn-logout" href="{% url 'logout_view' %}">התנתק</a>
         </div>
     </nav>
 
-    <h1 class="title">Select a Shop to See Its Rewards</h1>
+    <h1 class="title">בחר בית עסק כדי לראות את הפרסים שלו</h1>
 
     <div class="container">
         {% for shop in shops %}
@@ -125,15 +123,17 @@
             <div class="card-info">{{ shop.name }}</div>
         </div>
         <div class="rewards-container" id="rewards-{{ forloop.counter0 }}">
-            <h2>Rewards for {{ shop.name }}</h2>
+            <h2>פרסים עבור {{ shop.name }}</h2>
             {% for reward in shop.rewards %}
-            <div class="reward">
+            <div class="reward" dir="rtl">
                 <img src="{{ reward.img_url }}" alt="{{ reward.title }}" class="{% if not reward.sufficient_points %}grey-scale{% endif %}" style="width:50px; height:50px;">
                 <p>{{ reward.title }}</p>
-                <p>{{ reward.points }} TeenCoins</p>
+                <p>{{ reward.points }} טינקואינס</p>
+
+
             </div>
             {% empty %}
-            <p>No rewards available for this shop.</p>
+            <p>אין פרסים זמינים עבור בית עסק זה.</p>
             {% endfor %}
         </div>
         {% endfor %}

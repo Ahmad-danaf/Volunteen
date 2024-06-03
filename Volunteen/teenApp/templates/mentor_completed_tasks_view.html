@@ -1,19 +1,19 @@
 {% extends 'mentor_base.html' %}
 {% load static %}
-{% block title %}All Tasks{% endblock %}
+{% block title %}כל המשימות{% endblock %}
 
 {% block content %}
-    <h1>All Tasks</h1>
+    <h1>כל המשימות</h1>
     <form method="get">
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn btn-primary">סנן</button>
     </form>
     <table>
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Deadline</th>
-                <th>Actions</th>
+                <th>כותרת</th>
+                <th>דדליין</th>
+                <th>פעולות</th>
             </tr>
         </thead>
         <tbody>
@@ -22,17 +22,17 @@
                     <td><a href="#" class="task-title" data-task-id="{{ data.task.id }}">{{ data.task.title }}</a></td>
                     <td>{{ data.task.deadline|date:"d/m/Y" }}</td>
                     <td>
-                        <button class="toggle-details" data-task-id="{{ data.task.id }}">View Details</button>
+                        <button class="toggle-details" data-task-id="{{ data.task.id }}">הצג פרטים</button>
                     </td>
                 </tr>
                 <tr class="task-details" data-task-id="{{ data.task.id }}" style="display: none;">
                     <td colspan="3">
                         <div>
                             <p>{{ data.task.description }}</p>
-                            <p><strong>Points:</strong> {{ data.task.points }}</p>
-                            <p><strong>Duration:</strong> {{ data.task.duration }}</p>
-                            <p><strong>Additional Details:</strong> {{ data.task.additional_details }}</p>
-                            <p><strong>Completed by ({{ data.completed_count }}):</strong></p>
+                            <p><strong>טינקוינס:</strong> {{ data.task.points }}</p>
+                            <p><strong>משך:</strong> {{ data.task.duration }}</p>
+                            <p><strong>פרטים נוספים:</strong> {{ data.task.additional_details }}</p>
+                            <p><strong>הושלמה על ידי ({{ data.completed_count }}):</strong></p>
                             <ul>
                                 {% for child in data.completed_by %}
                                     <li>{{ child.user.username }}</li>
@@ -42,7 +42,7 @@
                                 {% csrf_token %}
                                 {{ data.form.as_p }}
                                 <input type="hidden" name="task_id" value="{{ data.task.id }}">
-                                <button type="submit" class="button" style="background-color: #28a745;">Update Image</button>
+                                <button type="submit" class="button" style="background-color: #28a745;">עדכן תמונה</button>
                             </form>
                             {% if data.task.img %}
                                 <img src="{{ data.task.img.url }}" alt="{{ data.task.title }}" style="max-width: 100px; height: auto;">

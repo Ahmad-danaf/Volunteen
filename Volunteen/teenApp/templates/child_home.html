@@ -1,53 +1,53 @@
 {% extends 'child_base.html' %}
 
-{% block title %}Profile of {{ child.user.username }}{% endblock %}
+{% block title %}הפרופיל של {{ child.user.username }}{% endblock %}
 
 {% block content %}
-<h1>Welcome, {{ child.user.username }} :)</h1>
+<h1>ברוך הבא, {{ child.user.username }} :)</h1>
 <p class="points" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
 
-<p class="points" style="font-size: 1.5em; color: #ff5722;">Points in your Wallet: <strong>{{ child.points }}</strong></p>
-<p class="points">Let's earn more Points!</p>
-<p><strong>My Identifier:</strong> {{ child.identifier }}</p>
+<p class="points" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
+<p class="points"> !בוא נאסוף עוד טינקוינס</p>
+<p><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>
 
 <!-- Secret Code Button -->
-<button onclick="showSecretCode()" class="button" style="background-color: #007bff;">Show Secret Code</button>
+<button onclick="showSecretCode()" class="button" style="background-color: #007bff;">הראה קוד סודי</button>
 
 <!-- Modal for displaying secret code -->
 <div id="secretCodeModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
-        <p><strong>My Secret Code:</strong> {{ child.secret_code }}</p>
+        <p><strong>קוד סודי שלי: </strong> {{ child.secret_code }}</p>
     </div>
 </div>
 
 <!-- New Task Notification -->
 {% if new_tasks %}
 <div id="newTaskNotification" class="notification">
-    <p>You have {{ new_tasks_count }} new tasks assigned!</p>
+    <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
     <button class="button" onclick="closeNotification()">Close</button>
 </div>
 {% endif %}
 
 <a href="{% url 'child_active_list' %}" class="button" style="background-color: #28a745;">
-    <i class="fas fa-tasks"></i> Task List
+    <i class="fas fa-tasks"></i> רשימת המשימות
 </a>
 <a href="{% url 'reward' %}" class="button" style="background-color: #1755b8;">
-    <i class="fas fa-gift"></i> Reward List
+    <i class="fas fa-gift"></i> רשימת הפרסים
 </a>
 <a href="{% url 'child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
-    <i class="fas fa-history"></i> Redemption History
+    <i class="fas fa-history"></i> היסטוריית רכישה
 </a>
 <a href="{% url 'child_completed_tasks' %}" class="button" style="background-color: #5d22ff;">
-    <i class="fas fa-check-circle"></i> Completed Tasks
+    <i class="fas fa-check-circle"></i> משימות מושלמות
 </a>
 <a href="{% url 'child_points_history' %}" class="button" style="background-color: #9175c8;">
-    <i class="fas fa-coins"></i> TeenCoins History
+    <i class="fas fa-coins"></i> היסטוריית טינקוינס
     <a href="{% url 'points_leaderboard' %}" class="button" style="background-color: #ff9800;">
-        <i class="fas fa-trophy"></i> Wall of Fame
+        <i class="fas fa-trophy"></i> קיר התהילה
 </a>
 <a href="{% url 'logout_view' %}" class="button button-logout">
-    <i class="fas fa-sign-out-alt"></i> Logout
+    <i class="fas fa-sign-out-alt"></i> יציאה
 </a>
 
 

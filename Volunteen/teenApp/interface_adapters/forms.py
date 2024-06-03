@@ -9,8 +9,8 @@ from captcha.fields import CaptchaField
 from django import forms
 
 class DateRangeForm(forms.Form):
-    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Start Date')
-    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='End Date')
+    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך התחלה')
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך סיום')
 
 class CreateUserForm(UserCreationForm):
     captcha = CaptchaField()
@@ -33,8 +33,8 @@ class TaskImageForm(forms.ModelForm):
         fields = ['img']
 
 class IdentifyChildForm(forms.Form):
-    identifier = forms.CharField(max_length=5, label='Child Identifier')
-    secret_code = forms.CharField(max_length=3, label='Secret Code', widget=forms.PasswordInput())
+    identifier = forms.CharField(max_length=5, label='מספר מזהה')
+    secret_code = forms.CharField(max_length=3, label='קוד סודי', widget=forms.PasswordInput())
 
 class RedemptionForm(forms.Form):
     points = forms.IntegerField(label='Points to Redeem', min_value=1)

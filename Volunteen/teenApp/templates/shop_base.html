@@ -1,9 +1,9 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Shop Dashboard{% endblock %}</title>
+    <title>{% block title %} דף הבית{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Link to the external CSS file -->
@@ -15,14 +15,14 @@
 <body>
     <!-- Page header -->
     <header>
-        <h1>{% block header %}Shop Dashboard{% endblock %}</h1>
+        <h1>{% block header %}דף הבית{% endblock %}</h1>
     </header>
 
     <!-- Navigation menu -->
     <nav>
-        <a href="{% url 'shop_home' %}">Home</a>
-        <a href="{% url 'shop_redeem_points' %}">Redeem Teen Coins</a>
-        <a href="{% url 'logout_view' %}">Logout</a> 
+        <a href="{% url 'shop_home' %}">דף הבית</a>
+        <a href="{% url 'shop_redeem_points' %}">מימוש טינקוינס</a>
+        <a href="{% url 'logout_view' %}">התנתקות</a> 
     </nav>
 
     <!-- Main content area -->
@@ -32,7 +32,7 @@
 
     <!-- Page footer -->
     <footer>
-        &copy; 2024 Volunteen | For support or help, contact us at: volunteen2023@gmail.com
+        &copy; 2024 Volunteen | לעזרה או תמיכה, צרו קשר ב: volunteen2023@gmail.com
     </footer>
 
     <!-- Placeholder for extra JavaScript -->

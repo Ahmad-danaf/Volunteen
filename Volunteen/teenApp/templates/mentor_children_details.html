@@ -1,6 +1,6 @@
 {% extends 'mentor_base.html' %}
 {% load static %}
-{% block title %}Children Details{% endblock %}
+{% block title %}פרטי הילדים{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_children_details.css' %}">
@@ -8,15 +8,15 @@
 
 {% block content %}
 <div class="container">
-    <h1>Children Details</h1>
+    <h1>פרטי הילדים</h1>
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Child Name</th>
-                    <th>Phone</th>
-                    <th>TeenCoins</th>
-                    <th>Completed Tasks</th>
+                    <th>שם הילד</th>
+                    <th>טלפון</th>
+                    <th>טינקוינס</th>
+                    <th>משימות שהושלמו</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,13 +25,13 @@
                         <td>{{ child.user.username }}</td>
                         <td>{{ child.user.phone }}</td> 
                         <td>{{ child.points }}</td>
-                        <td><button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">View Tasks</button></td>
+                        <td><button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">הצג משימות</button></td>
                     </tr>
                     <tr id="tasks-{{ child.id }}" class="hidden">
                         <td colspan="5">
                             <ul>
                                 {% for task in child.completed_tasks.all %}
-                                    <li>{{ task.title }} - Completed on: {{ task.completed_date|date:"F j, Y" }} - TeenCoins: {{ task.points }}</li>
+                                    <li>{{ task.title }} - הושלם בתאריך: {{ task.completed_date|date:"F j, Y" }} - TeenCoins: {{ task.points }}</li>
                                 {% endfor %}
                             </ul>
                         </td>
@@ -39,13 +39,13 @@
                 {% endfor %}
                 {% if children|length == 0 %}
                 <tr>
-                    <td colspan="4" class="text-center">No Children Found</td>
+                    <td colspan="4" class="text-center">לא נמצאו ילדים</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
-    <a href="{% url 'mentor_home' %}" class="button">Back to Home</a>
+    <a href="{% url 'mentor_home' %}" class="button">חזרה לעמוד הבית</a>
 </div>
 {% endblock %}
 

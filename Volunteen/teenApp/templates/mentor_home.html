@@ -1,43 +1,43 @@
 {% extends 'mentor_base.html' %}
 {% load static %}
-{% block title %}Mentor Home{% endblock %}
+{% block title %}בית חונך{% endblock %}
 
 {% block content %}
-    <h2>Welcome, {{ mentor.user.username }}</h2>
+    <h2 dir="rtl">ברוך הבא, {{ mentor.user.username }}</h2>
 
-    <div class="section">
-        <a href="{% url 'mentor_task_list' %}" class="btn blue-btn"><i class="fas fa-tasks"></i> Go to Assigned Tasks</a>
-        <a href="{% url 'mentor_completed_tasks' %}" class="btn green-btn"><i class="fas fa-check"></i> Go to Completed Tasks</a>
-        <a href="{% url 'mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> View Children Details</a>
-        <a href="{% url 'logout_view' %}" class="btn red-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        <a href="{% url 'assign_bonus' %}" class="btn yellow-btn"><i class="fas fa-star"></i> Assign Bonus Points</a>
+    <div class="section" dir="rtl">
+        <a href="{% url 'mentor_task_list' %}" class="btn blue-btn"><i class="fas fa-tasks"></i> עבור למשימות שהוקצו</a>
+        <a href="{% url 'mentor_completed_tasks' %}" class="btn green-btn"><i class="fas fa-check"></i> עבור למשימות שהושלמו</a>
+        <a href="{% url 'mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
+        <a href="{% url 'logout_view' %}" class="btn red-btn"><i class="fas fa-sign-out-alt"></i> התנתק</a>
+        <a href="{% url 'assign_bonus' %}" class="btn yellow-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a>
     </div>
 
-    <div class="section">
-        <h3>Tasks Overview</h3>
-        <p>Total Tasks: {{ total_tasks }}</p>
-        <p class="tasks-open">Open Tasks: {{ open_tasks }}</p>
-        <p class="tasks-completed">Completed Tasks: {{ completed_tasks }}</p>
-        <p class="tasks-efficiency">Efficiency Rate: {{ efficiency_rate }}%</p>
+    <div class="section" dir="rtl">
+        <h3>סקירת משימות</h3>
+        <p>סה"כ משימות: {{ total_tasks }}</p>
+        <p class="tasks-open">משימות פתוחות: {{ open_tasks }}</p>
+        <p class="tasks-completed">משימות שהושלמו: {{ completed_tasks }}</p>
+        <p class="tasks-efficiency">שיעור יעילות: {{ efficiency_rate }}%</p>
         <div class="chart-container">
             <canvas id="tasksChart"></canvas>
         </div>
     </div>
 
     <div class="section">
-        <h3>Children's Performance</h3>
+        <h3 dir="rtl">ביצועי הילדים</h3>
         <table class="performance-table">
             <thead>
                 <tr>
-                    <th>Child</th>
-                    <th>Efficiency (%)</th>
+                    <th>יעילות (%)</th>
+                    <th>ילד</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in children %}
                     <tr style="background-color: {{ item.performance_color }};">
-                        <td>{{ item.child.user.username }}</td>
                         <td>{{ item.efficiency_rate }}</td>
+                        <td>{{ item.child.user.username }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -60,7 +60,7 @@
         var chart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Open Tasks', 'Completed Tasks'],
+                labels: ['משימות פתוחות', 'משימות שהושלמו'],
                 datasets: [{
                     data: [openTasks, completedTasks],
                     backgroundColor: ['#007bff', '#28a745'],
@@ -74,7 +74,7 @@
                 },
                 title: {
                     display: true,
-                    text: 'Tasks Overview'
+                    text: 'סקירת משימות'
                 }
             }
         });
