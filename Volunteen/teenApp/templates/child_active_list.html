@@ -1,9 +1,9 @@
 {% extends 'child_base.html' %}
 {% load static %}
-{% block title %}Active Tasks{% endblock %}
+{% block title %}משימות פעילות{% endblock %}
 
 {% block content %}
-<h1>Active Tasks</h1>
+<h1>משימות פעילות</h1>
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
         <tr style="background-color: #007bff; color: white;">
@@ -28,7 +28,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="4" style="padding: 8px; text-align: center;">No active tasks found.</td>
+            <td colspan="4" style="padding: 8px; text-align: center;">לא נמצאו משימות פעילות.</td>
         </tr>
         {% endfor %}
     </tbody>

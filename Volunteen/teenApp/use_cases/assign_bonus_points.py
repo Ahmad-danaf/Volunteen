@@ -20,9 +20,8 @@ class AssignBonusPoints:
         if mentor not in child.mentors.all():
             raise ValueError("Mentor is not assigned to this child")
 
-        # Check if total bonus points for the task do not exceed 25
-        if task.total_bonus_points + bonus_points > 25:
-            raise ValueError("Total bonus points for this task cannot exceed 25 points.")
+        if task.total_bonus_points + bonus_points > task.admin_max_points:
+            raise ValueError("Total bonus points for this task cannot exceed max points.")
 
         # Add bonus points to the child's total
         child.add_points(bonus_points)

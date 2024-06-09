@@ -1,11 +1,16 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Shop Home{% endblock %}
+{% block title %}דף הבית של החנות{% endblock %}
 
 {% block content %}
+<style>
+    body {
+    text-align: right;
+}
+</style>
     <div class="container mt-3">
         <div class="text-center">
-            <h2>Welcome {{ shop.name }}</h2>
+            <h2>{{ shop.name }} שלום</h2>
             {% if shop.img %}
                 <img src="{{ shop.img.url }}" alt="{{ shop.name }}" class="shop-icon img-fluid rounded-circle mt-3">
             {% else %}
@@ -14,25 +19,25 @@
         </div>
 
         <div class="section mt-4">
-            <h3>Redeem Teen Coins</h3>
+            <h3>מימוש טינקוינס</h3>
             <a href="{% url 'shop_redeem_points' %}" class="btn blue-btn btn-block">
-                <i class="fas fa-gift"></i> Redeem TeenCoins
+                <i class="fas fa-gift"></i> מימוש טינקוינס
             </a>
         </div>
 
         <div class="section mt-4">
-            <h3>Teen Coins Information</h3>
+            <h3>מידע על טינקוינס</h3>
             <p>
-                Max TeenCoins: {{ shop.max_points }} 
-                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Max Teen Coins is the maximum number of Teen Coins you can redeem this month."></i>
+                טינקוינס מקסימלי: {{ shop.max_points }}
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="הטינקוינס המקסימלי הוא מספר הטינקוינס המרבי שתוכל לממש החודש."></i>
             </p>
             <p class="points-used">
-                TeenCoins Used This Month: {{ points_used_this_month }}
-                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Teen Coins used so far this month."></i>
+                טינקוינס שהשתמשו החודש: {{ points_used_this_month }}
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="טינקוינס שהשתמשו בהם עד כה החודש."></i>
             </p>
             <p class="points-left">
-                TeenCoins Left to Redeem: {{ points_left_to_redeem }}
-                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="Teen Coins left that you can redeem to kids this month."></i>
+                טינקוינס שנותרו למימוש: {{ points_left_to_redeem }}
+                <i class="fas fa-info-circle info-icon" data-toggle="tooltip" title="טינקוינס שנותרו שתוכל לממש לילדים החודש."></i>
             </p>
             <div class="chart-container mt-3">
                 <canvas id="pointsChart"></canvas>
@@ -40,9 +45,9 @@
         </div>
 
         <div class="section mt-4">
-            <h3>Redemption History</h3>
+            <h3>היסטוריית מימושים</h3>
             <a href="{% url 'shop_redemption_history' %}" class="btn orange-btn btn-block">
-                <i class="fas fa-history"></i> View Redemption History
+                <i class="fas fa-history"></i> הצגת היסטוריית מימושים
             </a>
         </div>
     </div>
@@ -91,7 +96,7 @@
         var pointsChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Points Used', 'Points Left'],
+                labels: ['נקודות שהשתמשו בהן', 'נקודות שנותרו'],
                 datasets: [{
                     data: [pointsUsedData, pointsLeftData],
                     backgroundColor: ['#007bff', '#28a745'],
@@ -105,7 +110,7 @@
                 },
                 title: {
                     display: true,
-                    text: 'Points Usage'
+                    text: 'שימוש בנקודות'
                 }
             }
         });

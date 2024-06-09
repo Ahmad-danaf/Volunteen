@@ -1,9 +1,9 @@
-{% extends 'child_base.html' %}
+{% extends 'mentor_base.html' %}
 {% load static %}
-{% block title %}היסטוריית רכישה{% endblock %}
+{% block title %}היסטוריית מימוש{% endblock %}
 
 {% block content %}
-    <h1>היסטוריית רכישה</h1>
+    <h1>היסטוריית מימוש</h1>
     <form method="get">
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">סנן</button>
@@ -12,7 +12,7 @@
         <thead>
             <tr style="background-color: #007bff; color: white;">
                 <th style="padding: 8px; text-align: left;">תאריך</th>
-                <th style="padding: 8px; text-align: left;">טינקוינס שמומשו</th>
+                <th style="padding: 8px; text-align: left;">נקודות ששומשו</th>
                 <th style="padding: 8px; text-align: left;">בית עסק</th>
             </tr>
         </thead>
@@ -25,7 +25,7 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="3" style="padding: 8px; text-align: center;">אין עדיין רכישות.</td>
+                    <td colspan="3" style="padding: 8px; text-align: center;">עדיין לא בוצעו מימושים.</td>
                 </tr>
             {% endfor %}
         </tbody>

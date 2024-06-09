@@ -1,29 +1,34 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Redemption Successful{% endblock %}
+{% block title %}פדיון מוצלח{% endblock %}
 
 {% block content %}
-    <div class="success-container">
-        <h2>Redemption Successful</h2>
-        <p>Teen Coins have been successfully redeemed for:</p>
+    <div class="success-container" dir="rtl">
+        <h2>רכישה הושלמה!</h2>
+        <p>טינקוינס נפדו בהצלחה עבור:</p>
         <div class="child-info">
-            <p><strong>Name:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
-            <p><strong>Identifier:</strong> {{ child.identifier }}</p>
-            <p><strong>Points Redeemed:</strong> {{ points_used }}</p>
+            <p><strong>שם:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
+            <p><strong>מזהה:</strong> {{ child.identifier }}</p>
+            <p><strong>טינקוינס שנפדו:</strong> {{ points_used }}</p>
         </div>
         <div class="receipt">
-            <h3>Receipt</h3>
+            <h3>קבלה</h3>
             <ul>
                 {% for reward in receipt %}
-                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} Teen Coins</li>
+                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} טינקוינס</li>
                 {% endfor %}
             </ul>
         </div>
-        <a href="{% url 'shop_redeem_points' %}" class="btn">Redeem More Teen Coins</a>
-        <a href="{% url 'shop_home' %}" class="btn">Go to Dashboard</a>
+        <a href="{% url 'shop_redeem_points' %}" class="btn">רכישה נוספת</a>
+        <a href="{% url 'shop_home' %}" class="btn">מעבר לף הבית</a>
     </div>
 {% endblock %}
 
 {% block extra_css %}
+<style>
+    body {
+        text-align: right;
+    }
+</style>
 <link rel="stylesheet" href="{% static 'css/shop_redemption_success.css' %}">
 {% endblock %}

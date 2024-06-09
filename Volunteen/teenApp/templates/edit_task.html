@@ -2,12 +2,12 @@
 {% load static %}
 {% block content %}
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">Edit Task: {{ task.title }}</h2>
+    <h2 style="color: #ff6600;">ערוך משימה: {{ task.title }}</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Save Changes</button>
+        <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> שמור שינויים</button>
     </form>
-    <a href="{% url 'mentor_task_list' %}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Task List</a>
+    <a href="{% url 'mentor_task_list' %}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> חזרה למסך המשימות</a>
 </div>
 {% endblock %}

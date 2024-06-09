@@ -4,15 +4,15 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/assign_points.css' %}">
 
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">Assign Points: {{ task.title }}</h2>
+    <h2 style="color: #ff6600;">מתן נקודות: {{ task.title }}</h2>
     <form method="post">
         {% csrf_token %}
         <table class="form-table">
             <thead>
                 <tr>
-                    <th>Select</th>
-                    <th>Username</th>
-                    <th>Points</th>
+                    <th>בחר</th>
+                    <th>שם משתמש</th>
+                    <th>TeenCoins נוכחיים</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,18 +27,18 @@
                         </label>
                     </td>
                     <td>
-                        {{ child.points }} Points
+                        {{ child.points }} נקודות
                     </td>
                 </tr>
                 {% endfor %}
                 {% if children|length == 0 %}
                 <tr>
-                    <td colspan="3" class="text-center">No Children Found</td>
+                    <td colspan="3" class="text-center">לא נמצאו ילדים</td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
-        <button type="submit" class="button assign-task">Assign Points</button>
+        <button type="submit" class="button assign-task">מתן נקודות</button>
     </form>
 </div>
 {% endblock %}

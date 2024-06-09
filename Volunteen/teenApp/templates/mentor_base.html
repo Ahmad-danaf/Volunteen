@@ -16,12 +16,12 @@
 </head>
 <body>
     <header>
-        <h1>{% block header %}Mentor Dashboard{% endblock %}</h1>
+        <h1>{% block header %}דף הבית{% endblock %}</h1>
     </header>
 
     <nav>
-        <a href="{% url 'mentor_home' %}">Home</a>
-        <a href="{% url 'logout_view' %}" style="background-color: #dc3545;">Logout</a> <!-- Logout Button Added -->
+        <a href="{% url 'logout_view' %}" style="background-color: #dc3545;">Logout</a> 
+        <a href="{% url 'mentor_home' %}">דף הבית</a>
     </nav>
 
     <main class="container">
@@ -29,7 +29,7 @@
     </main>
 
     <footer>
-        &copy; 2024 Volunteen | For support or help, contact us at: volunteen2023@gmail.com
+        &copy; 2024 Volunteen |  לעזרה או תמיכה, צרו קשר ב: : volunteen2023@gmail.com
     </footer>
 
     {% block extra_js %}{% endblock %}

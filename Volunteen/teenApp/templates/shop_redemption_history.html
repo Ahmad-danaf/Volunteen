@@ -1,18 +1,18 @@
 {% extends 'shop_base.html' %}
-
-{% block title %}Shop Home{% endblock %}
+{% load static %}
+{% block title %}בית עסק - היסטוריית פדיון{% endblock %}
 
 {% block content %}
-<h2>Welcome {{ shop.name }}</h2>
+<h2 dir="rtl">ברוך הבא {{ shop.name }}</h2>
 
 <div>
-    <h3>Recent Redemptions</h3>
+    <h3 dir="rtl">פדיונים אחרונים</h3>
     <table class="redemption-table">
         <thead>
             <tr>
-                <th>Date Redeemed</th>
-                <th>Child</th>
-                <th>Teen Coins Redeemed</th>
+                <th>תאריך פדיון</th>
+                <th>ילד</th>
+                <th>טינקוינס שנפדו</th>
             </tr>
         </thead>
         <tbody>
@@ -25,12 +25,12 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3">No recent redemptions.</td>
+                <td colspan="3">אין פדיונים אחרונים.</td>
             </tr>
             {% endfor %}
             {% else %}
             <tr>
-                <td colspan="3">No recent redemptions.</td>
+                <td colspan="3">אין פדיונים אחרונים.</td>
             </tr>
             {% endif %}
         </tbody>
@@ -38,7 +38,7 @@
 </div>
 
 <div class="section">
-    <h3>Monthly Redemption Summary</h3>
+    <h3 dir="rtl">סיכום חודשי של פדיונים</h3>
     <div class="chart-container">
         <canvas id="redemptionChart"></canvas>
     </div>
@@ -46,9 +46,9 @@
     <table class="redemption-summary-table">
         <thead>
             <tr>
-                <th>Month</th>
-                <th>Max TCoins this month</th>
-                <th>TCoins Used</th>
+                <th>חודש</th>
+                <th>מקסימום טינקוינס החודש</th>
+                <th>טינקוינס שנפדו</th>
             </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>No monthly redemption data available.</p>
+    <p>אין נתוני פדיונים חודשיים זמינים.</p>
     {% endif %}
 </div>
 
@@ -135,13 +135,13 @@
         var chartData = {
             labels: [{% for redemption in monthly_redemptions %}"{{ redemption.month|date:'F Y' }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
             datasets: [{
-                label: 'Teen Coins Used',
+                label: 'טינקוינס שנפדו',
                 data: [{% for redemption in monthly_redemptions %}{{ redemption.total_points }}{% if not forloop.last %}, {% endif %}{% endfor %}],
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgba(255, 99, 132, 1)',
                 borderWidth: 1
             }, {
-                label: 'Max Teen Coins this month',
+                label: 'מקסימום טינקוינס החודש',
                 data: [{% for redemption in monthly_redemptions %}{{ redemption.max_points }}{% if not forloop.last %}, {% endif %}{% endfor %}],
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -149,7 +149,7 @@
             }]
         };
         var chart = new Chart(ctx, {
-            type: 'bar', 
+            type: 'bar',
             data: chartData,
             options: {
                 responsive: true,

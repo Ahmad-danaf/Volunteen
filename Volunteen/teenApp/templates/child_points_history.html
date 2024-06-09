@@ -1,33 +1,68 @@
 {% extends 'child_base.html' %}
 {% load static %}
-{% block title %}Points History{% endblock %}
+{% block title %}היסטוריית טינקוינס{% endblock %}
 
 {% block content %}
-    <h1>Points History</h1>
-    <table style="width: 100%; border-collapse: collapse;">
+    <h1>היסטוריית טינקוינס</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">סנן</button>
+    </form>
+    <style>
+        .completed-task {
+            color: green;
+            font-weight: bold;
+        }
+        .bonus-points {
+            color: green;
+            font-weight: bold;
+        }
+        .redeemed {
+            color: red;
+            font-weight: bold;
+        }
+        .points-completed {
+            color: green;
+        }
+        .points-bonus {
+            color: green;
+        }
+        .points-redeemed {
+            color: red;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: rtl;
+        }
+        th, td {
+            padding: 8px;
+            text-align: right;
+        }
+        .points {
+            direction: ltr;
+        }
+    </style>
+    <table>
         <thead>
-            <tr style="background-color: #007bff; color: white;">
-                <th style="padding: 8px; text-align: left;">Task Title</th>
-                <th style="padding: 8px; text-align: left;">Points</th>
-                <th style="padding: 8px; text-align: left;">Date Completed</th>
-                <th style="padding: 8px; text-align: left;">Mentor</th>
+            <tr style="background-color: #007bff; color: white;"> 
+                <th>תיאור</th>
+                <th>טינקוינס</th>
+                <th>תאריך</th>
+                <th>יתרה</th>
             </tr>
         </thead>
         <tbody>
-            {% for task in tasks %}
+            {% for entry in points_history %}
                 <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px;">{{ task.title }}</td>
-                    <td style="padding: 8px;">{{ task.points }}</td>
-                    <td style="padding: 8px;">{{ task.deadline|date:"d/m/Y" }}</td>
-                    <td style="padding: 8px;">
-                        {% for mentor in task.assigned_mentors.all %}
-                            {{ mentor.user.username }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </td>
+                    <td class="{% if 'Completed Task' in entry.description %}completed-task{% elif 'Bonus Points' in entry.description %}completed-task{% elif 'Redeemed' in entry.description %}redeemed{% endif %}">{{entry.string}}</td>
+                    <td class="{% if 'Completed Task' in entry.description %}points-completed{% elif 'Bonus Points' in entry.description %}points-bonus{% elif 'Redeemed' in entry.description %}points-redeemed{% endif %} points">{{ entry.points }}</td>
+                    <td>{{ entry.date|date:"d/m/Y" }}</td>
+                    <td class="points">{{ entry.balance }}</td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="4" style="padding: 8px; text-align: center;">No Points History Found</td>
+                    <td colspan="4" style="padding: 8px; text-align: center;">אין עדיין </td>
                 </tr>
             {% endfor %}
         </tbody>

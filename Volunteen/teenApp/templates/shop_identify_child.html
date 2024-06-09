@@ -1,30 +1,32 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Identify Child{% endblock %}
+{% block title %}זיהוי ילד{% endblock %}
 
 {% block content %}
     <div class="container mt-5">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h2>Identify Child</h2>
+                <div class="card-header bg-primary text-white">
+                    <h2>זיהוי ילד</h2>
+                </div>                
             </div>
             <div class="card-body">
-                <p class="lead">To complete the redemption, please identify the child by entering their Identifier and Secret Code.</p>
+                <p class="lead">כדי להשלים את המימוש, יש לזהות את הילד על ידי הזנת מזהה וקוד סודי.</p>
 
                 <form method="post" id="identify-child-form">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ id_form.identifier.label_tag }}
                         {{ id_form.identifier }}
-                        <div class="invalid-feedback">Please enter a valid identifier.</div>
+                        <div class="invalid-feedback">נא להזין מזהה חוקי.</div>
                     </div>
                     <div class="form-group">
                         {{ id_form.secret_code.label_tag }}
                         {{ id_form.secret_code }}
-                        <div class="invalid-feedback">Please enter a valid secret code.</div>
+                        <div class="invalid-feedback">נא להזין קוד סודי חוקי.</div>
                     </div>
                     <div class="action-buttons mt-4">
-                        <button type="submit" class="btn btn-success btn-block">Identify Child</button>
+                        <button type="submit" class="btn btn-success btn-block">זיהוי ילד</button>
                     </div>
                 </form>
             </div>
@@ -34,6 +36,9 @@
 
 {% block extra_css %}
 <style>
+    body {
+        text-align: right;
+    }
     .container {
         max-width: 600px;
         margin: 0 auto;
@@ -102,7 +107,7 @@
             // Display loading spinner
             var submitButton = form.querySelector('button[type="submit"]');
             submitButton.disabled = true;
-            submitButton.innerHTML = 'Identifying... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            submitButton.innerHTML = 'מזהה... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
         });
 
         // Remove invalid feedback on input

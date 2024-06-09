@@ -5,6 +5,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from captcha.fields import CaptchaField
 
+
+from django import forms
+
+class DateRangeForm(forms.Form):
+    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך התחלה')
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך סיום')
+
 class CreateUserForm(UserCreationForm):
     captcha = CaptchaField()
     phone = forms.CharField(max_length=10, required=False, help_text='Enter a valid phone number.')
@@ -26,8 +33,8 @@ class TaskImageForm(forms.ModelForm):
         fields = ['img']
 
 class IdentifyChildForm(forms.Form):
-    identifier = forms.CharField(max_length=5, label='Child Identifier')
-    secret_code = forms.CharField(max_length=3, label='Secret Code', widget=forms.PasswordInput())
+    identifier = forms.CharField(max_length=5, label='מספר מזהה')
+    secret_code = forms.CharField(max_length=3, label='קוד סודי', widget=forms.PasswordInput())
 
 class RedemptionForm(forms.Form):
     points = forms.IntegerField(label='Points to Redeem', min_value=1)
@@ -42,6 +49,10 @@ class BonusPointsForm(forms.Form):
         if mentor:
             self.fields['child'].queryset = Child.objects.filter(mentors=mentor)
             
+from django import forms
+from teenApp.entities.task import Task
+from teenApp.entities.child import Child
+
 class TaskForm(forms.ModelForm):
     assigned_children = forms.ModelMultipleChoiceField(
         queryset=Child.objects.all(),
@@ -51,13 +62,12 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'deadline', 'points', 'duration', 'img', 'additional_details', 'assigned_children']
+        fields = ['title', 'description', 'points', 'deadline', 'img', 'additional_details', 'assigned_children']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'points': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'points': forms.NumberInput(attrs={'class': 'form-control'}),
-            'duration': forms.TextInput(attrs={'class': 'form-control'}),
             'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
         }
@@ -67,3 +77,8 @@ class TaskForm(forms.ModelForm):
         super(TaskForm, self).__init__(*args, **kwargs)
         if self.mentor:
             self.fields['assigned_children'].queryset = self.mentor.children.all()
+
+
+
+class DateRangeMForm(forms.Form):
+    month = forms.DateField(widget=forms.DateInput(attrs={'type': 'month'}), label='Month')            

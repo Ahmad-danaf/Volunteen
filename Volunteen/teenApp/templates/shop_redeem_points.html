@@ -1,38 +1,35 @@
 {% extends 'shop_base.html' %}
 {% load static %}
-{% block title %}Redeem TCoins{% endblock %}
+{% block title %}מימוש טינקוינס{% endblock %}
 
 {% block content %}
-    <!-- Page heading -->
-    <h2>Redeem Teen Coins</h2>
+    <h2>מימוש טינקוינס</h2>
 
-    <form method="post" id="redeem-form">
+    <form dir="rtl" method="post" id="redeem-form">
         {% csrf_token %}
-            <!-- Rewards available for redemption -->
             <div class="rewards">
                 {% for reward in rewards %}
                     <div class="reward-item card">
                         <div class="card-body">
                             <img src="{{ reward.img.url }}" alt="{{ reward.title }}" class="reward-img">
                             <h4>{{ reward.title }}</h4>
-                            <p>{{ reward.points_required }} Teen Coins</p>
+                            <p>{{ reward.points_required }} טינקוינס</p>
                             <div class="reward-actions">
-                                <button type="button" class="btn btn-secondary" onclick="updateQuantity({{ reward.id }}, 'sell')">Sell</button>
+                                <button type="button" class="btn btn-secondary" onclick="updateQuantity({{ reward.id }}, 'sell')">הסרה</button>
                                 <span id="quantity-{{ reward.id }}">0</span>
-                                <button type="button" class="btn btn-primary" onclick="updateQuantity({{ reward.id }}, 'buy')">Buy</button>
+                                <button type="button" class="btn btn-primary" onclick="updateQuantity({{ reward.id }}, 'buy')">הוספה</button>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- Receipt section -->
-            <h3>Your Receipt</h3>
+            <h3>הקבלה שלך</h3>
             <ul id="receipt"></ul>
 
             <div class="action-buttons">
-                <button type="button" class="btn btn-success" onclick="completeTransaction()">Complete Transaction</button>
-                <button type="button" class="btn btn-danger" onclick="cancelTransaction()">Cancel Purchase</button>
+                <button type="button" class="btn btn-danger" onclick="cancelTransaction()">ביטול רכישה</button>
+                <button type="button" class="btn btn-success" onclick="completeTransaction()">סיום עסקה</button>
             </div>
 
             <input type="hidden" name="child_id" value="{{ child.id }}">
@@ -78,7 +75,7 @@
             receipt.innerHTML = '';
             selectedRewards.forEach(reward => {
                 let li = document.createElement('li');
-                li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} Teen Coins`;
+                li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} טינקוינס`;
                 receipt.appendChild(li);
             });
         }
@@ -102,6 +99,9 @@
     </script>
 
     <style>
+        body {
+            text-align: right;
+        }
         .rewards {
             display: flex;
             flex-direction: column;
@@ -176,4 +176,3 @@
         }
     </style>
 {% endblock %}
-
