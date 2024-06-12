@@ -11,17 +11,17 @@
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background-color: #007bff; color: white;">
-                <th style="padding: 8px; text-align: left;">תאריך</th>
-                <th style="padding: 8px; text-align: left;">טינקוינס שמומשו</th>
-                <th style="padding: 8px; text-align: left;">בית עסק</th>
+                <th style="padding: 8px; text-align: right;">תאריך</th>
+                <th style="padding: 8px; text-align: right;">טינקוינס שמומשו</th>
+                <th style="padding: 8px; text-align: right;">בית עסק</th>
             </tr>
         </thead>
         <tbody>
             {% for redemption in redemptions %}
                 <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px;">{{ redemption.date_redeemed|date:"Y-m-d H:i" }}</td>
-                    <td style="padding: 8px;">{{ redemption.points_used }}</td>
-                    <td style="padding: 8px;">{{ redemption.shop }}</td>
+                    <td style="padding: 8px; text-align: right;">{{ redemption.date_redeemed|date:"Y-m-d H:i" }}</td>
+                    <td style="padding: 8px; text-align: right;">{{ redemption.points_used }}</td>
+                    <td style="padding: 8px; text-align: right;">{{ redemption.shop }}</td>
                 </tr>
             {% empty %}
                 <tr>
