@@ -1,16 +1,41 @@
-pycache/
+# Ignore all XML files
+*.xml
+
+# Ignore Python bytecode files and cache directories
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.pyz
 *.pyw
 *.py~
+
+# Ignore SQLite database file
 db.sqlite3
+
+# Ignore media folder
 media/
+
+# Ignore virtual environment folders
 venv/
 env/
+
+# Ignore VSCode settings
 .vscode/
-*.pyc
+
+# Ignore local settings
 local_settings.py
+
+# Ignore macOS and Windows system files
 .DS_Store
 Thumbs.db
+
+# Ignore PyCharm project files
+.idea/
+*.iml
+
+# Ignore workspace-specific settings
+*.iws
+
+# Ignore Jupyter Notebook checkpoints (if using PyCharm for Jupyter development)
+.ipynb_checkpoints/
