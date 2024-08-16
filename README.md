@@ -4,7 +4,26 @@
 ## Description
 Welcome to Volunteen! This project, Volunteen, is a system we developed to manage tasks that increase the involvement of children and youth in community projects. Each positive task they complete earns them points that can be redeemed for rewards through partnerships with local businesses.
 
-The project is structured according to Uncle Bob's Clean Architecture, utilizing four layers: Entities, Use Cases, Interface Adapters, and Frameworks & Drivers, ensuring a clear separation of concerns and maintainability.
+Volunteen is structured following Uncle Bob's Clean Architecture principles, organized into four distinct layers:
+
+- **Entities:** The core business logic.
+- **Use Cases:** Application-specific business rules.
+- **Interface Adapters:** Converters that transform data from the use cases to a format that can be used by the framework.
+- **Frameworks & Drivers:** External interfaces such as databases, web frameworks, or other I/O components.
+
+Below are screenshots showcasing different aspects of the **Volunteen** system:
+
+<img src="Volunteen/Volunteen/static/images/kids_portal.png" alt="Kids Portal" width="300"/>
+
+**Screenshot of the Kids Portal, where children and youth can view and manage their tasks.**
+
+<img src="Volunteen/Volunteen/static/images/mentor_portal.png" alt="Mentor Portal" width="300"/>
+
+**Screenshot of the Mentor Portal, where mentors can assign tasks and track progress.**
+
+<img src="Volunteen/Volunteen/static/images/shop_portal.png" alt="Shop Portal" width="300"/>
+
+**Screenshot of the Shop Portal, where points can be redeemed for rewards.**
 
 ## Installation
 To install Volunteen, follow these steps:
