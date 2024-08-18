@@ -43,7 +43,7 @@ def home_redirect(request):
     elif request.user.groups.filter(name='Shops').exists():
         return redirect('shop_home')
     else:
-        return redirect('default_home')
+        return redirect('/admin')
 
 def default_home(request):
     return HttpResponse("Home")

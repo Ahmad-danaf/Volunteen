@@ -1,4 +1,5 @@
 from django.contrib import admin
+from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.child import Child
 from teenApp.entities.reward import Reward
 from teenApp.entities.task import Task
@@ -52,3 +53,9 @@ class RedemptionAdmin(admin.ModelAdmin):
 class ShopAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'max_points')
     search_fields = ('name', 'user__username')
+    
+@admin.register(TaskCompletion)
+class TaskCompletionAdmin(admin.ModelAdmin):
+    list_display = ('task', 'child', 'completion_date')
+    search_fields = ('task__title', 'child__user__username')
+    list_filter = ('completion_date',)

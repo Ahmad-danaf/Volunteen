@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.child import Child
 from .forms import TaskForm 
 from django.http import JsonResponse
@@ -29,7 +30,7 @@ def mentor_home(request):
 
     children = []
     for child in mentor.children.all():
-        completed = child.completed_tasks.count()
+        completed = TaskCompletion.objects.filter(child=child, task__in=tasks).count()
         assigned = child.assigned_tasks.count()
         efficiency = (completed / assigned) * 100 if assigned > 0 else 0
         performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
@@ -74,14 +75,15 @@ def mentor_completed_tasks_view(request):
     if start_date and end_date:
         tasks = tasks.filter(deadline__range=(start_date, end_date))
 
-    for task in tasks:
-        task_info = {
-            'task': task,
-            'form': TaskImageForm(instance=task),
-            'completed_by': task.completed_by.all(),
-            'completed_count': task.completed_by.count(),
-        }
-        task_data.append(task_info)
+        for task in tasks:
+            completions = TaskCompletion.objects.filter(task=task)
+            task_info = {
+                'task': task,
+                'form': TaskImageForm(instance=task),
+                'completed_by': [completion.child for completion in completions],
+                'completed_count': completions.count(),
+            }
+            task_data.append(task_info)
 
     return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data, 'form': form})
 
@@ -123,8 +125,6 @@ def load_children(request):
     children = Child.objects.filter(assigned_tasks=task_id).order_by('user__username')
     return JsonResponse(list(children.values('id', 'user__username')), safe=False)
 
-from django.shortcuts import render, redirect
-from .forms import TaskForm  # Assuming you have a form for Task
 @login_required
 def add_task(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -203,22 +203,32 @@ def assign_task(request, task_id):
 def assign_points(request, task_id):
     mentor = Mentor.objects.get(user=request.user)
     task = get_object_or_404(Task, id=task_id)
+    
+    # Get all assigned children
     children = mentor.children.filter(id__in=task.assigned_children.values_list('id', flat=True))
 
     if request.method == 'POST':
         selected_children_ids = request.POST.getlist('children')
         for child_id in selected_children_ids:
             child = get_object_or_404(Child, id=child_id)
-            child.add_points(task.points)
-            task.completed_by.add(child)
+            task.mark_completed(child)
         messages.success(request, f"Points successfully assigned for task '{task.title}' to selected children.")
         return redirect('points_assigned_success', task_id=task.id)
 
-    return render(request, 'assign_points.html', {'task': task, 'children': children})
+    # Prepare data for children with completion status
+    children_with_status = []
+    for child in children:
+        completed = TaskCompletion.objects.filter(task=task, child=child).exists()
+        children_with_status.append({'child': child, 'completed': completed})
+
+    return render(request, 'assign_points.html', {'task': task, 'children_with_status': children_with_status})
+
 
 @login_required
 def points_assigned_success(request, task_id):
     task = get_object_or_404(Task, id=task_id)
-    children = task.completed_by.all()
-    return render(request, 'points_assigned_success.html', {'task': task, 'children': children})
+    completed_children = Child.objects.filter(
+        id__in=TaskCompletion.objects.filter(task=task).values_list('child_id', flat=True)
+    ) 
+    return render(request, 'points_assigned_success.html', {'task': task, 'children': completed_children})
 

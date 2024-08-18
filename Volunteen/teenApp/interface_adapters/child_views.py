@@ -70,7 +70,7 @@ def child_completed_tasks(request):
         start_date = None
         end_date = None
 
-    tasks = child.tasks_completed.all()
+    tasks = child.assigned_tasks.all()
     if start_date and end_date:
         tasks = tasks.filter(completed_date__range=(start_date, end_date))
 

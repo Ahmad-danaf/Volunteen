@@ -4,7 +4,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/assign_points.css' %}">
 
 <div class="container mt-5">
-    <h2 style="color: #ff6600;">מתן נקודות: {{ task.title }}</h2>
+    <h2 style="color: #ff6600; text-align: center;">מתן טינקואינס: {{ task.title }}</h2>
     <form method="post">
         {% csrf_token %}
         <table class="form-table">
@@ -12,28 +12,36 @@
                 <tr>
                     <th>בחר</th>
                     <th>שם משתמש</th>
-                    <th>TeenCoins נוכחיים</th>
+                    <th>טינקואינס נוכחיים</th>
+                    <th>האם הושלם</th>
                 </tr>
             </thead>
             <tbody>
-                {% for child in children %}
+                {% for entry in children_with_status %}
                 <tr>
                     <td>
-                        <input class="form-check-input" type="checkbox" name="children" value="{{ child.id }}" id="child-{{ child.id }}">
+                        <input class="form-check-input" type="checkbox" name="children" value="{{ entry.child.id }}" id="child-{{ entry.child.id }}" {% if entry.completed %}disabled{% endif %}>
                     </td>
                     <td>
-                        <label class="form-check-label" for="child-{{ child.id }}">
-                            {{ child.user.username }}
+                        <label class="form-check-label" for="child-{{ entry.child.id }}">
+                            {{ entry.child.user.username }}
                         </label>
                     </td>
                     <td>
-                        {{ child.points }} נקודות
+                        {{ entry.child.points }} טינקואינס
+                    </td>
+                    <td>
+                        {% if entry.completed %}
+                        <span style="color: green;">הושלם</span>
+                        {% else %}
+                        <span style="color: red;">לא הושלם</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
-                {% if children|length == 0 %}
+                {% if children_with_status|length == 0 %}
                 <tr>
-                    <td colspan="3" class="text-center">לא נמצאו ילדים</td>
+                    <td colspan="4" class="text-center">לא נמצאו ילדים</td>
                 </tr>
                 {% endif %}
             </tbody>
@@ -41,4 +49,5 @@
         <button type="submit" class="button assign-task">מתן נקודות</button>
     </form>
 </div>
+
 {% endblock %}
