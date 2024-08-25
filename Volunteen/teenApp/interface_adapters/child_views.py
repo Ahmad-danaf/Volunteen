@@ -7,14 +7,25 @@ from teenApp.entities.child import Child
 from teenApp.entities.task import Task
 from teenApp.entities.redemption import Redemption
 from teenApp.entities.shop import Shop
+from teenApp.entities.TaskCompletion import TaskCompletion
 from datetime import date
 from django.utils.timezone import now
 from django.db.models import Sum, F
 from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
+from django.db.models import Sum, Case, When, Value, IntegerField, F
+
 @login_required
 def child_home(request):
     child = Child.objects.get(user=request.user)
+   # Get the current day of the week (0 for Sunday, 6 for Saturday)
+    current_day = datetime.now().weekday()
+
+    # Adjusting for 0-Sunday format, since Python's weekday() starts at 0-Monday
+    # We'll shift by 1 so that 0 becomes Sunday, 1 becomes Monday, etc.
+    current_day = (current_day + 1) % 7
+
+    # Greetings dictionary
     greetings = {
         0: f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",  # יום ראשון
         1: f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
@@ -25,8 +36,10 @@ def child_home(request):
         6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
 
-    today = datetime.today().weekday()+1
-    greeting = greetings.get(today, f"Hey {child.user.username}, have a great day!")
+    # Get the greeting for today
+    todays_greeting = greetings[current_day]
+    
+
     
     new_tasks = child.assigned_tasks.filter(new_task=True, viewed=False)
     new_tasks_count = new_tasks.count()
@@ -35,7 +48,7 @@ def child_home(request):
         new_tasks.update(viewed=True)
         new_tasks.update(new_task=False)
 
-    return render(request, 'child_home.html', {'child': child, 'greeting': greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
+    return render(request, 'child_home.html', {'child': child, 'greeting': todays_greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
 
 @login_required
 def child_redemption_history(request):
@@ -61,7 +74,7 @@ def child_completed_tasks(request):
     child = Child.objects.get(user=request.user)
     form = DateRangeForm(request.GET or None)
     tasks_with_bonus = []
-    default_date = date(2201, 1, 1)  
+    default_date = date(2201, 1, 1)
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']
@@ -70,25 +83,22 @@ def child_completed_tasks(request):
         start_date = None
         end_date = None
 
-    tasks = child.assigned_tasks.all()
-    if start_date and end_date:
-        tasks = tasks.filter(completed_date__range=(start_date, end_date))
+    # Retrieve TaskCompletion records associated with this child
+    task_completions = TaskCompletion.objects.filter(child=child)
 
-    for task in tasks:
-        completion_date = task.completed_date.date() if task.completed_date else default_date
+    if start_date and end_date:
+        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+
+    for task_completion in task_completions:
+        completion_date = task_completion.completion_date if task_completion.completion_date else default_date
+        task = task_completion.task
         tasks_with_bonus.append({
             'title': task.title,
-            'points': task.points,
+            'points': task_completion.task.points,
             'completion_date': completion_date,
             'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
         })
-        if task.total_bonus_points > 0:
-            tasks_with_bonus.append({
-                'title': f"{task.title} - Bonus",
-                'points': task.total_bonus_points,
-                'completion_date': completion_date,
-                'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
-            })
+       
 
     return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form})
 
@@ -108,7 +118,7 @@ def child_points_history(request):
     form = DateRangeForm(request.GET or None)
     points_history = []
     current_points = 0
-    default_date = date(2201, 1, 1) 
+    default_date = date(2201, 1, 1)
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']
@@ -117,22 +127,24 @@ def child_points_history(request):
         start_date = None
         end_date = None
 
-    tasks = child.tasks_completed.all()
+    # Retrieve TaskCompletion records for this child
+    task_completions = TaskCompletion.objects.filter(child=child)
     if start_date and end_date:
-        tasks = tasks.filter(completed_date__range=(start_date, end_date))
+        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
 
-    for task in tasks:
-        completed_date = task.completed_date.date() if task.completed_date else default_date
-        current_points += task.points
-        string=f" ביצוע משימה : {task.title }"
+    for task_completion in task_completions:
+        completed_date = task_completion.completion_date.date() if task_completion.completion_date else default_date
+        task = task_completion.task
+        current_points += task_completion.task.points
+        string = f" ביצוע משימה : {task.title}"
         points_history.append({
             'description': f"Completed Task: {task.title}",
             'points': f"+{task.points}",
             'date': completed_date,
             'balance': current_points,
-            'string':string
+            'string': string
         })
-        if task.total_bonus_points > 0:
+        if task_completion.bonus_points > 0:
             current_points += task.total_bonus_points
             string=f"{task.title } :בונוס"
             points_history.append({
@@ -143,6 +155,11 @@ def child_points_history(request):
                 'string':string
             })
 
+
+        
+
+    
+    # Retrieve redemptions for this child
     redemptions = Redemption.objects.filter(child=child)
     if start_date and end_date:
         redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
@@ -150,15 +167,18 @@ def child_points_history(request):
     for redemption in redemptions:
         date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
         current_points -= redemption.points_used
-        string=f" רכישה :{redemption.shop.name}"
+        string = f" רכישה :{redemption.shop.name}"
         points_history.append({
             'description': f"Redeemed: {redemption.shop.name}",
             'points': f"-{redemption.points_used}",
             'date': date_redeemed.date(),
             'balance': current_points,
-            'string':string
+            'string': string
         })
-    points_history.sort(key=lambda x: x['date'])  # סידור לפי תאריך
+
+    # Sort the points history by date
+    points_history.sort(key=lambda x: x['date'])
+    
     return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
 
 
@@ -200,24 +220,6 @@ def rewards_view(request):
     context = {'shops': shops_with_images, 'child_points': child.points}
     return render(request, 'reward.html', context)
 
-def update_monthly_top_children():
-    current_date = now()
-    first_day_of_current_month = current_date.replace(day=1)
-    first_day_of_next_month = (first_day_of_current_month + timedelta(days=32)).replace(day=1)
-    
-    children = Child.objects.all().order_by('-points')[:3]
-    positions = [20, 10, 5]  # בונוסים לפי מיקום
-
-    for i, child in enumerate(children):
-        MonthlyTopChild.objects.create(
-            child=child,
-            points=child.points,
-            month=first_day_of_current_month,
-            position=i + 1
-        )
-        child.points += positions[i]
-        child.save()
-
 @login_required
 def points_leaderboard(request):
     form = DateRangeForm(request.GET or None)
@@ -231,18 +233,15 @@ def points_leaderboard(request):
         children = children.annotate(
             points_within_range=Sum(
                 Case(
-                    When(tasks_completed__completed_date__range=(start_date, end_date), then='tasks_completed__points'),
-                    When(redemptions__date_redeemed__range=(start_date, end_date), then=-F('redemptions__points_used')),
+                    When(completed_tasks__completed_date__range=(start_date, end_date), then='completed_tasks__points'),
                     default=Value(0),
                     output_field=IntegerField()
                 )
             )
-        ).order_by('-points_within_range')
+        ).annotate(
+            total_points=F('points_within_range') + F('points')
+        ).order_by('-total_points')
     else:
         children = children.order_by('-points')
 
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
-
-def points_leaderboard(request):
-    children = Child.objects.all().order_by('-points')
-    return render(request, 'points_leaderboard.html', {'children': children})

@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from teenApp.entities.task import Task
 from teenApp.entities.mentor import Mentor
 from teenApp.use_cases.assign_bonus_points import AssignBonusPoints
+from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 from .forms import  TaskImageForm, BonusPointsForm
 from teenApp.utils import NotificationManager
 from teenApp.interface_adapters.forms import DateRangeForm
@@ -88,7 +89,6 @@ def mentor_completed_tasks_view(request):
     return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data, 'form': form})
 
 
-from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 assign_bonus_points = AssignBonusPoints(
     child_repository=ChildRepository(),
     task_repository=TaskRepository(),
@@ -111,6 +111,7 @@ def assign_bonus(request):
             
             try:
                 assign_bonus_points.execute(task.id, child.id, mentor.id, bonus_points)
+                TaskCompletion.objects.filter(task=task, child=child).update(bonus_points=bonus_points)
                 return redirect('mentor_home')
             except ValueError as e:
                 return render(request, 'assign_bonus.html', {'form': form, 'error': str(e)})
