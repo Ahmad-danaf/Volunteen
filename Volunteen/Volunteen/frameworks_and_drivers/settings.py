@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['13.60.157.4', 'localhost', '127.0.0.1']
 
 # Application definition
 
