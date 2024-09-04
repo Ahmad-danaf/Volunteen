@@ -146,10 +146,12 @@ import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'Volunteen', 'static'),
+    os.path.join(BASE_DIR, 'Volunteen/static'),
 ]
+
+# ציון התיקייה שבה Django תשמור את הקבצים שאוספים באמצעות collectstatic
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 MEDIA_URL = '/media/'
