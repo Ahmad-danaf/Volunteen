@@ -148,8 +148,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # מיקום תיקיית הסטטיק במקור (לאסוף ממנו את הקבצים)
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'Volunteen', 'static'),  # עדכון מדויק למיקום הסטטיק
+    os.path.join(BASE_DIR, 'static'), 
 ]
+
 
 STATIC_URL = '/static/'
 
