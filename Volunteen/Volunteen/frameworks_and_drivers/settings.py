@@ -147,7 +147,7 @@ import os
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'Volunteen', 'Volunteen', 'static'),  # הנתיב בו נמצאים קבצי הסטטיק
+    os.path.join(BASE_DIR, 'Volunteen', 'static'),  # Path to your static folder in the project
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # מיקום לשמירת הקבצים אחרי collectstatic
