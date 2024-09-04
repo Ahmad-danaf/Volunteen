@@ -144,7 +144,7 @@ import os
 
 #BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # מיקום לשמירת הקבצים שנאספים עם collectstatic
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'Volunteen', 'Volunteen','staticfiles')
 
 # מיקום תיקיית הסטטיק במקור (לאסוף ממנו את הקבצים)
 STATICFILES_DIRS = [
