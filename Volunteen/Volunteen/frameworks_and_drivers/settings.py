@@ -143,23 +143,20 @@ import os
 import os
 
 #BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# מיקום לשמירת הקבצים שנאספים עם collectstatic
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# מיקום תיקיית הסטטיק במקור (לאסוף ממנו את הקבצים)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'Volunteen', 'static'),  # עדכון מדויק למיקום הסטטיק
+]
 
 STATIC_URL = '/static/'
 
-# Static root - the location where collectstatic will place static files
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Static files (CSS, JavaScript, Images) - איפה לחפש את הקבצים הסטטיים
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-
-
-
-
+# הגדרות מדיה
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
