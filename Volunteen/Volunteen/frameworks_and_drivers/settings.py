@@ -146,10 +146,13 @@ import os
 # מיקום לשמירת הקבצים שנאספים עם collectstatic
 
 STATIC_URL = '/static/'  # Base URL for serving static files
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static'),  # Points to the 'static' directory
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Collects static files here
+
 
 # הגדרות מדיה
 MEDIA_URL = '/media/'
