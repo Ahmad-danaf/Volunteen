@@ -143,12 +143,18 @@ import os
 
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# הגדרה של הקבצים הסטטיים
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'), 
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'Volunteen', 'static')]  # התיקייה שבה נמצאים הקבצים המקוריים
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # תיקיית היעד לאחר ביצוע collectstatic
+
+
+
+
+
+
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 # הגדרות מדיה
 MEDIA_URL = '/media/'
