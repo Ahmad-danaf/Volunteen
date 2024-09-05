@@ -52,7 +52,7 @@ Volunteen/
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   └── wsgi.py
-│   │
+│   │── staticfiles/
 │   ├── static/
 │   │   ├── css/
 │   │   │   ├── assign_task.css
