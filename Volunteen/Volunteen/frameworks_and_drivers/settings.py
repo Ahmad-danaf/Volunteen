@@ -147,10 +147,9 @@ import os
 
 STATIC_URL = '/static/'  # Base URL for serving static files
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Points to /home/ubuntu/Volunteen/Volunteen/static
+    os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Directory where collected static files will be stored
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # הגדרות מדיה
 MEDIA_URL = '/media/'
