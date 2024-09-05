@@ -146,7 +146,9 @@ import os
 # מיקום לשמירת הקבצים שנאספים עם collectstatic
 
 STATIC_URL = '/static/'  # Base URL for serving static files
-STATICFILES_DIRS = [BASE_DIR / 'Volunteen/static']  # Location of additional static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Points to /home/ubuntu/Volunteen/Volunteen/static
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Directory where collected static files will be stored
 
 
