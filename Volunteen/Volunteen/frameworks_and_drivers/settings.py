@@ -147,11 +147,11 @@ import os
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'Volunteen', 'static'),  # Corrected path to static files
+    os.path.join(BASE_DIR, 'Volunteen', 'Volunteen', 'static'),  # Corrected path to static files
 ]
 
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # מיקום לשמירת הקבצים אחרי collectstatic
+STATIC_ROOT = os.path.join(BASE_DIR,'Volunteen', 'Volunteen', 'staticfiles')  # מיקום לשמירת הקבצים אחרי collectstatic
 
 
 # הגדרות מדיה
