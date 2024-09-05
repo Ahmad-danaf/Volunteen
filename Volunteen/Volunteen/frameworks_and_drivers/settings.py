@@ -147,7 +147,7 @@ import os
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'Volunteen', 'Volunteen', 'static'),  # Corrected path to static files
+    os.path.join(BASE_DIR, 'static'),  # Corrected path to static files
 ]
 
 
