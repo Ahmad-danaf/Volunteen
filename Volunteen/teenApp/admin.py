@@ -21,6 +21,19 @@ class UserAdmin(BaseUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
+class CustomUserAdmin(BaseUserAdmin):
+    # Include the 'phone' field in the fieldsets to add it to the user form in the admin panel
+    fieldsets = BaseUserAdmin.fieldsets + (
+        (None, {'fields': ('phone',)}),
+    )
+    
+    list_display = BaseUserAdmin.list_display + ('phone',)
+
+# Unregister the original User admin
+admin.site.unregister(User)
+# Register the User model with the new CustomUserAdmin
+admin.site.register(User, CustomUserAdmin)
+
 @admin.register(Child)
 class ChildAdmin(admin.ModelAdmin):
     list_display = ('user', 'identifier', 'points')
