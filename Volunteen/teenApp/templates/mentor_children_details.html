@@ -25,13 +25,17 @@
                         <td>{{ child.user.username }}</td>
                         <td>{{ child.user.phone }}</td> 
                         <td>{{ child.points }}</td>
-                        <td><button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">הצג משימות</button></td>
+                        <td>
+                            <button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">הצג משימות</button>
+                        </td>
                     </tr>
                     <tr id="tasks-{{ child.id }}" class="hidden">
                         <td colspan="5">
                             <ul>
-                                {% for task in child.completed_tasks.all %}
-                                    <li>{{ task.title }} - הושלם בתאריך: {{ task.completed_date|date:"F j, Y" }} - TeenCoins: {{ task.points }}</li>
+                                {% for task_completion in child.taskcompletion_set.all %}
+                                    <li>
+                                        {{ task_completion.task.title }} - הושלם בתאריך: {{ task_completion.completion_date|date:"F j, Y" }} - TeenCoins: {{ task_completion.task.points }}
+                                    </li>
                                 {% endfor %}
                             </ul>
                         </td>

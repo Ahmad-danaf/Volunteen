@@ -4,6 +4,7 @@ from django.contrib import messages
 from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.child import Child
 from .forms import TaskForm 
+from django.db.models import Prefetch
 from django.http import JsonResponse
 from teenApp.entities.task import Task
 from teenApp.entities.mentor import Mentor
@@ -32,8 +33,8 @@ def mentor_home(request):
     children = []
     for child in mentor.children.all():
         completed = TaskCompletion.objects.filter(child=child, task__in=tasks).count()
-        assigned = child.assigned_tasks.count()
-        efficiency = (completed / assigned) * 100 if assigned > 0 else 0
+        assigned_tasks_by_mentor = tasks.filter(assigned_children=child).count()
+        efficiency = (completed / assigned_tasks_by_mentor) * 100 if assigned_tasks_by_mentor > 0 else 0
         performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
         children.append({
             'child': child,
@@ -54,9 +55,15 @@ def mentor_home(request):
 
 @login_required
 def mentor_children_details(request):
-    mentor = Mentor.objects.get(user=request.user)
-    children = mentor.children.all().order_by('-points')  
+    mentor = get_object_or_404(Mentor, user=request.user)
+
+    # Prefetch task completions for each child to avoid N+1 queries
+    children = mentor.children.prefetch_related(
+        Prefetch('taskcompletion_set', queryset=TaskCompletion.objects.select_related('task').order_by('-completion_date'))
+    ).order_by('-points')
+
     return render(request, 'mentor_children_details.html', {'children': children})
+
 
 
 @login_required
@@ -120,11 +127,16 @@ def assign_bonus(request):
     
     return render(request, 'assign_bonus.html', {'form': form})
 
-@login_required
 def load_children(request):
     task_id = request.GET.get('task_id')
-    children = Child.objects.filter(assigned_tasks=task_id).order_by('user__username')
-    return JsonResponse(list(children.values('id', 'user__username')), safe=False)
+    
+    # Filter children based on TaskCompletion for the given task
+    completed_children = Child.objects.filter(
+        taskcompletion__task_id=task_id  # Join with TaskCompletion model to get children who have completed the task
+    ).order_by('user__username')
+
+    # Return the list of children with their IDs and usernames
+    return JsonResponse(list(completed_children.values('id', 'user__username')), safe=False)
 
 @login_required
 def add_task(request):
@@ -167,7 +179,7 @@ def mentor_task_list(request):
     current_date = timezone.now().date()
     mentor = get_object_or_404(Mentor, user=request.user)
     form = DateRangeForm(request.GET or None)
-    tasks = Task.objects.filter(assigned_mentors=mentor)
+    tasks = Task.objects.filter(assigned_mentors=mentor, deadline__gte=current_date)
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']

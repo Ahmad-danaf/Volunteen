@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -21,7 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-import os
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 DEBUG = False
 ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172']
@@ -136,16 +136,13 @@ USE_TZ = True
 
 
 CSRF_TRUSTED_ORIGINS = ['https://www.volunteen.site']
-import os
 
 
-import os
 
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
-# הגדרה של הקבצים הסטטיים
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  
 STATIC_ROOT = '/var/www/volunteen/static/'

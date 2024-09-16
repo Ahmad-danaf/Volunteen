@@ -10,6 +10,7 @@ from teenApp.entities.shop import Shop
 from teenApp.entities.TaskCompletion import TaskCompletion
 from datetime import date
 from django.utils.timezone import now
+from django.utils import timezone
 from django.db.models import Sum, F
 from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
@@ -106,7 +107,11 @@ def child_completed_tasks(request):
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-        tasks = Task.objects.filter(assigned_children=child, completed=False).order_by('deadline') 
+        tasks = Task.objects.filter(
+            assigned_children=child,
+            completed=False,
+            deadline__gte=timezone.now().date()  
+        ).order_by('deadline')
         tasks.update(new_task=False)
         return render(request, 'list_tasks.html', {'tasks': tasks})
     except Child.DoesNotExist:
@@ -145,11 +150,11 @@ def child_points_history(request):
             'string': string
         })
         if task_completion.bonus_points > 0:
-            current_points += task.total_bonus_points
+            current_points += task_completion.bonus_points
             string=f"{task.title } :בונוס"
             points_history.append({
                 'description': f"Bonus Points for Task: {task.title}",
-                'points': f"+{task.total_bonus_points}",
+                'points': f"+{task_completion.bonus_points}",
                 'date': completed_date,
                 'balance': current_points,
                 'string':string
