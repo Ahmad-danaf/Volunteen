@@ -47,6 +47,15 @@ p {
     background-color: #45a049;
     opacity: 0.9;
 }
+.btn-success {
+    background-color: #28a745 !important; /* Bootstrap green */
+    color: white !important;
+}
+
+.btn-danger {
+    background-color: #dc3545 !important; /* Bootstrap red */
+    color: white !important;
+}
 
 .blue-btn {
     background-color: #007bff;
