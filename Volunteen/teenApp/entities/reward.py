@@ -6,7 +6,8 @@ class Reward(models.Model):
     description = models.TextField(verbose_name='Reward Description', help_text='Enter the reward details')
     points_required = models.IntegerField(verbose_name='Points Required', help_text='Enter the points required for this reward')
     img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True, default='defaults/no-image.png')
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='rewards')  
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='rewards')
+    is_visible = models.BooleanField(default=True)  
 
     def __str__(self):
         return self.title

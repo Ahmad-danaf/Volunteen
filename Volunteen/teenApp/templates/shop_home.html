@@ -51,6 +51,31 @@
             </a>
         </div>
     </div>
+    <div class="section mt-4">
+        <h3>הפירסים שלך</h3>
+        <div id="rewards-list">
+            {% for reward in shop.rewards.all %}
+            <div class="reward-item mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4>{{ reward.title }}</h4>
+                        <p>{{ reward.description }}</p>
+                        <p>נקודות דרושות: {{ reward.points_required }}</p>
+                    </div>
+                    <button class="btn btn-sm {% if reward.is_visible %}btn-danger{% else %}btn-success{% endif %}"
+                            onclick="toggleRewardVisibility({{ reward.id }}, this)">
+                        {% if reward.is_visible %}
+                            הסתר פרס
+                        {% else %}
+                            הצג פרס
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
 {% endblock %}
 
 {% block extra_css %}
@@ -114,6 +139,31 @@
                 }
             }
         });
-    });
+});
+
+    function toggleRewardVisibility(rewardId, button) {
+        $.ajax({
+            url: "{% url 'toggle_reward_visibility' 0 %}".replace('0', rewardId),
+            type: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    if (response.is_visible) {
+                        $(button).removeClass('btn-success').addClass('btn-danger');
+                        $(button).text('הסתר פרס');
+                    } else {
+                        $(button).removeClass('btn-danger').addClass('btn-success');
+                        $(button).text('הצג פרס');
+                    }
+                }
+            },
+            error: function() {
+                alert('שגיאה בניסיון לשנות את הנראות של הפרס.');
+            }
+        });
+    }
+
 </script>
 {% endblock %}

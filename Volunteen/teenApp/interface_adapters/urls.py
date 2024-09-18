@@ -36,4 +36,6 @@ urlpatterns = [
     path('mentor/edit-task/<int:task_id>/', mentor_views.edit_task, name='edit_task'),
     path('identify-child/', shop_views.shop_identify_child, name='shop_identify_child'),
     path('complete-transaction/', shop_views.shop_complete_transaction, name='shop_complete_transaction'),
+    path('toggle-reward-visibility/<int:reward_id>/', shop_views.toggle_reward_visibility, name='toggle_reward_visibility'),
+
 ]

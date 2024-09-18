@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from django.db.models import Sum, F
 from django.db.models.functions import TruncMonth
 import json
+from django.views.decorators.http import require_POST
 from teenApp.utils import NotificationManager
 
 
@@ -145,3 +146,14 @@ def shop_redemption_history(request):
         'recent_redemptions': last_redemptions,
     }
     return render(request, 'shop_redemption_history.html', context)
+
+@require_POST
+def toggle_reward_visibility(request, reward_id):
+    reward = get_object_or_404(Reward, id=reward_id)
+    
+    if request.user == reward.shop.user:  # Ensure the user is the shop owner
+        reward.is_visible = not reward.is_visible
+        reward.save()
+        return JsonResponse({'success': True, 'is_visible': reward.is_visible})
+    
+    return JsonResponse({'success': False}, status=403)

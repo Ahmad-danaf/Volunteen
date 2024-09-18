@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from datetime import datetime
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Prefetch 
 from django.templatetags.static import static
 from django.contrib.auth.decorators import login_required
 from teenApp.entities.child import Child
 from teenApp.entities.task import Task
 from teenApp.entities.redemption import Redemption
 from teenApp.entities.shop import Shop
+from teenApp.entities.reward import Reward
 from teenApp.entities.TaskCompletion import TaskCompletion
 from datetime import date
 from django.utils.timezone import now
@@ -189,8 +190,9 @@ def child_points_history(request):
 
 def rewards_view(request):
     # Prefetch related rewards to minimize database hits
-    shops = Shop.objects.prefetch_related('rewards').all()
-
+    shops = Shop.objects.prefetch_related(
+        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))  # Correctly use Prefetch
+    ).all()
     # Get current child from request user
     child = request.user.child
 
@@ -211,7 +213,7 @@ def rewards_view(request):
                 'points': reward.points_required,
                 'sufficient_points': child.points >= reward.points_required
             }
-            for reward in shop.rewards.all()
+            for reward in shop.rewards.filter(is_visible=True)
         ]
         
         # Append modified shop data to the list
