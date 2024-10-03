@@ -14,7 +14,9 @@
         <table class="form-table">
             <thead>
                 <tr>
-                    <th>בחר</th>
+                    <th>
+                        <input type="checkbox" id="select-all" /> בחר הכל
+                    </th>
                     <th>שם משתמש</th>
                     <th>TeenCoins נוכחיים</th>
                 </tr>
@@ -45,4 +47,15 @@
         <button type="submit" class="button assign-task">הקצה משימה</button>
     </form>
 </div>
+
+<script>
+    // JavaScript to handle select all functionality
+    document.getElementById('select-all').addEventListener('click', function(event) {
+        var checkboxes = document.querySelectorAll('.form-check-input');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = event.target.checked;
+        });
+    });
+</script>
+
 {% endblock %}

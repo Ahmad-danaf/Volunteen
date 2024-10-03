@@ -4,7 +4,9 @@ from teenApp.entities.child import Child
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from captcha.fields import CaptchaField
-
+from django import forms
+from teenApp.entities.task import Task
+from teenApp.entities.child import Child
 
 from django import forms
 
@@ -40,18 +42,17 @@ class RedemptionForm(forms.Form):
     points = forms.IntegerField(label='Points to Redeem', min_value=1)
 
 class BonusPointsForm(forms.Form):
-    task = forms.ModelChoiceField(queryset=Task.objects.all(), label="Select Task")
+    task = forms.ModelChoiceField(queryset=Task.objects.none(), label="Select Task")
     child = forms.ModelChoiceField(queryset=Child.objects.none(), label="Select Child")
     bonus_points = forms.IntegerField(label="Bonus Points", min_value=1, max_value=10)
 
     def __init__(self, mentor=None, *args, **kwargs):
         super(BonusPointsForm, self).__init__(*args, **kwargs)
         if mentor:
+            self.fields['task'].queryset = Task.objects.filter(assigned_mentors=mentor)
             self.fields['child'].queryset = Child.objects.filter(mentors=mentor)
             
-from django import forms
-from teenApp.entities.task import Task
-from teenApp.entities.child import Child
+
 
 class TaskForm(forms.ModelForm):
     assigned_children = forms.ModelMultipleChoiceField(

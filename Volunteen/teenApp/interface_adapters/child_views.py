@@ -236,19 +236,26 @@ def points_leaderboard(request):
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
         
-        # Calculate points within the date range
+        # Calculate points within the date range from TaskCompletion (task points + bonus points)
         children = children.annotate(
-            points_within_range=Sum(
+            task_points_within_range=Sum(
                 Case(
-                    When(completed_tasks__completed_date__range=(start_date, end_date), then='completed_tasks__points'),
+                    When(
+                        taskcompletion__completion_date__range=(start_date, end_date), 
+                        then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
+                    ),
                     default=Value(0),
                     output_field=IntegerField()
                 )
             )
-        ).annotate(
-            total_points=F('points_within_range') + F('points')
-        ).order_by('-total_points')
+        ).order_by('-task_points_within_range')
     else:
-        children = children.order_by('-points')
+        # Calculate all-time task points for each child
+        children = children.annotate(
+            total_task_points=Sum(
+                F('taskcompletion__task__points') + F('taskcompletion__bonus_points'),
+                output_field=IntegerField()
+            )
+        ).order_by('-total_task_points')
 
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
