@@ -232,16 +232,17 @@ def points_leaderboard(request):
     form = DateRangeForm(request.GET or None)
     children = Child.objects.all()
 
-    if form.is_valid():
+    # If the form is valid and dates are provided, calculate points within that date range
+    if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
-        
+
         # Calculate points within the date range from TaskCompletion (task points + bonus points)
         children = children.annotate(
             task_points_within_range=Sum(
                 Case(
                     When(
-                        taskcompletion__completion_date__range=(start_date, end_date), 
+                        taskcompletion__completion_date__range=(start_date, end_date),
                         then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
                     ),
                     default=Value(0),
@@ -250,12 +251,19 @@ def points_leaderboard(request):
             )
         ).order_by('-task_points_within_range')
     else:
-        # Calculate all-time task points for each child
+        # If no date range is selected, calculate all-time task points
         children = children.annotate(
-            total_task_points=Sum(
+            task_points_within_range=Sum(
                 F('taskcompletion__task__points') + F('taskcompletion__bonus_points'),
                 output_field=IntegerField()
             )
-        ).order_by('-total_task_points')
+        ).order_by('-task_points_within_range')
+
+    # Calculate rank-based progress bar width for each child
+    total_children = children.count()
+    for index, child in enumerate(children, start=1):
+        # Full bar for first rank, progressively smaller for lower ranks
+        child.rank_progress = 100 - ((index - 1) * (100 / total_children))
 
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
+

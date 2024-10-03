@@ -10,25 +10,42 @@
     <button type="submit" class="btn btn-primary">סנן</button>
 </form>
 
+<!-- Confetti Canvas for Rank 1 -->
+<canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
         <tr style="background-color: #007bff; color: white;">
-            <th style="padding: 8px; text-align: left;">דירוג</th>
-            <th style="padding: 8px; text-align: left;">שם הילד</th>
-            <th style="padding: 8px; text-align: left;">טינקואינס שהורווחו</th>
+            <th style="padding: 8px; text-align: right;">דירוג</th>
+            <th style="padding: 8px; text-align: right;">שם הילד</th>
+            <th style="padding: 8px; text-align: right;">טינקואינס שנצברו</th>
         </tr>
     </thead>
     <tbody>
         {% for child in children %}
-            <tr style="border-bottom: 1px solid #ddd;">
-                <td style="padding: 8px;">{{ forloop.counter }}</td>
-                <td style="padding: 8px;">{{ child.user.username }}</td>
+            <tr style="border-bottom: 1px solid #ddd;" class="{% if forloop.counter == 1 %}sparkle{% endif %} {% if child.rank_changed %}rank-change{% endif %}">
                 <td style="padding: 8px;">
-                    {% if child.task_points_within_range is not None %}
-                        {{ child.task_points_within_range }}
-                    {% else %}
-                        0
+                    {% if forloop.counter == 1 %}
+                        🏆
+                    {% elif forloop.counter == 2 %}
+                        🥈
+                    {% elif forloop.counter == 3 %}
+                        🥉
                     {% endif %}
+                    {{ forloop.counter }}
+                </td>
+                <td style="padding: 8px;">
+                    {{ child.user.username }}
+                </td>
+                <td style="padding: 8px;">
+                    <!-- Use the pre-calculated rank-based width -->
+                    <div class="progress-bar" style="width: {{ child.rank_progress }}%; background-color: #4caf50;">
+                        {% if child.task_points_within_range is not None %}
+                            {{ child.task_points_within_range }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
                 </td>
             </tr>
         {% empty %}
@@ -38,5 +55,85 @@
         {% endfor %}
     </tbody>
 </table>
+<style>
+    /* Progress Bar Styles */
+    .progress-bar {
+        height: 20px;
+        border-radius: 5px;
+        overflow: hidden;
+        position: relative;
+        color: white;
+        font-size: 12px;
+        text-align: center;
+        transition: width 0.5s ease;
+    }
+
+    /* Sparkling effect for top achievers */
+    .sparkle {
+        animation: sparkle 2s infinite ease-in-out;
+    }
+
+    @keyframes sparkle {
+        0% { box-shadow: 0 0 5px #f1c40f, 0 0 15px #f1c40f; }
+        50% { box-shadow: 0 0 10px #f1c40f, 0 0 30px #f39c12; }
+        100% { box-shadow: 0 0 5px #f1c40f, 0 0 15px #f1c40f; }
+    }
+
+    /* Rank Change Animation */
+    .rank-change {
+        animation: rankChange 1s ease-in-out;
+        background-color: #ccffcc;
+    }
+
+    @keyframes rankChange {
+        0% { background-color: #ffffcc; }
+        100% { background-color: #ffffff; }
+    }
+
+    /* Confetti */
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+<script>
+    // Launch confetti for the top-ranked child (Rank 1)
+    function launchConfetti() {
+        var duration = 5 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            var particleCount = 50 * (timeLeft / duration);
+            // Confetti falls in two different areas
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    // Always launch confetti for Rank 1
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('.sparkle')) {
+            launchConfetti();
+        }
+    });
+</script>
 
 {% endblock %}
+

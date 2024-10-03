@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
-DEBUG = False
-# DEBUG = True # for development
+development = False # True for development, False for production
+DEBUG = development
 ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172']
 
 # Application definition
@@ -147,7 +147,10 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  
 STATIC_ROOT = '/var/www/volunteen/static/' # for production
-# STATIC_ROOT = None # for development 
+if development:
+    STATIC_ROOT = None # for development
+else:
+    STATIC_ROOT = '/var/www/volunteen/static/' # for production
 
 
 

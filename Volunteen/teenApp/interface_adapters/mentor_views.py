@@ -14,6 +14,7 @@ from .forms import  TaskImageForm, BonusPointsForm
 from teenApp.utils import NotificationManager
 from teenApp.interface_adapters.forms import DateRangeForm
 from django.utils import timezone
+from django.db.models import Sum,IntegerField, F
 
 @login_required
 def mentor_home(request):
@@ -61,6 +62,14 @@ def mentor_children_details(request):
     children = mentor.children.prefetch_related(
         Prefetch('taskcompletion_set', queryset=TaskCompletion.objects.select_related('task').order_by('-completion_date'))
     ).order_by('-points')
+
+    # Calculate total points from tasks and bonuses for each child
+    for child in children:
+        # Sum points from completed tasks and bonus points
+        task_points = TaskCompletion.objects.filter(child=child).aggregate(
+            total_task_points=Sum(F('task__points') + F('bonus_points'), output_field=IntegerField())
+        )
+        child.task_total_points = task_points['total_task_points'] or 0  # Fallback to 0 if no points
 
     return render(request, 'mentor_children_details.html', {'children': children})
 
