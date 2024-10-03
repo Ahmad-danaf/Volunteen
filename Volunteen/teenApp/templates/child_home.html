@@ -3,15 +3,15 @@
 {% block title %}הפרופיל של {{ child.user.username }}{% endblock %}
 
 {% block content %}
-<h1 class="fade-in">ברוך הבא, {{ child.user.username }} :)</h1>
-<p class="points fade-in" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
+<h1>ברוך הבא, {{ child.user.username }} :)</h1>
+<p class="points" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
 
-<p class="points fade-in" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
-<p class="points fade-in"> !בוא נאסוף עוד טינקוינס</p>
-<p class="fade-in"><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>
+<p class="points" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
+<p class="points"> !בוא נאסוף עוד טינקוינס</p>
+<p><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>
 
 <!-- Secret Code Button -->
-<button onclick="showSecretCode()" class="button fade-in" style="background-color: #007bff;">הראה קוד סודי</button>
+<button onclick="showSecretCode()" class="button" style="background-color: #007bff;">הראה קוד סודי</button>
 
 <!-- Modal for displaying secret code -->
 <div id="secretCodeModal" class="modal">
@@ -23,37 +23,33 @@
 
 <!-- New Task Notification -->
 {% if new_tasks %}
-<div id="newTaskNotification" class="notification fade-in">
+<div id="newTaskNotification" class="notification">
     <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
     <button class="button" onclick="closeNotification()">Close</button>
 </div>
 {% endif %}
 
-<!-- Buttons for tasks, rewards, history -->
-<div class="fade-in">
-    <a href="{% url 'child_active_list' %}" class="button" style="background-color: #28a745;">
-        <i class="fas fa-tasks"></i> רשימת המשימות
-    </a>
-    <a href="{% url 'reward' %}" class="button" style="background-color: #1755b8;">
-        <i class="fas fa-gift"></i> רשימת הפרסים
-    </a>
-    <a href="{% url 'child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
-        <i class="fas fa-history"></i> היסטוריית רכישה
-    </a>
-    <a href="{% url 'child_completed_tasks' %}" class="button" style="background-color: #5d22ff;">
-        <i class="fas fa-check-circle"></i> משימות מושלמות
-    </a>
-    <a href="{% url 'child_points_history' %}" class="button" style="background-color: #9175c8;">
-        <i class="fas fa-coins"></i> היסטוריית טינקוינס
-    </a>
+<a href="{% url 'child_active_list' %}" class="button" style="background-color: #28a745;">
+    <i class="fas fa-tasks"></i> רשימת המשימות
+</a>
+<a href="{% url 'reward' %}" class="button" style="background-color: #1755b8;">
+    <i class="fas fa-gift"></i> רשימת הפרסים
+</a>
+<a href="{% url 'child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
+    <i class="fas fa-history"></i> היסטוריית רכישה
+</a>
+<a href="{% url 'child_completed_tasks' %}" class="button" style="background-color: #5d22ff;">
+    <i class="fas fa-check-circle"></i> משימות מושלמות
+</a>
+<a href="{% url 'child_points_history' %}" class="button" style="background-color: #9175c8;">
+    <i class="fas fa-coins"></i> היסטוריית טינקוינס
     <a href="{% url 'points_leaderboard' %}" class="button" style="background-color: #ff9800;">
         <i class="fas fa-trophy"></i> קיר התהילה
-    </a>
-</div>
-
-<a href="{% url 'logout_view' %}" class="button button-logout fade-in">
+</a>
+<a href="{% url 'logout_view' %}" class="button button-logout">
     <i class="fas fa-sign-out-alt"></i> יציאה
 </a>
+
 
 <script>
 function showSecretCode() {
@@ -70,22 +66,6 @@ function closeNotification() {
 </script>
 
 <style>
-/* Fading in elements */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Animation class for fading in */
-.fade-in {
-    animation: fadeIn 1.5s ease-in-out;
-}
-
-/* Modal styling */
 .modal {
     display: none;
     position: fixed;
@@ -95,6 +75,7 @@ function closeNotification() {
     width: 100%;
     height: 100%;
     overflow: auto;
+    background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
 }
 
