@@ -37,5 +37,6 @@ urlpatterns = [
     path('identify-child/', shop_views.shop_identify_child, name='shop_identify_child'),
     path('complete-transaction/', shop_views.shop_complete_transaction, name='shop_complete_transaction'),
     path('toggle-reward-visibility/<int:reward_id>/', shop_views.toggle_reward_visibility, name='toggle_reward_visibility'),
-
+    path('mentor/send-whatsapp-message/', mentor_views.send_whatsapp_message, name='send_whatsapp_message'),
+    path('child/save_phone_number/', child_views.save_phone_number, name='save_phone_number'),
 ]

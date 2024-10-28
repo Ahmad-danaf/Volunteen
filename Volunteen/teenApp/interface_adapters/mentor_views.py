@@ -201,7 +201,8 @@ def mentor_task_list(request):
 def assign_task(request, task_id):
     mentor = Mentor.objects.get(user=request.user)
     task = get_object_or_404(Task, id=task_id)
-    children = mentor.children.all()
+    children = mentor.children.exclude(id__in=task.assigned_children.values_list('id', flat=True))
+    #children = mentor.children.all()
 
     if request.method == 'POST':
         selected_children_ids = request.POST.getlist('children')
@@ -214,6 +215,18 @@ def assign_task(request, task_id):
                 NotificationManager.sent_mail(
                     f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
                     child.user.email
+                )
+            if child.user.phone:
+                phone_str = str(child.user.phone)
+                msg = (
+                f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
+                f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
+                "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
+            )
+
+                NotificationManager.sent_whatsapp(
+                    msg,
+                    phone_str
                 )
         task.assigned_mentors.add(mentor)
         messages.success(request, f"Task '{task.title}' successfully assigned to selected children.")
@@ -254,3 +267,22 @@ def points_assigned_success(request, task_id):
     ) 
     return render(request, 'points_assigned_success.html', {'task': task, 'children': completed_children})
 
+
+def send_whatsapp_message(request):
+    if request.method == 'POST':
+        selected_children_ids = request.POST.getlist('children')
+        message_text = request.POST.get('message_text')
+        
+        for child_id in selected_children_ids:
+            #get child
+            child=Child.objects.get(id=child_id)
+            if child.user.phone:
+                NotificationManager.sent_whatsapp(
+                    message_text,
+                    child.user.phone
+                )
+        return redirect('mentor_children_details')
+    
+    # Get all children
+    children = Child.objects.all()
+    return render(request, 'send_whatsapp_message.html', {'children': children})

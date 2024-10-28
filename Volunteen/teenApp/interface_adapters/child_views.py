@@ -16,6 +16,9 @@ from django.db.models import Sum, F
 from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
 from django.db.models import Sum, Case, When, Value, IntegerField, F
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 @login_required
 def child_home(request):
@@ -266,4 +269,19 @@ def points_leaderboard(request):
         child.rank_progress = 100 - ((index - 1) * (100 / total_children))
 
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
+
+@csrf_exempt
+def save_phone_number(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        phone_number = data.get("phone_number")
+        
+        # Get the child user and save the phone number
+        child = request.user.child
+        child.user.phone = phone_number
+        child.user.save()
+
+        return json.JsonResponse({"success": True})
+    
+    return json.JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
