@@ -1,7 +1,10 @@
 import smtplib
 import os
 import requests
-URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.environ.get("API_KEY")
+
+from dotenv import load_dotenv
+load_dotenv()
+URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.getenv("API_KEY")
 
 MY_EMAIL = 'volunteen2023@gmail.com'  
 EMAIL_HOST = 'smtp.gmail.com'  
