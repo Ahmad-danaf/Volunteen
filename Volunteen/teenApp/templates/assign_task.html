@@ -5,10 +5,12 @@
 
 <div class="container mt-5">
     <h2 style="color: #ff6600;">הקצה משימה: {{ task.title }}</h2>
-    <form method="get">
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">סנן</button>
-    </form>
+    
+    <!-- Add Search Bar -->
+    <div class="search-bar mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="חפש לפי שם משתמש...">
+    </div>
+    
     <form method="post">
         {% csrf_token %}
         <table class="form-table">
@@ -21,9 +23,9 @@
                     <th>TeenCoins נוכחיים</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="childrenTable">
                 {% for child in children %}
-                <tr>
+                <tr class="child-row">
                     <td>
                         <input class="form-check-input" type="checkbox" name="children" value="{{ child.id }}" id="child-{{ child.id }}">
                     </td>
@@ -38,7 +40,7 @@
                 </tr>
                 {% endfor %}
                 {% if children|length == 0 %}
-                <tr>
+                <tr class="no-children-message">
                     <td colspan="3" class="text-center">לא נמצאו ילדים</td>
                 </tr>
                 {% endif %}
@@ -55,6 +57,27 @@
         checkboxes.forEach(function(checkbox) {
             checkbox.checked = event.target.checked;
         });
+    });
+
+    // JavaScript for dynamic search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        var filter = this.value.toLowerCase();
+        var rows = document.querySelectorAll('.child-row');
+        var noResults = document.querySelector('.no-children-message');
+
+        let found = false;
+        rows.forEach(function(row) {
+            var username = row.querySelector('label').textContent.toLowerCase();
+            if (username.includes(filter)) {
+                row.style.display = "";
+                found = true;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Toggle no results message based on the search outcome
+        noResults.style.display = found ? "none" : "";
     });
 </script>
 

@@ -4,7 +4,7 @@ import requests
 
 from dotenv import load_dotenv
 load_dotenv()
-URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.getenv("API_KEY")
+URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.getenv("API_KEY","default-api-key")
 
 MY_EMAIL = 'volunteen2023@gmail.com'  
 EMAIL_HOST = 'smtp.gmail.com'  
