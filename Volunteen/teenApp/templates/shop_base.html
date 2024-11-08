@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %} דף הבית{% endblock %}</title>
@@ -11,6 +11,8 @@
     
     <!-- Placeholder for extra CSS -->
     {% block extra_css %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+
 </head>
 <body>
     <!-- Page header -->
