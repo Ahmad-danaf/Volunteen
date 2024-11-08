@@ -3,7 +3,6 @@ from teenApp.interface_adapters import views, child_views, shop_views, mentor_vi
 from django.contrib.auth.models import User
 from django.db import models
 
-User.add_to_class('phone', models.CharField(unique=True, max_length=10, blank=True, null=True))
 
 urlpatterns = [
     path('', views.home_redirect, name='home_redirect'),  # Redirects users to the appropriate home page
