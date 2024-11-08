@@ -146,11 +146,11 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  
-STATIC_ROOT = '/var/www/volunteen/static/' # for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 if development:
     STATIC_ROOT = None # for development
 else:
-    STATIC_ROOT = '/var/www/volunteen/static/' # for production
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # for production
 
 
 
