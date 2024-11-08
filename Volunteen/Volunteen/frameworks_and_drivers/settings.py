@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 development = False # True for development, False for production
 DEBUG = development
-ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172']
+ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com"]
 
 # Application definition
 
