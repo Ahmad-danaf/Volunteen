@@ -39,3 +39,18 @@ Thumbs.db
 
 # Ignore Jupyter Notebook checkpoints (if using PyCharm for Jupyter development)
 .ipynb_checkpoints/
+
+
+# Python bytecode files
+__pycache__/
+*.py[cod]
+
+# Database files
+db.sqlite3
+
+# Django migration files should be tracked, but this is a common pattern
+# to ignore any additional files not related to migrations
+*.log
+
+# Environment variables files
+.env
