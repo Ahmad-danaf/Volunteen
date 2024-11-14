@@ -116,11 +116,12 @@ body {
     }
 
     .image-gallery img {
-        width: 100%; /* Full width within each column */
-        height: 120px; /* Fixed height for uniformity on small screens */
-        object-fit: contain; /* Ensures the whole image fits within the frame */
-        background-color: #f0f0f0;
+        width: 250px; /* גודל קבוע */
+        height: 180px; /* גובה קבוע */
+        object-fit: contain; /* שמירת יחס התמונה */
+        background-color: #f0f0f0; /* צבע רקע באזורים ריקים */
     }
+    
 }
 /* Partner gallery styling */
 .partner-gallery {
