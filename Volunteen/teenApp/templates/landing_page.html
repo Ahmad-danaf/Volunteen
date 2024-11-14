@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ברוכים הבאים ל-Volunteen</title>
+    <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
+</head>
+<body>
+    <!-- Floating access button in the top-right corner -->
+    <div class="top-right-button">
+        <a href="{% url 'home_redirect' %}" id="loginButton" class="button main-button" aria-label="כניסה">כניסה</a>    </div>
+
+    <!-- Main header section with a gradient background -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1>ברוכים הבאים ל-Volunteen</h1>
+            <p>הפלטפורמה שמחברת בני נוער להזדמנויות התנדבות ומעודדת מעורבות קהילתית.</p>
+            <a href="{% url 'home_redirect' %}" class="button main-button" aria-label="כניסה ראשית">כניסה</a>
+        </div>
+    </header>
+
+    <!-- Enhanced "About" section with highlighted text and animation -->
+    <section class="about">
+        <h2>אודות Volunteen</h2>
+        <p>
+            <strong>Volunteen</strong> היא יוזמה קהילתית שמטרתה לשנות את חייהם של צעירים באמצעות פעולות חיוביות וחניכה.
+            היא מאפשרת לנערים לצבור <span class="highlight">"TeenCoins"</span> על ידי ביצוע משימות המועילות לקהילה. 
+            נקודות אלו ניתנות למימוש עבור פרסים בעסקים מקומיים.
+        </p>
+    </section>
+
+    <!-- Image Gallery with animation -->
+    <section class="images">
+        <h2>תמונות מהפעילויות שלנו</h2>
+        <div class="image-gallery">
+            <img src="{% static 'images/activity1.jpg' %}" alt="פעילות התנדבות">
+            <img src="{% static 'images/activity2.jpg' %}" alt="פעילות התנדבות">
+            <img src="{% static 'images/activity3.jpg' %}" alt="פעילות התנדבות">
+        </div>
+    </section>
+
+    <!-- Partnerships section with styled images and captions -->
+    <section class="partnerships">
+        <h2>שיתופי פעולה</h2>
+        <div class="partner-gallery">
+            <div class="partner">
+                <img src="{% static 'images/pizza_roma.jpg' %}" alt="פיצה רומא">
+                <p>מסעדת פיצה רומא</p>
+            </div>
+            <div class="partner">
+                <img src="{% static 'images/yaffa_school.jpg' %}" alt="בית ספר יאפא למוסתקבל">
+                <p>בית ספר יאפא למוסתקבל</p>
+            </div>
+            <div class="partner">
+                <img src="{% static 'images/falafel_kahal.jpg' %}" alt="פלאפל כחיל">
+                <p>מסעדת פלאפל כחיל</p>
+            </div>
+            <div class="partner">
+                <img src="{% static 'images/miami_shakes.jpg' %}" alt="מיאמי שייקים">
+                <p>מיאמי שייקים</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us section with images and styled text -->
+    <section class="about-us">
+        <h2>מי אנחנו</h2>
+        <div class="founders">
+            <div class="founder">
+                <img src="{% static 'images/adam.jpg' %}" alt="אדם תכרורי">
+                <p>אדם תכרורי</p>
+            </div>
+            <div class="founder">
+                <img src="{% static 'images/ahmed.jpg' %}" alt="אחמד דנף">
+                <p>אחמד דנף</p>
+            </div>
+        </div>
+        <p class="about-description">Volunteen נוסדה על ידי אדם תכרורי ואחמד דנף, מתוך חזון לעודד מעורבות חברתית בקרב הדור הצעיר.</p>
+    </section>
+
+    <!-- Footer with additional access button -->
+    <footer>
+        <p>© 2024 Volunteen</p>
+        <a href="{% url 'home_redirect' %}" class="button footer-button" aria-label="כניסה נוספת">כניסה</a>
+    </footer>
+</body>
+</html>
+
+    

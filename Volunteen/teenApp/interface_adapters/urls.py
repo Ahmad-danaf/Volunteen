@@ -5,7 +5,8 @@ from django.db import models
 
 
 urlpatterns = [
-    path('', views.home_redirect, name='home_redirect'),  # Redirects users to the appropriate home page
+    path('', views.landing_page, name='landing_page'),
+    path('login/', views.home_redirect, name='home_redirect'),  # Redirects users to the appropriate home page
     path('child/', child_views.child_home, name='child_home'),  # Child home page
     path('mentor/', mentor_views.mentor_home, name='mentor_home'),  # Mentor home page
     path('list/', views.list_view, name='list'),  # List tasks from external API

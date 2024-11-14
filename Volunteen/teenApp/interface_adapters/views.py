@@ -33,7 +33,8 @@ from teenApp.interface_adapters.forms import DateRangeForm,DateRangeMForm
 def logout_view(request):
     logout(request)
     return redirect('two_factor:login')
-
+def landing_page(request):
+    return render(request, 'landing_page.html')
 @login_required
 def home_redirect(request):
     if request.user.groups.filter(name='Children').exists():
