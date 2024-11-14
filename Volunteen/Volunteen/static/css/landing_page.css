@@ -118,7 +118,7 @@ body {
     .image-gallery img {
         width: 100%; /* למלא את תא הגריד */
         height: 120px; /* גובה קבוע ואחיד */
-        object-fit: cover; /* שמירה על יחס החיתוך */
+        object-fit: contain; /* שמירה על יחס החיתוך */
         background-color: #f0f0f0; /* צבע רקע באזורים ריקים */
     }
 }
