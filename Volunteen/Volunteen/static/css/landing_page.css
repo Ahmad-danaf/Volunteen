@@ -110,19 +110,19 @@ body {
 @media (max-width: 768px) {
     .image-gallery {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* Three images per row */
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* חלוקה אוטומטית של תמונות בשורה */
         gap: 10px;
         padding: 20px;
     }
 
     .image-gallery img {
-        width: 250px; /* גודל קבוע */
-        height: 180px; /* גובה קבוע */
-        object-fit: contain; /* שמירת יחס התמונה */
+        width: 100%; /* למלא את תא הגריד */
+        height: 120px; /* גובה קבוע ואחיד */
+        object-fit: cover; /* שמירה על יחס החיתוך */
         background-color: #f0f0f0; /* צבע רקע באזורים ריקים */
     }
-    
 }
+
 /* Partner gallery styling */
 .partner-gallery {
     display: flex;
@@ -227,6 +227,7 @@ footer {
         transform: translateY(0);
     }
 }
+
 /* עיצוב הכפתור */
 .footer-button {
     display: inline-block;
