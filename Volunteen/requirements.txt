@@ -26,4 +26,5 @@ wheel==0.41.2
 requests
 django-qr-code==4.0.1
 python-dotenv
-
+psycopg2==2.9.10
+psycopg2-binary==2.9.10
