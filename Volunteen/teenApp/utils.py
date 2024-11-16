@@ -8,7 +8,7 @@ URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.geten
 
 MY_EMAIL = 'volunteen2023@gmail.com'  
 EMAIL_HOST = 'smtp.gmail.com'  
-PASSWORD = 'spzsornkikalkbvu'  # spzs ornk ikal kbvu 
+PASSWORD = os.getenv("EMAIL_PASSWORD", "default-password")
 
 
 
