@@ -12,7 +12,7 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from datetime import date
 from django.utils.timezone import now
 from django.utils import timezone
-from django.db.models import Sum, F
+from django.db.models import Sum, F,Min,Max
 from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
 from django.db.models import Sum, Case, When, Value, IntegerField, F
@@ -235,11 +235,20 @@ def points_leaderboard(request):
     form = DateRangeForm(request.GET or None)
     children = Child.objects.all()
 
-    # If the form is valid and dates are provided, calculate points within that date range
+    # Get the default date range from the database if no dates are selected
+    default_start_date = TaskCompletion.objects.aggregate(Min('completion_date'))['completion_date__min']
+    default_end_date = TaskCompletion.objects.aggregate(Max('completion_date'))['completion_date__max']
+
+    # If the form is valid and dates are provided, use them; otherwise, use the default range
     if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
+    else:
+        start_date = default_start_date
+        end_date = default_end_date
 
+    # Ensure we have a valid date range (fallback if no data exists)
+    if start_date and end_date:
         # Calculate points within the date range from TaskCompletion (task points + bonus points)
         children = children.annotate(
             task_points_within_range=Sum(
@@ -254,13 +263,10 @@ def points_leaderboard(request):
             )
         ).order_by('-task_points_within_range')
     else:
-        # If no date range is selected, calculate all-time task points
+        # Handle cases where there is no data (e.g., no TaskCompletion records)
         children = children.annotate(
-            task_points_within_range=Sum(
-                F('taskcompletion__task__points') + F('taskcompletion__bonus_points'),
-                output_field=IntegerField()
-            )
-        ).order_by('-task_points_within_range')
+            task_points_within_range=Value(0, output_field=IntegerField())
+        )
 
     # Calculate rank-based progress bar width for each child
     total_children = children.count()
