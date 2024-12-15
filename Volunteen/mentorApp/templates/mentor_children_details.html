@@ -1,0 +1,60 @@
+{% extends 'mentor_base.html' %}
+{% load static %}
+{% block title %}פרטי הילדים{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/mentor_children_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>פרטי הילדים</h1>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>שם הילד</th>
+                    <th>טלפון</th>
+                    <th>טינקוינס בארנק</th>
+                    <th>טינקוינס שנצברו</th> 
+                    <th>משימות שהושלמו</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for child in children %}
+                    <tr>
+                        <td>{{ child.user.username }}</td>
+                        <td>{{ child.user.phone }}</td> 
+                        <td>{{ child.points }}</td>
+                        <td>{{ child.task_total_points }}</td> <!-- Total points from tasks and bonuses -->
+                        <td>
+                            <button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">הצג משימות</button>
+                        </td>
+                    </tr>
+                    <tr id="tasks-{{ child.id }}" class="hidden">
+                        <td colspan="5">
+                            <ul>
+                                {% for task_completion in child.taskcompletion_set.all %}
+                                    <li>
+                                        {{ task_completion.task.title }} - הושלם בתאריך: {{ task_completion.completion_date|date:"F j, Y" }} - TeenCoins: {{ task_completion.task.points }} + בונוס: {{ task_completion.bonus_points }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if children|length == 0 %}
+                <tr>
+                    <td colspan="5" class="text-center">לא נמצאו ילדים</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'mentorApp:mentor_home' %}" class="button">חזרה לעמוד הבית</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/mentor_children_details.js' %}"></script>
+{% endblock %}

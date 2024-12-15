@@ -1,11 +1,11 @@
 from django.contrib import admin
 from teenApp.entities.TaskCompletion import TaskCompletion
-from teenApp.entities.child import Child
-from teenApp.entities.reward import Reward
+from childApp.models import Child
+from shopApp.models import Reward
 from teenApp.entities.task import Task
-from teenApp.entities.mentor import Mentor
-from teenApp.entities.redemption import Redemption
-from teenApp.entities.shop import Shop
+from mentorApp.models import Mentor
+from shopApp.models import Redemption
+from shopApp.models import Shop
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 # Define a new User admin

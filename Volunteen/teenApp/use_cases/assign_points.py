@@ -1,5 +1,5 @@
 from teenApp.entities.task import Task
-from teenApp.entities.child import Child
+from childApp.models import Child
 from teenApp.entities.TaskCompletion import TaskCompletion
 
 

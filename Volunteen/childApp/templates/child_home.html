@@ -1,0 +1,204 @@
+{% extends 'child_base.html' %}
+
+{% load static %}
+{% block title %}הפרופיל של {{ child.user.username }}{% endblock %}
+
+{% block content %}
+<h1>ברוך הבא, {{ child.user.username }} :)</h1>
+<p class="points" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
+
+<p class="points" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
+<p class="points"> !בוא נאסוף עוד טינקוינס</p>
+<p><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>
+
+<!-- Secret Code Button -->
+<button onclick="showSecretCode()" class="button" style="background-color: #007bff;">הראה קוד סודי</button>
+
+<!-- Modal for displaying secret code -->
+<div id="secretCodeModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p><strong>קוד סודי שלי: </strong> {{ child.secret_code }}</p>
+    </div>
+</div>
+
+<!-- New Task Notification -->
+{% if new_tasks %}
+<div id="newTaskNotification" class="notification">
+    <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
+    <button class="button" onclick="closeNotification()">Close</button>
+</div>
+{% endif %}
+
+<a href="{% url 'childApp:child_active_list' %}" class="button" style="background-color: #28a745;">
+    <i class="fas fa-tasks"></i> רשימת המשימות
+</a>
+<a href="{% url 'childApp:reward' %}" class="button" style="background-color: #1755b8;">
+    <i class="fas fa-gift"></i> רשימת הפרסים
+</a>
+<a href="{% url 'childApp:child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
+    <i class="fas fa-history"></i> היסטוריית רכישה
+</a>
+<a href="{% url 'childApp:child_completed_tasks' %}" class="button" style="background-color: #5d22ff;">
+    <i class="fas fa-check-circle"></i> משימות מושלמות
+</a>
+<a href="{% url 'childApp:child_points_history' %}" class="button" style="background-color: #9175c8;">
+    <i class="fas fa-coins"></i> היסטוריית טינקוינס
+</a>
+<a href="{% url 'childApp:points_leaderboard' %}" class="button" style="background-color: #ff9800;">
+    <i class="fas fa-trophy"></i> קיר התהילה
+</a>
+<a href="{% url 'teenApp:logout_view' %}" class="button button-logout">
+    <i class="fas fa-sign-out-alt"></i> יציאה
+</a>
+
+{% if not child.user.phone %}
+  <!-- Modal for Phone Number Prompt -->
+    <div id="phoneNumberModal" class="modal">
+        <div class="modal-content">
+            <h3>הכנס מספר טלפון</h3>
+            <p>אנא הזן את מספר הטלפון שלך כדי להמשיך:</p>
+            <input type="tel" id="phoneNumberInput" placeholder="מספר טלפון" style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
+            <h3>אמת את מספר טלפון</h3>
+            <input type="tel" id="secPhoneNumberInput" placeholder="מספר טלפון" style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
+            <button onclick="submitPhoneNumber()" class="btn">שמור</button>
+        </div>
+    </div>
+{% endif %}
+
+
+
+<script>
+function showSecretCode() {
+    document.getElementById('secretCodeModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('secretCodeModal').style.display = 'none';
+}
+
+function closeNotification() {
+    document.getElementById('newTaskNotification').style.display = 'none';
+}
+
+// Check if the phone number is missing
+document.addEventListener("DOMContentLoaded", function() {
+    const hasPhoneNumber = {{ child.user.phone|yesno:"true,false" }}; // Django boolean check
+    if (!hasPhoneNumber) {
+        document.getElementById('phoneNumberModal').style.display = 'block';
+    }
+});
+
+// Save phone number (example implementation, adjust according to backend setup)
+function submitPhoneNumber() {
+    const phoneNumber = document.getElementById('phoneNumberInput').value.trim();
+    const secPhoneNumber = document.getElementById('secPhoneNumberInput').value.trim();
+    if(!secPhoneNumber) {
+        alert("אנא הכנס מספר טלפון תקין.");
+        return;
+    }
+    //check if secPhoneNumber is valid
+    if(secPhoneNumber!=phoneNumber){
+        alert("מספר הטלפון חייב להיות שונה ממספר הטלפון הראשי.");
+        return;
+    }
+    if (!phoneNumber) {
+        alert("אנא הכנס מספר טלפון תקין.");
+        return;
+    }
+    if(!/^\d+$/.test(phoneNumber)) {
+        alert("מספר הטלפון יכול להכיל רק מספרים.");
+        return;
+    }
+    if(phoneNumber.length != 10) {
+        alert("מספר הטלפון חייב להכיל 10 ספרות.");
+        return;
+    }
+    if(phoneNumber[0] != '0') {
+        alert("מספר הטלפון חייב להתחיל ב-0.");
+        return;
+    }
+
+    if(phoneNumber[1] != '5') {
+        alert("מספר הטלפון חייב להתחיל ב-0.");
+        return;
+    }
+
+    
+
+    // Add AJAX or form submission to save the phone number
+    // Send the phone number to the backend using AJAX (fetch API)
+    fetch("{% url 'childApp:save_phone_number' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",  // CSRF token for security
+        },
+        body: JSON.stringify({ phone_number: phoneNumber })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("מספר הטלפון נשמר בהצלחה!");
+            document.getElementById('phoneNumberModal').style.display = 'none';
+        } else {
+            alert("אירעה שגיאה בעת שמירת מספר הטלפון. אנא נסה שנית.");
+        }
+    })
+    
+
+    document.getElementById('phoneNumberModal').style.display = 'none';
+}
+
+
+</script>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.notification {
+    background-color: #ff9800;
+    color: white;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 5px;
+    text-align: center;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'mentor_base.html' %}
+{% load static %}
+{% block title %}בית חונך{% endblock %}
+
+{% block content %}
+    <h2 dir="rtl">ברוך הבא, {{ mentor.user.username }}</h2>
+
+    <div class="section" dir="rtl">
+        <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn blue-btn"><i class="fas fa-tasks"></i> עבור למשימות שהוקצו</a>
+        <a href="{% url 'mentorApp:mentor_completed_tasks' %}" class="btn green-btn"><i class="fas fa-check"></i> עבור למשימות שהושלמו</a>
+        <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
+        <a href="{% url 'mentorApp:send_whatsapp_message' %}" class="btn purple-btn"><i class="fas fa-paper-plane"></i> שליחת הודעה לילדים</a>
+        <a href="{% url 'mentorApp:assign_bonus' %}" class="btn yellow-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a>
+        <a href="{% url 'teenApp:logout_view' %}" class="btn red-btn"><i class="fas fa-sign-out-alt"></i> התנתק</a>
+    </div>
+
+    <div class="section" dir="rtl">
+        <h3>סקירת משימות</h3>
+        <p>סה"כ משימות: {{ total_tasks }}</p>
+        <p class="tasks-open">משימות פתוחות: {{ open_tasks }}</p>
+        <p class="tasks-completed">משימות שהושלמו: {{ completed_tasks }}</p>
+        <p class="tasks-efficiency">שיעור יעילות: {{ efficiency_rate }}%</p>
+        <div class="chart-container">
+            <canvas id="tasksChart"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3 dir="rtl">ביצועי הילדים</h3>
+        <table class="performance-table">
+            <thead>
+                <tr>
+                    <th>יעילות (%)</th>
+                    <th>ילד</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in children %}
+                    <tr style="background-color: {{ item.performance_color }};">
+                        <td>{{ item.efficiency_rate }}</td>
+                        <td>{{ item.child.user.username }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_home.css' %}">
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('tasksChart').getContext('2d');
+        var openTasks = {{ open_tasks }};
+        var completedTasks = {{ completed_tasks }};
+        var totalTasks = {{ total_tasks }};
+
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['משימות פתוחות', 'משימות שהושלמו'],
+                datasets: [{
+                    data: [openTasks, completedTasks],
+                    backgroundColor: ['#007bff', '#28a745'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'סקירת משימות'
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

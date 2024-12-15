@@ -1,6 +1,6 @@
 from teenApp.entities.task import Task
-from teenApp.entities.child import Child
-from teenApp.entities.mentor import Mentor
+from childApp.models import Child
+from mentorApp.models import Mentor
 
 class TaskRepository:
     @staticmethod

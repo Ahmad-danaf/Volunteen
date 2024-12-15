@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}נקודות שהוקצו{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 style="color: #28a745; text-align: center;"> הטינקואינס הוקצו בהצלחה!</h2>
+    <p>הטינקואינס למשימה '<strong>{{ task.title }}</strong>' הוקצו בהצלחה לילדים הבאים:</p>
+    <ul>
+        {% for child in children %}
+            <li>{{ child.user.username }}</li>
+        {% endfor %}
+    </ul>
+    <div style="text-align: center;">
+        <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn btn-primary mt-4">חזרה לרשימת המשימות</a>
+        <a href="{% url 'mentorApp:mentor_home' %}" class="btn btn-secondary mt-4">חזרה לדף הבית</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/points_assigned_success.css' %}">
+{% endblock %}

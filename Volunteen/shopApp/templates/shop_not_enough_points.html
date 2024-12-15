@@ -1,0 +1,17 @@
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}אין מספיק טינקוינס{% endblock %}
+
+{% block content %}
+    <div class="container" dir="rtl">
+        <div class="error-section">
+            <h2>שגיאה</h2>
+            <p class="error-message">או שלילד אין מספיק טינקואינס או שבית העסק הגיע למגבלת טינקואינס מקסימלית.</p>
+            <a class="btn btn-primary" href="{% url 'shopApp:shop_redeem_points' %}">חזרה למימוש טינקוינס</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/shop_not_enough_points.css' %}">
+{% endblock %}

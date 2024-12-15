@@ -1,4 +1,4 @@
-from teenApp.entities.child import Child
+from childApp.models import Child
 
 class ManageChild:
     def __init__(self, child_repo):

@@ -28,6 +28,9 @@ from two_factor.urls import urlpatterns as tf_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('teenApp.interface_adapters.urls')),
+    path('mentor/', include('mentorApp.urls')),
+    path("child/", include('childApp.urls')),
+    path("shop/", include('shopApp.urls')),
     # Include captcha URLs
     path('captcha/', include(captcha_urls)),
     # 2FA

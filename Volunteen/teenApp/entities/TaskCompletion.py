@@ -2,8 +2,8 @@ from django.db import models
 from django.utils import timezone
 
 class TaskCompletion(models.Model):
-    child = models.ForeignKey('Child', on_delete=models.CASCADE)
-    task = models.ForeignKey('Task', on_delete=models.CASCADE)
+    child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE)
+    task = models.ForeignKey('teenApp.Task', on_delete=models.CASCADE)
     completion_date = models.DateTimeField(default=timezone.now)
     bonus_points= models.IntegerField(default=0)
 

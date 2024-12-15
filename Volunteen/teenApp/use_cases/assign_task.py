@@ -1,5 +1,5 @@
 from teenApp.entities.task import Task
-from teenApp.entities.child import Child
+from childApp.models import Child
 
 class AssignTaskToChildren:
     def __init__(self, child_repo):
