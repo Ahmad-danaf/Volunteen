@@ -54,3 +54,6 @@ db.sqlite3
 
 # Environment variables files
 .env
+db.json
+*/db.json
+adjusted_backup.json
