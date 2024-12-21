@@ -1,0 +1,34 @@
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}פדיון מוצלח{% endblock %}
+
+{% block content %}
+    <div class="success-container" dir="rtl">
+        <h2>רכישה הושלמה!</h2>
+        <p>טינקוינס נפדו בהצלחה עבור:</p>
+        <div class="child-info">
+            <p><strong>שם:</strong> {{ child.user.first_name }} {{ child.user.last_name }}</p>
+            <p><strong>מזהה:</strong> {{ child.identifier }}</p>
+            <p><strong>טינקוינס שנפדו:</strong> {{ points_used }}</p>
+        </div>
+        <div class="receipt">
+            <h3>קבלה</h3>
+            <ul>
+                {% for reward in receipt %}
+                    <li>{{ reward.title }}: {{ reward.quantity }} x {{ reward.points }} טינקוינס</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <a href="{% url 'shopApp:shop_redeem_points' %}" class="btn">רכישה נוספת</a>
+        <a href="{% url 'shopApp:shop_home' %}" class="btn">מעבר לף הבית</a>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        text-align: right;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'css/shop_redemption_success.css' %}">
+{% endblock %}

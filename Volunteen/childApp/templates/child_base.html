@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}פרופיל ילד{% endblock %}</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Include custom styles -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/child_base.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+
+</head>
+<body>
+    
+    <div class="container" dir="rtl">
+        <!-- Back to Home Button -->
+        <a href="{% url 'teenApp:home_redirect' %}" class="button">
+            <i class="fas fa-home"></i> חזרה למסך הבית
+        </a>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer with centered logo and support email -->
+    <footer>
+        &copy; 2024 Volunteen
+        <div class="support-email">
+            <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> -לעזרה או תמיכה, צרו קשר ב 
+        </div>
+    </footer>
+</body>
+</html>

@@ -17,9 +17,9 @@
     <!-- Navbar with home and logout buttons -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home_redirect' %}">Home</a>
+            <a class="navbar-brand" href="{% url 'teenApp:home_redirect' %}">Home</a>
             <div class="d-flex ms-auto">
-                <a class="btn btn-danger" href="{% url 'logout_view' %}">Logout</a>
+                <a class="btn btn-danger" href="{% url 'teenApp:logout_view' %}">Logout</a>
             </div>
         </div>
     </nav>

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} דף הבית{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/shop_base.css' %}">
+    
+    <!-- Placeholder for extra CSS -->
+    {% block extra_css %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+
+</head>
+<body>
+    <!-- Page header -->
+    <header>
+        <h1>{% block header %}דף הבית{% endblock %}</h1>
+    </header>
+
+    <!-- Navigation menu -->
+    <nav>
+        <a href="{% url 'shopApp:shop_home' %}">דף הבית</a>
+        <a href="{% url 'shopApp:shop_redeem_points' %}">מימוש טינקוינס</a>
+        <a href="{% url 'teenApp:logout_view' %}">התנתקות</a> 
+    </nav>
+
+    <!-- Main content area -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Page footer -->
+    <footer>
+        &copy; 2024 Volunteen | לעזרה או תמיכה, צרו קשר ב: volunteen2023@gmail.com
+    </footer>
+
+    <!-- Placeholder for extra JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

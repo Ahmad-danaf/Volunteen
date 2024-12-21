@@ -118,7 +118,6 @@ Volunteen/
 │   │   │   ├── child_completed_tasks.html
 │   │   │   ├── child_home.html
 │   │   │   ├── child_points_history.html
-│   │   │   ├── confirm_reward.html
 │   │   │   ├── edit_task.html
 │   │   │   ├── list_tasks.html
 │   │   │   ├── mentor_children_details.html

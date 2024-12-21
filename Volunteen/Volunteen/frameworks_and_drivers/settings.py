@@ -32,6 +32,9 @@ ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1
 
 INSTALLED_APPS = [
     'teenApp',
+    'childApp',
+    'shopApp',
+    'mentorApp',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
     'two_factor',
     'crispy_bootstrap4',
     'crispy_forms',
+    
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
