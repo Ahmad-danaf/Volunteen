@@ -1,290 +1,353 @@
-from django.shortcuts import render
-from datetime import datetime
-from django.db.models import Sum, F, Prefetch 
-from django.templatetags.static import static
-from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from childApp.serializers import ChildSerializer
+from teenApp.serializers import TaskSerializer
 from childApp.models import Child
 from teenApp.entities.task import Task
 from shopApp.models import Redemption, Shop, Reward
+from shopApp.serializers import RedemptionSerializer
 from teenApp.entities.TaskCompletion import TaskCompletion
-from datetime import date
-from django.utils.timezone import now
-from django.utils import timezone
-from django.db.models import Sum, F,Min,Max
-from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
+from django.utils.timezone import now
+from datetime import datetime, date
 from django.db.models import Sum, Case, When, Value, IntegerField, F
-from django.views.decorators.csrf import csrf_exempt
 import json
+from django.templatetags.static import static
+from rest_framework import status
 
-@login_required
-def child_home(request):
-    child = Child.objects.get(user=request.user)
-   # Get the current day of the week (0 for Sunday, 6 for Saturday)
-    current_day = datetime.now().weekday()
+class ChildHomeView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    # Adjusting for 0-Sunday format, since Python's weekday() starts at 0-Monday
-    # We'll shift by 1 so that 0 becomes Sunday, 1 becomes Monday, etc.
-    current_day = (current_day + 1) % 7
+    def get(self, request):
+        try:
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response({"error": "Child not found"}, status=404)
 
-    # Greetings dictionary
-    greetings = {
-        0: f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",  # יום ראשון
-        1: f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
-        2: f"זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!",
-        3: f"זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!",
-        4: f"זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!",
-        5: f"שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!",  # יום שישי
-        6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
-    }
+        # Get the current day of the week
+        current_day = (datetime.now().weekday() + 1) % 7
 
-    # Get the greeting for today
-    todays_greeting = greetings[current_day]
-    
+        greetings = {
+            0: "שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",
+            1: "זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
+            2: "זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!",
+            3: "זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!",
+            4: "זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!",
+            5: "שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!",
+            6: "זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
+        }
 
-    
-    new_tasks = child.assigned_tasks.filter(new_task=True, viewed=False)
-    new_tasks_count = new_tasks.count()
+        todays_greeting = greetings[current_day]
 
-    if request.method == 'POST' and 'close_notification' in request.POST:
-        new_tasks.update(viewed=True)
-        new_tasks.update(new_task=False)
+        # Serialize the child object
+        serialized_child = ChildSerializer(child).data
 
-    return render(request, 'child_home.html', {'child': child, 'greeting': todays_greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
+        # Get new tasks and serialize them
+        new_tasks = child.assigned_tasks.filter(new_task=True, viewed=False)
+        serialized_tasks = TaskSerializer(new_tasks, many=True).data
 
-@login_required
-def child_redemption_history(request):
-    child = Child.objects.get(user=request.user)
-    form = DateRangeForm(request.GET or None)
-    redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
-    default_date = date(2201, 1, 1)  
-
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
-
-    if start_date and end_date:
-        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
-
-    return render(request, 'child_redemption_history.html', {'redemptions': redemptions, 'form': form})
-
-@login_required
-def child_completed_tasks(request):
-    child = Child.objects.get(user=request.user)
-    form = DateRangeForm(request.GET or None)
-    tasks_with_bonus = []
-    default_date = date(2201, 1, 1)
-
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
-
-    # Retrieve TaskCompletion records associated with this child
-    task_completions = TaskCompletion.objects.filter(child=child)
-
-    if start_date and end_date:
-        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
-
-    for task_completion in task_completions:
-        completion_date = task_completion.completion_date if task_completion.completion_date else default_date
-        task = task_completion.task
-        tasks_with_bonus.append({
-            'title': task.title,
-            'points': task_completion.task.points,
-            'completion_date': completion_date,
-            'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
+        return Response({
+            "child": serialized_child,
+            "greeting": todays_greeting,
+            "new_tasks_count": len(new_tasks),
+            "new_tasks": serialized_tasks,
         })
-       
 
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form})
 
-@login_required
-def child_active_list(request):
-    try:
-        child = Child.objects.get(user=request.user)
+class ChildRedemptionHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch child object
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response({"error": "Child not found"}, status=404)
+
+        # Handle date range form
+        form = DateRangeForm(request.GET or None)
+        if not form.is_valid():
+            return Response({"error": "Invalid date range provided"}, status=400)
+
+        # Filter redemptions by date range
+        redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+
+        if start_date and end_date:
+            redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
+
+        # Serialize redemptions
+        redemption_data = RedemptionSerializer(redemptions, many=True).data
+
+        return Response({"redemptions": redemption_data})
+
+    def post(self, request):
+        try:
+            # Fetch child object
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response({"error": "Child not found"}, status=404)
+
+        # Parse request data
+        data = request.data
+        redemption_id = data.get("redemption_id")
+
+        if not redemption_id:
+            return Response({"error": "Redemption ID is required"}, status=400)
+
+        # Fetch redemption object and validate it
+        try:
+            redemption = Redemption.objects.get(id=redemption_id, child=child)
+        except Redemption.DoesNotExist:
+            return Response({"error": "Redemption not found or unauthorized"}, status=404)
+
+        # Perform any action you need with the redemption
+        # (e.g., update, verify, etc.)
+        redemption.verified = True
+        redemption.save()
+
+        return Response({"success": True, "message": "Redemption verified successfully"})
+
+class ChildCompletedTasksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch child object
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response({"error": "Child not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Handle date range form
+        form = DateRangeForm(request.GET or None)
+        if not form.is_valid():
+            return Response({"error": "Invalid date range provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter task completions by date range
+        task_completions = TaskCompletion.objects.filter(child=child)
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+
+        if start_date and end_date:
+            task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+
+        # Prepare tasks with bonus data
+        tasks_with_bonus = [
+            {
+                "title": task_completion.task.title,
+                "points": task_completion.task.points,
+                "completion_date": task_completion.completion_date or date(2201, 1, 1),
+                "mentor": ", ".join(mentor.user.username for mentor in task_completion.task.assigned_mentors.all())
+            }
+            for task_completion in task_completions
+        ]
+
+        return Response({"tasks_with_bonus": tasks_with_bonus}, status=status.HTTP_200_OK)
+
+class ChildActiveListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch the child object for the authenticated user
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response(
+                {"error": "You are not authorized to view this page."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Filter active tasks assigned to the child
         tasks = Task.objects.filter(
             assigned_children=child,
             completed=False,
-            deadline__gte=timezone.now().date()  
+            deadline__gte=now().date()
         ).order_by('deadline')
+
+        # Mark tasks as not new
         tasks.update(new_task=False)
-        return render(request, 'list_tasks.html', {'tasks': tasks})
-    except Child.DoesNotExist:
-        return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
 
-@login_required
-def child_points_history(request):
-    child = Child.objects.get(user=request.user)
-    form = DateRangeForm(request.GET or None)
-    points_history = []
-    current_points = 0
-    default_date = date(2201, 1, 1)
+        # Prepare task data for the response
+        task_data = [
+            {
+                "title": task.title,
+                "deadline": task.deadline,
+            } for task in tasks
+        ]
 
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
+        return Response({"tasks": task_data}, status=status.HTTP_200_OK)
 
-    # Retrieve TaskCompletion records for this child
-    task_completions = TaskCompletion.objects.filter(child=child)
-    if start_date and end_date:
-        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+class ChildPointsHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    for task_completion in task_completions:
-        completed_date = task_completion.completion_date.date() if task_completion.completion_date else default_date
-        task = task_completion.task
-        current_points += task_completion.task.points
-        string = f" ביצוע משימה : {task.title}"
-        points_history.append({
-            'description': f"Completed Task: {task.title}",
-            'points': f"+{task.points}",
-            'date': completed_date,
-            'balance': current_points,
-            'string': string
-        })
-        if task_completion.bonus_points > 0:
-            current_points += task_completion.bonus_points
-            string=f"{task.title } :בונוס"
+    def get(self, request):
+        try:
+            child = Child.objects.get(user=request.user)
+        except Child.DoesNotExist:
+            return Response(
+                {"error": "Child not found for the logged-in user."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Handle form for date range
+        form = DateRangeForm(request.GET or None)
+        points_history = []
+        current_points = 0
+        default_date = date(2201, 1, 1)
+
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+        else:
+            start_date, end_date = None, None
+
+        # Task completions within date range
+        task_completions = TaskCompletion.objects.filter(child=child)
+        if start_date and end_date:
+            task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+
+        for task_completion in task_completions:
+            completed_date = (
+                task_completion.completion_date.date()
+                if task_completion.completion_date else default_date
+            )
+            task = task_completion.task
+            current_points += task.points
+
+            # Add task completion details
             points_history.append({
-                'description': f"Bonus Points for Task: {task.title}",
-                'points': f"+{task_completion.bonus_points}",
-                'date': completed_date,
-                'balance': current_points,
-                'string':string
+                "description": f"Completed Task: {task.title}",
+                "points": f"+{task.points}",
+                "date": completed_date,
+                "balance": current_points,
             })
 
+            # Add bonus points if applicable
+            if task_completion.bonus_points > 0:
+                current_points += task_completion.bonus_points
+                points_history.append({
+                    "description": f"Bonus Points for Task: {task.title}",
+                    "points": f"+{task_completion.bonus_points}",
+                    "date": completed_date,
+                    "balance": current_points,
+                })
 
-        
+        # Redemptions within date range
+        redemptions = Redemption.objects.filter(child=child)
+        if start_date and end_date:
+            redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
 
-    
-    # Retrieve redemptions for this child
-    redemptions = Redemption.objects.filter(child=child)
-    if start_date and end_date:
-        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
+        for redemption in redemptions:
+            date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
+            current_points -= redemption.points_used
+            points_history.append({
+                "description": f"Redeemed: {redemption.shop.name}",
+                "points": f"-{redemption.points_used}",
+                "date": date_redeemed.date(),
+                "balance": current_points,
+            })
 
-    for redemption in redemptions:
-        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
-        current_points -= redemption.points_used
-        string = f" רכישה :{redemption.shop.name}"
-        points_history.append({
-            'description': f"Redeemed: {redemption.shop.name}",
-            'points': f"-{redemption.points_used}",
-            'date': date_redeemed.date(),
-            'balance': current_points,
-            'string': string
-        })
+        # Sort points history by date
+        points_history.sort(key=lambda x: x["date"])
 
-    # Sort the points history by date
-    points_history.sort(key=lambda x: x['date'])
-    
-    return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
+        return Response({"points_history": points_history}, status=status.HTTP_200_OK)
 
+class RewardsView(APIView):
+    permission_classes = [IsAuthenticated]
 
-def rewards_view(request):
-    # Prefetch related rewards to minimize database hits
-    shops = Shop.objects.prefetch_related(
-        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))  # Correctly use Prefetch
-    ).all()
-    # Get current child from request user
-    child = request.user.child
+    def get(self, request):
+        shops = Shop.objects.prefetch_related(
+            Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
+        ).all()
+        child = Child.objects.get(user=request.user)
 
-    # Prepare a new list to hold shops with modified data
-    shops_with_images = []
-    for shop in shops:
-        start_of_month = now().replace(day=1)
-        redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-        points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-        # Assign default image if none exists
-        shop_image = shop.img.url if shop.img else static('images/logo.png')
-        
-        # Prepare rewards, assigning default images if necessary
-        rewards_with_images = [
-            {
-                'title': reward.title,
-                'img_url': reward.img.url if reward.img else static('images/logo.png'),
-                'points': reward.points_required,
-                'sufficient_points': child.points >= reward.points_required
-            }
-            for reward in shop.rewards.filter(is_visible=True)
-        ]
-        
-        # Append modified shop data to the list
-        shops_with_images.append({
-            'name': shop.name,
-            'img': shop_image,
-            'rewards': rewards_with_images,
-            'used_points': points_used_this_month
-        })
+        shops_with_images = []
+        for shop in shops:
+            start_of_month = now().replace(day=1)
+            redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
+            points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+            shop_image = shop.img.url if shop.img else static('images/logo.png')
 
-    context = {'shops': shops_with_images, 'child_points': child.points}
-    return render(request, 'reward.html', context)
+            rewards_with_images = [
+                {
+                    'title': reward.title,
+                    'img_url': reward.img.url if reward.img else static('images/logo.png'),
+                    'points': reward.points_required,
+                    'sufficient_points': child.points >= reward.points_required
+                } for reward in shop.rewards.filter(is_visible=True)
+            ]
 
-@login_required
-def points_leaderboard(request):
-    form = DateRangeForm(request.GET or None)
-    children = Child.objects.all()
+            shops_with_images.append({
+                'name': shop.name,
+                'img': shop_image,
+                'rewards': rewards_with_images,
+                'used_points': points_used_this_month
+            })
 
-    # Get the default date range from the database if no dates are selected
-    default_start_date = TaskCompletion.objects.aggregate(Min('completion_date'))['completion_date__min']
-    default_end_date = TaskCompletion.objects.aggregate(Max('completion_date'))['completion_date__max']
+        return Response({"shops": shops_with_images, "child_points": child.points})
 
-    # If the form is valid and dates are provided, use them; otherwise, use the default range
-    if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-    else:
-        start_date = default_start_date
-        end_date = default_end_date
+class PointsLeaderboardView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    # Ensure we have a valid date range (fallback if no data exists)
-    if start_date and end_date:
-        # Calculate points within the date range from TaskCompletion (task points + bonus points)
-        children = children.annotate(
-            task_points_within_range=Sum(
-                Case(
-                    When(
-                        taskcompletion__completion_date__range=(start_date, end_date),
-                        then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                    ),
-                    default=Value(0),
-                    output_field=IntegerField()
+    def get(self, request):
+        form = DateRangeForm(request.GET or None)
+        children = Child.objects.all()
+
+        default_start_date = TaskCompletion.objects.aggregate(Min('completion_date'))['completion_date__min']
+        default_end_date = TaskCompletion.objects.aggregate(Max('completion_date'))['completion_date__max']
+
+        if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+        else:
+            start_date = default_start_date
+            end_date = default_end_date
+
+        if start_date and end_date:
+            children = children.annotate(
+                task_points_within_range=Sum(
+                    Case(
+                        When(
+                            taskcompletion__completion_date__range=(start_date, end_date),
+                            then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
+                        ),
+                        default=Value(0),
+                        output_field=IntegerField()
+                    )
                 )
+            ).order_by('-task_points_within_range')
+        else:
+            children = children.annotate(
+                task_points_within_range=Value(0, output_field=IntegerField())
             )
-        ).order_by('-task_points_within_range')
-    else:
-        # Handle cases where there is no data (e.g., no TaskCompletion records)
-        children = children.annotate(
-            task_points_within_range=Value(0, output_field=IntegerField())
-        )
 
-    # Calculate rank-based progress bar width for each child
-    total_children = children.count()
-    for index, child in enumerate(children, start=1):
-        # Full bar for first rank, progressively smaller for lower ranks
-        child.rank_progress = 100 - ((index - 1) * (100 / total_children))
+        total_children = children.count()
+        leaderboard = []
+        for index, child in enumerate(children, start=1):
+            rank_progress = 100 - ((index - 1) * (100 / total_children))
+            leaderboard.append({
+                "child_name": child.user.username,
+                "points": child.task_points_within_range,
+                "rank_progress": rank_progress
+            })
 
-    return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
+        return Response({"leaderboard": leaderboard})
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def save_phone_number(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        phone_number = data.get("phone_number")
-        
-        # Get the child user and save the phone number
-        child = request.user.child
-        child.user.phone = phone_number
-        child.user.save()
+    data = json.loads(request.body)
+    phone_number = data.get("phone_number")
 
-        return json.JsonResponse({"success": True})
-    
-    return json.JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+    if not phone_number:
+        return Response({"success": False, "error": "Phone number is required."}, status=400)
 
+    child = Child.objects.get(user=request.user)
+    child.user.phone = phone_number
+    child.user.save()
+
+    return Response({"success": True})

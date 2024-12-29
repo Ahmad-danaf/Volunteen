@@ -1,15 +1,25 @@
+
 from django.urls import path
-from childApp import views as child_views
+from childApp.views import (
+    ChildHomeView,
+    ChildRedemptionHistoryView,
+    ChildCompletedTasksView,
+    ChildActiveListView,
+    ChildPointsHistoryView,
+    RewardsView,
+    PointsLeaderboardView,
+    save_phone_number
+)
 
 app_name='childApp'
 
 urlpatterns = [
-    path('home/', child_views.child_home, name='child_home'),  # Child home page
-    path('redemption-history/', child_views.child_redemption_history, name='child_redemption_history'),
-    path('completed-tasks/', child_views.child_completed_tasks, name='child_completed_tasks'),
-    path('rewards/', child_views.rewards_view, name='reward'),  # List available rewards
-    path('active-list/', child_views.child_active_list, name='child_active_list'), 
-    path('points-history/', child_views.child_points_history, name='child_points_history'),
-    path('points-leaderboard/', child_views.points_leaderboard, name='points_leaderboard'),
-    path('save_phone_number/', child_views.save_phone_number, name='save_phone_number'),
+    path('home/', ChildHomeView.as_view(), name='child_home'),
+    path('redemption-history/', ChildRedemptionHistoryView.as_view(), name='child_redemption_history'),
+    path('completed-tasks/', ChildCompletedTasksView.as_view(), name='child_completed_tasks'),
+    path('active-list/', ChildActiveListView.as_view(), name='child_active_list'),
+    path('points-history/', ChildPointsHistoryView.as_view(), name='child_points_history'),
+    path('rewards/', RewardsView.as_view(), name='rewards'),
+    path('leaderboard/', PointsLeaderboardView.as_view(), name='points_leaderboard'),
+    path('save-phone/', save_phone_number, name='save_phone_number'),
 ]

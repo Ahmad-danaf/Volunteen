@@ -24,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+X_API_KEY = os.getenv('X-API-Key', 'default-secret-key')
+
 development = os.getenv("DEVELOPMENT","False") == "True"
 DEBUG = development
 ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com"]
@@ -34,6 +36,7 @@ INSTALLED_APPS = [
     'teenApp',
     'childApp',
     'shopApp',
+    'rest_framework',
     'mentorApp',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -72,7 +75,7 @@ MIDDLEWARE = [
     
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_otp.middleware.OTPMiddleware', # 2FA
-
+    'Volunteen.frameworks_and_drivers.middleware.ApiKeyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -173,3 +176,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
