@@ -13,7 +13,7 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.interface_adapters.forms import DateRangeForm
 from django.utils.timezone import now
 from datetime import datetime, date
-from django.db.models import Sum, Case, When, Value, IntegerField, F
+from django.db.models import Sum, Case, When, Value, IntegerField, F,Min, Max
 import json
 from django.templatetags.static import static
 from rest_framework import status

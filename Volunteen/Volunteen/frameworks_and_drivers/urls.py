@@ -31,10 +31,10 @@ from rest_framework_simplejwt.views import (
 # 2FA
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('teenApp.interface_adapters.urls')),
-    path('mentor/', include('mentorApp.urls')),
+    path('api/teenApp/', include('teenApp.interface_adapters.urls')),
+    path('api/mentor/', include('mentorApp.urls')),
     path("api/child/", include('childApp.urls')),
-    path("shop/", include('shopApp.urls')),
+    path('api/shop/', include('shopApp.urls')),
     # Include captcha URLs
     path('captcha/', include(captcha_urls)),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
