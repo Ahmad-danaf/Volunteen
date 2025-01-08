@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'two_factor',
     'crispy_bootstrap4',
     'crispy_forms',
+    'corsheaders',
     
 ]
 
@@ -70,6 +71,7 @@ RECAPTCHA_PRIVATE_KEY = '6LetRF4pAAAAAIyO-TaXHs6dlpDbJQ4DAJAErifT'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     
@@ -147,7 +149,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 
-CSRF_TRUSTED_ORIGINS = ['https://www.volunteen.site']
+CSRF_TRUSTED_ORIGINS = ['https://www.volunteen.site', 'https://volunteen.site', 'http://localhost:3000', 'http://localhost:5173']
 
 
 
@@ -156,7 +158,10 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),
+                    BASE_DIR / "Volunteen" / "frameworks_and_drivers" / "static" / "dist" / "assets",  # React static files
+                    ]
+  
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 if development:
     STATIC_ROOT = None # for development
@@ -182,3 +187,9 @@ REST_FRAMEWORK = {
         'django.contrib.auth.backends.ModelBackend',  
     ),
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # React(Vite) development server
+    'http://localhost:3000',  # React development server
+]
+
