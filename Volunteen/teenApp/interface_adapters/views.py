@@ -11,6 +11,7 @@ def logout_view(request):
     return redirect('two_factor:login')
 def landing_page(request):
     return render(request, 'landing_page.html')
+
 @login_required
 def home_redirect(request):
     if request.user.groups.filter(name='Children').exists():
@@ -19,8 +20,12 @@ def home_redirect(request):
         return redirect('mentorApp:mentor_home')
     elif request.user.groups.filter(name='Shops').exists():
         return redirect('shopApp:shop_home')
+    elif request.user.groups.filter(name='Parents').exists():
+        return redirect('parentApp:parent_home')
     else:
-        return redirect('/admin')
+        return redirect('admin:index')  
+        
+
 
 def default_home(request):
     return HttpResponse("Home")

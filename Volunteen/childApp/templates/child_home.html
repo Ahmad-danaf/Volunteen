@@ -6,7 +6,12 @@
 {% block content %}
 <h1>ברוך הבא, {{ child.user.username }} :)</h1>
 <p class="points" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
-
+<div class="level-display">
+    <p>
+        <i class="fas fa-star" style="color: gold; font-size: 2em;"></i>
+        <strong>הרמה שלך: {{ child.level }}</strong>
+    </p>
+</div>
 <p class="points" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
 <p class="points"> !בוא נאסוף עוד טינקוינס</p>
 <p><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>

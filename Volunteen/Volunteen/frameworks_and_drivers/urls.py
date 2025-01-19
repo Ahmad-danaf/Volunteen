@@ -31,6 +31,7 @@ urlpatterns = [
     path('mentor/', include('mentorApp.urls')),
     path("child/", include('childApp.urls')),
     path("shop/", include('shopApp.urls')),
+    path("parent/", include('parentApp.urls')),
     # Include captcha URLs
     path('captcha/', include(captcha_urls)),
     # 2FA

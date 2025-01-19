@@ -8,7 +8,7 @@ from shopApp.models import Shop
 from .forms import IdentifyChildForm
 import random
 from datetime import datetime
-from django.utils.timezone import now
+from django.utils.timezone import now,localdate
 from django.db.models import Sum, F
 from django.db.models.functions import TruncMonth
 import json
@@ -73,10 +73,21 @@ def shop_complete_transaction(request):
 
     selected_rewards = json.loads(selected_rewards_json)
     child = get_object_or_404(Child, id=child_id)
-    shop = Shop.objects.get(user=request.user)
+    shop = get_object_or_404(Shop, user=request.user)
 
-    now = datetime.now()
-    start_of_month = now.replace(day=1)
+    # Check if the child has already purchased from this shop today
+    today = localdate()
+    already_purchased_today = Redemption.objects.filter(
+        child=child, shop=shop, date_redeemed__date=today
+    ).exists()
+
+    if already_purchased_today:
+        return render(request, 'shop_redemption_error.html', {
+            'message': 'לא ניתן לבצע רכישה נוספת בחנות זו היום. נסה שוב מחר.'
+        })
+
+    # Check monthly limits and points
+    start_of_month = now().replace(day=1)
     redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
     points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
 
@@ -94,12 +105,17 @@ def shop_complete_transaction(request):
         request.session.pop('child_id', None)  # Clear child_id from session
 
         if child.user.email:
-            NotificationManager.sent_mail(f'Dear {child.user.first_name}, your redemption is complete. You have redeemed {points_used} points.', child.user.email)
+            NotificationManager.sent_mail(f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.', child.user.email)
 
-        return render(request, 'shop_redemption_success.html', {'child': child, 'points_used': points_used, 'receipt': selected_rewards})
+        return render(request, 'shop_redemption_success.html', {
+            'child': child,
+            'points_used': points_used,
+            'receipt': selected_rewards,
+        })
     else:
-        return render(request, 'shop_not_enough_points.html')
-
+        return render(request, 'shop_redemption_error.html', {
+            'message': 'אין מספיק נקודות ברשותך או שהחנות עברה את מגבלת הנקודות החודשית.'
+        })
 
 @login_required
 def shop_cancel_transaction(request):

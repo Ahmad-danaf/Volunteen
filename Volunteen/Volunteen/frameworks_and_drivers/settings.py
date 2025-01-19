@@ -31,6 +31,8 @@ ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1
 # Application definition
 
 INSTALLED_APPS = [
+    'institutionApp',
+    'parentApp',
     'teenApp',
     'childApp',
     'shopApp',
@@ -58,7 +60,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 #2FA
 LOGIN_URL = 'two_factor:login'
-LOGIN_REDIRECT_URL = 'home_redirect'
+LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
 
 # reCAPTCHA keys 
 RECAPTCHA_PUBLIC_KEY = '6LetRF4pAAAAAMssM8IvwXNDeLq5JfhPQf79Wa_1' 

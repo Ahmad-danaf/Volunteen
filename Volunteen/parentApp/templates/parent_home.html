@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}דף הבית של הורה{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<style>
+    body {
+        text-align: right;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .card-body p {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" dir="rtl">
+    <div class="text-center mb-5">
+        <h1>ברוך הבא, {{ parent.user.first_name }}!</h1>
+        <p class="lead">כאן תוכל לעקוב אחרי הפעילות וההתקדמות של ילדיך.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2>מידע על הילדים שלך</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5>סה"כ נקודות של הילדים: {{ total_points }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        {% for child in children %}
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ child.user.username }}</h5>
+                    <p class="card-text">
+                        <strong>מזהה:</strong> {{ child.identifier }}<br>
+                        <strong>נקודות:</strong> {{ child.points }}<br>
+                        <strong>רמה:</strong> {{ child.level }}
+                    </p>
+                    <a href="#" class="btn btn-primary">צפה בפעילות</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
