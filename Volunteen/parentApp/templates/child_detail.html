@@ -1,0 +1,272 @@
+{% extends 'parent_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<!-- Custom CSS -->
+<style>
+    /* General Styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        direction: rtl; /* Right-to-left for Hebrew */
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4CAF50;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Card Styling */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .summary-card {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .card-text {
+        font-size: 1rem;
+        color: #555;
+    }
+
+    /* List Styling */
+    .task-list, .redemption-list, .medal-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .task-list li, .redemption-list li, .medal-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.3s ease;
+    }
+
+    .task-list li:hover, .redemption-list li:hover, .medal-list li:hover {
+        background-color: #f1f1f1;
+    }
+
+    .task-list li:last-child, .redemption-list li:last-child, .medal-list li:last-child {
+        border-bottom: none;
+    }
+
+    .task-list strong, .redemption-list strong {
+        color: #4CAF50;
+    }
+
+    /* Button Styling */
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    /* Toggle Button Styling */
+    .toggle-tasks-btn {
+        background-color: #4CAF50;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .toggle-tasks-btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Child Details Header -->
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <h1 class="text-center">פרטי הילד: {{ child.user.username }}</h1>
+        </div>
+    </div>
+
+    <!-- Child Summary -->
+    <div class="row mb-4">
+        <div class="col-md-6 fade-in">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <h5 class="card-title">סטטיסטיקות</h5>
+                    <p class="card-text"><strong>נקודות:</strong> {{ child.points }}</p>
+                    <p class="card-text"><strong>רמה:</strong> {{ child.level }}</p>
+                    <p class="card-text"><strong>מוסד:</strong> {{ child.institution.name }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 fade-in">
+            <div class="card summary-card">
+                <div class="card-body">
+                    <h5 class="card-title">מדליות</h5>
+                    <ul class="medal-list">
+                        {% for medal in child.medals.all %}
+                        <li>{{ medal.name }}</li>
+                        {% empty %}
+                        <li>אין מדליות עדיין</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">משימות אחרונות</h5>
+                    <button class="toggle-tasks-btn" data-url="{% url 'parentApp:task_dashboard' child_id=child.id %}" onclick="goToTasks(this)">הצג את כל המשימות</button>
+                    <ul class="task-list" id="recent-tasks">
+                        {% for task in recent_tasks %}
+                        <li>
+                            <strong>{{ task.title }}</strong>
+                            <p>{{ task.description }}</p>
+                            <small>הושלם ב: {{ task.completed_at|date:"d/m/Y H:i" }}</small>
+                        </li>
+                        {% empty %}
+                        <li>אין משימות אחרונות</li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="task-list" id="all-tasks" style="display: none;">
+                        {% for task in all_tasks %}
+                        <li>
+                            <strong>{{ task.title }}</strong>
+                            <p>{{ task.description }}</p>
+                            <small>הושלם ב: {{ task.completed_at|date:"d/m/Y H:i" }}</small>
+                        </li>
+                        {% empty %}
+                        <li>אין משימות</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Redemptions -->
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">פדיונות אחרונים</h5>
+                    <ul class="redemption-list">
+                        {% for redemption in recent_redemptions %}
+                        <li>
+                            <strong>{{ redemption.item }}</strong>
+                            <p>נפדה ב: {{ redemption.redeemed_at|date:"d/m/Y H:i" }}</p>
+                        </li>
+                        {% empty %}
+                        <li>אין פדיונות אחרונים</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row fade-in">
+        <div class="col-12 text-center">
+            <a href="{% url 'parentApp:parent_home' %}" class="btn btn-secondary">חזור לדשבורד</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Custom JavaScript -->
+<script>
+    function goToTasks(button) {
+        // Get the URL from the button's data attribute
+        var url = button.getAttribute('data-url');
+        
+        // Redirect to the URL
+        window.location.href = url;
+    }
+
+    // Add smooth scroll to anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Add fade-in animation to elements with the .fade-in class
+    document.addEventListener('DOMContentLoaded', () => {
+        const fadeElements = document.querySelectorAll('.fade-in');
+        fadeElements.forEach(element => {
+            element.style.opacity = 0;
+            element.style.transform = 'translateY(20px)';
+        });
+
+        setTimeout(() => {
+            fadeElements.forEach(element => {
+                element.style.opacity = 1;
+                element.style.transform = 'translateY(0)';
+            });
+        }, 100);
+    });
+</script>
+{% endblock %}

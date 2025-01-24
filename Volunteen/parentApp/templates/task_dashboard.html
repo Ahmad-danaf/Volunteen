@@ -1,0 +1,213 @@
+{% extends 'parent_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<!-- Custom CSS -->
+<style>
+    /* General Styling */
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        direction: rtl; /* Right-to-left for Hebrew */
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4CAF50;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Filter Section Styling */
+    .filter-section {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .filter-section label {
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    .filter-section select {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        margin-left: 10px;
+    }
+
+    .filter-section button {
+        background-color: #4CAF50;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .filter-section button:hover {
+        background-color: #45a049;
+    }
+
+    /* Task List Styling */
+    .task-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .task-list li {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 10px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .task-list li:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .task-list strong {
+        color: #4CAF50;
+    }
+
+    .task-status {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 5px;
+        display: inline-block;
+    }
+
+    .task-status.completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .task-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .filter-section {
+            flex-direction: column;
+        }
+
+        .filter-section select, .filter-section button {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center">מעקב משימות עבור {{ child.user.username }}</h1>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="filter-section">
+                <form method="GET" action="{% url 'parentApp:task_dashboard' child.id %}">
+                    <label for="status">סטטוס:</label>
+                    <select name="status" id="status">
+                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>הכל</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>הושלם</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>ממתין</option>
+                    </select>
+
+                    <label for="date">תאריך:</label>
+                    <select name="date" id="date">
+                        <option value="all" {% if date_filter == 'all' %}selected{% endif %}>הכל</option>
+                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>היום</option>
+                        <option value="this_week" {% if date_filter == 'this_week' %}selected{% endif %}>השבוע</option>
+                        <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>החודש</option>
+                    </select>
+
+                    <button type="submit">סנן</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task List -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="task-list">
+                {% for task in all_tasks %}
+                <li>
+                    <strong>{{ task.title }}</strong>
+                    <p>{{ task.description }}</p>
+                    <small>תאריך יעד: {{ task.due_date|date:"d/m/Y H:i" }}</small>
+                    <div class="task-status {% if task in child.completed_tasks.all %}completed{% else %}pending{% endif %}">
+                        {% if task in child.completed_tasks.all %}הושלם{% else %}ממתין{% endif %}
+                    </div>
+                </li>
+                {% empty %}
+                <li>אין משימות להצגה</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{% url 'parentApp:parent_home' %}" class="btn btn-secondary">חזור לדשבורד</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Custom JavaScript -->
+<script>
+    // Add smooth scroll to anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Add fade-in animation to elements with the .fade-in class
+    document.addEventListener('DOMContentLoaded', () => {
+        const fadeElements = document.querySelectorAll('.fade-in');
+        fadeElements.forEach(element => {
+            element.style.opacity = 0;
+            element.style.transform = 'translateY(20px)';
+        });
+
+        setTimeout(() => {
+            fadeElements.forEach(element => {
+                element.style.opacity = 1;
+                element.style.transform = 'translateY(0)';
+            });
+        }, 100);
+    });
+</script>
+{% endblock %}
