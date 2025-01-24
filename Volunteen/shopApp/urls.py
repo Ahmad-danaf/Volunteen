@@ -12,4 +12,6 @@ urlpatterns = [
     path('identify-child/', views.shop_identify_child, name='shop_identify_child'),
     path('complete-transaction/', views.shop_complete_transaction, name='shop_complete_transaction'),
     path('toggle-reward-visibility/<int:reward_id>/', views.toggle_reward_visibility, name='toggle_reward_visibility'),
+    path('opening-hours/', views.opening_hours_view, name='opening_hours'),
+
 ]

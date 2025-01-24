@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from Volunteen.constants import AVAILABLE_CITIES
 class Medal(models.Model):
     name = models.CharField(max_length=255, verbose_name='Medal Name')
     description = models.TextField(blank=True, null=True, verbose_name='Description')
@@ -18,7 +19,13 @@ class Child(models.Model):
     institution = models.ForeignKey("institutionApp.Institution", on_delete=models.SET_NULL, null=True, blank=True, related_name='children', verbose_name='Institution')
     parent = models.ForeignKey('parentApp.Parent', on_delete=models.SET_NULL, null=True, blank=True, related_name='children', verbose_name='Parent')
     medals = models.ManyToManyField(Medal, blank=True, verbose_name='Medals')
-
+    city = models.CharField(
+        max_length=3,
+        choices=AVAILABLE_CITIES,
+        verbose_name="City",
+        blank=True,
+        null=True,
+    )
     @property
     def level(self):
         """

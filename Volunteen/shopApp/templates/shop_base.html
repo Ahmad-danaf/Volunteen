@@ -8,22 +8,31 @@
     
     <!-- Link to the external CSS file -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/shop_base.css' %}">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Placeholder for extra CSS -->
     {% block extra_css %}{% endblock %}
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 
+    <style>
+        nav{
+            background-image: radial-gradient(circle, orange, transparent 20%, orangered);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-color: orange;
+        }
+
+    </style>
+
 </head>
 <body>
     <!-- Page header -->
-    <header>
-        <h1>{% block header %}דף הבית{% endblock %}</h1>
-    </header>
+    
 
     <!-- Navigation menu -->
     <nav>
         <a href="{% url 'shopApp:shop_home' %}">דף הבית</a>
         <a href="{% url 'shopApp:shop_redeem_points' %}">מימוש טינקוינס</a>
+        <a href="{% url 'shopApp:opening_hours' %}">שעות פתיחה</a>
         <a href="{% url 'teenApp:logout_view' %}">התנתקות</a> 
     </nav>
 

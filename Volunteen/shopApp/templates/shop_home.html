@@ -1,13 +1,49 @@
 {% extends 'shop_base.html' %}
 {% load static %}
 {% block title %}דף הבית של החנות{% endblock %}
-
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/shop_home.css' %}">
+<style>
+    .info-icon {
+        font-size: 1rem;
+        color: #007bff;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+    .chart-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .section {
+        margin-bottom: 2rem;
+    }
+    .shop-icon {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
 {% block content %}
 <style>
     body {
     text-align: right;
 }
+header {
+    background-image: radial-gradient(circle, orange, transparent 20%, orangered);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: orange;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
 </style>
+<header>
+    <h1>{% block header %}דף הבית{% endblock %}</h1>
+</header>
     <div class="container mt-3">
         <div class="text-center">
             <h2>{{ shop.name }} שלום</h2>
@@ -16,6 +52,11 @@
             {% else %}
                 <i class="fas fa-store fa-4x mt-3"></i>
             {% endif %}
+            {% if  shop.city%}
+            <small class="text-muted">
+                {{shop.get_city_display}}
+            </small>
+                {% endif %}
         </div>
 
         <div class="section mt-4">
@@ -46,7 +87,7 @@
 
         <div class="section mt-4">
             <h3>היסטוריית מימושים</h3>
-            <a href="{% url 'shopApp:shop_redemption_history' %}" class="btn orange-btn btn-block">
+            <a href="{% url 'shopApp:shop_redemption_history' %}" class="btn btn-primary btn-block">
                 <i class="fas fa-history"></i> הצגת היסטוריית מימושים
             </a>
         </div>
@@ -78,31 +119,7 @@
     
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<link rel="stylesheet" type="text/css" href="{% static 'css/shop_home.css' %}">
-<style>
-    .info-icon {
-        font-size: 1rem;
-        color: #007bff;
-        cursor: pointer;
-        margin-left: 5px;
-    }
-    .chart-container {
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto;
-    }
-    .section {
-        margin-bottom: 2rem;
-    }
-    .shop-icon {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-    }
-</style>
-{% endblock %}
+
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -4,7 +4,7 @@ from childApp.models import Child
 from shopApp.models import Reward
 from django.http import JsonResponse
 from shopApp.models import Redemption
-from shopApp.models import Shop
+from shopApp.models import Shop, OpeningHours
 from .forms import IdentifyChildForm
 import random
 from datetime import datetime
@@ -14,7 +14,7 @@ from django.db.models.functions import TruncMonth
 import json
 from django.views.decorators.http import require_POST
 from teenApp.utils import NotificationManager
-
+from django.contrib import messages
 
 @login_required
 def shop_redeem_points(request):
@@ -173,3 +173,56 @@ def toggle_reward_visibility(request, reward_id):
         return JsonResponse({'success': True, 'is_visible': reward.is_visible})
     
     return JsonResponse({'success': False}, status=403)
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Shop, OpeningHours
+
+@login_required
+def opening_hours_view(request):
+    shop = request.user.shop
+    opening_hours = OpeningHours.objects.filter(shop=shop)
+    days_of_week_dict = {0: 'ראשון', 1: 'שני', 2: 'שלישי', 3: 'רביעי', 4: 'חמישי', 5: 'שישי', 6: 'שבת'}
+
+    # Convert opening hours to a dictionary for easy rendering in the template
+    hours_dict = {
+        day: {
+            'day_name': days_of_week_dict[day],
+            'opening_hour': None,
+            'closing_hour': None
+        } for day in range(7)  # 0-6 for Sunday to Saturday
+    }
+
+    for entry in opening_hours:
+        hours_dict[entry.day]['opening_hour'] = entry.opening_hour.strftime('%H:%M') if entry.opening_hour else None
+        hours_dict[entry.day]['closing_hour'] = entry.closing_hour.strftime('%H:%M') if entry.closing_hour else None
+
+    if request.method == 'POST':
+        try:
+            for day in range(7):
+                opening_hour = request.POST.get(f'opening_hour_{day}')
+                closing_hour = request.POST.get(f'closing_hour_{day}')
+
+                # If both fields are empty, delete the entry (mark as closed)
+                if not opening_hour and not closing_hour:
+                    OpeningHours.objects.filter(shop=shop, day=day).delete()
+                else:
+                    OpeningHours.objects.update_or_create(
+                        shop=shop,
+                        day=day,
+                        defaults={
+                            'opening_hour': opening_hour,
+                            'closing_hour': closing_hour
+                        }
+                    )
+            messages.success(request, 'שעות הפתיחה עודכנו בהצלחה!')
+        except Exception as e:
+            messages.error(request, f'שגיאה בעדכון שעות הפתיחה: {str(e)}')
+
+        return redirect('shopApp:opening_hours')
+
+    return render(request, 'opening_hours.html', {
+        'shop': shop,
+        'hours_dict': hours_dict
+    })
