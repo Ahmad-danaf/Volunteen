@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from childApp.models import Child
-from Volunteen.constants import AVAILABLE_CITIES
+from Volunteen.constants import AVAILABLE_CITIES,SHOP_CATEGORIES
+from datetime import timedelta
+from django.utils.timezone import now
 class Shop(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, unique=True)
@@ -13,6 +15,13 @@ class Shop(models.Model):
         verbose_name="City",
         blank=True,
         null=True,
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=SHOP_CATEGORIES,
+        verbose_name="Category",
+        blank=True,
+        null=True,
     )    
     def __str__(self):
         return self.name
@@ -21,6 +30,14 @@ class Shop(models.Model):
         super().save(*args, **kwargs)
         shops_group, created = Group.objects.get_or_create(name='Shops')
         self.user.groups.add(shops_group)
+        
+    def average_service_rating(self):
+        ratings = Redemption.objects.filter(shop=self, service_rating__isnull=False).values_list('service_rating', flat=True)
+        return round(sum(ratings) / len(ratings), 1) if ratings else None
+
+    def average_reward_rating(self):
+        ratings = Redemption.objects.filter(shop=self, reward_rating__isnull=False).values_list('reward_rating', flat=True)
+        return round(sum(ratings) / len(ratings), 1) if ratings else None
 
 class OpeningHours(models.Model):
     DAYS_OF_WEEK = [
@@ -63,6 +80,15 @@ class Redemption(models.Model):
     points_used = models.IntegerField(verbose_name='Points Used')
     date_redeemed = models.DateTimeField(auto_now_add=True, verbose_name='Date Redeemed')
     shop = models.ForeignKey('shopApp.Shop', on_delete=models.CASCADE, verbose_name='Shop')
+    service_rating = models.IntegerField(null=True, blank=True, verbose_name='Service Rating')  # 1-5 stars
+    reward_rating = models.IntegerField(null=True, blank=True, verbose_name='Reward Rating')  # 1-5 stars
+    notes = models.TextField(null=True, blank=True, verbose_name='Notes')  # Optional text for additional feedback
 
     def __str__(self):
         return f'{self.child} redeemed {self.points_used} points at {self.shop} on {self.date_redeemed}'
+    
+    def can_rate(self):
+        """
+        Returns True if the redemption can still be rated (within 7 days).
+        """
+        return self.date_redeemed + timedelta(days=7) >= now()

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404,redirect
 from datetime import datetime
 from django.db.models import Sum, F, Prefetch 
 from django.templatetags.static import static
@@ -16,6 +16,10 @@ from teenApp.interface_adapters.forms import DateRangeForm
 from django.db.models import Sum, Case, When, Value, IntegerField, F
 from django.views.decorators.csrf import csrf_exempt
 import json
+from .forms import RedemptionRatingForm
+from django.utils.timezone import now
+from django.http import HttpResponseForbidden
+
 
 @login_required
 def child_home(request):
@@ -70,6 +74,29 @@ def child_redemption_history(request):
         redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
 
     return render(request, 'child_redemption_history.html', {'redemptions': redemptions, 'form': form})
+
+@login_required
+def rate_redemption_view(request, redemption_id):
+    redemption = get_object_or_404(Redemption, id=redemption_id, child=request.user.child)
+
+    # Check if the redemption is within the 7-day scope and not already rated
+    if not redemption.can_rate():
+        return HttpResponseForbidden("לא ניתן לדרג מימוש זה. ייתכן שחלפו 7 ימים או שהמימוש כבר דורג.")
+
+    if request.method == 'POST':
+        form = RedemptionRatingForm(request.POST, instance=redemption)
+        
+        if form.is_valid():
+            form.save() 
+            return redirect('childApp:child_redemption_history')  
+    else:
+        form = RedemptionRatingForm(instance=redemption)
+
+    return render(request, 'rate_redemption.html', {
+        'form': form,
+        'redemption': redemption,
+        'stars_range':range(1, 6)
+    })
 
 @login_required
 def child_completed_tasks(request):

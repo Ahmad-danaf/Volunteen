@@ -12,4 +12,6 @@ urlpatterns = [
     path('points-history/', child_views.child_points_history, name='child_points_history'),
     path('points-leaderboard/', child_views.points_leaderboard, name='points_leaderboard'),
     path('save_phone_number/', child_views.save_phone_number, name='save_phone_number'),
+    path('rate/<int:redemption_id>/', child_views.rate_redemption_view, name='rate_redemption'),
+
 ]

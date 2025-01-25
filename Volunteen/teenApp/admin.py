@@ -1,11 +1,8 @@
 from django.contrib import admin
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
-from shopApp.models import Reward
 from teenApp.entities.task import Task
 from mentorApp.models import Mentor
-from shopApp.models import Redemption
-from shopApp.models import Shop
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 # Define a new User admin
@@ -40,12 +37,6 @@ class ChildAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'identifier')
     list_filter = ('points',)
 
-@admin.register(Reward)
-class RewardAdmin(admin.ModelAdmin):
-    list_display = ('title', 'points_required')
-    search_fields = ('title',)
-    list_filter = ('points_required',)
-
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'points', 'deadline', 'completed')
@@ -56,16 +47,7 @@ class TaskAdmin(admin.ModelAdmin):
 class MentorAdmin(admin.ModelAdmin):
     list_display = ('user',)
 
-@admin.register(Redemption)
-class RedemptionAdmin(admin.ModelAdmin):
-    list_display = ('child', 'points_used', 'date_redeemed', 'shop')
-    search_fields = ('child__user__username', 'shop__name')
-    list_filter = ('date_redeemed', 'shop')
 
-@admin.register(Shop)
-class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'max_points')
-    search_fields = ('name', 'user__username')
     
 @admin.register(TaskCompletion)
 class TaskCompletionAdmin(admin.ModelAdmin):

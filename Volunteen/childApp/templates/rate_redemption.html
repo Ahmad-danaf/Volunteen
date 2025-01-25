@@ -1,0 +1,274 @@
+{% extends 'child_base.html' %}
+
+{% block title %}Rate Redemption{% endblock %}
+
+{% block extra_css %}
+<style>
+
+
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      padding: 0 20px;
+    }
+
+    .feedback {
+      max-width: 360px;
+      background-color: #fff;
+      width: 100%;
+      padding: 30px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+      margin: 20px;
+    }
+
+    .rating {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      overflow: hidden;
+      flex-direction: row-reverse;
+      height: 150px;
+      position: relative;
+    }
+
+    .rating > input {
+      display: none;
+    }
+
+    .rating > label {
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      margin-top: auto;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='126.729' height='126.73'%3e%3cpath fill='%23e3e3e3' d='M121.215 44.212l-34.899-3.3c-2.2-.2-4.101-1.6-5-3.7l-12.5-30.3c-2-5-9.101-5-11.101 0l-12.4 30.3c-.8 2.1-2.8 3.5-5 3.7l-34.9 3.3c-5.2.5-7.3 7-3.4 10.5l26.3 23.1c1.7 1.5 2.4 3.7 1.9 5.9l-7.9 32.399c-1.2 5.101 4.3 9.3 8.9 6.601l29.1-17.101c1.9-1.1 4.2-1.1 6.1 0l29.101 17.101c4.6 2.699 10.1-1.4 8.899-6.601l-7.8-32.399c-.5-2.2.2-4.4 1.9-5.9l26.3-23.1c3.8-3.5 1.6-10-3.6-10.5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 76%;
+      transition: 0.3s;
+    }
+
+    .rating > input:checked ~ label,
+    .rating > input:checked ~ label ~ label {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='126.729' height='126.73'%3e%3cpath fill='%23fcd93a' d='M121.215 44.212l-34.899-3.3c-2.2-.2-4.101-1.6-5-3.7l-12.5-30.3c-2-5-9.101-5-11.101 0l-12.4 30.3c-.8 2.1-2.8 3.5-5 3.7l-34.9 3.3c-5.2.5-7.3 7-3.4 10.5l26.3 23.1c1.7 1.5 2.4 3.7 1.9 5.9l-7.9 32.399c-1.2 5.101 4.3 9.3 8.9 6.601l29.1-17.101c1.9-1.1 4.2-1.1 6.1 0l29.101 17.101c4.6 2.699 10.1-1.4 8.899-6.601l-7.8-32.399c-.5-2.2.2-4.4 1.9-5.9l26.3-23.1c3.8-3.5 1.6-10-3.6-10.5z'/%3e%3c/svg%3e");
+    }
+
+    .rating > input:not(:checked) ~ label:hover,
+    .rating > input:not(:checked) ~ label:hover ~ label {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='126.729' height='126.73'%3e%3cpath fill='%23d8b11e' d='M121.215 44.212l-34.899-3.3c-2.2-.2-4.101-1.6-5-3.7l-12.5-30.3c-2-5-9.101-5-11.101 0l-12.4 30.3c-.8 2.1-2.8 3.5-5 3.7l-34.9 3.3c-5.2.5-7.3 7-3.4 10.5l26.3 23.1c1.7 1.5 2.4 3.7 1.9 5.9l-7.9 32.399c-1.2 5.101 4.3 9.3 8.9 6.601l29.1-17.101c1.9-1.1 4.2-1.1 6.1 0l29.101 17.101c4.6 2.699 10.1-1.4 8.899-6.601l-7.8-32.399c-.5-2.2.2-4.4 1.9-5.9l26.3-23.1c3.8-3.5 1.6-10-3.6-10.5z'/%3e%3c/svg%3e");
+    }
+
+    .emoji-wrapper {
+      width: 100%;
+      text-align: center;
+      height: 100px;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .emoji-wrapper:before,
+    .emoji-wrapper:after {
+      content: "";
+      height: 15px;
+      width: 100%;
+      position: absolute;
+      left: 0;
+      z-index: 1;
+    }
+
+    .emoji-wrapper:before {
+      top: 0;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 35%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .emoji-wrapper:after {
+      bottom: 0;
+      background: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 35%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .emoji {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.3s;
+    }
+
+    .emoji > svg {
+      margin: 15px 0;
+      width: 70px;
+      height: 70px;
+      flex-shrink: 0;
+    }
+
+    #service-rating-1:checked ~ .emoji-wrapper > .emoji,
+    #reward-rating-1:checked ~ .emoji-wrapper > .emoji {
+      transform: translateY(-100px);
+    }
+
+    #service-rating-2:checked ~ .emoji-wrapper > .emoji,
+    #reward-rating-2:checked ~ .emoji-wrapper > .emoji {
+      transform: translateY(-200px);
+    }
+
+    #service-rating-3:checked ~ .emoji-wrapper > .emoji,
+    #reward-rating-3:checked ~ .emoji-wrapper > .emoji {
+      transform: translateY(-300px);
+    }
+
+    #service-rating-4:checked ~ .emoji-wrapper > .emoji,
+    #reward-rating-4:checked ~ .emoji-wrapper > .emoji {
+      transform: translateY(-400px);
+    }
+
+    #service-rating-5:checked ~ .emoji-wrapper > .emoji,
+    #reward-rating-5:checked ~ .emoji-wrapper > .emoji {
+      transform: translateY(-500px);
+    }
+    .rating-container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.8s ease-in-out;
+  }
+
+  .rating-container h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: #ff4500;
+  }
+
+  .rating-icons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+  }
+
+  .rating-icons input[type="radio"] {
+      display: none; /* Hide the default radio buttons */
+  }
+
+  .rating-icons label {
+      font-size: 2rem;
+      color: #ddd; /* Default gray for non-active stars */
+      cursor: pointer;
+      transition: color 0.3s ease-in-out;
+  }
+
+  /* Active stars */
+  .rating-icons label.active {
+      color: #ffc107; /* Gold for active stars */
+  }
+
+  /* Hover effects */
+  .rating-icons label:hover,
+  .rating-icons label:hover ~ label {
+      color: #ffc107; /* Gold on hover */
+  }
+
+  .rating-field {
+      margin-bottom: 1.5rem;
+  }
+
+  /* Notes textarea */
+  .form-control {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+  }
+
+  /* Submit button */
+  .btn-submit {
+      background-color: #28a745;
+      color: white;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease-in-out;
+      margin-top: 1rem;
+  }
+
+  .btn-submit:hover {
+      background-color: #218838;
+  }
+
+  /* Fade-in animation for container */
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+      .rating-container {
+          padding: 15px;
+      }
+
+      .rating-icons label {
+          font-size: 1.5rem;
+      }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container rating-container">
+  <h2>דרג את המימוש שלך</h2>
+  <br>
+  <h2>תאריך מימוש: {{ redemption.date_redeemed|date:"d/m/Y H:i" }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="feedback" id="ratingForm">
+        <h3>{{ form.service_rating.label }}</h3>
+        <div class="rating">
+            {% for i in "54321" %}
+            <input type="radio" name="service_rating" id="service-rating-{{ i }}" value="{{ i }}">
+            <label for="service-rating-{{ i }}"></label>
+          {% endfor %}
+          <div class="emoji-wrapper">
+            {% include 'rate_emoji.html' %}
+          </div>
+        </div>
+      </div>
+  
+      <div class="feedback">
+        <h3>{{ form.reward_rating.label }}</h3>
+        <div class="rating">
+            {% for i in "54321" %}
+            <input type="radio" name="reward_rating" id="reward-rating-{{ i }}" value="{{ i }}">
+            <label for="reward-rating-{{ i }}"></label>
+          {% endfor %}
+          <div class="emoji-wrapper">
+            {% include 'rate_emoji.html' %}
+          </div>
+        </div>
+      </div>
+
+    <!-- Notes -->
+    <div class="feedback">
+      {{ form.notes.label }}
+            {{ form.notes }}
+    </div>
+
+    <!-- Submit Button -->
+    <div class="feedback">
+      <button type="submit" class="btn-submit">שמור דירוג</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

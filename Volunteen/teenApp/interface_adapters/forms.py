@@ -34,7 +34,13 @@ class RedemptionForm(forms.Form):
 
 
 class DateRangeForm(forms.Form):
-    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך התחלה')
-    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='תאריך סיום')
-
-
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="מתאריך"
+    )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="עד תאריך"
+    )
