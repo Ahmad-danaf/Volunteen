@@ -19,7 +19,7 @@ import json
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-
+from Volunteen.constants import AVAILABLE_CITIES
 
 @login_required
 def child_home(request):
@@ -215,24 +215,23 @@ def child_points_history(request):
     return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
 
 
+@login_required
 def rewards_view(request):
-    # Prefetch related rewards to minimize database hits
+    # Prefetch related rewards for efficiency
     shops = Shop.objects.prefetch_related(
-        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))  # Correctly use Prefetch
+        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
     ).all()
-    # Get current child from request user
-    child = request.user.child
 
-    # Prepare a new list to hold shops with modified data
+    child = request.user.child
+    child_city = child.city if child.city else ''
+
     shops_with_images = []
     for shop in shops:
         start_of_month = now().replace(day=1)
         redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
         points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-        # Assign default image if none exists
         shop_image = shop.img.url if shop.img else static('images/logo.png')
         
-        # Prepare rewards, assigning default images if necessary
         rewards_with_images = [
             {
                 'title': reward.title,
@@ -243,15 +242,21 @@ def rewards_view(request):
             for reward in shop.rewards.filter(is_visible=True)
         ]
         
-        # Append modified shop data to the list
         shops_with_images.append({
             'name': shop.name,
             'img': shop_image,
+            'city': shop.city,  
             'rewards': rewards_with_images,
-            'used_points': points_used_this_month
+            'used_points': points_used_this_month,
+            'is_open': shop.is_open()
         })
-
-    context = {'shops': shops_with_images, 'child_points': child.points}
+    
+    context = {
+        'shops': shops_with_images,
+        'child_points': child.points,
+        'child_city': child_city,
+        'available_cities': AVAILABLE_CITIES,
+    }
     return render(request, 'reward.html', context)
 
 @login_required

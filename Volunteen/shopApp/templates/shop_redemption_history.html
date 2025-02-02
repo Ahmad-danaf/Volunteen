@@ -4,7 +4,18 @@
 
 {% block content %}
 <h2 dir="rtl">ברוך הבא {{ shop.name }}</h2>
-
+<div class="shop-ratings">
+    <div class="rating-card">
+        <span class="rating-label">דירוג שירות</span>
+        <div class="stars">{% include 'stars.html' with rating=shop.average_service_rating %}</div>
+        <span class="rating-value">{{ shop.average_service_rating|default:"טרם דורג" }}</span>
+    </div>
+    <div class="rating-card">
+        <span class="rating-label">דירוג פרסים</span>
+        <div class="stars">{% include 'stars.html' with rating=shop.average_reward_rating %}</div>
+        <span class="rating-value">{{ shop.average_reward_rating|default:"טרם דורג" }}</span>
+    </div>
+</div>
 <div>
     <h3 dir="rtl">פדיונים אחרונים</h3>
     <table class="redemption-table">
@@ -123,6 +134,26 @@
         .redemption-table, .redemption-summary-table {
             font-size: 12px;
         }
+    }
+    .shop-ratings {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .rating-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    
+    .stars {
+        color: #FFD700;
+        font-size: 1.5rem;
+        margin: 0.5rem 0;
     }
 </style>
 {% endblock %}

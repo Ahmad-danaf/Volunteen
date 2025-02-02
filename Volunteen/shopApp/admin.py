@@ -1,11 +1,16 @@
 from django.contrib import admin
-from .models import Shop, Reward, Redemption, OpeningHours
+from .models import Shop, Reward, Redemption, OpeningHours, Category
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
 
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'max_points', 'city', 'category')
-    search_fields = ('name', 'user__username', 'city', 'category')
-    list_filter = ('city', 'category')
+    list_display = ('name', 'city', 'get_category_names')
+    list_filter = ('city', 'categories')
+    search_fields = ('name',)
+
 
 @admin.register(Reward)
 class RewardAdmin(admin.ModelAdmin):

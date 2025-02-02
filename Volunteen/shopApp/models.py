@@ -4,6 +4,21 @@ from childApp.models import Child
 from Volunteen.constants import AVAILABLE_CITIES,SHOP_CATEGORIES
 from datetime import timedelta
 from django.utils.timezone import now
+from datetime import datetime
+
+class Category(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def populate_categories():
+        """Populate the Category model using SHOP_CATEGORIES from constants.py"""
+        for code, name in SHOP_CATEGORIES:
+            Category.objects.get_or_create(code=code, name=name)
+
 class Shop(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, unique=True)
@@ -16,13 +31,8 @@ class Shop(models.Model):
         blank=True,
         null=True,
     )
-    category = models.CharField(
-        max_length=50,
-        choices=SHOP_CATEGORIES,
-        verbose_name="Category",
-        blank=True,
-        null=True,
-    )    
+    categories = models.ManyToManyField(Category, related_name="shops", verbose_name="Categories")
+  
     def __str__(self):
         return self.name
 
@@ -38,6 +48,47 @@ class Shop(models.Model):
     def average_reward_rating(self):
         ratings = Redemption.objects.filter(shop=self, reward_rating__isnull=False).values_list('reward_rating', flat=True)
         return round(sum(ratings) / len(ratings), 1) if ratings else None
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        shops_group, created = Group.objects.get_or_create(name='Shops')
+        self.user.groups.add(shops_group)
+
+    def get_category_names(self):
+        """Returns a comma-separated string of category names"""
+        return ", ".join(category.name for category in self.categories.all())
+    
+    def is_open(self):
+        """
+        Returns True if the shop is currently open based on its opening hours.
+        """
+        now = datetime.now()
+        current_day = now.weekday()  # Monday is 0, Sunday is 6
+        current_time = now.time()
+
+        try:
+            # Get today's opening hours
+            opening_hours = self.opening_hours.get(day=current_day)
+            
+            # If no opening hours exist for today, assume closed
+            if not opening_hours:
+                return False
+
+            # Handle shops that are open past midnight
+            if opening_hours.opening_hour and opening_hours.closing_hour:
+                if opening_hours.opening_hour < opening_hours.closing_hour:
+                    # Normal case: opening and closing on same day
+                    return opening_hours.opening_hour <= current_time <= opening_hours.closing_hour
+                else:
+                    # Special case: closing time is next day (e.g., 22:00-02:00)
+                    return current_time >= opening_hours.opening_hour or current_time <= opening_hours.closing_hour
+
+        except OpeningHours.DoesNotExist:
+            # No opening hours defined for this day
+            return False
+
+        return False
+
 
 class OpeningHours(models.Model):
     DAYS_OF_WEEK = [
