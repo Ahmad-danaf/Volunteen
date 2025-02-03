@@ -1,25 +1,54 @@
 {% extends 'child_base.html' %}
-
 {% load static %}
-{% block title %}הפרופיל של {{ child.user.username }}{% endblock %}
+
+{% block title %}מסך הבית - Volunteen{% endblock %}
 
 {% block content %}
-<h1>ברוך הבא, {{ child.user.username }} :)</h1>
-<p class="points" style="font-size: 1.5em; color: #5d22ff;">{{ greeting|safe }}</p>
-<div class="level-display">
-    <p>
-        <i class="fas fa-star" style="color: gold; font-size: 2em;"></i>
-        <strong>הרמה שלך: {{ child.level }}</strong>
-    </p>
+
+<div class="header-section">
+    <h1 class="welcome-message">ברוך הבא, {{ child.user.username }}!</h1>
+    <p class="tagline">{{ greeting|safe }}</p>
 </div>
-<p class="points" style="font-size: 1.5em; color: #ff5722;">טינקוינס בארנק:  <strong>{{ child.points }}</strong></p>
-<p class="points"> !בוא נאסוף עוד טינקוינס</p>
-<p><strong>מס' המזהה שלי: </strong> {{ child.identifier }}</p>
 
-<!-- Secret Code Button -->
-<button onclick="showSecretCode()" class="button" style="background-color: #007bff;">הראה קוד סודי</button>
+<div class="avatar-streak-container">
+    <div class="avatar">
+        <img src="{% static 'images/Adam.jpg' %}" alt="Avatar" class="avatar-image">
+    </div>
 
-<!-- Modal for displaying secret code -->
+    <div class="streak-info">
+        <p>🔥 רצף יומי: <strong>3 ימים</strong> ברציפות!</p>
+        <small>היכנס כל יום כדי להאריך את הרצף ולזכות בבונוסים!</small>
+    </div>
+</div>
+
+<div class="user-info-panel">
+    <div class="user-level">
+        <i class="fas fa-star" style="color: gold; font-size: 1.5em;"></i>
+        <span>הרמה שלך: <strong>{{ level }}</strong></span>
+    </div>
+    <div class="user-teencoins">
+        <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
+        <span>טינקוינס בארנק: <strong>{{ child.points }}</strong></span>
+    </div>
+</div>
+
+<div class="cta-section">
+    <button class="cta-button" onclick="scrollToTasks()">
+        בוא נאסוף עוד טינקאוינס!
+    </button>
+</div>
+
+<div class="progress-container">
+    <p>התקדמות לרמה הבאה:</p>
+    <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: {{ progress_percent }}%;"></div>
+    </div>
+    <span class="progress-bar-text">{{ progress_percent|floatformat:0 }}%</span>
+</div>
+
+<button onclick="showSecretCode()" class="secret-code-button">
+    <i class="fas fa-key"></i> הצג קוד סודי
+</button>
 <div id="secretCodeModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
@@ -27,119 +56,178 @@
     </div>
 </div>
 
-<!-- New Task Notification -->
-{% if new_tasks %}
+{% if new_tasks_count > 0 %}
 <div id="newTaskNotification" class="notification">
     <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
-    <button class="button" onclick="closeNotification()">Close</button>
+    <button type="button" onclick="markTasksAsViewed()" class="button close-button">
+        סימנתי כנקרא
+    </button>
 </div>
 {% endif %}
 
-<a href="{% url 'childApp:child_active_list' %}" class="button" style="background-color: #28a745;">
-    <i class="fas fa-tasks"></i> רשימת המשימות
-</a>
-<a href="{% url 'childApp:reward' %}" class="button" style="background-color: #1755b8;">
-    <i class="fas fa-gift"></i> רשימת הפרסים
-</a>
-<a href="{% url 'childApp:child_redemption_history' %}" class="button" style="background-color: #17a2b8;">
-    <i class="fas fa-history"></i> היסטוריית רכישה
-</a>
-<a href="{% url 'childApp:child_completed_tasks' %}" class="button" style="background-color: #5d22ff;">
-    <i class="fas fa-check-circle"></i> משימות מושלמות
-</a>
-<a href="{% url 'childApp:child_points_history' %}" class="button" style="background-color: #9175c8;">
-    <i class="fas fa-coins"></i> היסטוריית טינקוינס
-</a>
-<a href="{% url 'childApp:points_leaderboard' %}" class="button" style="background-color: #ff9800;">
-    <i class="fas fa-trophy"></i> קיר התהילה
-</a>
-<a href="{% url 'teenApp:logout_view' %}" class="button button-logout">
-    <i class="fas fa-sign-out-alt"></i> יציאה
-</a>
+<div id="featuredTasks" class="featured-tasks-container">
+    <h2>משימות מומלצות לשבוע זה</h2>
+    {% if new_tasks_count > 0 %}
+        <ul class="task-list">
+            {% for task_assignment in new_tasks %}
+            <li>
+                <strong>{{ task_assignment.task.title }}</strong><br>
+                <small>{{ task_assignment.task.description|slice:":40" }}...</small><br>
+                <span>נקודות למשימה: {{ task_assignment.task.points }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>אין משימות חדשות כרגע. שמור על הרצף היומי כדי לזכות בבונוסים!</p>
+    {% endif %}
+</div>
 
-{% if not child.user.phone %}
-  <!-- Modal for Phone Number Prompt -->
-    <div id="phoneNumberModal" class="modal">
-        <div class="modal-content">
-            <h3>הכנס מספר טלפון</h3>
-            <p>אנא הזן את מספר הטלפון שלך כדי להמשיך:</p>
-            <input type="tel" id="phoneNumberInput" placeholder="מספר טלפון" style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
-            <h3>אמת את מספר טלפון</h3>
-            <input type="tel" id="secPhoneNumberInput" placeholder="מספר טלפון" style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
-            <button onclick="submitPhoneNumber()" class="btn">שמור</button>
+<div class="navigation-grid">
+    <a href="{% url 'childApp:child_active_list' %}" class="nav-button" style="background-color: #28a745;">
+        <i class="fas fa-tasks"></i>
+        <span>רשימת משימות</span>
+    </a>
+    <a href="{% url 'childApp:reward' %}" class="nav-button" style="background-color: #ff4081;">
+        <i class="fas fa-gift"></i>
+        <span>רשימת פרסים</span>
+    </a>
+    <a href="{% url 'childApp:child_redemption_history' %}" class="nav-button" style="background-color: #17a2b8;">
+        <i class="fas fa-history"></i>
+        <span>היסטוריית רכישה</span>
+    </a>
+    <a href="{% url 'childApp:child_completed_tasks' %}" class="nav-button" style="background-color: #5d22ff;">
+        <i class="fas fa-check-circle"></i>
+        <span>משימות מושלמות</span>
+    </a>
+    <a href="{% url 'childApp:child_points_history' %}" class="nav-button" style="background-color: #9175c8;">
+        <i class="fas fa-coins"></i>
+        <span>היסטוריית טינקוינס</span>
+    </a>
+    <a href="{% url 'childApp:points_leaderboard' %}" class="nav-button" style="background-color: #ff9800;">
+        <i class="fas fa-trophy"></i>
+        <span>קיר התהילה</span>
+    </a>
+    <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>צ'ק אין/אאוט</span>
+    </a>
+    <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>יציאה</span>
+    </a>
+</div>
+
+{% if child.medals.exists %}
+<div class="achievements-section">
+    <h2>הישגים ומדליות</h2>
+    <div class="medals-container">
+        {% for medal in child.medals.all %}
+        <div class="medal-card">
+            <div class="medal-icon">🏅</div>
+            <h3>{{ medal.name }}</h3>
+            <p>{{ medal.description }}</p>
+            <small>+{{ medal.points_reward }} נק'</small>
         </div>
+        {% endfor %}
     </div>
+</div>
 {% endif %}
 
+{% if not child.user.phone %}
+<div id="phoneNumberModal" class="modal">
+    <div class="modal-content">
+        <h3>הכנס מספר טלפון</h3>
+        <p>אנא הזן את מספר הטלפון שלך כדי להמשיך:</p>
+        <input type="tel" id="phoneNumberInput" placeholder="מספר טלפון ראשי" 
+               style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
+        <h4>אימות מספר הטלפון (שני)</h4>
+        <input type="tel" id="secPhoneNumberInput" placeholder="מספר טלפון שני" 
+               style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
+        <button onclick="submitPhoneNumber()" class="btn">שמור</button>
+    </div>
+</div>
+{% endif %}
 
+{% endblock content %}
 
+{% block extra_scripts %}
 <script>
+
+
 function showSecretCode() {
     document.getElementById('secretCodeModal').style.display = 'block';
 }
-
 function closeModal() {
     document.getElementById('secretCodeModal').style.display = 'none';
 }
 
-function closeNotification() {
-    document.getElementById('newTaskNotification').style.display = 'none';
+function markTasksAsViewed() {
+    fetch("{% url 'childApp:mark_tasks_as_viewed' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('newTaskNotification').style.display = 'none';
+            throwConfetti();
+        }
+    })
+    .catch(error => console.error("Error:", error));
 }
 
-// Check if the phone number is missing
+function scrollToTasks() {
+    const tasksSection = document.getElementById('featuredTasks');
+    tasksSection.scrollIntoView({behavior: 'smooth'});
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-    const hasPhoneNumber = {{ child.user.phone|yesno:"true,false" }}; // Django boolean check
+    // ערך true/false לפי child.user.phone
+    const hasPhoneNumber = {{ child.user.phone|yesno:"true,false" }};
     if (!hasPhoneNumber) {
         document.getElementById('phoneNumberModal').style.display = 'block';
     }
+
+    {% if new_tasks_count > 0 %}
+        throwConfetti();
+    {% endif %}
 });
 
-// Save phone number (example implementation, adjust according to backend setup)
 function submitPhoneNumber() {
     const phoneNumber = document.getElementById('phoneNumberInput').value.trim();
     const secPhoneNumber = document.getElementById('secPhoneNumberInput').value.trim();
-    if(!secPhoneNumber) {
-        alert("אנא הכנס מספר טלפון תקין.");
-        return;
-    }
-    //check if secPhoneNumber is valid
-    if(secPhoneNumber!=phoneNumber){
-        alert("מספר הטלפון חייב להיות שונה ממספר הטלפון הראשי.");
-        return;
-    }
+
     if (!phoneNumber) {
         alert("אנא הכנס מספר טלפון תקין.");
         return;
     }
-    if(!/^\d+$/.test(phoneNumber)) {
-        alert("מספר הטלפון יכול להכיל רק מספרים.");
+    if (phoneNumber.length !== 10 || !/^\d+$/.test(phoneNumber) || phoneNumber[0] !== '0' || phoneNumber[1] !== '5') {
+        alert("מספר הטלפון חייב להתחיל ב-05 ולהכיל 10 ספרות.");
         return;
     }
-    if(phoneNumber.length != 10) {
-        alert("מספר הטלפון חייב להכיל 10 ספרות.");
+    if (!secPhoneNumber) {
+        alert("אנא הזן מספר טלפון שני.");
         return;
     }
-    if(phoneNumber[0] != '0') {
-        alert("מספר הטלפון חייב להתחיל ב-0.");
-        return;
-    }
-
-    if(phoneNumber[1] != '5') {
-        alert("מספר הטלפון חייב להתחיל ב-0.");
+    if (phoneNumber === secPhoneNumber) {
+        alert("מספר הטלפון השני חייב להיות שונה מהראשון.");
         return;
     }
 
-    
-
-    // Add AJAX or form submission to save the phone number
-    // Send the phone number to the backend using AJAX (fetch API)
     fetch("{% url 'childApp:save_phone_number' %}", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}",  // CSRF token for security
+            "X-CSRFToken": "{{ csrf_token }}",
         },
-        body: JSON.stringify({ phone_number: phoneNumber })
+        body: JSON.stringify({ 
+            phone_number: phoneNumber, 
+            secondary_phone_number: secPhoneNumber 
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -147,63 +235,399 @@ function submitPhoneNumber() {
             alert("מספר הטלפון נשמר בהצלחה!");
             document.getElementById('phoneNumberModal').style.display = 'none';
         } else {
-            alert("אירעה שגיאה בעת שמירת מספר הטלפון. אנא נסה שנית.");
+            alert("אירעה שגיאה בעת שמירת מספר הטלפון. אנא נסה שוב.");
         }
     })
-    
-
-    document.getElementById('phoneNumberModal').style.display = 'none';
+    .catch(error => console.error("Error:", error));
 }
 
+function showMedalPopup(name, description, points) {
+    const popup = document.createElement('div');
+    popup.className = 'medal-popup';
+    popup.innerHTML = `
+        <h2>🎉 זכית במדליה חדשה! 🎉</h2>
+        <h3>${name}</h3>
+        <p>${description}</p>
+        <p>🏅 קיבלת ${points} טינקוינס!</p>
+        <button onclick="closePopup()">סגור</button>
+    `;
+    document.body.appendChild(popup);
+}
+function closePopup() {
+    const popup = document.querySelector('.medal-popup');
+    if (popup) {
+        popup.remove();
+    }
+}
+document.addEventListener("DOMContentLoaded", function() {
+    const awardedMedals = JSON.parse('{{ awarded_medals|safe|escapejs }}');
+    if (awardedMedals && awardedMedals.length > 0) {
+        awardedMedals.forEach(medal => {
+            showMedalPopup(medal.name, medal.description, medal.points_reward);
+        });
+    }
+});
 
+function throwConfetti() {
+    for (let i = 0; i < 40; i++) {
+        createConfettiParticle();
+    }
+}
+function createConfettiParticle() {
+    const particle = document.createElement('div');
+    particle.className = 'confetti';
+    document.body.appendChild(particle);
+
+    // X רנדומי
+    const left = Math.random() * 100;
+    particle.style.left = left + "%";
+    // זמן התחלה אקראי
+    particle.style.animationDelay = Math.random() + 's';
+    particle.style.backgroundColor = getRandomColor();
+
+    // מחיקה לאחר האנימציה
+    particle.addEventListener('animationend', () => {
+        particle.remove();
+    });
+}
+function getRandomColor() {
+    const colors = [
+        "#f44336","#e91e63","#9c27b0","#673ab7","#3f51b5",
+        "#2196f3","#03a9f4","#00bcd4","#009688","#4caf50",
+        "#8bc34a","#cddc39","#ffeb3b","#ffc107","#ff9800",
+        "#ff5722","#795548","#9e9e9e","#607d8b"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
 </script>
 
 <style>
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    font-family: 'Alef', Arial, sans-serif;
+}
+
+.header-section {
+    text-align: center;
+    margin-top: 20px;
+}
+.welcome-message {
+    font-size: 2em;
+    color: #5d22ff;
+}
+.tagline {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.avatar-streak-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+}
+.avatar {
+    margin-right: 20px;
+}
+.avatar-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+.streak-info p {
+    font-size: 1em;
+    font-weight: bold;
+    color: #ff5722;
+}
+.streak-info small {
+    color: #666;
+}
+
+.user-info-panel {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    gap: 30px;
+}
+.user-info-panel div {
+    background: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+    color: #333;
+}
+
+.cta-section {
+    text-align: center;
+    margin: 20px 0;
+}
+.cta-button {
+    background-color: #ff4081;
+    border: none;
+    color: #fff;
+    font-size: 1.2em;
+    padding: 15px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
+}
+.cta-button:hover {
+    background-color: #ff1a66;
+}
+
+.progress-container {
+    width: 80%;
+    max-width: 400px;
+    margin: 20px auto;
+    text-align: center;
+}
+.progress-bar {
+    background-color: #e0e0e0;
+    border-radius: 50px;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+}
+.progress-bar-fill {
+    background-color: #5d22ff;
+    height: 100%;
+    transition: width 0.5s;
+}
+.progress-bar-text {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.secret-code-button {
+    display: block;
+    margin: 10px auto;
+    background-color: #2979ff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+}
+.secret-code-button:hover {
+    background-color: #1565c0;
+}
+
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    z-index: 999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
     overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.5);
 }
-
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
+    background-color: #fff;
+    margin: 10% auto;
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 300px;
+    width: 90%;
+    max-width: 350px;
     text-align: center;
     border-radius: 10px;
+    position: relative;
 }
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
+.modal-content .close {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 24px;
     cursor: pointer;
 }
 
 .notification {
     background-color: #ff9800;
-    color: white;
+    color: #fff;
     padding: 15px;
-    margin: 20px 0;
-    border-radius: 5px;
+    margin: 20px auto;
+    border-radius: 8px;
+    max-width: 300px;
     text-align: center;
 }
+.close-button {
+    margin-top: 10px;
+    background-color: #fff;
+    color: #ff9800;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.close-button:hover {
+    background-color: #f1f1f1;
+}
+
+.featured-tasks-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+.featured-tasks-container h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
+.task-list {
+    list-style-type: none;
+    padding: 0;
+}
+.task-list li {
+    background: #f7f7f7;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    color: #555;
+}
+.task-list li span {
+    display: inline-block;
+    margin-top: 5px;
+    color: #5d22ff;
+    font-weight: bold;
+}
+
+.navigation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+}
+.nav-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    border-radius: 10px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9em;
+    text-align: center;
+    transition: transform 0.3s;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+.nav-button i {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+.nav-button:hover {
+    transform: translateY(-3px);
+}
+.nav-logout {
+    background-color: #9e9e9e !important;
+}
+
+.achievements-section {
+    width: 90%;
+    max-width: 600px;
+    margin: 30px auto;
+    text-align: center;
+}
+.achievements-section h2 {
+    margin-bottom: 15px;
+    color: #333;
+}
+.medals-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+.medal-card {
+    background: #fff;
+    border: 2px solid gold;
+    border-radius: 10px;
+    padding: 10px;
+    width: 120px;
+    text-align: center;
+}
+.medal-icon {
+    font-size: 2em;
+}
+.medal-card h3 {
+    margin: 5px 0;
+    font-size: 1em;
+    color: #333;
+}
+.medal-card p {
+    font-size: 0.9em;
+    color: #666;
+}
+.medal-card small {
+    display: block;
+    margin-top: 5px;
+    color: #5d22ff;
+}
+
+.medal-popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border: 2px solid gold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 1000;
+    border-radius: 10px;
+}
+.medal-popup h2 {
+    color: #ff9800;
+    font-size: 1.5em;
+}
+.medal-popup h3 {
+    color: #333;
+    font-size: 1.2em;
+}
+.medal-popup p {
+    color: #555;
+}
+.medal-popup button {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.medal-popup button:hover {
+    background: #0056b3;
+}
+
+.confetti {
+    position: fixed;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    opacity: 0.7;
+    animation: confetti-fall 2s linear forwards;
+}
+@keyframes confetti-fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 1;
+    }
+}
 </style>
-{% endblock %}
+{% endblock extra_scripts %}

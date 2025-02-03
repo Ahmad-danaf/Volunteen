@@ -1,0 +1,2 @@
+from childApp.utilities.medal_management import load_medals_from_json
+load_medals_from_json()

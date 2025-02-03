@@ -1,0 +1,8 @@
+[
+    {
+        "name": "רוכש על",
+        "description": "רכשת מכל בתי העסק!",
+        "points_reward": 50,
+        "criterion": "purchase_all_businesses"
+    }
+]

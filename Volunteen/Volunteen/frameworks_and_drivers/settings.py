@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 development = os.getenv("DEVELOPMENT","False") == "True"
 DEBUG = development
-ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com"]
+ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com","*"]
 
 # Application definition
 
@@ -58,9 +58,16 @@ INSTALLED_APPS = [
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-#2FA
-LOGIN_URL = 'two_factor:login'
+# #2FA
+# LOGIN_URL = 'two_factor:login'
+# LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
+
+# מסך התחברות
+LOGIN_URL = 'teenApp:login'
 LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
+LOGOUT_REDIRECT_URL = 'teenApp:landing_page'
+
+
 
 # reCAPTCHA keys 
 RECAPTCHA_PUBLIC_KEY = '6LetRF4pAAAAAMssM8IvwXNDeLq5JfhPQf79Wa_1' 
@@ -80,11 +87,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Volunteen.frameworks_and_drivers.urls'
-
+template_name='two_factor/login.html'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'teenApp', 'templates')],  # נתיב לתיקיית התבניות
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,6 +103,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'Volunteen.frameworks_and_drivers.wsgi.application'
 
@@ -146,8 +154,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 
-CSRF_TRUSTED_ORIGINS = ['https://www.volunteen.site']
-
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1','https://www.volunteen.site', 'http://localhost']
 
 
 

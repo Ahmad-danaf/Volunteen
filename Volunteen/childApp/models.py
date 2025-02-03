@@ -1,8 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
+from childApp.utilities.child_level_management import calculate_total_points
+
 class Medal(models.Model):
     name = models.CharField(max_length=255, verbose_name='Medal Name')
     description = models.TextField(blank=True, null=True, verbose_name='Description')
+    points_reward = models.IntegerField(default=0, verbose_name='Points Reward')
+    criterion = models.CharField(max_length=255, verbose_name='Criterion Function')  # קריטריון לזכייה במדליה
 
     def __str__(self):
         return self.name
@@ -21,12 +25,7 @@ class Child(models.Model):
 
     @property
     def level(self):
-        """
-        Calculate the level based on the points.
-        Each 100 points is one level.
-        """
-        return (self.points // 100) + 1
-
+        return (calculate_total_points(self) // 100) + 1
     def add_points(self, points):
         """
         Add points to the child and save changes.

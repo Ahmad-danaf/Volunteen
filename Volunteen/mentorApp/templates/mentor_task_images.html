@@ -1,0 +1,250 @@
+{% extends 'mentor_base.html' %}
+{% load static %}
+{% block title %}אישור משימות{% endblock %}
+
+{% block content %}
+<h1>אישור משימות</h1>
+<div class="responsive-table">
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" id="select-all" />
+        </th>
+        <th style="width: 10%;">שם</th>
+        <th style="width: 20%;">משימה</th>
+        <th style="width: 15%;">תאריך משימה</th>
+        <th style="width: 20%;">צ'ק-אין</th>
+        <th style="width: 20%;">צ'ק-אאוט</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for completion in completions %}
+      <tr id="task-row-{{ completion.id }}" class="{% if completion.status != 'pending' %}completed-task{% endif %}">
+        <td>
+          <input
+            type="checkbox"
+            class="select-checkbox"
+            data-id="{{ completion.id }}"
+            {% if completion.status != 'pending' %}disabled{% endif %}
+          />
+        </td>
+        <td>{{ completion.child.user.username }}</td>
+        <td>{{ completion.task.title }}</td>
+        <td>{{ completion.task.deadline|date:"d/m/Y" }}</td>
+        <td>
+          {% if completion.checkin_img and completion.checkin_img.url %}
+          <a href="{{ completion.checkin_img.url }}" class="lightbox">
+            <img
+              src="{{ completion.checkin_img.url }}"
+              alt="Check-In Image"
+              class="task-image"
+            />
+          </a>
+          {% else %}
+          <span>אין</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if completion.checkout_img and completion.checkout_img.url %}
+          <a href="{{ completion.checkout_img.url }}" class="lightbox">
+            <img
+              src="{{ completion.checkout_img.url }}"
+              alt="Check-Out Image"
+              class="task-image"
+            />
+          </a>
+          {% else %}
+          <span>אין</span>
+          {% endif %}
+        </td>
+        
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="actions">
+  <button id="approve-selected" class="approve-btn">אשר נבחרים</button>
+  <button id="reject-selected" class="reject-btn">דחה נבחרים</button>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .completed-task {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+  }
+
+  .responsive-table {
+    overflow-x: auto;
+    margin: 1rem 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: auto;
+  }
+
+  th,
+  td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background-color: #f4f4f4;
+  }
+
+  .task-image {
+    max-width: 50px;
+    height: auto;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .actions {
+    text-align: center;
+    margin: 1rem 0;
+  }
+
+  button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0.5rem;
+  }
+
+  .approve-btn {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .reject-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  @media only screen and (max-width: 430px) {
+    .task-image {
+      max-width: 40px;
+    }
+
+    th,
+    td {
+      padding: 0.4rem;
+      font-size: 0.8rem;
+    }
+
+    .actions {
+      margin: 0.5rem 0;
+    }
+
+    button {
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Select/Deselect all checkboxes (only enabled ones)
+    const selectAllCheckbox = document.getElementById("select-all");
+    const checkboxes = document.querySelectorAll('.select-checkbox:not([disabled])');
+
+    selectAllCheckbox.addEventListener("change", function () {
+      checkboxes.forEach((checkbox) => {
+        if (!checkbox.disabled) {
+          checkbox.checked = this.checked;
+        }
+      });
+    });
+
+    // Bulk approve/reject actions
+    document.getElementById("approve-selected").addEventListener("click", function () {
+      handleBulkAction("approve");
+    });
+
+    document.getElementById("reject-selected").addEventListener("click", function () {
+      handleBulkAction("reject");
+    });
+
+    function handleBulkAction(action) {
+      const selectedTasks = Array.from(document.querySelectorAll('.select-checkbox'))
+        .filter(checkbox => checkbox.checked && !checkbox.disabled)
+        .map(checkbox => checkbox.getAttribute("data-id"));
+
+      if (selectedTasks.length === 0) {
+        alert("לא נבחרו משימות.");
+        return;
+      }
+
+      fetch("{% url 'mentorApp:review_task' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ task_ids: selectedTasks, action: action }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            selectedTasks.forEach(taskId => {
+              const row = document.getElementById(`task-row-${taskId}`);
+              if (row) {
+                row.remove();
+              }
+            });
+          } else {
+            alert(`שגיאה: ${data.error}`);
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    // Lightbox functionality
+    const lightboxes = document.querySelectorAll(".lightbox");
+    lightboxes.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const imgUrl = this.getAttribute("href");
+        const modal = document.createElement("div");
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+        modal.style.zIndex = "9999";
+
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.style.maxWidth = "90%";
+        img.style.maxHeight = "90%";
+        img.style.borderRadius = "10px";
+
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+
+        modal.addEventListener("click", function () {
+          document.body.removeChild(modal);
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}

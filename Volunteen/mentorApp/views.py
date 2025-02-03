@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.db.models import Prefetch
@@ -13,7 +14,10 @@ from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils import NotificationManager
 from django.utils import timezone
+import json
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum,IntegerField, F
+from datetime import timedelta
 
 @login_required
 def mentor_home(request):
@@ -171,7 +175,7 @@ def edit_task(request, task_id):
         form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
         if form.is_valid():
             form.save()
-            return redirect('mentorApp:mentor_task_list')  # Redirect to mentor task list or another appropriate page
+            return redirect('mentorApp:mentor_task_list') 
     else:
         form = TaskForm(instance=task, mentor=mentor)
     return render(request, 'edit_task.html', {'form': form, 'task': task})
@@ -200,34 +204,41 @@ def mentor_task_list(request):
 def assign_task(request, task_id):
     mentor = Mentor.objects.get(user=request.user)
     task = get_object_or_404(Task, id=task_id)
+
     children = mentor.children.exclude(id__in=task.assigned_children.values_list('id', flat=True))
-    #children = mentor.children.all()
 
     if request.method == 'POST':
         selected_children_ids = request.POST.getlist('children')
+        selected_children_ids = [int(child_id) for child_id in selected_children_ids]  # לוודא שהערכים הם `int`
+        
         for child_id in selected_children_ids:
-            child = get_object_or_404(Child, id=child_id)
-            task.assigned_children.add(child)
-            task.new_task = True
-            task.save()
-            if child.user.email:
-                NotificationManager.sent_mail(
-                    f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
-                    child.user.email
-                )
-            if child.user.phone:
-                phone_str = str(child.user.phone)
-                msg = (
-                f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
-                f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
-                "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
-            )
+            try:
+                child = get_object_or_404(Child, id=child_id)
 
-                NotificationManager.sent_whatsapp(
-                    msg,
-                    phone_str
-                )
+                task.assigned_children.add(child)
+
+                TaskAssignment.objects.create(task=task, child=child, is_new=True)
+
+                if child.user.email:
+                    NotificationManager.sent_mail(
+                        f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
+                        child.user.email
+                    )
+
+                if child.user.phone:
+                    phone_str = str(child.user.phone)
+                    msg = (
+                        f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
+                        f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
+                        "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
+                    )
+                    NotificationManager.sent_whatsapp(msg, phone_str)
+
+            except Child.DoesNotExist:
+                print(f"Child with ID {child_id} does not exist.")
+
         task.assigned_mentors.add(mentor)
+
         messages.success(request, f"Task '{task.title}' successfully assigned to selected children.")
         return redirect('mentorApp:mentor_task_list')
 
@@ -285,3 +296,53 @@ def send_whatsapp_message(request):
     # Get all children
     children = Child.objects.all()
     return render(request, 'send_whatsapp_message.html', {'children': children})
+
+@login_required
+def mentor_task_images(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    seven_days_ago = timezone.now() - timedelta(days=7)  
+
+    task_completions = TaskCompletion.objects.filter(
+        task__assigned_mentors=mentor,
+        status='pending', 
+        completion_date__gte=seven_days_ago 
+    )
+    return render(request, 'mentor_task_images.html', {'completions': task_completions})
+@csrf_exempt
+@login_required
+def review_task(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            task_ids = data.get('task_ids', [])
+            action = data.get('action')
+
+            if not task_ids:
+                return JsonResponse({'success': False, 'error': 'לא נבחרו משימות.'})
+
+            processed_tasks = 0
+            for task_id in task_ids:
+                task_completion = get_object_or_404(TaskCompletion, id=task_id)
+                
+                if task_completion.status != 'pending':
+                    continue
+                
+                if action == 'approve':
+                    task_completion.status = 'approved'
+                    task_completion.task.approve_task(task_completion.child)
+                elif action == 'reject':
+                    task_completion.status = 'rejected'
+                
+                task_completion.save()
+                processed_tasks += 1
+
+            return JsonResponse({
+                'success': True,
+                'message': f"בוצע {processed_tasks} משימות בהצלחה.",
+                'processed': processed_tasks
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'בקשה לא חוקית.'})

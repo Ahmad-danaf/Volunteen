@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משימות לביצוע</title>
+    <style>
+        .task-list {
+            max-width: 90%;
+            margin: 1rem auto;
+            padding: 0 0.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .task-list h1 {
+            color: #FF5722;
+            text-align: center;
+            margin: 1.5rem 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .task-list h1::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #2196F3;
+            margin: 0.8rem auto;
+            border-radius: 2px;
+        }
+
+        .task-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task-list li {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #ececec;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            color: #1a1a1a;
+            font-weight: 600;
+            line-height: 1.4;
+            padding: 0 0.5rem;
+            cursor: pointer;
+        }
+
+        .task-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-details {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.8rem;
+            width: 100%;
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            flex: 1;
+            -webkit-tap-highlight-color: transparent;
+            font-size: 1rem;
+        }
+
+        .button:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+
+        .button[href*="check_in"] {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 3px 12px rgba(33, 150, 243, 0.25);
+        }
+
+        .button[href*="check_out"] {
+            background: #FF5722;
+            color: white;
+            box-shadow: 0 3px 12px rgba(255, 87, 34, 0.25);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            background: #f8f8f8;
+            border-radius: 14px;
+            color: #FF5722;
+            font-size: 1.2rem;
+            margin: 2rem;
+            border: 2px dashed #FFCCBC;
+            font-weight: 500;
+        }
+
+        .home-button {
+            display: inline-block;
+            background: #fd940b;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media only screen and (max-width: 430px) {
+            .task-list h1 {
+                font-size: 2rem;
+                margin: 1.2rem 0;
+            }
+
+            .task-title {
+                font-size: 1.2rem;
+            }
+
+            .button {
+                font-size: 0.9rem;
+                padding: 0.9rem;
+            }
+        }
+
+        @media only screen and (max-width: 390px) {
+            .task-list h1 {
+                font-size: 1.8rem;
+            }
+
+            .empty-message {
+                font-size: 1.1rem;
+                padding: 1.5rem;
+            }
+
+            .home-button {
+                font-size: 0.9rem;
+                padding: 0.8rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="task-list">
+        <h1>משימות לביצוע</h1>
+        <div style="text-align: center;">
+            <a href="{% url 'childApp:child_home' %}" class="home-button">חזרה לדף הבית</a>
+        </div>
+        <ul>
+            {% for task in tasks %}
+            <li>
+                {% if task.img %}
+                <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
+                {% endif %}
+                <div class="task-title" onclick="toggleDetails({{ task.id }})">{{ task.title }}</div>
+                <div id="details-{{ task.id }}" class="task-details">
+                    <p><strong>תיאור:</strong> {{ task.description }}</p>
+                    <p><strong>תאריך יעד:</strong> {{ task.deadline }}</p>
+                    <div class="button-group">
+                        <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין</a>
+                        <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט</a>
+                    </div>
+                </div>
+            </li>
+            {% empty %}
+            <div class="empty-message">
+                ! אין משימות ממתינות
+            </div>
+            {% endfor %}
+        </ul>
+    </div>
+    <script>
+        function toggleDetails(taskId) {
+            const details = document.getElementById(`details-${taskId}`);
+            if (details.style.display === "none" || details.style.display === "") {
+                details.style.display = "block";
+            } else {
+                details.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

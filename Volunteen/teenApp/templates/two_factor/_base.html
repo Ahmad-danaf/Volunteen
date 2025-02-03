@@ -92,7 +92,7 @@
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'two_factor:login' %}" style="color:#e65c00;">Login</a>
+                    <a class="nav-link" href="{% url 'teenApp:login' %}" style="color:#e65c00;">Login</a>
                 </li>
                 {% endif %}
             </ul>
@@ -101,9 +101,10 @@
 
     <div class="container">
         {% block content %}
+        
         <!-- Page specific content will go here -->
         {% endblock %}
-        <img src="{% static 'images/logo.png' %}" alt="Volunteen Logo" class="logo">
+        <img src="{% static 'images/volunteen_logo.ico' %}" alt="Volunteen Logo" class="logo">
     </div>
 
     <footer>

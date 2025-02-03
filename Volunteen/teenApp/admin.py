@@ -1,4 +1,5 @@
 from django.contrib import admin
+from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from shopApp.models import Reward
@@ -72,3 +73,4 @@ class TaskCompletionAdmin(admin.ModelAdmin):
     list_display = ('task', 'child', 'completion_date')
     search_fields = ('task__title', 'child__user__username')
     list_filter = ('completion_date',)
+admin.site.register(TaskAssignment)

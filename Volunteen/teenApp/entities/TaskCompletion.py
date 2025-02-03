@@ -2,13 +2,23 @@ from django.db import models
 from django.utils import timezone
 
 class TaskCompletion(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
     child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE)
     task = models.ForeignKey('teenApp.Task', on_delete=models.CASCADE)
     completion_date = models.DateTimeField(default=timezone.now)
-    bonus_points= models.IntegerField(default=0)
+    bonus_points = models.IntegerField(default=0)
+    checkin_img = models.ImageField(upload_to='checkin_images/', null=True, blank=True, verbose_name='Check-In Image')
+    checkout_img = models.ImageField(upload_to='checkout_images/', null=True, blank=True, verbose_name='Check-Out Image')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name='Status')
+    mentor_feedback = models.TextField(null=True, blank=True, verbose_name='Mentor Feedback')
 
     class Meta:
         unique_together = ('child', 'task')  # Ensure that each child can only complete a task once
 
     def __str__(self):
-        return f"{self.child.user.username} completed {self.task.title} on {self.completion_date}"
+        return f"{self.child.user.username} - {self.task.title} ({self.status})"
