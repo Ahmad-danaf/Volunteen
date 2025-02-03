@@ -1,76 +1,209 @@
-{% extends 'base.html' %}
+{% extends 'parent_base.html' %}
 {% load static %}
-
-{% block title %}דף הבית של הורה{% endblock %}
-
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+<!-- Custom CSS -->
 <style>
+    /* General Styling */
     body {
-        text-align: right;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
     }
 
+    .container {
+        padding: 20px;
+    }
+
+    /* Card Styling */
     .card {
         border: none;
         border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .summary-card {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .chart-card {
+        background-color: white;
+    }
+
+    .child-card {
+        background-color: white;
     }
 
     .card-title {
         font-size: 1.25rem;
-        font-weight: 600;
+        font-weight: bold;
     }
 
-    .card-body p {
+    .card-text {
         font-size: 1rem;
-        color: #6c757d;
+        color: #555;
     }
 
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
+    /* Task List Styling */
+    .task-list {
+        list-style-type: none;
+        padding-left: 0;
     }
 
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
+    .task-list li {
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .task-list li:last-child {
+        border-bottom: none;
+    }
+
+    /* Button Styling */
+    .btn-view-details {
+        background-color: #4CAF50;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .btn-view-details:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .col-md-4 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
     }
 </style>
+
 {% endblock %}
 
-{% block content %}
-<div class="container py-5" dir="rtl">
-    <div class="text-center mb-5">
-        <h1>ברוך הבא, {{ parent.user.first_name }}!</h1>
-        <p class="lead">כאן תוכל לעקוב אחרי הפעילות וההתקדמות של ילדיך.</p>
-    </div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <h2>מידע על הילדים שלך</h2>
-            <div class="card shadow-sm">
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card summary-card">
                 <div class="card-body">
-                    <h5>סה"כ נקודות של הילדים: {{ total_points }}</h5>
+                    <h5 class="card-title">סטטיסטיקות סיכום</h5>
+                    <p class="card-text"><strong>סך כל ה-טינקיוס</strong> {{ total_points }}</p>
+                    <p class="card-text"><strong>סך כל הילדים: </strong> {{ total_children }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card chart-card">
+                <div class="card-body">
+                    <h5 class="card-title">Points Distribution</h5>
+                    <canvas id="pointsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card chart-card">
+                <div class="card-body">
+                    <h5 class="card-title">Task Completion</h5>
+                    <canvas id="taskChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Children Summary Cards -->
+    <div class="row">
         {% for child in children %}
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card child-card">
                 <div class="card-body">
                     <h5 class="card-title">{{ child.user.username }}</h5>
-                    <p class="card-text">
-                        <strong>מזהה:</strong> {{ child.identifier }}<br>
-                        <strong>נקודות:</strong> {{ child.points }}<br>
-                        <strong>רמה:</strong> {{ child.level }}
-                    </p>
-                    <a href="#" class="btn btn-primary">צפה בפעילות</a>
+                    <p class="card-text"><strong>Points:</strong> {{ child.points }}</p>
+                    <p class="card-text"><strong>Level:</strong> {{ child.level }}</p>
+                    <h6>Recent Tasks:</h6>
+                    <ul class="task-list">
+                        {% for task in child.recent_tasks %}
+                        <li>{{ task.title }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% url 'parentApp:child_detail' child.id %}" class="btn btn-primary btn-view-details">View Details</a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Points Distribution Chart (Bar Chart)
+    const pointsCtx = document.getElementById('pointsChart').getContext('2d');
+    new Chart(pointsCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for child in children %}"{{ child.user.username }}",{% endfor %}],
+            datasets: [{
+                label: 'Points',
+                data: [{% for points in points_distribution %}{{ points }},{% endfor %}],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Task Completion Chart (Pie Chart)
+    const taskCtx = document.getElementById('taskChart').getContext('2d');
+    new Chart(taskCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for child in children %}"{{ child.user.username }}",{% endfor %}],
+            datasets: [{
+                label: 'Tasks Completed',
+                data: [{% for tasks in task_completion %}{{ tasks }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        }
+    });
+</script>
+
 {% endblock %}
