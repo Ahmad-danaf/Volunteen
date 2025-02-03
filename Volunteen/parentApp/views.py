@@ -39,6 +39,38 @@ def parent_home(request):
     return render(request, 'parent_home.html', context)
 
 @login_required
+def parent_stats(request):
+    # Fetch the parent object
+    parent = Parent.objects.get(user=request.user)
+    
+    # Fetch all children linked to the parent
+    children = Child.objects.filter(parent=parent)
+    
+    # Fetch recent tasks and redemptions for each child
+    for child in children:
+        child.recent_tasks = Task.objects.filter(completed_by_children=child).order_by('-id')[:5]
+        child.recent_redemptions = []  # Add logic for redemptions if applicable
+    
+    # Prepare summary statistics
+    total_points = sum(child.points for child in children)
+    total_children = children.count()
+    
+    # Prepare data for charts
+    points_distribution = [child.points for child in children]
+    task_completion = [child.completed_tasks.count() for child in children]
+    
+    context = {
+        'parent': parent,
+        'children': children,
+        'total_points': total_points,
+        'total_children': total_children,
+        'points_distribution': points_distribution,
+        'task_completion': task_completion,
+    }
+    
+    return render(request, 'parent_stats.html', context)
+
+@login_required
 def child_detail(request, child_id):
     # Fetch the child object
     child = get_object_or_404(Child, id=child_id)

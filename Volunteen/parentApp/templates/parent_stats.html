@@ -103,8 +103,8 @@
         border: none;
         padding: 10px 20px;
         cursor: pointer;
-    }
-
+    }  
+    
     /* Responsive Adjustments */
     @media (max-width: 768px) {
         .col-md-4 {
@@ -133,51 +133,30 @@
         </div>
     </div>
 
-    <!-- Charts -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <button onclick="navigateToParentStats()" class="orange-button">Go to Points Distribution</button>
+            <button onclick="navHome()" class="orange-button">Back home</button>
         </div>
     </div>
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card chart-card">
                 <div class="card-body">
-                    <h5 class="card-title">Task Completion</h5>
-                    <canvas id="taskChart"></canvas>
+                    <h5 class="card-title">Points Distribution</h5>
+                    <canvas id="pointsChart"></canvas>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Children Summary Cards -->
-    <div class="row">
-        {% for child in children %}
-        <div class="col-md-4 mb-4">
-            <div class="card child-card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ child.user.username }}</h5>
-                    <p class="card-text"><strong>Points:</strong> {{ child.points }}</p>
-                    <p class="card-text"><strong>Level:</strong> {{ child.level }}</p>
-                    <h6>Recent Tasks:</h6>
-                    <ul class="task-list">
-                        {% for task in child.recent_tasks %}
-                        <li>{{ task.title }}</li>
-                        {% endfor %}
-                    </ul>
-                    <a href="{% url 'parentApp:child_detail' child.id %}" class="btn btn-primary btn-view-details">View Details</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
     </div>
 </div>
 
 <!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function navigateToParentStats() {
-        window.location.href = 'stats';
+    function navHome() {
+        const currentUrl = window.location.href;
+        const newUrl = currentUrl.replace(/\/[^\/]*\/?$/, '/');
+        window.location.href = newUrl;
     }
     // Points Distribution Chart (Bar Chart)
     const pointsCtx = document.getElementById('pointsChart').getContext('2d');

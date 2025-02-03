@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="he">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,13 @@
     <link rel="stylesheet" href="{% static 'css/landing_page.css' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 </head>
+
 <body>
     <!-- Floating access button in the top-right corner -->
     <div class="top-right-button">
-        <a href="{% url 'teenApp:home_redirect' %}" id="loginButton" class="button main-button" aria-label="כניסה">כניסה</a>    </div>
+        <a href="{% url 'teenApp:home_redirect' %}" id="loginButton" class="button main-button"
+            aria-label="כניסה">כניסה</a>
+    </div>
 
     <!-- Main header section with a gradient background -->
     <header class="main-header">
@@ -27,7 +31,7 @@
         <h2>אודות Volunteen</h2>
         <p>
             <strong>Volunteen</strong> היא יוזמה קהילתית שמטרתה לשנות את חייהם של צעירים באמצעות פעולות חיוביות וחניכה.
-            היא מאפשרת לנערים לצבור <span class="highlight">"TeenCoins"</span> על ידי ביצוע משימות המועילות לקהילה. 
+            היא מאפשרת לנערים לצבור <span class="highlight">"TeenCoins"</span> על ידי ביצוע משימות המועילות לקהילה.
             נקודות אלו ניתנות למימוש עבור פרסים בעסקים מקומיים.
         </p>
     </section>
@@ -78,7 +82,8 @@
                 <p>אחמד דנף</p>
             </div>
         </div>
-        <p class="about-description">Volunteen נוסדה על ידי אדם תכרורי ואחמד דנף, מתוך חזון לעודד מעורבות חברתית בקרב הדור הצעיר.</p>
+        <p class="about-description">Volunteen נוסדה על ידי אדם תכרורי ואחמד דנף, מתוך חזון לעודד מעורבות חברתית בקרב
+            הדור הצעיר.</p>
     </section>
 
     <!-- Footer with additional access button -->
@@ -87,6 +92,5 @@
         <a href="{% url 'teenApp:home_redirect' %}" class="button footer-button" aria-label="כניסה נוספת">כניסה</a>
     </footer>
 </body>
-</html>
 
-    
+</html>
