@@ -11,12 +11,10 @@
     
     <!-- Include custom styles -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/child_base.css' %}">
-    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/volunteen_logo.ico' %}">
     {% block extra_css %}{% endblock %}
-
 </head>
 <body>
-    
     <div class="container" dir="rtl">
         <!-- Back to Home Button -->
         <a href="{% url 'teenApp:home_redirect' %}" class="button">
@@ -30,8 +28,11 @@
     <footer>
         &copy; 2024 Volunteen
         <div class="support-email">
-            <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> -לעזרה או תמיכה, צרו קשר ב 
+            <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - לעזרה או תמיכה, צרו קשר ב
         </div>
     </footer>
+    
+    <!-- בלוק לטעינת סקריפטים נוספים -->
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

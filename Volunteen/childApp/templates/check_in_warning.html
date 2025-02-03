@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לא ניתן לבצע צ'ק-אאוט</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #f44336;
+        }
+        p {
+            font-size: 16px;
+            color: #333;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #f79604;
+        }
+    </style>
+</head>
+<body>
+    <h1>😞 לא ניתן לבצע צ'ק-אאוט</h1>
+    <p>עליך לבצע צ'ק-אין לפני שתוכל לבצע צ'ק-אאוט למשימה זו.</p>
+    <a href="{% url 'childApp:task_check_in_out' %}" class="btn">חזור למשימות</a>
+</body>
+</html>

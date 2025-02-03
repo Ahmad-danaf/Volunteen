@@ -14,17 +14,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for task in tasks %}
+        {% for assignment in assignments %}
         <tr style="border-bottom: 1px solid #ddd;">
             <td style="padding: 8px;">
-                {{ task.title }}
-                {% if task.new_task %}
+                {{ assignment.task.title }}
+                {% if assignment.is_new %}
                 <span style="color: red; font-size: 0.8em; font-weight: bold;">NEW</span>
                 {% endif %}
             </td>
-            <td style="padding: 8px;">{{ task.points }}</td>
-            <td style="padding: 8px;">{{ task.deadline|date:"d/m/Y" }}</td>
-            <td style="padding: 8px;">{{ task.completed|yesno:"Completed,Not Completed" }}</td>
+            <td style="padding: 8px;">{{ assignment.task.points }}</td>
+            <td style="padding: 8px;">{{ assignment.task.deadline|date:"d/m/Y" }}</td>
+            <td style="padding: 8px;">{{ assignment.task.completed|yesno:"Completed,Not Completed" }}</td>
         </tr>
         {% empty %}
         <tr>

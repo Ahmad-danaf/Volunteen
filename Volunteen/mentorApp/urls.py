@@ -18,5 +18,6 @@ urlpatterns = [
     path('edit-task/<int:task_id>/', views.edit_task, name='edit_task'),
     path('send-whatsapp-message/', views.send_whatsapp_message, name='send_whatsapp_message'),
     path('mentor_children_details/', views.mentor_children_details, name='mentor_children_details'),
-
+    path('mentor_task_images/', views.mentor_task_images, name='mentor_task_images'),
+    path('review_task/', views.review_task, name='review_task'),
 ]

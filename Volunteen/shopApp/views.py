@@ -62,7 +62,7 @@ def shop_identify_child(request):
 
 
 @login_required
-def shop_complete_transaction(request):
+async def shop_complete_transaction(request):
     child_id = request.session.get('child_id')
     if not child_id:
         return redirect('shopApp:shop_identify_child')
@@ -72,12 +72,12 @@ def shop_complete_transaction(request):
         return redirect('shopApp:shop_redeem_points')
 
     selected_rewards = json.loads(selected_rewards_json)
-    child = get_object_or_404(Child, id=child_id)
-    shop = get_object_or_404(Shop, user=request.user)
+    child = await sync_to_async(get_object_or_404)(Child, id=child_id)
+    shop = await sync_to_async(get_object_or_404)(Shop, user=request.user)
 
     # Check if the child has already purchased from this shop today
     today = localdate()
-    already_purchased_today = Redemption.objects.filter(
+    already_purchased_today = await sync_to_async(Redemption.objects.filter)(
         child=child, shop=shop, date_redeemed__date=today
     ).exists()
 
@@ -89,7 +89,9 @@ def shop_complete_transaction(request):
     # Check monthly limits and points
     start_of_month = now().replace(day=1)
     redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    points_used_this_month = await sync_to_async(redemptions_this_month.aggregate)(
+        total_points=Sum('points_used')
+    )['total_points'] or 0
 
     remaining_points = shop.max_points - points_used_this_month
     total_points = sum(r['quantity'] * r['points'] for r in selected_rewards)
@@ -97,20 +99,29 @@ def shop_complete_transaction(request):
     if child.points >= total_points and total_points <= remaining_points:
         points_used = 0
         for reward in selected_rewards:
-            reward_obj = get_object_or_404(Reward, id=reward['reward_id'])
+            reward_obj = await sync_to_async(get_object_or_404)(Reward, id=reward['reward_id'])
             points_used += reward['quantity'] * reward['points']
-            child.subtract_points(reward['quantity'] * reward['points'])
-            Redemption.objects.create(child=child, points_used=reward['quantity'] * reward['points'], shop=reward_obj.shop)
+            await sync_to_async(child.subtract_points)(reward['quantity'] * reward['points'])
+            await sync_to_async(Redemption.objects.create)(
+                child=child, points_used=reward['quantity'] * reward['points'], shop=reward_obj.shop
+            )
         request.session['selected_rewards'] = json.dumps([])
         request.session.pop('child_id', None)  # Clear child_id from session
 
+        # בדיקה למדליות חדשות
+        awarded_medals = await check_and_award_medals_async(child)
+
         if child.user.email:
-            NotificationManager.sent_mail(f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.', child.user.email)
+            NotificationManager.sent_mail(
+                f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.',
+                child.user.email
+            )
 
         return render(request, 'shop_redemption_success.html', {
             'child': child,
             'points_used': points_used,
             'receipt': selected_rewards,
+            'awarded_medals': awarded_medals,  # העברת מדליות חדשות לתצוגה
         })
     else:
         return render(request, 'shop_redemption_error.html', {

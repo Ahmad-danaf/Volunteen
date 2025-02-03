@@ -1,0 +1,83 @@
+{% extends "two_factor/_base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>כניסה - וולונטין</title>
+    
+    <!-- Bootstrap & Custom Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/volunteen_logo.ico' %}">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff7b00, #ffbb33);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .login-container h2 {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        .login-btn {
+            background-color: #ff6600;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .login-btn:hover {
+            background-color: #e65c00;
+            transform: scale(1.05);
+        }
+        .signup-link {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        .login-mascot {
+            max-width: 120px;
+            margin-bottom: 15px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <img src="{% static 'images/volunteen_logo.ico' %}" alt="Mascot" class="login-mascot">
+            <h2>ברוך הבא לוולונטין!</h2>
+            <p>תרום, צבור <span style="color: #ff6600; font-weight: bold;">טינקאוינס</span>, וזכה בפרסים</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="שם משתמש" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" placeholder="סיסמה" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary login-btn w-100">התחבר</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

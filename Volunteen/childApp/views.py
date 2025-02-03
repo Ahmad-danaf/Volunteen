@@ -3,19 +3,31 @@ from datetime import datetime
 from django.db.models import Sum, F, Prefetch 
 from django.templatetags.static import static
 from django.contrib.auth.decorators import login_required
-from childApp.models import Child
-from teenApp.entities.task import Task
-from shopApp.models import Redemption, Shop, Reward
-from teenApp.entities.TaskCompletion import TaskCompletion
-from datetime import date
+from django.views.decorators.csrf import csrf_exempt
+from django.templatetags.static import static
+from django.db.models import (
+    Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField
+)
+from childApp.utilities.child_level_management import calculate_total_points
 from django.utils.timezone import now
 from django.utils import timezone
-from django.db.models import Sum, F,Min,Max
-from django.templatetags.static import static
 from teenApp.interface_adapters.forms import DateRangeForm
-from django.db.models import Sum, Case, When, Value, IntegerField, F
-from django.views.decorators.csrf import csrf_exempt
 import json
+from datetime import datetime, date
+from django.core.files.storage import default_storage
+from django.http import JsonResponse
+
+from childApp.models import Child
+from teenApp.entities.task import Task
+from teenApp.entities.TaskAssignment import TaskAssignment
+from shopApp.models import Redemption, Shop, Reward
+from teenApp.entities.TaskCompletion import TaskCompletion
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+from teenApp.entities.TaskCompletion import TaskCompletion
+from childApp.models import Child
+
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
@@ -24,14 +36,10 @@ from Volunteen.constants import AVAILABLE_CITIES
 @login_required
 def child_home(request):
     child = Child.objects.get(user=request.user)
-   # Get the current day of the week (0 for Sunday, 6 for Saturday)
+
+    # קבלת יום נוכחי וברכה
     current_day = datetime.now().weekday()
-
-    # Adjusting for 0-Sunday format, since Python's weekday() starts at 0-Monday
-    # We'll shift by 1 so that 0 becomes Sunday, 1 becomes Monday, etc.
-    current_day = (current_day + 1) % 7
-
-    # Greetings dictionary
+    current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
     greetings = {
         0: f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",  # יום ראשון
         1: f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
@@ -41,20 +49,29 @@ def child_home(request):
         5: f"שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!",  # יום שישי
         6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
-
-    # Get the greeting for today
     todays_greeting = greetings[current_day]
-    
 
-    
-    new_tasks = child.assigned_tasks.filter(new_task=True, viewed=False)
+    # משימות חדשות
+    new_tasks = TaskAssignment.objects.filter(child=child, is_new=True)
     new_tasks_count = new_tasks.count()
 
+    # טיפול בכפתור Close
     if request.method == 'POST' and 'close_notification' in request.POST:
-        new_tasks.update(viewed=True)
-        new_tasks.update(new_task=False)
+        new_tasks.update(is_new=False)
 
-    return render(request, 'child_home.html', {'child': child, 'greeting': todays_greeting, 'new_tasks_count': new_tasks_count, 'new_tasks': new_tasks})
+    # חישוב אחוז ההתקדמות לרמה הבאה
+    points_needed_for_next_level = 1000  # Adjust according to your level-up system
+    progress_to_next_level = (child.points % points_needed_for_next_level) / points_needed_for_next_level * 100
+
+    return render(request, 'child_home.html', {
+        'child': child,
+        'greeting': todays_greeting,
+        'new_tasks_count': new_tasks_count,
+        'new_tasks': new_tasks,
+        'level': child.level,
+        'progress_percent': progress_to_next_level  # Pass the computed percentage to the template
+    })
+
 
 @login_required
 def child_redemption_history(request):
@@ -135,14 +152,24 @@ def child_completed_tasks(request):
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-        tasks = Task.objects.filter(
-            assigned_children=child,
-            completed=False,
-            deadline__gte=timezone.now().date()  
-        ).order_by('deadline')
-        tasks.update(new_task=False)
-        return render(request, 'list_tasks.html', {'tasks': tasks})
+
+        print(f"Child {child.user.username} (ID: {child.id}) is assigned to tasks.")
+
+        assignments = TaskAssignment.objects.filter(
+            child=child, 
+            task__completed=False, 
+            task__deadline__gte=timezone.now().date()
+        ).select_related('task')
+
+        print(f"Found {assignments.count()} active tasks for child {child.id}")
+
+        if not assignments.exists():
+            print("No active tasks found!")
+
+        return render(request, 'child_active_list.html', {'assignments': assignments})
+    
     except Child.DoesNotExist:
+        print("Child does not exist for the current user.")
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
 
 @login_required
@@ -188,10 +215,6 @@ def child_points_history(request):
                 'string':string
             })
 
-
-        
-
-    
     # Retrieve redemptions for this child
     redemptions = Redemption.objects.filter(child=child)
     if start_date and end_date:
@@ -259,14 +282,16 @@ def rewards_view(request):
     }
     return render(request, 'reward.html', context)
 
+
+
 @login_required
 def points_leaderboard(request):
     form = DateRangeForm(request.GET or None)
     children = Child.objects.all()
 
     # Get the default date range from the database if no dates are selected
-    default_start_date = TaskCompletion.objects.aggregate(Min('completion_date'))['completion_date__min']
-    default_end_date = TaskCompletion.objects.aggregate(Max('completion_date'))['completion_date__max']
+    default_start_date = TaskCompletion.objects.filter(status='approved').aggregate(Min('completion_date'))['completion_date__min']
+    default_end_date = TaskCompletion.objects.filter(status='approved').aggregate(Max('completion_date'))['completion_date__max']
 
     # If the form is valid and dates are provided, use them; otherwise, use the default range
     if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
@@ -276,14 +301,13 @@ def points_leaderboard(request):
         start_date = default_start_date
         end_date = default_end_date
 
-    # Ensure we have a valid date range (fallback if no data exists)
     if start_date and end_date:
-        # Calculate points within the date range from TaskCompletion (task points + bonus points)
         children = children.annotate(
             task_points_within_range=Sum(
                 Case(
                     When(
                         taskcompletion__completion_date__range=(start_date, end_date),
+                        taskcompletion__status='approved',  # Filter only approved tasks
                         then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
                     ),
                     default=Value(0),
@@ -292,16 +316,12 @@ def points_leaderboard(request):
             )
         ).order_by('-task_points_within_range')
     else:
-        # Handle cases where there is no data (e.g., no TaskCompletion records)
         children = children.annotate(
             task_points_within_range=Value(0, output_field=IntegerField())
         )
 
-    # Calculate rank-based progress bar width for each child
-    total_children = children.count()
-    for index, child in enumerate(children, start=1):
-        # Full bar for first rank, progressively smaller for lower ranks
-        child.rank_progress = 100 - ((index - 1) * (100 / total_children))
+    for child in children:
+        child.total_points = calculate_total_points(child)
 
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
 
@@ -311,7 +331,6 @@ def save_phone_number(request):
         data = json.loads(request.body)
         phone_number = data.get("phone_number")
         
-        # Get the child user and save the phone number
         child = request.user.child
         child.user.phone = phone_number
         child.user.save()
@@ -320,3 +339,107 @@ def save_phone_number(request):
     
     return json.JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
+
+@login_required
+def task_check_in_out(request):
+    child = request.user.child
+
+    tasks = Task.objects.filter(
+        assigned_children=child,
+        completed=False,
+        deadline__gte=timezone.now().date()
+    )
+
+    filtered_tasks = []
+    for task in tasks:
+        task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
+        if not task_completion or not task_completion.checkout_img:
+            filtered_tasks.append(task)
+
+    return render(request, 'task_check_in_out.html', {'tasks': filtered_tasks})
+
+@login_required
+def check_in(request, task_id):
+    task = get_object_or_404(Task, id=task_id, assigned_children=request.user.child, completed=False)
+    child = request.user.child
+
+    replace_image = request.GET.get('replace_image') == 'true'
+
+    task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
+    if task_completion and task_completion.checkin_img and not replace_image:
+        return render(request, 'check_in_exists.html', {'task': task, 'child': child})
+
+    return render(request, 'check_in.html', {'task': task, 'child': child})
+@login_required
+def check_out(request, task_id):
+    task = get_object_or_404(Task, id=task_id, assigned_children=request.user.child, completed=False)
+    child = request.user.child
+
+    task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
+    if not task_completion or not task_completion.checkin_img:  
+        return render(request, 'check_in_warning.html')
+
+    return render(request, 'check_out.html', {'task': task, 'child': child})
+@login_required
+def no_check_in(request):
+    return render(request, 'check_in_warning.html')
+
+
+@csrf_exempt
+@login_required
+def submit_check_in(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        image = request.FILES.get('image')
+
+        if not task_id or not image:
+            return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+
+
+        child = request.user.child
+        task = get_object_or_404(Task, id=task_id, assigned_children=child, completed=False)
+        task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+
+        image_path = default_storage.save(f'checkin_images/{child.id}_{task.id}_checkin.jpg', image)
+        task_completion.checkin_img = image_path
+        task_completion.save()
+
+        return JsonResponse({'success': True, 'message': 'צ\'ק-אין נשמר בהצלחה.'})
+
+    return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+
+@csrf_exempt
+@login_required
+def submit_check_out(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        image = request.FILES.get('image')
+
+        if not task_id or not image:
+            return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+
+        child = request.user.child
+        task = get_object_or_404(Task, id=task_id, assigned_children=child, completed=False)
+
+        task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+
+        if not task_completion.checkin_img:
+            return JsonResponse({'success': False, 'error': 'צ\'ק-אין לא בוצע למשימה זו.'})
+
+        image_path = default_storage.save(f'checkout_images/{child.id}_{task.id}_checkout.jpg', image)
+        task_completion.checkout_img = image_path
+
+        task_completion.status = 'pending'
+        task_completion.save()
+
+        return JsonResponse({'success': True, 'message': 'צ\'ק-אאוט נשמר. ההמתנה לאישור המנטור.'})
+
+    return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+
+@login_required
+def mark_tasks_as_viewed(request):
+    if request.method == "POST":
+        child = request.user.child
+        TaskAssignment.objects.filter(child=child, is_new=True).update(is_new=False)
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>צ'ק-אאוט למשימה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #FF5722;
+        }
+        .task-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .btn-camera, .btn-check-out {
+            background-color: #FF5722;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-camera:hover, .btn-check-out:hover {
+            background-color: #e64a19;
+        }
+        #preview-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        #preview-container img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- הודעות (אם יש) -->
+    <div class="messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <h1>צ'ק-אאוט למשימה</h1>
+
+    <div class="task-info">
+        <h3>{{ task.title }}</h3>
+        <p>{{ task.description }}</p>
+        <p>תאריך יעד: {{ task.deadline }}</p>
+    </div>
+
+    <input type="file" id="cameraInput" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
+    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">צלם תמונה</button>
+
+    <div id="preview-container" class="hidden">
+        <img id="preview" src="" alt="תצוגה מקדימה">
+    </div>
+
+    <button class="btn-check-out hidden" id="checkOutButton" onclick="submitCheckOut()">אישור צ'ק-אאוט</button>
+
+    <script>
+        /**
+         * @param {string} imageSrc  
+         * @param {string} text 
+         * @param {function} callback -
+         */
+        function generateImageWithText(imageSrc, text, callback) {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(img, 0, 0);
+
+                const rectHeight = 200;
+                const rectY = canvas.height - rectHeight;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(0, rectY, canvas.width, rectHeight);
+
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 75px Arial';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+
+                const textX = canvas.width / 2; 
+                const textY = rectY + (rectHeight / 2); 
+                ctx.fillText(text, textX, textY);
+
+                const finalDataURL = canvas.toDataURL('image/jpeg', 0.9);
+                callback(finalDataURL);
+            };
+            img.src = imageSrc;
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const now = new Date();
+                const day = now.getDate();
+                const month = now.getMonth() + 1; 
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const formattedDate = `${day}/${month} ${hours}:${minutes}`;
+
+                const childName = "{{ child.user.username }}";
+                const overlayText = `${childName}, ${formattedDate}`;
+
+                // יוצרים תמונה מעודכנת (כולל הכיתוב בפס השחור)
+                generateImageWithText(e.target.result, overlayText, function(finalDataURL) {
+                    const preview = document.getElementById('preview');
+                    preview.src = finalDataURL;
+
+                    document.getElementById('preview-container').classList.remove('hidden');
+                    document.getElementById('checkOutButton').classList.remove('hidden');
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        
+        function submitCheckOut() {
+            const preview = document.getElementById('preview');
+            const dataURL = preview.src;
+
+            if (!dataURL || dataURL.trim() === "") {
+                alert("אנא בחר תמונה לפני ביצוע צ'ק-אאוט.");
+                return;
+            }
+
+            fetch(dataURL)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    const taskId = "{{ task.id }}";
+
+                    formData.append('image', blob, 'checkout_image.jpg');
+                    formData.append('task_id', taskId);
+
+                    fetch("{% url 'childApp:submit_check_out' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("תהליך צ'ק-אאוט בוצע בהצלחה!");
+                            window.location.href = "{% url 'childApp:child_home' %}";
+                        } else {
+                            alert(data.error || "שגיאה בלתי צפויה.");
+                        }
+                    })
+                    .catch(error => {
+                        alert("שגיאה בעת שליחת צ'ק-אאוט.");
+                    });
+                })
+                .catch(error => {
+                    alert("שגיאה בהמרת התמונה לפני השליחה.");
+                });
+        }
+    </script>
+</body>
+</html>

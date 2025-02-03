@@ -3,9 +3,54 @@
 {% block title %}בית חונך{% endblock %}
 
 {% block content %}
+<style>
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* מרכז את הכפתורים */
+    margin: 0 auto;
+    width: 100%; /* מוודא שהכפתורים לא יחרגו מהרוחב */
+    max-width: 500px; /* גבול עליון לרוחב */
+}
+
+.btn {
+    display: block;
+    width: 90%; /* הכפתורים יתפסו 90% מרוחב הקונטיינר */
+    margin: 10px 0; /* ריווח אנכי בין הכפתורים */
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* הצבעים נשארים כמו קודם */
+.pink-btn { background-color: #e91e63; }
+.blue-btn { background-color: #2196f3; }
+.green-btn { background-color: #4caf50; }
+.orange-btn { background-color: #ff9800; }
+.purple-btn { background-color: #9c27b0; }
+.yellow-btn { background-color: #ffc107; }
+.red-btn { background-color: #f44336; }
+
+/* התאמה למסכים קטנים */
+@media only screen and (max-width: 428px) {
+    .btn {
+        font-size: 14px; /* הקטנת טקסט */
+        padding: 12px; /* התאמת ריווח פנימי */
+    }
+}
+
+</style>
     <h2 dir="rtl">ברוך הבא, {{ mentor.user.username }}</h2>
 
     <div class="section" dir="rtl">
+        <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn pink-btn">
+            <i class="fas fa-images"></i> אישור משימות
+        </a>        
         <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn blue-btn"><i class="fas fa-tasks"></i> עבור למשימות שהוקצו</a>
         <a href="{% url 'mentorApp:mentor_completed_tasks' %}" class="btn green-btn"><i class="fas fa-check"></i> עבור למשימות שהושלמו</a>
         <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
