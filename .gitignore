@@ -57,3 +57,8 @@ db.sqlite3
 db.json
 */db.json
 adjusted_backup.json
+
+# Ignore all files in the logs directory
+logs/*
+
+volunteen_env/
