@@ -166,28 +166,67 @@
             .shop-header { height: 150px; }
             .reward-card { flex: 0 0 160px; }
         }
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .filter-toggle {
+            width: 90%;
+            padding: 10px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        
+        .filter-dropdown {
+            display: none;
+            width: 90%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .filter-dropdown label {
+            display: block;
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        .show {
+            display: block !important;
+        }
         
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="nav-bar">
-            <a href="{% url 'teenApp:home_redirect' %}">🏠</a>
-            <select class="city-select" id="citySelect">
-                <option value="">כל הערים</option>
+        <div class="filter-section">
+            <button class="filter-toggle" id="cityFilterToggle">🏙️ בחר עיר</button>
+            <div class="filter-dropdown" id="cityFilter">
+                <label><input type="checkbox" value="" class="city-checkbox" checked> כל הערים</label>
                 {% for code, name in available_cities %}
-                    <option value="{{ code }}" {% if child_city == code %}selected{% endif %}>{{ name }}</option>
+                    <label><input type="checkbox" value="{{ code }}" class="city-checkbox"> {{ name }}</label>
                 {% endfor %}
-            </select>
-            <select class="city-select" id="categorySelect">
-                <option value="">כל הקטגריות</option>
-                
+            </div>
+        
+            <button class="filter-toggle" id="categoryFilterToggle">🏷️ בחר קטגוריה</button>
+            <div class="filter-dropdown" id="categoryFilter">
+                <label><input type="checkbox" value="" class="category-checkbox" checked> כל הקטגוריות</label>
                 {% for cat in categories_list %}
-                    <option value="{{ cat.code }}">{{ cat.name }}</option>
+                    <label><input type="checkbox" value="{{ cat.code }}" class="category-checkbox"> {{ cat.name }}</label>
                 {% endfor %}
-            </select>
-            <a href="{% url 'teenApp:logout_view' %}">🚪</a>
+            </div>
         </div>
+        
     </header>
 
     <main class="shop-grid">
@@ -230,40 +269,49 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const citySelect = document.getElementById('citySelect');
-            const categorySelect = document.getElementById('categorySelect');
-            const shopCards = document.querySelectorAll('.shop-card');
+            const cityCheckboxes = document.querySelectorAll(".city-checkbox");
+            const categoryCheckboxes = document.querySelectorAll(".category-checkbox");
+            const shopCards = document.querySelectorAll(".shop-card");
+        
+            function getSelectedValues(checkboxes) {
+                return Array.from(checkboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+            }
         
             function filterShops() {
-                const selectedCity = citySelect.value;
-                const selectedCategory = categorySelect.value;
+                const selectedCities = getSelectedValues(cityCheckboxes);
+                const selectedCategories = getSelectedValues(categoryCheckboxes);
         
                 shopCards.forEach(card => {
                     const cardCity = card.dataset.city;
                     const cardCategories = card.dataset.categories.split(',');
         
-                    const cityMatch = !selectedCity || cardCity === selectedCity;
-                    const categoryMatch = !selectedCategory || cardCategories.includes(selectedCategory);
+                    const cityMatch = selectedCities.includes("") || selectedCities.includes(cardCity);
+                    const categoryMatch = selectedCategories.includes("") || cardCategories.some(cat => selectedCategories.includes(cat));
         
                     card.style.display = cityMatch && categoryMatch ? 'block' : 'none';
                 });
             }
         
-            // Filter on change
-            citySelect.addEventListener('change', filterShops);
-            categorySelect.addEventListener('change', filterShops);
+            // Attach event listeners
+            cityCheckboxes.forEach(cb => cb.addEventListener("change", filterShops));
+            categoryCheckboxes.forEach(cb => cb.addEventListener("change", filterShops));
         
-            // Run filtering on page load
+            // Toggle filter dropdown visibility
+            document.getElementById("cityFilterToggle").addEventListener("click", () => {
+                document.getElementById("cityFilter").classList.toggle("show");
+            });
+        
+            document.getElementById("categoryFilterToggle").addEventListener("click", () => {
+                document.getElementById("categoryFilter").classList.toggle("show");
+            });
+        
+            // Apply initial filter
             filterShops();
         });
-        document.querySelectorAll('.shop-card').forEach(card => {
-            card.addEventListener('click', () => {
-                card.classList.toggle('active');
-                const rewards = card.querySelector('.rewards-container');
-                rewards.style.maxHeight = rewards.style.maxHeight ? null : `${rewards.scrollHeight}px`;
-            });
-        });
         </script>
+        
 
     
 </body>
