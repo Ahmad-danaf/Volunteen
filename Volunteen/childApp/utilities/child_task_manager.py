@@ -6,6 +6,11 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from django.shortcuts import get_object_or_404
 
 class ChildTaskManager:
+    
+    @staticmethod
+    def get_all_tasks(child):
+        """Retrieve all tasks assigned to a child."""
+        return Task.objects.filter(assigned_children=child)
 
     @staticmethod
     # TaskAssignment- not pending + Task -assigned_children feild
@@ -101,3 +106,40 @@ class ChildTaskManager:
     def get_total_tasks_count(child):
         """Retrieve the total count of tasks assigned to the child."""
         return Task.objects.filter(assigned_children=child).count()
+    
+    @staticmethod
+    def get_tasks_by_status(child, status_filter):
+        """Retrieve tasks filtered by status ('completed', 'pending', 'all')."""
+        if status_filter == 'completed':
+            return ChildTaskManager.get_completed_tasks(child)
+        elif status_filter == 'pending':
+            return ChildTaskManager.get_pending_tasks(child)
+        return ChildTaskManager.get_all_tasks(child)  # Default: all tasks
+
+    @staticmethod
+    def get_tasks_by_date_filter(child, date_filter):
+        """Retrieve tasks filtered by date ('today', 'this_week', 'this_month', 'all')."""
+        if date_filter == 'all':
+            return ChildTaskManager.get_all_tasks(child)
+
+        today = timezone.now().date()
+        tasks = ChildTaskManager.get_all_tasks(child)
+
+        if date_filter == 'today':
+            return tasks.filter(completed_date__date=today)
+        elif date_filter == 'this_week':
+            start_of_week = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
+            return tasks.filter(completed_date__date__gte=start_of_week)
+        elif date_filter == 'this_month':
+            return tasks.filter(completed_date__month=today.month)
+
+        return tasks  # Default fallback
+
+    @staticmethod
+    def get_filtered_tasks_by_status_date(child, status_filter, date_filter):
+        """Retrieve tasks based on both status and date filters."""
+        tasks = ChildTaskManager.get_tasks_by_status(child, status_filter)
+        return ChildTaskManager.get_tasks_by_date_filter(child, date_filter).filter(id__in=tasks)
+
+
+    

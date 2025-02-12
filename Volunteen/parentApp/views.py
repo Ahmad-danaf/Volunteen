@@ -66,31 +66,17 @@ def parent_dashboard(request,child_id):
 def task_dashboard(request, child_id):
     # Fetch the child object
     child = get_object_or_404(Child, id=child_id)
-    
-    # Fetch all tasks for the child
-    all_tasks = Task.objects.filter(completed_by_children=child).order_by('-completed_date')
-    
-    # Filter options (e.g., by status, date, etc.)
+
+    # Get filters from request
     status_filter = request.GET.get('status', 'all')  # 'all', 'completed', 'pending'
-    date_filter = request.GET.get('date', 'all')      # 'all', 'today', 'this_week', 'this_month'
+    date_filter = request.GET.get('date', 'all')  # 'all', 'today', 'this_week', 'this_month'
 
-    # Apply filters
-    if status_filter == 'completed':
-        all_tasks = all_tasks.filter(completed_by_children=child)
-    elif status_filter == 'pending':
-        all_tasks = all_tasks.exclude(completed_by_children=child)
-
-    if date_filter == 'today':
-        all_tasks = all_tasks.filter(completed_date__date=timezone.now().date())
-    elif date_filter == 'this_week':
-        start_of_week = timezone.now().date() - timezone.timedelta(days=timezone.now().weekday())
-        all_tasks = all_tasks.filter(completed_date__date__gte=start_of_week)
-    elif date_filter == 'this_month':
-        all_tasks = all_tasks.filter(completed_date__month=timezone.now().month)
+    # Retrieve filtered tasks using the utility class
+    filtered_tasks = ChildTaskManager.get_filtered_tasks_by_status_date(child, status_filter, date_filter)
 
     context = {
         'child': child,
-        'all_tasks': all_tasks,
+        'all_tasks': filtered_tasks,
         'status_filter': status_filter,
         'date_filter': date_filter,
     }
