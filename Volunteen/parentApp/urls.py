@@ -4,8 +4,9 @@ from . import views
 app_name = 'parentApp'
 
 urlpatterns = [
-    path('home/', views.parent_home, name='parent_home'),
-    path('home/stats/', views.parent_stats, name='parent_stats'),
-    path('child/<int:child_id>/', views.child_detail, name='child_detail'),
-    path('child/tasks/<int:child_id>/', views.task_dashboard, name='task_dashboard')
-]
+    path('choose-child/', views.child_selection, name='parent_home'),
+    path('dashboard/<int:child_id>/', views.parent_dashboard, name='parent_dashboard'),
+    path('child/tasks/<int:child_id>/', views.task_dashboard, name='task_dashboard'),
+    path('child/redeemtion/<int:child_id>/', views.redeemtion_dashboard, name='redeemtion_dashboard'),
+    path('child/all-rewards/<int:child_id>/', views.all_rewards, name='all_rewards'),
+    ]

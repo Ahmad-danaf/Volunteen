@@ -3,73 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לוח בקרת הורים</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .navbar {
-            background-color: orangered;
-        }
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-        .footer {
-            background-color: orangered;
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5a623;
+            --success-color: #7ed321;
+            --danger-color: #d0021b;
+            --light-bg: #f8f9fa;
+            --dark-bg: #121212;
+            --dark-card-bg: #1e1e1e;
+            --dark-text: #ffffff;
+          }
+          
+          body {
+            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--light-bg);
+          }
+          
+          body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+          }
+          
+          .navbar {
+            background-color: var(--primary-color);
             color: white;
+          }
+          
+          .navbar-light .navbar-brand,
+          .navbar-light .navbar-nav .nav-link {
+            color: white;
+          }
+          
+          .dark-mode .navbar {
+            background-color: var(--dark-card-bg);
+          }
+          
+          .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+          }
+          
+          .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+          }
+          
+          .dark-mode .card {
+            background-color: var(--dark-card-bg);
+            color: var(--dark-text);
+          }
+          
+          .stat-card {
             text-align: center;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
+          }
+          
+          .stat-card .card-subtitle {
+            font-size: 0.9rem;
+          }
+          
+          .stat-card .card-text {
+            font-weight: bold;
+            color: var(--primary-color);
+          }
+          
+          .dark-mode .stat-card .card-text {
+            color: var(--secondary-color);
+          }
+          
+          .progress {
+            height: 10px;
+            border-radius: 5px;
+          }
+          
+          .progress-bar {
+            background-color: var(--primary-color);
+          }
+          
+          .task-list .list-group-item,
+          .reward-list .list-group-item,
+          .notification-list .list-group-item {
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+          }
+          
+          .task-list .list-group-item:hover,
+          .reward-list .list-group-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+          }
+          
+          .dark-mode .task-list .list-group-item:hover,
+          .dark-mode .reward-list .list-group-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+          
+          .task-item,
+          .reward-item,
+          .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          
+          .task-item .badge,
+          .reward-item .badge,
+          .notification-item .badge {
+            font-size: 0.8rem;
+            padding: 0.4em 0.6em;
+          }
+          
+          .task-item .task-title {
+            flex-grow: 1;
+            margin-right: 10px;
+          }
+          
+          .task-item .task-actions {
+            display: flex;
+            gap: 5px;
+          }
+          
+          .task-item .btn-sm {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+          }
+          
+          .notification-item.warning {
+            border-left: 4px solid var(--secondary-color);
+          }
+          
+          .notification-item.success {
+            border-left: 4px solid var(--success-color);
+          }
+          
+          #darkModeToggle {
+            background-color: transparent;
+            border: none;
+            color: white;
+          }
+          
+          .dark-mode #darkModeToggle {
+            color: var(--dark-text);
+          }
+          
+          @media (max-width: 768px) {
+            .stat-card .card-subtitle {
+              font-size: 0.8rem;
+            }
+            .stat-card .card-text {
+              font-size: 1.5rem;
+            }
+          }
+          .select-children-btn {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+          }
     </style>
-    <!-- Custom CSS -->
-     {% block extra_css %}{% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'parentApp:parent_home' %}">מסך הבית</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'parentApp:parent_home' %}">מסך הבית</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'teenApp:logout_view' %}">התנתקות</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container mt-4">
-        {% block content %}
-        <!-- Content will be injected here by child templates -->
-        {% endblock %}
+    <!-- Navbar with a Select Children Button and Dark Mode Toggle -->
+  <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <!-- Branding -->
+      <a class="navbar-brand me-3" href="#">
+        <i class="fas fa-home"></i> Volunteen
+      </a>
+      <!-- Instead of a child dropdown, we add a button to select children -->
+      <a href="{% url 'parentApp:parent_home' %}" class="btn btn-outline-primary select-children-btn me-3">
+        <i class="fas fa-users"></i> בחר ילדים
+      </a>
+      
+      <!-- Collapsible section with additional controls (e.g., dark mode) -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Dark Mode Toggle -->
+          <li class="nav-item">
+            <a id="darkModeToggle" class="nav-link" href="#" title="מצב כהה/בהיר">
+              <i class="fas fa-adjust"></i>
+            </a>
+          </li>
+          <!-- (Additional nav items can be added here) -->
+        </ul>
+      </div>
     </div>
-        
-        <!-- Footer -->
-        <footer class="footer">
-                <p>Volunteen &copy;</p>
-        </footer>
+  </nav>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Custom JS -->
-    {% block extra_js %}{% endblock %}
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block exra_js %}{% endblock %}
 </body>
 </html>
+
