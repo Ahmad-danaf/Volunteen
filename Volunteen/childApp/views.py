@@ -20,7 +20,7 @@ from django.http import JsonResponse
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
-from shopApp.models import Redemption, Shop, Reward
+from shopApp.models import Redemption, Shop, Reward, Category
 from teenApp.entities.TaskCompletion import TaskCompletion
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -31,8 +31,8 @@ from childApp.models import Child
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-from Volunteen.constants import AVAILABLE_CITIES
-
+from Volunteen.constants import AVAILABLE_CITIES, SHOP_CATEGORIES
+from childApp.utilities.TeenCoinManager import TeenCoinManager
 @login_required
 def child_home(request):
     child = Child.objects.get(user=request.user)
@@ -62,9 +62,10 @@ def child_home(request):
     # חישוב אחוז ההתקדמות לרמה הבאה
     points_needed_for_next_level = 1000  # Adjust according to your level-up system
     progress_to_next_level = (child.points % points_needed_for_next_level) / points_needed_for_next_level * 100
-
+    active_points = TeenCoinManager.get_total_active_teencoins(child)
     return render(request, 'child_home.html', {
         'child': child,
+        'active_points': active_points,
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
         'new_tasks': new_tasks,
@@ -236,8 +237,6 @@ def child_points_history(request):
     points_history.sort(key=lambda x: x['date'])
     
     return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
-
-
 @login_required
 def rewards_view(request):
     # Prefetch related rewards for efficiency
@@ -248,13 +247,16 @@ def rewards_view(request):
     child = request.user.child
     child_city = child.city if child.city else ''
 
+    # Get available categories
+    available_categories = Category.objects.all().values("code", "name")
+
     shops_with_images = []
     for shop in shops:
         start_of_month = now().replace(day=1)
         redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
         points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
         shop_image = shop.img.url if shop.img else static('images/logo.png')
-        
+        points_left_to_spend = shop.max_points - points_used_this_month
         rewards_with_images = [
             {
                 'title': reward.title,
@@ -271,14 +273,21 @@ def rewards_view(request):
             'city': shop.city,  
             'rewards': rewards_with_images,
             'used_points': points_used_this_month,
-            'is_open': shop.is_open()
+            'is_open': shop.is_open(),
+            'points_left_to_spend': points_left_to_spend,
+            'categories': [cat.code for cat in shop.categories.all()]  # Add categories
         })
-    
+    categories_list = []
+    for cat in available_categories:
+        code, name = cat['code'], cat['name']
+        categories_list.append({'code': code, 'name': name})
+                            
     context = {
         'shops': shops_with_images,
         'child_points': child.points,
         'child_city': child_city,
         'available_cities': AVAILABLE_CITIES,
+        'categories_list': categories_list, 
     }
     return render(request, 'reward.html', context)
 

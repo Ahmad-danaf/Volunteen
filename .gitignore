@@ -59,3 +59,4 @@ db.json
 adjusted_backup.json
 
 volunteen_env/
+logs/*

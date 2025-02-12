@@ -22,3 +22,5 @@ SHOP_CATEGORIES=[
     ('BOOKS', 'ספרים'),
     ('OTHER', 'אחר'),
 ]
+
+MAX_TEENCOINS_PER_DAY_SHOPPING = 30 # the TeenCoints that the child can pay in one day
