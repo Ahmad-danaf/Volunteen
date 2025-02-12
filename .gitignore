@@ -57,3 +57,5 @@ db.sqlite3
 db.json
 */db.json
 adjusted_backup.json
+
+volunteen_env/

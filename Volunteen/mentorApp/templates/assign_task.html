@@ -4,7 +4,12 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/assign_task.css' %}">
 
 <div class="container mt-5">
+
     <h2 style="color: #ff6600;">הקצה משימה: {{ task.title }}</h2>
+    
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-secondary">חזור</a>
+    </div>
     
     <!-- Add Search Bar -->
     <div class="search-bar mb-3">

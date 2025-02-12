@@ -27,6 +27,16 @@
     transition: all 0.3s ease;
 }
 
+.mentor-btn { 
+    border: solid 4px #ff9800;
+    color: #ff9800;
+    background-color: transparent;
+}
+.mentor-btn:hover {
+    background-color: #ff9800;
+    color: white;
+}
+
 /* הצבעים נשארים כמו קודם */
 .pink-btn { background-color: #e91e63; }
 .blue-btn { background-color: #2196f3; }
@@ -46,17 +56,19 @@
 
 </style>
     <h2 dir="rtl">ברוך הבא, {{ mentor.user.username }}</h2>
-
+    <div>
+        מטבעות זמינים: {{ mentor.available_teencoins }}
+    </div>
     <div class="section" dir="rtl">
-        <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn pink-btn">
+        <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn">הוספת משימה</a>
+        <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn mentor-btn"><i class="fas fa-tasks"></i>רשימת משימות</a>
+        <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn mentor-btn">
             <i class="fas fa-images"></i> אישור משימות
         </a>        
-        <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn blue-btn"><i class="fas fa-tasks"></i> עבור למשימות שהוקצו</a>
-        <a href="{% url 'mentorApp:mentor_completed_tasks' %}" class="btn green-btn"><i class="fas fa-check"></i> עבור למשימות שהושלמו</a>
-        <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn orange-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
-        <a href="{% url 'mentorApp:send_whatsapp_message' %}" class="btn purple-btn"><i class="fas fa-paper-plane"></i> שליחת הודעה לילדים</a>
-        <a href="{% url 'mentorApp:assign_bonus' %}" class="btn yellow-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a>
-        <a href="{% url 'teenApp:logout_view' %}" class="btn red-btn"><i class="fas fa-sign-out-alt"></i> התנתק</a>
+        <a href="{% url 'mentorApp:mentor_completed_tasks' %}" class="btn mentor-btn"><i class="fas fa-check"></i> עבור למשימות שהושלמו</a>
+        <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
+        <a href="{% url 'mentorApp:send_whatsapp_message' %}" class="btn mentor-btn"><i class="fas fa-paper-plane"></i> שליחת הודעה לילדים</a>
+        <a href="{% url 'mentorApp:assign_bonus' %}" class="btn mentor-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a>
     </div>
 
     <div class="section" dir="rtl">
@@ -109,7 +121,7 @@
                 labels: ['משימות פתוחות', 'משימות שהושלמו'],
                 datasets: [{
                     data: [openTasks, completedTasks],
-                    backgroundColor: ['#007bff', '#28a745'],
+                    backgroundColor: ['#FF9800', '#007bff'],
                 }]
             },
             options: {

@@ -1,6 +1,10 @@
-
-h1{
-
+h1 {
     color: blue;
+}
 
+nav {
+    background: linear-gradient(135deg, #FF6A00, #FF6A00, #FF9F00);
+    color: white;
+    padding: 15px;
+    text-align: center;
 }

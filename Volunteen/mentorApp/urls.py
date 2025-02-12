@@ -11,6 +11,7 @@ urlpatterns = [
     path('assign-points/', views.assign_points, name='assign_points'),  # Assign points to children
     path('assign-points/<int:task_id>/', views.assign_points, name='assign_points'),  # Assign points to children for a specific task
     path('task-list/', views.mentor_task_list, name='mentor_task_list'),
+    path('add-task/', views.add_task, name='mentor_add_task'),
     path('assign-task/<int:task_id>/', views.assign_task, name='assign_task'),
     path('assign-points/success/<int:task_id>/', views.points_assigned_success, name='points_assigned_success'),
     path('assign-bonus/', views.assign_bonus, name='assign_bonus'),
