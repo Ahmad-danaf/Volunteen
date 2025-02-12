@@ -1,0 +1,116 @@
+{% extends 'institution_base.html' %}
+{% load static %}
+
+{% block title %}העברת טינקוינס למנטור | וולונטין{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
+        margin: auto;
+    }
+    .form-label {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: right;
+        width: 100%;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        text-align: right;
+    }
+    .custom-select {
+        appearance: none;
+        background-color: white;
+        padding: 10px;
+    }
+    .btn-primary {
+        width: 100%;
+        font-size: 18px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #ff9a9e;
+        color: white;
+        border: none;
+    }
+    .btn-primary:hover {
+        background: #e06a74;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h2>💰 העברת טינקוינס למנטור</h2>
+
+    <div class="card mt-4 p-4">
+        <h4>📊 יתרת טינקוינס במוסד</h4>
+        <p><strong>סך הכל טינקוינס:</strong> {{ institution.total_teencoins }}</p>
+        <p><strong>טינקוינס זמינים:</strong> <span id="availableTeencoins">{{ institution.available_teencoins }}</span></p>
+    </div>
+
+    <div class="card mt-4 p-4">
+        <h4>💸 בחר מנטור והעבר טינקוינס</h4>
+        <form id="transferForm" class="form-group">
+            <label for="mentorSelect" class="form-label">בחר מנטור:</label>
+            <select id="mentorSelect" class="form-control custom-select">
+                {% for mentor in mentors %}
+                <option value="{{ mentor.id }}">{{ mentor.user.username }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="transferAmount" class="form-label">כמות להעברה:</label>
+            <input type="number" id="transferAmount" class="form-control" min="1" placeholder="הכנס כמות">
+
+            <button type="button" class="btn btn-primary mt-3" onclick="confirmTransfer()">💰 העברה</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+function confirmTransfer() {
+    let mentorId = document.getElementById("mentorSelect").value;
+    let amount = document.getElementById("transferAmount").value;
+
+    if (!amount || amount <= 0) {
+        alert("נא להזין כמות חוקית להעברה.");
+        return;
+    }
+
+    let mentorName = document.getElementById("mentorSelect").options[document.getElementById("mentorSelect").selectedIndex].text;
+
+    if (!confirm(`האם אתה בטוח שברצונך להעביר ${amount} טינקוינס למנטור ${mentorName}?`)) {
+        return;
+    }
+
+    fetch("{% url 'institutionApp:transfer_teencoins' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ mentor_id: mentorId, amount: amount }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+function getCSRFToken() {
+    return document.cookie.split('; ').find(row => row.startsWith("csrftoken")).split('=')[1];
+}
+</script>
+{% endblock extra_js %}

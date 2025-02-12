@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Institution Base{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% load static %}
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #FCE38A, #F38181);
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #444;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        h4 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .btn {
+            font-size: 18px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            transition: 0.3s;
+            width: 100%;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: #ff9a9e;
+            border: none;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: #fbc2eb;
+            border: none;
+            color: #fff;
+        }
+
+        .btn-info {
+            background: #8ec5fc;
+            border: none;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #d4fc79;
+            border: none;
+            color: #fff;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .col-md-6 {
+            flex: 0 0 calc(50% - 10px);
+            max-width: calc(50% - 10px);
+        }
+
+        .mb-3 {
+            margin-bottom: 20px;
+        }
+
+        .mt-4 {
+            margin-top: 30px;
+        }
+
+        .mt-3 {
+            margin-top: 15px;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock extra_css %}
+</head>
+<body>
+
+    <header style="background-color: #fafafa; padding: 10px; border-bottom: 1px solid #ddd;">
+        <div style="max-width: 1200px; margin: auto; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 style="margin: 0; font-size: 1.4rem;">
+                    <a href="{% url 'institutionApp:institution_home' %}" style="text-decoration: none; color: #333;">מוסד</a>
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <nav style="background-color: #e9e9e9; padding: 10px; border-bottom: 1px solid #ccc;">
+        <div style="max-width: 1200px; margin: auto; display: flex; gap: 15px;">
+            <a href="{% url 'institutionApp:institution_home' %}" style="text-decoration: none; color: #333;">דף הבית</a>
+            <a href="{% url 'institutionApp:transfer_teencoins' %}" style="text-decoration: none; color: #333;">העברת טינקוינס</a>
+            <a href="{% url 'institutionApp:mentor_management' %}" style="text-decoration: none; color: #333;">ניהול מנטורים</a>
+            <a href="{% url 'teenApp:logout_view' %}" style="margin-left:auto; text-decoration: none; color: #333;">
+                יציאה
+            </a>
+        </div>
+    </nav>
+
+    <main style="padding: 20px; min-height: 60vh;">
+        {% block content %}{% endblock content %}
+    </main>
+
+    <footer style="background-color: #f5f5f5; padding: 10px; border-top: 1px solid #ddd; text-align: center;">
+        <p style="margin: 0; font-size: 0.9rem; color: #666;">
+            &copy; 2025 Volunteen - All Rights Reserved
+        </p>
+    </footer>
+
+    {% block extra_js %}{% endblock extra_js %}
+
+</body>
+</html>

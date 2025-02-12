@@ -1,0 +1,143 @@
+<div class="leaderboard-container">
+    <h3 class="leaderboard-title">🏆 טבלת שיאני רצף</h3>
+    <div class="table-wrapper">
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>מקום</th>
+                    <th>שם</th>
+                    <th>🔥 רצף (ימים)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for child in top_children %}
+                <tr>
+                    <td class="rank">🥇 {{ forloop.counter }}</td>
+                    <td class="username">{{ child.user.username }}</td>
+                    <td class="streak">{{ child.streak_count }} ימים</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button class="home-button" onclick="window.location.href='{% url 'childApp:child_home' %}'">🔙 חזרה לבית</button>
+</div>
+
+<style>
+/* מיכל ראשי */
+.leaderboard-container {
+    width: 95%;
+    max-width: 1300px;
+    margin: 20px auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffeb3b, #ff9800);
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+/* כותרת */
+.leaderboard-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* עיצוב טבלה */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 1.5rem;
+    min-width: 300px;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+    padding: 20px 25px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+.leaderboard-table th {
+    background-color: #ff9800;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 1.8rem;
+}
+
+.leaderboard-table tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.rank {
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff5722;
+}
+
+.username, .streak {
+    font-size: 1.6em;
+    font-weight: 600;
+    word-wrap: break-word;
+}
+
+.streak {
+    color: #4caf50;
+}
+
+/* כפתור חזרה */
+.home-button {
+    margin-top: 90px;
+    padding: 15px 40px;
+    font-size: 1.5em;
+    color: #fff;
+    background: #4caf50;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.home-button:hover {
+    background: #388e3c;
+    transform: scale(1.05);
+}
+
+.home-button:active {
+    background: #2e7d32;
+    transform: scale(0.95);
+}
+
+/* רספונסיביות למסכים קטנים */
+@media (max-width: 480px) {
+    .leaderboard-container {
+        padding: 15px;
+    }
+    .leaderboard-title {
+        font-size: 2.2em;
+    }
+    .leaderboard-table {
+        font-size: 1.4rem;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+        padding: 15px 20px;
+    }
+    .home-button {
+        font-size: 1.3em;
+        padding: 12px 30px;
+    }
+}
+</style>

@@ -23,6 +23,8 @@ class Child(models.Model):
     institution = models.ForeignKey("institutionApp.Institution", on_delete=models.SET_NULL, null=True, blank=True, related_name='children', verbose_name='Institution')
     parent = models.ForeignKey('parentApp.Parent', on_delete=models.SET_NULL, null=True, blank=True, related_name='children', verbose_name='Parent')
     medals = models.ManyToManyField(Medal, blank=True, verbose_name='Medals')
+    streak_count = models.IntegerField(default=0, verbose_name="Streak Count")
+    last_streak_date = models.DateField(null=True, blank=True, verbose_name="Last Streak Date")
     city = models.CharField(
         max_length=3,
         choices=AVAILABLE_CITIES,
@@ -40,6 +42,7 @@ class Child(models.Model):
         self.points += points
         self.save()
 
+    
     def subtract_points(self, points):
         """
         Subtract points from the child if there are enough points.

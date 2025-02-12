@@ -13,21 +13,27 @@ def logout_view(request):
     return redirect(settings.LOGOUT_REDIRECT_URL) 
 def landing_page(request):
     return render(request, 'landing_page.html')
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def home_redirect(request):
-    if request.user.groups.filter(name='Children').exists():
+    user_groups = list(request.user.groups.values_list('name', flat=True))  # קבלת כל הקבוצות של המשתמש
+    print(f"User: {request.user.username}, Groups: {user_groups}")  # הדפסה לניטור בקונסולה
+
+    if 'Children' in user_groups:
         return redirect('childApp:child_home')
-    elif request.user.groups.filter(name='Mentors').exists():
+    elif 'Mentors' in user_groups:
         return redirect('mentorApp:mentor_home') 
-    elif request.user.groups.filter(name='Shops').exists():
+    elif 'Shops' in user_groups:
         return redirect('shopApp:shop_home')
-    elif request.user.groups.filter(name='Parents').exists():
+    elif 'Parents' in user_groups:
         return redirect('parentApp:parent_home')
+    elif 'Institutions' in user_groups:
+        return redirect('institutionApp:institution_home')  # בדיקה אם המשתמש במוסד
     else:
         return redirect('admin:index')
-
-        
 
 
 def default_home(request):

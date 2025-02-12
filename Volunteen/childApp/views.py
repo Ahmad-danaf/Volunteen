@@ -13,7 +13,7 @@ from django.utils.timezone import now
 from django.utils import timezone
 from teenApp.interface_adapters.forms import DateRangeForm
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 
@@ -32,12 +32,11 @@ from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import AVAILABLE_CITIES
-
+from Volunteen.constants import LEVELS
 @login_required
 def child_home(request):
     child = Child.objects.get(user=request.user)
 
-    # קבלת יום נוכחי וברכה
     current_day = datetime.now().weekday()
     current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
     greetings = {
@@ -51,16 +50,13 @@ def child_home(request):
     }
     todays_greeting = greetings[current_day]
 
-    # משימות חדשות
     new_tasks = TaskAssignment.objects.filter(child=child, is_new=True)
     new_tasks_count = new_tasks.count()
 
-    # טיפול בכפתור Close
     if request.method == 'POST' and 'close_notification' in request.POST:
         new_tasks.update(is_new=False)
 
-    # חישוב אחוז ההתקדמות לרמה הבאה
-    points_needed_for_next_level = 1000  # Adjust according to your level-up system
+    points_needed_for_next_level = 100  # Adjust according to your level-up system
     progress_to_next_level = (child.points % points_needed_for_next_level) / points_needed_for_next_level * 100
 
     return render(request, 'child_home.html', {
@@ -68,10 +64,36 @@ def child_home(request):
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
         'new_tasks': new_tasks,
+        'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level  # Pass the computed percentage to the template
     })
 
+@login_required
+def update_streak(request):
+    if request.method == "POST":
+        child = request.user.child  
+        today = date.today()
+
+        if child.last_streak_date == today:
+            return JsonResponse({"message": "כבר לחצת היום!", "streak": child.streak_count, "success": False})
+
+        if child.last_streak_date == today - timedelta(days=1):  
+            child.streak_count += 1  
+        else:
+            child.streak_count = 1  
+
+        child.last_streak_date = today
+        child.save()
+
+        return JsonResponse({"message": "🔥 כל הכבוד! שמרת על הרצף!", "streak": child.streak_count, "success": True})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+@login_required
+def top_streaks(request):
+    top_children = Child.objects.order_by('-streak_count')[:10]
+    return render(request, "streak_leaderboard.html", {"top_children": top_children})
 
 @login_required
 def child_redemption_history(request):

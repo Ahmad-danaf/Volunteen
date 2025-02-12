@@ -15,16 +15,24 @@
         <img src="{% static 'images/Adam.jpg' %}" alt="Avatar" class="avatar-image">
     </div>
 
-    <div class="streak-info">
+
+    <div class="streak-section">
+        <p>🔥 רצף ההתחברויות שלך: <strong id="streak-count">{{ child.streak_count }}</strong> ימים</p>
+        <button id="streak-button" class="streak-button" onclick="saveStreak()">✅ שמור על הרצף!</button>
+        <div id="fire-animation" class="fire-animation" style="display: none;"></div>
+        <p id="streak-success" style="display:none; color:green;">🎉 כל הכבוד! שמרת על הרצף שלך! 🔥</p>
+    </div>
+    
+    <!-- <div class="streak-info">
         <p>🔥 רצף יומי: <strong>3 ימים</strong> ברציפות!</p>
         <small>היכנס כל יום כדי להאריך את הרצף ולזכות בבונוסים!</small>
-    </div>
+    </div> -->
 </div>
 
 <div class="user-info-panel">
     <div class="user-level">
         <i class="fas fa-star" style="color: gold; font-size: 1.5em;"></i>
-        <span>הרמה שלך: <strong>{{ level }}</strong></span>
+        <span>הרמה שלך: <strong>{{ level_name }}</strong> ({{ level }})</span>
     </div>
     <div class="user-teencoins">
         <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
@@ -110,6 +118,10 @@
     <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-map-marker-alt"></i>
         <span>צ'ק אין/אאוט</span>
+    </a>
+    <a href="{% url 'childApp:top_streaks' %}" class="nav-button" style="background-color: #f44336;">
+        <i class="fas fa-fire"></i>
+        <span>שיאני רצף </span>
     </a>
     <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>
@@ -267,7 +279,26 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
-
+function saveStreak() {
+        fetch("{% url 'childApp:update_streak' %}", { 
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("streak-count").innerText = data.streak;
+                document.getElementById("streak-success").style.display = "block";  // הצגת הודעה
+                document.getElementById("streak-button").disabled = true;  // ביטול הכפתור אחרי לחיצה
+            } else {
+                alert(data.message);  // אם הילד כבר לחץ, להציג הודעה מתאימה
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
 function throwConfetti() {
     for (let i = 0; i < 40; i++) {
         createConfettiParticle();
@@ -353,6 +384,57 @@ body {
     justify-content: center;
     margin: 15px 0;
     gap: 30px;
+}
+.streak-button {
+    background: linear-gradient(45deg, #ff5722, #ff9800);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.2em;
+    padding: 15px 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.streak-button:hover {
+    background: linear-gradient(45deg, #ff9800, #ff5722);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.streak-button:active {
+    background: linear-gradient(45deg, #e64a19, #f4511e);
+    transform: scale(0.95);
+}
+
+/* אנימציית האש */
+.fire-animation {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    background-image: url('{% static "images/fire.gif" %}');
+    background-size: cover;
+    z-index: 1000;
+    animation: fire-burst 1s ease-out forwards;
+}
+
+@keyframes fire-burst {
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateX(-50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0;
+    }
 }
 .user-info-panel div {
     background: #ffffff;
