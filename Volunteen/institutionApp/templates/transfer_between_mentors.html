@@ -1,0 +1,141 @@
+{% extends 'institution_base.html' %}
+{% load static %}
+
+{% block title %}העברת טינקוינס בין מנטורים | Volunteen{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
+        margin: auto;
+    }
+    .form-label {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: right;
+        width: 100%;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        text-align: right;
+    }
+    .custom-select {
+        appearance: none;
+        background-color: white;
+        padding: 10px;
+    }
+    .btn-warning {
+        width: 100%;
+        font-size: 18px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #FF6F61;
+        color: white;
+        border: none;
+    }
+    .btn-warning:hover {
+        background: #e85b50;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h2>🔄 העברת טינקוינס בין מנטורים</h2>
+
+    <div class="card mt-4 p-4">
+        <h4>📊 יתרת טינקוינס במוסד</h4>
+        <p><strong>סך הכל טינקוינס:</strong> {{ institution.total_teencoins }}</p>
+        <p><strong>טינקוינס זמינים:</strong> <span id="availableTeencoins">{{ institution.available_teencoins }}</span></p>
+    </div>
+
+    <div class="card mt-4 p-4">
+        <h4>💸 בחר מנטורים להעברה</h4>
+        <form id="mentorTransferForm" class="form-group">
+            <label for="mentorFrom" class="form-label">מנחה שולח:</label>
+            <select id="mentorFrom" class="form-control custom-select" onchange="updateMentorToList()">
+                <option value="" disabled selected>בחר מנחה שולח</option>
+                {% for mentor in mentors %}
+                <option value="{{ mentor.id }}" data-balance="{{ mentor.available_teencoins }}">
+                    {{ mentor.user.username }} (זמין: {{ mentor.available_teencoins }})
+                </option>
+                {% endfor %}
+            </select>
+
+            <label for="mentorTo" class="form-label">מנחה מקבל:</label>
+            <select id="mentorTo" class="form-control custom-select">
+                <option value="" disabled selected>בחר מנחה מקבל</option>
+                {% for mentor in mentors %}
+                <option value="{{ mentor.id }}">{{ mentor.user.username }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="transferAmount" class="form-label">כמות להעברה:</label>
+            <input type="number" id="transferAmount" class="form-control" min="1" placeholder="הכנס כמות">
+
+            <button type="button" class="btn btn-warning mt-3" onclick="confirmMentorTransfer()">🔄 העברה</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+function updateMentorToList() {
+    let mentorFrom = document.getElementById("mentorFrom").value;
+    let mentorTo = document.getElementById("mentorTo");
+    let mentorOptions = mentorTo.getElementsByTagName("option");
+    
+    for (let option of mentorOptions) {
+        if (option.value === mentorFrom) {
+            option.style.display = "none";
+        } else {
+            option.style.display = "block";
+        }
+    }
+}
+
+function confirmMentorTransfer() {
+    let mentorFrom = document.getElementById("mentorFrom").value;
+    let mentorTo = document.getElementById("mentorTo").value;
+    let amount = document.getElementById("transferAmount").value;
+
+    if (!mentorFrom || !mentorTo || mentorFrom === mentorTo) {
+        alert("⛔ לא ניתן לבחור את אותו המנטור גם כשולח וגם כמקבל.");
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        alert("⛔ יש להזין כמות חוקית להעברה.");
+        return;
+    }
+
+    fetch("{% url 'institutionApp:transfer_between_mentors' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ mentor_from: mentorFrom, mentor_to: mentorTo, amount: amount }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+function getCSRFToken() {
+    return document.cookie.split('; ').find(row => row.startsWith("csrftoken")).split('=')[1];
+}
+</script>
+{% endblock extra_js %}

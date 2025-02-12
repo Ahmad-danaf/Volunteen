@@ -1,0 +1,51 @@
+{% extends 'institution_base.html' %}
+{% load static %}
+
+{% block title %}👨‍🏫 ניהול מנטורים | Volunteen{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-4">
+    <h2>👨‍🏫 ניהול מנטורים</h2>
+
+    <div class="card mt-4 p-4">
+        <h4>📋 רשימת מנטורים</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>👤 שם משתמש</th>
+                    <th>💰 יתרה</th>
+                    <th>🛠 ניהול</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mentor in mentors %}
+                <tr>
+                    <td>{{ mentor.user.username }}</td>
+                    <td>{{ mentor.available_teencoins }}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="removeMentor('{{ mentor.id }}')">❌ הסר</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+function removeMentor(mentorId) {
+    if (!confirm("האם אתה בטוח שברצונך להסיר את המנטור?")) return;
+
+    fetch(`/institutionApp/remove-mentor/${mentorId}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() },
+    }).then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    }).catch(error => console.error("Error:", error));
+}
+</script>
+{% endblock extra_js %}

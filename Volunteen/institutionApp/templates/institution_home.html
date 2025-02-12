@@ -1,0 +1,66 @@
+{% extends 'institution_base.html' %}
+{% load static %}
+
+{% block title %}מסך הבית - Institution | Volunteen{% endblock title %}
+
+
+{% block content %}
+<div class="container">
+  
+  <h2>🏫 דף הבית</h2>
+  
+  <div class="card">
+    <h4>📊 תקציב טינקאוינס</h4>
+    <p><strong>סך הכל טינקוינס:</strong> <span id="totalTeencoins">{{ institution.total_teencoins }}</span></p>
+    <p><strong>טינקוינס זמינים:</strong> <span id="availableTeencoins">{{ institution.available_teencoins }}</span></p>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <a href="{% url 'institutionApp:transfer_teencoins' %}" class="btn btn-primary">
+        💰  העברת טינקואינס למנטור
+      </a>
+    </div>
+    <div class="col-md-6 mb-3">
+      <a href="{% url 'institutionApp:transfer_between_mentors' %}" class="btn btn-warning">
+        🔄 העברה בין מנטורים
+      </a>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6 mb-3">
+      <a href="{% url 'institutionApp:transfer_history' %}" class="btn btn-info">
+        📜 היסטוריית העברות
+      </a>
+    </div>
+    <div class="col-md-6 mb-3">
+      <a href="{% url 'institutionApp:mentor_management' %}" class="btn btn-secondary">
+        👨‍🏫 ניהול מנטורים
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  function fetchBalances() {
+    fetch("{% url 'institutionApp:institution_balances' %}")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("שגיאה ברשת או בתשובה מהשרת");
+        }
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById("totalTeencoins").innerText = data.total_teencoins;
+        document.getElementById("availableTeencoins").innerText = data.available_teencoins;
+      })
+      .catch(error => console.error("Error fetching balances:", error));
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchBalances);
+</script>
+{% endblock extra_js %}

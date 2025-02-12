@@ -1,0 +1,82 @@
+{% extends 'institution_base.html' %}
+{% load static %}
+
+{% block title %}📜 היסטוריית העברות | Volunteen{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 900px;
+        margin: auto;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .table-container {
+        margin-top: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+    }
+
+    th {
+        background: #F38181;
+        color: white;
+    }
+
+    tr:hover {
+        background: rgba(255, 218, 185, 0.6);
+    }
+
+    .no-transfers {
+        font-size: 18px;
+        color: #555;
+        margin-top: 20px;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="history-container">
+    <h2>📜 היסטוריית העברות</h2>
+
+    {% if transfers %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>📅 תאריך</th>
+                        <th>👤 שולח</th>
+                        <th>👤 מקבל</th>
+                        <th>💰 סכום</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers %}
+                    <tr>
+                        <td>{{ transfer.timestamp|date:"Y-m-d H:i" }}</td>
+                        <td>{{ transfer.sender.user.username|default:"Institution" }}</td>
+                        <td>{{ transfer.receiver.user.username }}</td>
+                        <td>{{ transfer.amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="no-transfers">🚫 לא נמצאו העברות</p>
+    {% endif %}
+</div>
+{% endblock content %}
