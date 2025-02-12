@@ -1,6 +1,5 @@
 from django import forms
 from teenApp.entities.task import Task
-from django import forms
 from childApp.models import Child
 
 class TaskForm(forms.ModelForm):
@@ -33,7 +32,6 @@ class TaskImageForm(forms.ModelForm):
         model = Task
         fields = ['img']
         
-
 class BonusPointsForm(forms.Form):
     task = forms.ModelChoiceField(queryset=Task.objects.none(), label="Select Task")
     child = forms.ModelChoiceField(queryset=Child.objects.none(), label="Select Child")
@@ -44,6 +42,3 @@ class BonusPointsForm(forms.Form):
         if mentor:
             self.fields['task'].queryset = Task.objects.filter(assigned_mentors=mentor)
             self.fields['child'].queryset = Child.objects.filter(mentors=mentor)
-    
-    
-    

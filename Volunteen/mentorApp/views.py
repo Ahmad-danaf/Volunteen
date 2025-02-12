@@ -32,7 +32,7 @@ def mentor_home(request):
     total_tasks = tasks.count()
     completed_tasks = tasks.filter(completed=True).count()
     open_tasks = total_tasks - completed_tasks
-    efficiency_rate = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+    efficiency_rate = round((completed_tasks / total_tasks) * 100, 2) if total_tasks > 0 else 0
 
     children = []
     for child in mentor.children.all():
@@ -76,8 +76,6 @@ def mentor_children_details(request):
 
     return render(request, 'mentor_children_details.html', {'children': children})
 
-
-
 @login_required
 def mentor_completed_tasks_view(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -106,7 +104,6 @@ def mentor_completed_tasks_view(request):
             task_data.append(task_info)
 
     return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data, 'form': form})
-
 
 assign_bonus_points = AssignBonusPoints(
     child_repository=ChildRepository(),
@@ -155,17 +152,18 @@ def add_task(request):
     mentor = get_object_or_404(Mentor, user=request.user)
 
     if request.method == 'POST':
-        form = TaskForm(mentor=mentor, data=request.POST)
-        if form.is_valid():
-            task = form.save(commit=False)
+        taskForm = TaskForm(mentor=mentor, data=request.POST)
+        if taskForm.is_valid():
+            task = taskForm.save(commit=False)
             task.mentor = mentor
             task.save()
-            form.save_m2m()  # Save the many-to-many data for the form
+            task.assigned_mentors.add(mentor)  # Add the mentor to the assigned_mentors field
+            taskForm.save_m2m()  # Save the many-to-many data for the form
             return redirect('mentorApp:mentor_home')
     else:
-        form = TaskForm(mentor=mentor)
+        taskForm = TaskForm(mentor=mentor)
 
-    return render(request, 'add_task.html', {'form': form})
+    return render(request, 'mentor_add_task.html', {'form': taskForm, 'children': mentor.children.all()})
 
 @login_required
 def edit_task(request, task_id):
@@ -268,7 +266,6 @@ def assign_points(request, task_id):
 
     return render(request, 'assign_points.html', {'task': task, 'children_with_status': children_with_status})
 
-
 @login_required
 def points_assigned_success(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -276,7 +273,6 @@ def points_assigned_success(request, task_id):
         id__in=TaskCompletion.objects.filter(task=task).values_list('child_id', flat=True)
     ) 
     return render(request, 'points_assigned_success.html', {'task': task, 'children': completed_children})
-
 
 def send_whatsapp_message(request):
     if request.method == 'POST':

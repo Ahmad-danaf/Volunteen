@@ -18,12 +18,12 @@
 </head>
 <body>
     <header>
-        <h1>{% block header %}דף הבית{% endblock %}</h1>
+        <h1>{% block header %}מנטור{% endblock %}</h1>
     </header>
 
     <nav>
-        <a href="{% url 'teenApp:logout_view' %}" style="background-color: #dc3545;">Logout</a> 
-        <a href="{% url 'mentorApp:mentor_home' %}">דף הבית</a>
+        <a href="{% url 'mentorApp:mentor_home' %}" style="margin-right: 5%;">דף הבית</a>
+        <a href="{% url 'teenApp:logout_view' %}" style="margin-left: 5%; background-color: #dc3545;">התנתק</a>
     </nav>
 
     <main class="container">

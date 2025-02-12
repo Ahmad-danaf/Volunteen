@@ -2,7 +2,6 @@
 
 body, h2, h3, p {
     margin: 0;
-    padding: 0 10px;
 }
 
 h2 {
@@ -20,11 +19,11 @@ p {
 }
 
 .tasks-open {
-    color: #007bff; /* Blue color for open tasks */
+    color: #FF9800; /* Blue color for open tasks */
 }
 
 .tasks-completed {
-    color: #28a745; /* Green color for completed tasks */
+    color: #007bff; /* Green color for completed tasks */
 }
 
 .tasks-efficiency {
