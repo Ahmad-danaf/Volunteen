@@ -27,6 +27,9 @@
     .btn-submit:hover {
         background-color: #e65c00;
     }
+    .back-btn {
+        border: 1px solid;
+    }
     .assign-container {
         max-height: 150px;
         overflow-y: auto;
@@ -49,19 +52,35 @@
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         
+        {% if task and is_duplicate %}
+        <div class="mb-3">
+            <a href="javascript:history.back()" class="btn btn-secondary back-btn">חזור למשימות</a>
+        </div>
+        <div style="background-color: yellow; padding: 10px; text-align: center;">
+            משימה זו משוכפלת ממשימה קיימת. אנא עדכן את הפרטים במידת הצורך.
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label for="available_teencoins" class="form-label">מטבעות זמינים</label>
+            <label> - {{ available_teencoins }}</label>
+        </div>
+
         <div class="mb-3">
             <label for="taskName" class="form-label">שם המשימה</label>
-            <input type="text" id="taskName" name="title" class="form-control" required>
+            <input type="text" id="taskName" name="title" class="form-control" value="{{ form.title.value|default_if_none:'' }}" required>
         </div>
         
         <div class="mb-3">
             <label for="description" class="form-label">תיאור</label>
-            <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+            <textarea id="description" name="description" class="form-control" rows="3" required>
+                {{ form.description.value|default_if_none:'' }}
+            </textarea>
         </div>
 
         <div class="mb-3 points">
             <label for="points" class="form-label">ניקוד</label>
-            <input type="number" id="points" name="points" class="form-control" required>
+            <input type="number" id="points" name="points" class="form-control" value="{{ form.points.value|default_if_none:'' }}" required>
         </div>
         
         <label class="form-label">הקצאה ל</label><br>
@@ -76,17 +95,22 @@
         
         <div class="mb-3">
             <label for="deadline" class="form-label">תאריך יעד</label>
-            <input type="date" id="deadline" name="deadline" class="form-control" required>
+            <input type="date" id="deadline" name="deadline" class="form-control" value="{{ form.deadline.value|date:'Y-m-d' }}" required>
         </div>
         
         <div class="mb-3">
             <label for="image" class="form-label">תמונת המשימה</label>
             <input type="file" id="image" name="img" class="form-control">
+            {% if form.img.value %}
+                <img src="{{ form.img.value.url }}" alt="Task Image" width="100">
+            {% endif %}
         </div>
 
         <div class="mb-3">
             <label for="additional_details" class="form-label">פרטים נוספים</label>
-            <textarea id="additional_details" name="additional_details" class="form-control" rows="3"></textarea>
+            <textarea id="additional_details" name="additional_details" class="form-control" rows="3">
+                {{ form.additional_details.value|default_if_none:'' }}
+            </textarea>
         </div>
 <!--         
         <div class="form-check mb-3 snooze-container">
