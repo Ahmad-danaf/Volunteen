@@ -71,7 +71,7 @@
         <a href="{% url 'mentorApp:assign_bonus' %}" class="btn mentor-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a>
     </div>
 
-    <div class="section" dir="rtl">
+    <!-- <div class="section" dir="rtl">
         <h3>סקירת משימות</h3>
         <p>סה"כ משימות: {{ total_tasks }}</p>
         <p class="tasks-open">משימות פתוחות: {{ open_tasks }}</p>
@@ -80,22 +80,22 @@
         <div class="chart-container">
             <canvas id="tasksChart"></canvas>
         </div>
-    </div>
+    </div> -->
 
     <div class="section">
         <h3 dir="rtl">ביצועי הילדים</h3>
         <table class="performance-table">
             <thead>
                 <tr>
-                    <th>יעילות (%)</th>
                     <th>ילד</th>
+                    <th>יעילות</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in children %}
                     <tr style="background-color: {{ item.performance_color }};">
-                        <td>{{ item.efficiency_rate }}</td>
                         <td>{{ item.child.user.username }}</td>
+                        <td>{{ item.efficiency_rate }}%</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -38,7 +38,8 @@ def mentor_home(request):
     for child in mentor.children.all():
         completed = TaskCompletion.objects.filter(child=child, task__in=tasks).count()
         assigned_tasks_by_mentor = tasks.filter(assigned_children=child).count()
-        efficiency = (completed / assigned_tasks_by_mentor) * 100 if assigned_tasks_by_mentor > 0 else 0
+        efficiency = round((completed / assigned_tasks_by_mentor) * 100, 2) if assigned_tasks_by_mentor > 0 else 0
+        efficiency = int(efficiency) if efficiency == int(efficiency) else efficiency
         performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
         children.append({
             'child': child,
@@ -148,22 +149,43 @@ def load_children(request):
     return JsonResponse(list(completed_children.values('id', 'user__username')), safe=False)
 
 @login_required
-def add_task(request):
+def add_task(request, task_id=None, duplicate=False):
     mentor = get_object_or_404(Mentor, user=request.user)
+    task = None
+
+    if task_id: # for duplicating
+        original_task = get_object_or_404(Task, id=task_id)
+        print("1")
+        print(original_task)
+        if duplicate:
+            # Create a new task with the same values, but DO NOT save yet
+            task = Task(
+                title=f"{original_task.title} (העתק)",
+                description=original_task.description,
+                points=original_task.points,
+                deadline=original_task.deadline,
+                additional_details=original_task.additional_details,
+                img=original_task.img,  # Copy the image if needed
+            )
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST)
+        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
         if taskForm.is_valid():
-            task = taskForm.save(commit=False)
-            task.mentor = mentor
-            task.save()
-            task.assigned_mentors.add(mentor)  # Add the mentor to the assigned_mentors field
-            taskForm.save_m2m()  # Save the many-to-many data for the form
+            new_task = taskForm.save(commit=False)
+            new_task.save()
+            new_task.assigned_mentors.add(mentor)  # Add current mentor to assigned_mentors
+            taskForm.save_m2m()
             return redirect('mentorApp:mentor_home')
     else:
-        taskForm = TaskForm(mentor=mentor)
+        taskForm = TaskForm(mentor=mentor, instance=task)
 
-    return render(request, 'mentor_add_task.html', {'form': taskForm, 'children': mentor.children.all()})
+    return render(request, 'mentor_add_task.html', {
+        'form': taskForm,
+        'children': mentor.children.all(),
+        'task': task,
+        'is_duplicate': duplicate,  # Pass duplication flag for UI updates
+        'available_teencoins': mentor.available_teencoins
+    })
 
 @login_required
 def edit_task(request, task_id):

@@ -4,7 +4,6 @@ from mentorApp import views
 app_name='mentorApp'
 
 urlpatterns = [
-    
     path('home/', views.mentor_home, name='mentor_home'),  # Mentor home page
     path('completed_tasks/', views.mentor_completed_tasks_view, name='mentor_completed_tasks'),
     path('active-list/', views.mentor_active_list, name='mentor_active_list'), 
@@ -12,6 +11,7 @@ urlpatterns = [
     path('assign-points/<int:task_id>/', views.assign_points, name='assign_points'),  # Assign points to children for a specific task
     path('task-list/', views.mentor_task_list, name='mentor_task_list'),
     path('add-task/', views.add_task, name='mentor_add_task'),
+    path('duplicate-task/<int:task_id>/', lambda request, task_id: views.add_task(request, task_id, duplicate=True), name='mentor_duplicate_task'),  # Duplicate a task
     path('assign-task/<int:task_id>/', views.assign_task, name='assign_task'),
     path('assign-points/success/<int:task_id>/', views.points_assigned_success, name='points_assigned_success'),
     path('assign-bonus/', views.assign_bonus, name='assign_bonus'),
