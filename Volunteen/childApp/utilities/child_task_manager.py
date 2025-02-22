@@ -1,145 +1,183 @@
 from datetime import timedelta
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from django.shortcuts import get_object_or_404
 
 class ChildTaskManager:
-    
-    @staticmethod
-    def get_all_tasks(child):
-        """Retrieve all tasks assigned to a child."""
-        return Task.objects.filter(assigned_children=child)
 
     @staticmethod
-    # TaskAssignment- not pending + Task -assigned_children feild
+    def get_all_tasks(child):
+        """
+        Retrieve all tasks assigned to a child.
+        This is based on TaskAssignment instead of Task to ensure correct filtering.
+        """
+        return TaskAssignment.objects.filter(child=child).values_list("task", flat=True)
+
+    @staticmethod
     def get_assigned_tasks(child):
-        """Retrieve all tasks assigned to a child."""
-        return Task.objects.filter(assigned_children=child)
+        """
+        Retrieve all tasks assigned to a child that have not been completed.
+        """
+        return TaskAssignment.objects.filter(child=child)
+    
+    @staticmethod
+    def get_all_child_active_tasks(child):
+        """
+        Retrieve all Task objects assigned to a child that have not been completed.
+        Includes the `is_new` field from `TaskAssignment` and `status` from `TaskCompletion`.
+        """
+        from django.db.models import F, Subquery, OuterRef  # Needed for annotation
+
+        # Retrieve only the task IDs that were completed
+        completed_task_ids = TaskCompletion.objects.filter(
+            child=child, status="approved"
+        ).values_list("task_id", flat=True)
+
+        # Subquery to fetch the latest status of the task for the child
+        latest_status_subquery = TaskCompletion.objects.filter(
+            task=OuterRef("pk"), child=child
+        ).values("status")[:1]
+
+        # Retrieve active tasks with `is_new` from TaskAssignment and `status` from TaskCompletion
+        return Task.objects.filter(
+            assignments__child=child, deadline__gte=timezone.now().date()
+        ).exclude(id__in=completed_task_ids).annotate(
+            is_new=F("assignments__is_new"),  # Fetching `is_new` field from TaskAssignment
+            status=Subquery(latest_status_subquery)  # Fetching latest `status` from TaskCompletion
+        ).distinct()
 
     @staticmethod
     def get_completed_tasks(child):
-        """Retrieve all tasks the child has completed."""
-        return TaskCompletion.objects.filter(child=child, status="approved").values_list("task", flat=True)
+        """
+        Retrieve all TaskCompletion records for tasks the child has completed and were approved.
+        """
+        return TaskCompletion.objects.filter(child=child, status="approved").select_related("task")
 
     @staticmethod
     def get_pending_tasks(child):
-        # TaskAssignment that are not completed in TaskCompletion
-        """Retrieve tasks that are assigned but not yet completed."""
-        completed_task_ids = ChildTaskManager.get_completed_tasks(child)
-        return Task.objects.filter(assigned_children=child).exclude(id__in=completed_task_ids)
+        """
+        Retrieve tasks that are assigned but not yet completed.
+        Now directly fetching from TaskCompletion where status is 'pending'.
+        """
+        return TaskCompletion.objects.filter(child=child, status="pending").values_list("task", flat=True)
 
     @staticmethod
     def get_overdue_tasks(child):
-        # TaskAssignment that are not completed in TaskCompletion and date is less than today
-        """Retrieve overdue tasks assigned to the child."""
+        """
+        Retrieve overdue tasks assigned to the child that were not completed.
+        """
         today = timezone.now().date()
-        return Task.objects.filter(assigned_children=child, deadline__lt=today, completed=False)
+        return TaskAssignment.objects.filter(child=child, task__deadline__lt=today).exclude(
+            task__in=ChildTaskManager.get_completed_tasks(child)
+        )
 
     @staticmethod
     def get_recently_completed_tasks(child, days=7):
-        """Retrieve tasks the child completed within the last `days` days."""
+        """
+        Retrieve tasks the child completed and were approved within the last `days` days.
+        """
         recent_date = timezone.now() - timedelta(days=days)
-        return TaskCompletion.objects.filter(child=child, status="approved", completion_date__gte=recent_date).values_list("task", flat=True)
-
-    @staticmethod
-    def approve_task_completion(child, task):
-        """Approve a child's task completion and grant points."""
-        task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
-        if task_completion.status != "approved":
-            task_completion.status = "approved"
-            task_completion.remaining_coins = task.points + task_completion.bonus_points
-            task_completion.save()
-            child.add_points(task.points)  # Reward points
-            return True
-        return False  # Task was already approved
-
-    @staticmethod
-    def reject_task_completion(child, task, feedback=None):
-        """Reject a child's task completion with optional feedback."""
-        task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
-        if task_completion and task_completion.status == "pending":
-            task_completion.status = "rejected"
-            task_completion.mentor_feedback = feedback
-            task_completion.save()
-            return True
-        return False  # Task was not pending
+        return TaskCompletion.objects.filter(child=child, status="approved", completion_date__gte=recent_date)
 
     @staticmethod
     def mark_task_as_new(child, task):
-        """Mark the task as new for a specific child."""
+        """
+        Mark a task as new for a specific child.
+        """
         task_assignment = TaskAssignment.objects.filter(task=task, child=child).first()
-        if task_assignment:
-            task_assignment.is_new = True
-            task_assignment.save()
-            return True
-        return False  # Task assignment not found
+
+        if not task_assignment:
+            raise ValidationError("Task assignment not found for this child.")
+
+        task_assignment.is_new = True
+        task_assignment.save()
+        return True
 
     @staticmethod
     def mark_task_as_viewed(child, task):
-        """Mark the task as viewed (not new) for a specific child."""
+        """
+        Mark a task as viewed (not new) for a specific child.
+        """
         task_assignment = TaskAssignment.objects.filter(task=task, child=child).first()
-        if task_assignment:
-            task_assignment.is_new = False
-            task_assignment.save()
-            return True
-        return False  # Task assignment not found
 
-    @staticmethod
-    def get_expiring_teencoins(child, days=7):
-        """Retrieve tasks with TeenCoins expiring soon (within `days` days)."""
-        expiry_date = timezone.now() + timedelta(days=days)
-        return TaskCompletion.objects.filter(child=child, status="approved", completion_date__lte=expiry_date).values_list("task", flat=True)
+        if not task_assignment:
+            raise ValidationError("Task assignment not found for this child.")
 
-    @staticmethod
-    def get_assigned_tasks_count(child):
-        """Retrieve the count of tasks assigned to the child."""
-        return TaskAssignment.objects.filter(child=child).count()
-    
-    @staticmethod
-    def get_completed_tasks_count(child):
-        """Retrieve the count of tasks completed by the child."""
-        return TaskCompletion.objects.filter(child=child, status="approved").count()
-    
-    @staticmethod
-    def get_total_tasks_count(child):
-        """Retrieve the total count of tasks assigned to the child."""
-        return Task.objects.filter(assigned_children=child).count()
-    
+        task_assignment.is_new = False
+        task_assignment.save()
+        return True
+
     @staticmethod
     def get_tasks_by_status(child, status_filter):
-        """Retrieve tasks filtered by status ('completed', 'pending', 'all')."""
+        """
+        Retrieve tasks filtered by status ('completed', 'pending', 'all').
+        """
         if status_filter == 'completed':
             return ChildTaskManager.get_completed_tasks(child)
         elif status_filter == 'pending':
             return ChildTaskManager.get_pending_tasks(child)
-        return ChildTaskManager.get_all_tasks(child)  # Default: all tasks
+        return ChildTaskManager.get_all_tasks(child)
 
     @staticmethod
     def get_tasks_by_date_filter(child, date_filter):
-        """Retrieve tasks filtered by date ('today', 'this_week', 'this_month', 'all')."""
-        if date_filter == 'all':
-            return ChildTaskManager.get_all_tasks(child)
-
+        """
+        Retrieve tasks filtered by date ('today', 'this_week', 'this_month', 'all').
+        """
         today = timezone.now().date()
         tasks = ChildTaskManager.get_all_tasks(child)
 
         if date_filter == 'today':
             return tasks.filter(completed_date__date=today)
         elif date_filter == 'this_week':
-            start_of_week = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
+            start_of_week = today - timedelta(days=today.weekday())
             return tasks.filter(completed_date__date__gte=start_of_week)
         elif date_filter == 'this_month':
             return tasks.filter(completed_date__month=today.month)
 
-        return tasks  # Default fallback
+        return tasks
 
     @staticmethod
     def get_filtered_tasks_by_status_date(child, status_filter, date_filter):
-        """Retrieve tasks based on both status and date filters."""
+        """
+        Retrieve tasks based on both status and date filters.
+        """
         tasks = ChildTaskManager.get_tasks_by_status(child, status_filter)
         return ChildTaskManager.get_tasks_by_date_filter(child, date_filter).filter(id__in=tasks)
 
+    @staticmethod
+    def get_assigned_tasks_count(child):
+        """
+        Retrieve the count of tasks assigned to the child.
+        """
+        return TaskAssignment.objects.filter(child=child).count()
 
+    @staticmethod
+    def get_completed_tasks_count(child):
+        """
+        Retrieve the count of tasks completed by the child.
+        """
+        return TaskCompletion.objects.filter(child=child, status="approved").count()
+
+    @staticmethod
+    def get_total_tasks_count(child):
+        """
+        Retrieve the total count of tasks assigned to the child.
+        """
+        return TaskAssignment.objects.filter(child=child).count()
+
+    @staticmethod
+    def get_new_assigned_tasks_count(child):
+        """
+        Retrieve the count of new tasks assigned to the child.
+        """
+        return TaskAssignment.objects.filter(child=child, is_new=True).count()
     
+    @staticmethod
+    def get_new_assigned_tasks(child):
+        """
+        Retrieve the list of new tasks assigned to the child.
+        """
+        return TaskAssignment.objects.filter(child=child, is_new=True)

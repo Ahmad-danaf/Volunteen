@@ -162,9 +162,30 @@
             cursor: not-allowed;
         }
 
+        .buy-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            width: 100%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .buy-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 480px) {
             .shop-header { height: 150px; }
             .reward-card { flex: 0 0 160px; }
+            .buy-btn {
+                padding: 0.4rem 0.8rem;
+            }
         }
         
     </style>
@@ -211,6 +232,9 @@
                     </div>
                 </div>
             </div>
+            <a href="{% url 'childApp:shop_rewards' shop.id %}">
+                <button class="buy-btn">בחר פרס מהחנות</button>
+            </a>
             <div class="rewards-container">
                 <div class="reward-scroll">
                     {% for reward in shop.rewards %}

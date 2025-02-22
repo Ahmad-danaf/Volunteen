@@ -13,5 +13,8 @@ urlpatterns = [
     path('complete-transaction/', views.shop_complete_transaction, name='shop_complete_transaction'),
     path('toggle-reward-visibility/<int:reward_id>/', views.toggle_reward_visibility, name='toggle_reward_visibility'),
     path('opening-hours/', views.opening_hours_view, name='opening_hours'),
+    path("pending-redemption-requests/", views.pending_redemption_requests, name="pending_redemption_requests"),
+    path('batch-process-requests/', views.batch_process_requests, name='batch_process_requests'),
+    path('process-request/', views.process_request, name='process_request'),
 
 ]

@@ -1,0 +1,358 @@
+{% extends "shop_base.html" %}
+{% load static %}
+
+{% block title %}בקשות מימוש בהמתנה (היום){% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <h1 class="dashboard-title">בקשות מימוש בהמתנה (היום)</h1>
+
+  <!-- Optional Search Bar -->
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="חיפוש לפי שם ילד או זמן בקשה...">
+  </div>
+
+  {% for group in aggregated_requests %}
+  <!-- Child Card -->
+  <div class="child-card">
+    <div class="child-card-header" onclick="toggleCard(this)">
+      <div class="child-info">
+        {% if group.child.avatar %}
+          <img src="{{ group.child.avatar.url }}" alt="{{ group.child.user.first_name }}" class="child-avatar">
+        {% else %}
+          <img src="{% static 'default-avatar.png' %}" alt="{{ group.child.user.first_name }}" class="child-avatar">
+        {% endif %}
+        <div class="child-details">
+          <h3 class="child-name">{{ group.child.user.first_name }} {{ group.child.user.last_name }}</h3>
+          <p class="child-summary">{{ group.total_requests }} בקשות | סך נקודות: {{ group.total_points }}</p>
+        </div>
+      </div>
+      <div class="toggle-indicator">
+        <span class="toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    
+    <div class="child-card-body">
+      <!-- Request List -->
+      <div class="request-list">
+        {% for req in group.requests %}
+        <div class="request-item" id="req-{{ req.id }}">
+          <div class="request-thumbnail">
+            <img src="{{ req.reward.img.url }}" alt="{{ req.reward.title }}" class="reward-thumb">
+          </div>
+          <div class="request-details">
+            <h4 class="reward-title">{{ req.reward.title }}</h4>
+            <p class="request-meta">
+              כמות: {{ req.quantity }}<br>
+              נקודות בשימוש: {{ req.points_used }}<br>
+              שעה: {{ req.date_requested|date:"H:i" }}
+            </p>
+          </div>
+          <div class="request-actions">
+            <button class="btn approve-btn" onclick="processRequest({{ req.id }}, 'approve')">אישור</button>
+            <button class="btn reject-btn" onclick="processRequest({{ req.id }}, 'reject')">דחייה</button>
+            <span id="status-{{ req.id }}" class="status-badge pending">בהמתנה</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Batch Actions -->
+      <div class="batch-actions">
+        <button class="btn batch-approve-btn" onclick="batchProcess({{ group.child.id }}, 'approve')">אשר הכל</button>
+        <button class="btn batch-reject-btn" onclick="batchProcess({{ group.child.id }}, 'reject')">דחה הכל</button>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <p>אין בקשות בהמתנה להיום.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Toggle collapsible child card
+  function toggleCard(headerElem) {
+    const cardBody = headerElem.nextElementSibling;
+    const toggleIcon = headerElem.querySelector(".toggle-icon");
+    if (cardBody.style.display === "none" || cardBody.style.display === "") {
+      cardBody.style.display = "block";
+      toggleIcon.innerHTML = "&#9650;";
+    } else {
+      cardBody.style.display = "none";
+      toggleIcon.innerHTML = "&#9660;";
+    }
+  }
+
+  // Individual request approval/rejection
+  function processRequest(reqId, action) {
+    fetch("{% url 'shopApp:process_request' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ request_id: reqId, action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        const statusBadge = document.getElementById("status-" + reqId);
+        statusBadge.textContent = (action === "approve") ? "אושר" : "נדחה";
+        statusBadge.className = "status-badge " + ((action === "approve") ? "approved" : "rejected");
+      } else {
+        alert("שגיאה: " + data.message);
+      }
+    })
+    .catch(error => console.error("Error:", error));
+  }
+
+  // Batch processing for all requests of a child
+  function batchProcess(childId, action) {
+    fetch("{% url 'shopApp:batch_process_requests' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ child_id: childId, action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        location.reload(); // Or dynamically update the UI
+      } else {
+        alert("שגיאה: " + data.message);
+      }
+    })
+    .catch(error => console.error("Error:", error));
+  }
+
+  // Basic search by child name or time
+  document.getElementById("search-input").addEventListener("input", function() {
+    const filter = this.value.toLowerCase();
+    const cards = document.querySelectorAll(".child-card");
+    cards.forEach(card => {
+      const name = card.querySelector(".child-name").textContent.toLowerCase();
+      const times = Array.from(card.querySelectorAll(".request-meta")).map(el => el.textContent.toLowerCase());
+      const timeMatch = times.some(t => t.includes(filter));
+      card.style.display = (name.includes(filter) || timeMatch) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Global Container & RTL Setup */
+body {
+  direction: rtl;
+  text-align: right;
+}
+.dashboard-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 15px;
+  font-family: "Alef", sans-serif; /* Example Hebrew-friendly font */
+  line-height: 1.5;
+}
+
+/* Title */
+.dashboard-title {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Search Bar */
+.search-bar {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.search-bar input {
+  width: 90%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Child Card */
+.child-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+  background: #fff;
+}
+.child-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.child-card-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.child-info {
+  display: flex;
+  align-items: center;
+}
+.child-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: 8px; /* Because RTL, the avatar is on the right side */
+}
+.child-details {
+  display: flex;
+  flex-direction: column;
+  margin-right: 8px; /* Spacing between text and avatar */
+}
+.child-name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+.child-summary {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+.toggle-indicator {
+  font-size: 1rem;
+  color: #666;
+}
+.child-card-body {
+  display: none;
+  padding: 10px;
+}
+
+/* Request List & Items */
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.request-item {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 10px;
+  background: #fff;
+  position: relative;
+}
+.request-thumbnail {
+  flex-shrink: 0;
+  margin-left: 8px; /* Since avatar is on the right in RTL, we add margin-left for spacing */
+}
+.reward-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.request-details {
+  margin-right: 10px;
+  flex-grow: 1;
+}
+.reward-title {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+.request-meta {
+  margin: 5px 0 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+.request-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align to right in RTL */
+  gap: 5px;
+  margin-right: auto;
+}
+.status-badge {
+  padding: 3px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background-color: #ffc107;
+  color: #fff;
+  margin-top: 5px;
+  text-align: center;
+}
+.status-badge.approved {
+  background-color: #28a745;
+}
+.status-badge.rejected {
+  background-color: #dc3545;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  transition: background-color 0.3s;
+  color: #fff;
+}
+.approve-btn {
+  background-color: #28a745;
+}
+.approve-btn:hover {
+  background-color: #218838;
+}
+.reject-btn {
+  background-color: #dc3545;
+}
+.reject-btn:hover {
+  background-color: #c82333;
+}
+.batch-actions {
+  text-align: center;
+  margin-top: 10px;
+}
+.batch-actions .btn {
+  margin: 0 5px;
+}
+.batch-approve-btn {
+  background-color: #007bff;
+}
+.batch-approve-btn:hover {
+  background-color: #0056b3;
+}
+.batch-reject-btn {
+  background-color: #6c757d;
+}
+.batch-reject-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .request-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .request-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: 0;
+    margin-top: 5px;
+    gap: 10px;
+  }
+}
+</style>
+{% endblock %}

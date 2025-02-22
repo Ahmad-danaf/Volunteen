@@ -4,9 +4,11 @@ from django.db.models import Sum, F, Prefetch
 from django.templatetags.static import static
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
 from django.db.models import (
-    Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField
+    Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField, OuterRef, Subquery
 )
 from childApp.utilities.child_level_management import calculate_total_points
 from django.utils.timezone import now
@@ -16,28 +18,35 @@ import json
 from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
-from shopApp.models import Redemption, Shop, Reward, Category
+from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
 from teenApp.entities.TaskCompletion import TaskCompletion
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
+from django.utils.timezone import localdate
+from Volunteen.constants import MAX_TEENCOINS_PER_DAY_SHOPPING,MAX_REWARDS_PER_DAY
 
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import AVAILABLE_CITIES
-from Volunteen.constants import LEVELS
+from Volunteen.constants import LEVELS,POINTS_PER_LEVEL
 from Volunteen.constants import AVAILABLE_CITIES, SHOP_CATEGORIES
 from childApp.utilities.TeenCoinManager import TeenCoinManager
+from shopApp.utils.shop_manager import ShopManager
+from childApp.utilities.child_task_manager import ChildTaskManager
+from childApp.utilities.ChildRedemptionManager import ChildRedemptionManager
+
 @login_required
 def child_home(request):
-    child = Child.objects.get(user=request.user)
+    child = Child.objects.select_related("user").get(user=request.user)
 
     current_day = datetime.now().weekday()
     current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
@@ -51,15 +60,19 @@ def child_home(request):
         6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
     todays_greeting = greetings[current_day]
-
-    new_tasks = TaskAssignment.objects.filter(child=child, is_new=True)
-    new_tasks_count = new_tasks.count()
+    new_tasks = ChildTaskManager.get_new_assigned_tasks(child)
+    new_tasks_count = ChildTaskManager.get_new_assigned_tasks_count(child)
 
     if request.method == 'POST' and 'close_notification' in request.POST:
-        new_tasks.update(is_new=False)
+        for task in new_tasks:
+            ChildTaskManager.mark_task_as_viewed(child, task)
 
-    points_needed_for_next_level = 100  # Adjust according to your level-up system
-    progress_to_next_level = (child.points % points_needed_for_next_level) / points_needed_for_next_level * 100
+    def calculate_progress(child):
+        points_needed_for_next_level = POINTS_PER_LEVEL
+        return (child.points % points_needed_for_next_level) / points_needed_for_next_level * POINTS_PER_LEVEL
+    
+    progress_to_next_level = calculate_progress(child)
+
     active_points = TeenCoinManager.get_total_active_teencoins(child)
     return render(request, 'child_home.html', {
         'child': child,
@@ -74,24 +87,26 @@ def child_home(request):
 
 @login_required
 def update_streak(request):
-    if request.method == "POST":
-        child = request.user.child  
-        today = date.today()
+    """Update the child's daily streak progress if they haven't already checked in today."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
 
-        if child.last_streak_date == today:
-            return JsonResponse({"message": "כבר לחצת היום!", "streak": child.streak_count, "success": False})
+    child = Child.objects.select_related("user").get(user=request.user)
+    today = date.today()
 
-        if child.last_streak_date == today - timedelta(days=1):  
-            child.streak_count += 1  
-        else:
-            child.streak_count = 1  
+    if child.last_streak_date == today:
+        return JsonResponse({"message": "כבר לחצת היום!", "streak": child.streak_count, "success": False})
 
-        child.last_streak_date = today
-        child.save()
+    # Update streak count based on the last streak date
+    if child.last_streak_date == today - timedelta(days=1):
+        child.streak_count += 1  # Continue streak
+    else:
+        child.streak_count = 1  # Reset streak
 
-        return JsonResponse({"message": "🔥 כל הכבוד! שמרת על הרצף!", "streak": child.streak_count, "success": True})
+    child.last_streak_date = today
+    child.save()
 
-    return JsonResponse({"error": "Invalid request"}, status=400)
+    return JsonResponse({"message": "🔥 כל הכבוד! שמרת על הרצף!", "streak": child.streak_count, "success": True})
 
 @login_required
 def top_streaks(request):
@@ -102,7 +117,7 @@ def top_streaks(request):
 def child_redemption_history(request):
     child = Child.objects.get(user=request.user)
     form = DateRangeForm(request.GET or None)
-    redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
+    redemptions = ChildRedemptionManager.get_all_redemptions(child)
     default_date = date(2201, 1, 1)  
 
     if form.is_valid():
@@ -113,7 +128,7 @@ def child_redemption_history(request):
         end_date = None
 
     if start_date and end_date:
-        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
+        redemptions = ChildRedemptionManager.get_redemptions_in_date_range(child, start_date, end_date)
 
     return render(request, 'child_redemption_history.html', {'redemptions': redemptions, 'form': form})
 
@@ -139,128 +154,115 @@ def rate_redemption_view(request, redemption_id):
         'redemption': redemption,
         'stars_range':range(1, 6)
     })
-
+    
 @login_required
 def child_completed_tasks(request):
-    child = Child.objects.get(user=request.user)
+    """Retrieve and display all completed tasks for a child with optional date filtering."""
+    
+    child = Child.objects.select_related("user").get(user=request.user)
     form = DateRangeForm(request.GET or None)
-    tasks_with_bonus = []
-    default_date = date(2201, 1, 1)
 
+    # Retrieve completed tasks
+    task_completions = ChildTaskManager.get_completed_tasks(child).select_related("task").prefetch_related("task__assigned_mentors")
+
+    # Apply date filter if form is valid
     if form.is_valid():
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
-
-    # Retrieve TaskCompletion records associated with this child
-    task_completions = TaskCompletion.objects.filter(child=child)
-
-    if start_date and end_date:
         task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
 
-    for task_completion in task_completions:
-        completion_date = task_completion.completion_date if task_completion.completion_date else default_date
-        task = task_completion.task
-        tasks_with_bonus.append({
-            'title': task.title,
+    tasks_with_bonus = [
+        {
+            'title': task_completion.task.title,
             'points': task_completion.task.points,
-            'completion_date': completion_date,
-            'mentor': ", ".join(mentor.user.username for mentor in task.assigned_mentors.all())
-        })
-       
-
+            'completion_date': task_completion.completion_date,
+            'mentor': ", ".join(mentor.user.username for mentor in task_completion.task.assigned_mentors.all())
+        }
+        for task_completion in task_completions
+    ]
+    
     return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form})
 
 @login_required
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-
-        print(f"Child {child.user.username} (ID: {child.id}) is assigned to tasks.")
-
-        assignments = TaskAssignment.objects.filter(
-            child=child, 
-            task__completed=False, 
-            task__deadline__gte=timezone.now().date()
-        ).select_related('task')
-
-        print(f"Found {assignments.count()} active tasks for child {child.id}")
-
-        if not assignments.exists():
-            print("No active tasks found!")
+        assignments = ChildTaskManager.get_all_child_active_tasks(child)
+        
 
         return render(request, 'child_active_list.html', {'assignments': assignments})
     
     except Child.DoesNotExist:
-        print("Child does not exist for the current user.")
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
+
 
 @login_required
 def child_points_history(request):
-    child = Child.objects.get(user=request.user)
+    """Retrieve and display the child's point history including completed tasks and redemptions."""
+    
+    child = Child.objects.select_related("user").get(user=request.user)
     form = DateRangeForm(request.GET or None)
     points_history = []
-    current_points = 0
-    default_date = date(2201, 1, 1)
+    current_points = 0  # Reset to 0 to calculate balance dynamically
+
+    # Retrieve completed tasks
+    task_completions = ChildTaskManager.get_completed_tasks(child)
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
-
-    # Retrieve TaskCompletion records for this child
-    task_completions = TaskCompletion.objects.filter(child=child)
-    if start_date and end_date:
         task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
 
     for task_completion in task_completions:
-        completed_date = task_completion.completion_date.date() if task_completion.completion_date else default_date
+        completed_date = task_completion.completion_date if task_completion.completion_date else None
         task = task_completion.task
-        current_points += task_completion.task.points
-        string = f" ביצוע משימה : {task.title}"
+        current_points += task.points  # Update balance dynamically
+
         points_history.append({
             'description': f"Completed Task: {task.title}",
             'points': f"+{task.points}",
             'date': completed_date,
             'balance': current_points,
-            'string': string
+            'string': f"ביצוע משימה : {task.title}"
+        
         })
+
         if task_completion.bonus_points > 0:
             current_points += task_completion.bonus_points
-            string=f"{task.title } :בונוס"
             points_history.append({
                 'description': f"Bonus Points for Task: {task.title}",
                 'points': f"+{task_completion.bonus_points}",
                 'date': completed_date,
                 'balance': current_points,
-                'string':string
+                'string': f"{task.title } :בונוס"
             })
 
-    # Retrieve redemptions for this child
-    redemptions = Redemption.objects.filter(child=child)
-    if start_date and end_date:
+    # Retrieve redemptions
+    redemptions = ChildRedemptionManager.get_all_redemptions(child).select_related("shop")
+
+    if form.is_valid():
         redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
 
     for redemption in redemptions:
-        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else default_date
-        current_points -= redemption.points_used
-        string = f" רכישה :{redemption.shop.name}"
+        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else None
+        current_points -= redemption.points_used  # Deduct points dynamically
+        
         points_history.append({
             'description': f"Redeemed: {redemption.shop.name}",
             'points': f"-{redemption.points_used}",
-            'date': date_redeemed.date(),
+            'date': date_redeemed,
             'balance': current_points,
-            'string': string
+            'string': f"רכישה : {redemption.shop.name}"
         })
-
     # Sort the points history by date
-    points_history.sort(key=lambda x: x['date'])
-    
-    return render(request, 'child_points_history.html', {'points_history': points_history, 'form': form})
+    points_history.sort(key=lambda x: x['date'], reverse=True)
+
+    return render(request, 'child_points_history.html', {
+        'points_history': points_history,
+        'form': form,
+        'current_balance': child.points  # Showing child's actual balance separately
+    })
+
 @login_required
 def rewards_view(request):
     # Prefetch related rewards for efficiency
@@ -292,6 +294,7 @@ def rewards_view(request):
         ]
         
         shops_with_images.append({
+            'id': shop.id,
             'name': shop.name,
             'img': shop_image,
             'city': shop.city,  
@@ -313,8 +316,98 @@ def rewards_view(request):
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list, 
     }
-    return render(request, 'reward.html', context)
+    return render(request, 'shop_list.html', context)
 
+@login_required
+def shop_rewards_view(request, shop_id):
+    """
+    Display available rewards for a given shop and allow teens to submit redemption requests.
+    """
+    child = get_object_or_404(Child, user=request.user)
+    shop = get_object_or_404(Shop, id=shop_id)
+
+    # Retrieve all visible rewards for this shop using the utility method
+    rewards = ShopManager.get_all_visible_rewards(shop_id)
+
+    # Calculate daily redemption statistics
+    today = localdate()
+    redemptions_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
+    total_rewards_today = redemptions_today.count()
+    points_spent_today = redemptions_today.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+
+    # Calculate remaining daily limits
+    remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today)
+    remaining_points = max(0, MAX_TEENCOINS_PER_DAY_SHOPPING - points_spent_today)
+
+    # Get the child's total available TeenCoins (active, unexpired)
+    available_teencoins = TeenCoinManager.get_total_active_teencoins(child)
+
+    # Mark each reward as affordable (or not) based on remaining points and available coins.
+    for reward in rewards:
+        reward.affordable = (reward.points_required <= remaining_points and 
+                             reward.points_required <= available_teencoins)
+
+    context = {
+        "shop": shop,
+        "rewards": rewards,
+        "remaining_rewards": remaining_rewards,
+        "remaining_points": remaining_points,
+        "available_teencoins": available_teencoins,
+    }
+    return render(request, 'shop_rewards.html', context)
+
+@csrf_protect
+def submit_redemption_request(request):
+    """
+    Handles the child's redemption request for a reward.
+    - Uses `can_redeem_rewards` to validate limits.
+    - Creates a `RedemptionRequest` if valid.
+    """
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Invalid request method."}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        child = get_object_or_404(Child, user=request.user)
+        shop = get_object_or_404(Shop, id=data.get("shop_id"))
+        selected_rewards = data.get("selected_rewards", [])
+
+        if not selected_rewards:
+            return JsonResponse({"status": "error", "message": "לא נבחרו פרסים."})
+
+        # Check if the child can redeem these rewards
+        validation_result = ShopManager.can_redeem_rewards(child, shop, selected_rewards)
+        if validation_result["status"] == "error":
+            return JsonResponse(validation_result)
+
+        # Create pending redemption request
+        for reward_data in selected_rewards:
+            reward = get_object_or_404(Reward, id=reward_data['reward_id'])
+            RedemptionRequest.objects.create(
+                child=child,
+                shop=reward.shop,
+                reward=reward,
+                quantity=reward_data['quantity'],
+                points_used=reward_data['quantity'] * reward.points_required,
+                status="pending"
+            )
+
+        return JsonResponse({"status": "success", "message": "בקשת המימוש נשלחה בהצלחה!"})
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": f"שגיאה: {str(e)}"}, status=500)
+
+
+@require_POST
+def cancel_request(request):
+    """
+    Cancel the current redemption request.
+    Clears any pending redemption data from the session and returns a success response.
+    """
+    # Optional: Clear any session data related to the redemption process
+    if 'selected_rewards' in request.session:
+        del request.session['selected_rewards']
+    return JsonResponse({"status": "ok"})
 
 
 @login_required
@@ -375,16 +468,14 @@ def save_phone_number(request):
 
 @login_required
 def task_check_in_out(request):
+    """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
 
-    tasks = Task.objects.filter(
-        assigned_children=child,
-        completed=False,
-        deadline__gte=timezone.now().date()
-    )
+    # Retrieve assigned tasks that are not completed
+    assigned_tasks = ChildTaskManager.get_all_child_active_tasks(child)
 
     filtered_tasks = []
-    for task in tasks:
+    for task in assigned_tasks:
         task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
         if not task_completion or not task_completion.checkout_img:
             filtered_tasks.append(task)
@@ -393,84 +484,90 @@ def task_check_in_out(request):
 
 @login_required
 def check_in(request, task_id):
-    task = get_object_or_404(Task, id=task_id, assigned_children=request.user.child, completed=False)
+    """Allow a child to check in to a task."""
     child = request.user.child
-
+    task = get_object_or_404(Task, id=task_id)
     replace_image = request.GET.get('replace_image') == 'true'
 
+    # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
         return render(request, 'check_in_exists.html', {'task': task, 'child': child})
 
     return render(request, 'check_in.html', {'task': task, 'child': child})
+
 @login_required
 def check_out(request, task_id):
-    task = get_object_or_404(Task, id=task_id, assigned_children=request.user.child, completed=False)
+    """Allow a child to check out from a task only if they checked in first."""
     child = request.user.child
+    task = get_object_or_404(Task, id=task_id)
 
+    # Ensure the task was checked in before allowing check-out
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
-    if not task_completion or not task_completion.checkin_img:  
+    if not task_completion or not task_completion.checkin_img:
         return render(request, 'check_in_warning.html')
 
     return render(request, 'check_out.html', {'task': task, 'child': child})
+
 @login_required
 def no_check_in(request):
     return render(request, 'check_in_warning.html')
 
-
 @csrf_exempt
 @login_required
 def submit_check_in(request):
-    if request.method == 'POST':
-        task_id = request.POST.get('task_id')
-        image = request.FILES.get('image')
+    """Submit a check-in image for a task."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
 
-        if not task_id or not image:
-            return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+    task_id = request.POST.get('task_id')
+    image = request.FILES.get('image')
 
+    if not task_id or not image:
+        return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
-        child = request.user.child
-        task = get_object_or_404(Task, id=task_id, assigned_children=child, completed=False)
-        task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+    child = request.user.child
+    task = get_object_or_404(Task, id=task_id)
 
-        image_path = default_storage.save(f'checkin_images/{child.id}_{task.id}_checkin.jpg', image)
-        task_completion.checkin_img = image_path
-        task_completion.save()
+    task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
 
-        return JsonResponse({'success': True, 'message': 'צ\'ק-אין נשמר בהצלחה.'})
+    # Save image
+    task_completion.checkin_img = default_storage.save(f'checkin_images/{child.id}_{task.id}_checkin.jpg', image)
+    task_completion.save()
 
-    return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+    return JsonResponse({'success': True, 'message': 'צ\'ק-אין נשמר בהצלחה.'})
 
 @csrf_exempt
 @login_required
 def submit_check_out(request):
-    if request.method == 'POST':
-        task_id = request.POST.get('task_id')
-        image = request.FILES.get('image')
+    """Submit a check-out image for a task, ensuring check-in was completed first."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
 
-        if not task_id or not image:
-            return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+    task_id = request.POST.get('task_id')
+    image = request.FILES.get('image')
 
-        child = request.user.child
-        task = get_object_or_404(Task, id=task_id, assigned_children=child, completed=False)
+    if not task_id or not image:
+        return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
-        task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+    child = request.user.child
+    task = get_object_or_404(Task, id=task_id)
 
-        if not task_completion.checkin_img:
-            return JsonResponse({'success': False, 'error': 'צ\'ק-אין לא בוצע למשימה זו.'})
+    task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
 
-        image_path = default_storage.save(f'checkout_images/{child.id}_{task.id}_checkout.jpg', image)
-        task_completion.checkout_img = image_path
+    if not task_completion.checkin_img:
+        return redirect('childApp:no_check_in')
 
-        task_completion.status = 'pending'
-        task_completion.save()
+    # Save image
+    task_completion.checkout_img = default_storage.save(f'checkout_images/{child.id}_{task.id}_checkout.jpg', image)
+    task_completion.status = 'pending'
+    task_completion.save()
 
-        return JsonResponse({'success': True, 'message': 'צ\'ק-אאוט נשמר. ההמתנה לאישור המנטור.'})
-
-    return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+    return JsonResponse({'success': True, 'message': 'צ\'ק-אאוט נשמר. ההמתנה לאישור המנטור.'})
 
 @login_required
 def mark_tasks_as_viewed(request):
+    """Mark all new tasks as viewed for a child."""
     if request.method == "POST":
         child = request.user.child
         TaskAssignment.objects.filter(child=child, is_new=True).update(is_new=False)
