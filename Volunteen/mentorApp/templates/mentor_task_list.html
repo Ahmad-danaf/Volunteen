@@ -83,6 +83,7 @@
                         <a href="{% url 'mentorApp:assign_task' task.id %}" class="btn btn-primary mt-2">הקצה משימה</a>
                         <a href="{% url 'mentorApp:assign_points' task.id %}" class="btn btn-primary mt-2">מתן TeenCoins</a>
                         <a href="{% url 'mentorApp:edit_task' task.id %}" class="btn btn-warning mt-2">ערוך משימה</a>
+                        <a href="{% url 'mentorApp:mentor_duplicate_task' task.id %}" class="btn btn-warning mt-2">שכפל משימה</a>
                     </td>
                 </tr>
                 {% endfor %}

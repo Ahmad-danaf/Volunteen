@@ -87,9 +87,9 @@ p {
 }
 
 .performance-table th, .performance-table td {
+    text-align: right;
     border: 1px solid #ddd;
     padding: 8px;
-    text-align: left;
 }
 
 .performance-table th {
