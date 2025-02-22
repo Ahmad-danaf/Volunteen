@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from shopApp.models import Redemption, Reward, Shop,RedemptionRequest
 from childApp.models import Child
 from teenApp.utils import NotificationManager
-from childApp.utilities.TeenCoinManager import TeenCoinManager  
+from childApp.utils.TeenCoinManager import TeenCoinManager  
 from Volunteen.constants import MAX_TEENCOINS_PER_DAY_SHOPPING,MAX_REWARDS_PER_DAY
 class ShopManager:
     

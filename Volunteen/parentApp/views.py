@@ -5,9 +5,9 @@ from childApp.models import Child
 from teenApp.entities.task import Task
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from childApp.utilities.child_task_manager import ChildTaskManager
-from childApp.utilities.ChildRedemptionManager import ChildRedemptionManager
-from childApp.utilities.TeenCoinManager import TeenCoinManager
+from childApp.utils.child_task_manager import ChildTaskManager
+from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
+from childApp.utils.TeenCoinManager import TeenCoinManager
 from django.db.models import Prefetch, Sum
 from django.utils.timezone import now
 from django.templatetags.static import static

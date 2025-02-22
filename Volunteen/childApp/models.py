@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from Volunteen.constants import AVAILABLE_CITIES
-from childApp.utilities.child_level_management import calculate_total_points
+from childApp.utils.child_level_management import calculate_total_points
 
 class Medal(models.Model):
     name = models.CharField(max_length=255, verbose_name='Medal Name')

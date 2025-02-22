@@ -10,7 +10,7 @@ from django.templatetags.static import static
 from django.db.models import (
     Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField, OuterRef, Subquery
 )
-from childApp.utilities.child_level_management import calculate_total_points
+from childApp.utils.child_level_management import calculate_total_points
 from django.utils.timezone import now
 from django.utils import timezone
 from teenApp.interface_adapters.forms import DateRangeForm
@@ -39,10 +39,10 @@ from django.http import HttpResponseForbidden
 from Volunteen.constants import AVAILABLE_CITIES
 from Volunteen.constants import LEVELS,POINTS_PER_LEVEL
 from Volunteen.constants import AVAILABLE_CITIES, SHOP_CATEGORIES
-from childApp.utilities.TeenCoinManager import TeenCoinManager
+from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
-from childApp.utilities.child_task_manager import ChildTaskManager
-from childApp.utilities.ChildRedemptionManager import ChildRedemptionManager
+from childApp.utils.child_task_manager import ChildTaskManager
+from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 
 @login_required
 def child_home(request):

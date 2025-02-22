@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # קובץ JSON של המדליות
-        file_path = os.path.join(os.path.dirname(__file__), '../../utilities/data/medals.json')
+        file_path = os.path.join(os.path.dirname(__file__), '../../utils/data/medals.json')
 
         try:
             # פתיחת הקובץ וטעינת הנתונים
