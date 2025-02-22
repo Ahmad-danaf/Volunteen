@@ -32,6 +32,11 @@ class TaskCompletion(models.Model):
         elif self.status == "rejected":
             self.remaining_coins = 0  # Reset if rejected
         super().save(*args, **kwargs)
+        
+    def init_remaining_coins(self):
+        """ Initialize remaining_coins to the sum of points and bonus points. """
+        self.remaining_coins = self.bonus_points + self.task.points
+        self.save()
 
     def is_expired(self):
         """ Check if the TeenCoins from this task have expired (3 months limit). """

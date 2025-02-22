@@ -126,6 +126,29 @@ class Reward(models.Model):
         return self.title
 
 
+class RedemptionRequest(models.Model):
+    """
+    Stores pending reward requests until approved or rejected by the shop.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Child')
+    shop = models.ForeignKey('shopApp.Shop', on_delete=models.CASCADE, verbose_name='Shop')
+    reward = models.ForeignKey('shopApp.Reward', on_delete=models.CASCADE, verbose_name='Reward')
+    quantity = models.PositiveIntegerField(default=1, verbose_name='Quantity')
+    points_used = models.IntegerField(verbose_name='Total Points Used')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name='Request Status')
+    date_requested = models.DateTimeField(auto_now_add=True, verbose_name='Date Requested')
+
+    def __str__(self):
+        return f'{self.child} requested {self.quantity} x {self.reward.title} at {self.shop}'
+
+    
+        
 class Redemption(models.Model):
     child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE, verbose_name='Child')
     points_used = models.IntegerField(verbose_name='Points Used')

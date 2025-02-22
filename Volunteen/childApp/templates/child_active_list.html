@@ -7,24 +7,24 @@
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
         <tr style="background-color: #007bff; color: white;">
-            <th style="padding: 8px; text-align: left;">Task Title</th>
-            <th style="padding: 8px; text-align: left;">Points</th>
-            <th style="padding: 8px; text-align: left;">Deadline</th>
-            <th style="padding: 8px; text-align: left;">Status</th>
+            <th style="padding: 8px; text-align: left;">שם משימה</th>
+            <th style="padding: 8px; text-align: left;">טינקאוינס</th>
+            <th style="padding: 8px; text-align: left;">דדליין</th>
+            <th style="padding: 8px; text-align: left;">סטטוס</th>
         </tr>
     </thead>
     <tbody>
         {% for assignment in assignments %}
         <tr style="border-bottom: 1px solid #ddd;">
             <td style="padding: 8px;">
-                {{ assignment.task.title }}
+                {{ assignment.title }}
                 {% if assignment.is_new %}
                 <span style="color: red; font-size: 0.8em; font-weight: bold;">NEW</span>
                 {% endif %}
             </td>
-            <td style="padding: 8px;">{{ assignment.task.points }}</td>
-            <td style="padding: 8px;">{{ assignment.task.deadline|date:"d/m/Y" }}</td>
-            <td style="padding: 8px;">{{ assignment.task.completed|yesno:"Completed,Not Completed" }}</td>
+            <td style="padding: 8px;">{{ assignment.points }}</td>
+            <td style="padding: 8px;">{{ assignment.deadline|date:"d/m/Y" }}</td>
+            <td style="padding: 8px;">{{ assignment.status }}</td>
         </tr>
         {% empty %}
         <tr>

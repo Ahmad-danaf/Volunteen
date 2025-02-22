@@ -16,11 +16,15 @@ urlpatterns = [
 
     path('tasks/check-in-out/', child_views.task_check_in_out, name='task_check_in_out'),
     path('tasks/<int:task_id>/check-in/', child_views.check_in, name='check_in'),
-    path('tasks/<int:task_id>/check-out/', child_views.check_out, name='check_out'),      # דף צ'ק-אאוט
+    path('tasks/<int:task_id>/check-out/', child_views.check_out, name='check_out'),      
     path('tasks/submit-check-in/', child_views.submit_check_in, name='submit_check_in'),
     path('tasks/submit-check-out/', child_views.submit_check_out, name='submit_check_out'),
     path('tasks/no-check-in/', child_views.no_check_in, name='no_check_in'),
     path('mark-tasks-viewed/', child_views.mark_tasks_as_viewed, name='mark_tasks_as_viewed'),
     path('update-streak/', child_views.update_streak, name='update_streak'),
     path('top-streaks/', child_views.top_streaks, name='top_streaks'),
+    
+    path('shop/<int:shop_id>/rewards/', child_views.shop_rewards_view, name='shop_rewards'),
+    path('submit_redemption_request/', child_views.submit_redemption_request, name='submit_redemption_request'),
+    path('cancel_request/', child_views.cancel_request, name='cancel_request'),
 ]
