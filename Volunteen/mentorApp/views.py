@@ -6,8 +6,8 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.db.models import Prefetch
 from django.http import JsonResponse
-from teenApp.entities.task import Task
 from mentorApp.models import Mentor
+from teenApp.entities.task import Task
 from teenApp.use_cases.assign_bonus_points import AssignBonusPoints
 from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
@@ -64,7 +64,10 @@ def mentor_children_details(request):
 
     # Prefetch task completions for each child to avoid N+1 queries
     children = mentor.children.prefetch_related(
-        Prefetch('taskcompletion_set', queryset=TaskCompletion.objects.select_related('task').order_by('-completion_date'))
+        Prefetch(
+        'taskcompletion_set', 
+        queryset=TaskCompletion.objects.filter(status='approved').select_related('task').order_by('-completion_date')
+    )
     ).order_by('-points')
 
     # Calculate total points from tasks and bonuses for each child
@@ -169,15 +172,30 @@ def add_task(request, task_id=None, duplicate=False):
             )
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
-        if taskForm.is_valid():
-            new_task = taskForm.save(commit=False)
-            new_task.save()
-            new_task.assigned_mentors.add(mentor)  # Add current mentor to assigned_mentors
-            taskForm.save_m2m()
-            return redirect('mentorApp:mentor_home')
+         taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
+         if taskForm.is_valid():
+             new_task = taskForm.save(commit=False)
+             assigned_children = taskForm.cleaned_data['assigned_children']
+             total_cost = new_task.points * assigned_children.count()
+ 
+             # Ensure mentor has enough teencoins
+             if mentor.available_teencoins < total_cost:
+                 messages.error(request, "Not enough Teencoins to assign this task.")
+             else:
+                 if 'checkin_checkout_type' in taskForm.cleaned_data:
+                    new_task.checkin_checkout_type = bool(int(taskForm.cleaned_data['checkin_checkout_type']))
+                 new_task.save()
+                 new_task.assigned_mentors.add(mentor)
+                 taskForm.save_m2m()
+                 
+                 # Deduct Teencoins
+                 mentor.available_teencoins -= total_cost
+                 mentor.save()
+ 
+                 messages.success(request, f"Task added successfully! Remaining Teencoins: {mentor.available_teencoins}")
+                 return redirect('mentorApp:mentor_home')
     else:
-        taskForm = TaskForm(mentor=mentor, instance=task)
+         taskForm = TaskForm(mentor=mentor, instance=task)
 
     return render(request, 'mentor_add_task.html', {
         'form': taskForm,
@@ -189,16 +207,38 @@ def add_task(request, task_id=None, duplicate=False):
 
 @login_required
 def edit_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
-    mentor = get_object_or_404(Mentor, user=request.user)
-    if request.method == 'POST':
-        form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
-        if form.is_valid():
-            form.save()
-            return redirect('mentorApp:mentor_task_list') 
-    else:
-        form = TaskForm(instance=task, mentor=mentor)
-    return render(request, 'edit_task.html', {'form': form, 'task': task})
+     task = get_object_or_404(Task, id=task_id)
+     mentor = get_object_or_404(Mentor, user=request.user)
+     
+     if request.method == 'POST':
+         form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
+         if form.is_valid():
+             updated_task = form.save(commit=False)
+             assigned_children = form.cleaned_data['assigned_children']
+             total_cost = updated_task.points * assigned_children.count()
+             
+             # Calculate the Teencoins difference
+             previous_assigned_count = task.assigned_children.count()
+             previous_cost = task.points * previous_assigned_count
+             new_cost = updated_task.points * assigned_children.count()
+             cost_difference = new_cost - previous_cost
+             
+             if mentor.available_teencoins - cost_difference < 0:
+                 messages.error(request, "Not enough Teencoins to update this task.")
+             else:
+                 updated_task.save()
+                 form.save_m2m()
+                 
+                 # Update Teencoins
+                 mentor.available_teencoins -= cost_difference
+                 mentor.save()
+                 
+                 messages.success(request, f"Task updated successfully! Remaining Teencoins: {mentor.available_teencoins}")
+                 return redirect('mentorApp:mentor_task_list') 
+     else:
+         form = TaskForm(instance=task, mentor=mentor)
+     
+     return render(request, 'edit_task.html', {'form': form, 'task': task, 'available_teencoins': mentor.available_teencoins})
 
 @login_required
 def mentor_active_list(request):
@@ -208,6 +248,7 @@ def mentor_active_list(request):
 
 @login_required
 def mentor_task_list(request):
+    mentor = Mentor.objects.get(user=request.user)
     current_date = timezone.now().date()
     mentor = get_object_or_404(Mentor, user=request.user)
     form = DateRangeForm(request.GET or None)
@@ -218,7 +259,7 @@ def mentor_task_list(request):
         end_date = form.cleaned_data['end_date']
         tasks = tasks.filter(deadline__range=(start_date, end_date))
 
-    return render(request, 'mentor_task_list.html', {'tasks': tasks, 'form': form})
+    return render(request, 'mentor_task_list.html', {'tasks': tasks, 'form': form, 'available_teencoins': mentor.available_teencoins})
 
 @login_required
 def assign_task(request, task_id):
@@ -229,40 +270,50 @@ def assign_task(request, task_id):
 
     if request.method == 'POST':
         selected_children_ids = request.POST.getlist('children')
-        selected_children_ids = [int(child_id) for child_id in selected_children_ids]  # לוודא שהערכים הם `int`
+        selected_children_ids = [int(child_id) for child_id in selected_children_ids]
         
-        for child_id in selected_children_ids:
-            try:
-                child = get_object_or_404(Child, id=child_id)
+        total_cost = task.points * len(selected_children_ids)
+        
+        if mentor.available_teencoins < total_cost:
+            messages.error(request, "Not enough Teencoins to assign this task.")
+            return render(request, 'assign_task.html', {'task': task, 'children': children, 'show_popup': True})
+        else:
+            for child_id in selected_children_ids:
+                try:
+                    child = get_object_or_404(Child, id=child_id)
+                    task.assigned_children.add(child)
+                    TaskAssignment.objects.create(task=task, child=child, is_new=True)
 
-                task.assigned_children.add(child)
+                    if child.user.email:
+                        NotificationManager.sent_mail(
+                            f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
+                            child.user.email
+                        )
 
-                TaskAssignment.objects.create(task=task, child=child, is_new=True)
+                    if child.user.phone:
+                        phone_str = str(child.user.phone)
+                        msg = (
+                            f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
+                            f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
+                            "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
+                        )
+                        NotificationManager.sent_whatsapp(msg, phone_str)
 
-                if child.user.email:
-                    NotificationManager.sent_mail(
-                        f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
-                        child.user.email
-                    )
+                except Child.DoesNotExist:
+                    print(f"Child with ID {child_id} does not exist.")
 
-                if child.user.phone:
-                    phone_str = str(child.user.phone)
-                    msg = (
-                        f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
-                        f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
-                        "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
-                    )
-                    NotificationManager.sent_whatsapp(msg, phone_str)
+            task.assigned_mentors.add(mentor)
+            
+            # Deduct Teencoins
+            mentor.available_teencoins -= total_cost
+            mentor.save()
 
-            except Child.DoesNotExist:
-                print(f"Child with ID {child_id} does not exist.")
+            messages.success(request, f"Task '{task.title}' successfully assigned to selected children. Remaining Teencoins: {mentor.available_teencoins}")
+            return redirect('mentorApp:mentor_task_list')
 
-        task.assigned_mentors.add(mentor)
+    return render(request, 'assign_task.html', {'task': task, 'children': children, 'available_teencoins': mentor.available_teencoins})
 
-        messages.success(request, f"Task '{task.title}' successfully assigned to selected children.")
-        return redirect('mentorApp:mentor_task_list')
 
-    return render(request, 'assign_task.html', {'task': task, 'children': children})
 
 @login_required
 def assign_points(request, task_id):

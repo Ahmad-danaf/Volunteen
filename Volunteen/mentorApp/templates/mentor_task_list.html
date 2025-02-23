@@ -43,10 +43,18 @@
 
 <div class="container mt-5" dir="rtl">
     <h2 style="color: #ff6600;">רשימת משימות</h2>
+    <div class="mb-3">
+        <label for="available_teencoins" class="form-label">מטבעות זמינים</label>
+        <label> - {{ available_teencoins }}</label>
+    </div>
     <form method="get">
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">סנן</button>
     </form>
+    <div class="mb-3">
+        <label for="titleFilter" class="form-label">סנן לפי כותרת</label>
+        <input type="text" id="titleFilter" class="form-control" placeholder="הקלד כותרת לחיפוש...">
+    </div>
     <div class="task-table-container">
         <table class="table task-table">
             <thead>
@@ -57,9 +65,9 @@
                     <th>TeenCoins</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="taskBody">
                 {% for task in tasks %}
-                <tr onclick="toggleDetails({{ forloop.counter }})" style="cursor: pointer;">
+                <tr class="task-row" onclick="toggleDetails({{ forloop.counter }})" style="cursor: pointer;">
                     <td>
                         {% if task.img %}
                             <img src="{{ task.img.url }}" alt="תמונה של משימה {{ task.title }}" class="task-image" />
@@ -67,7 +75,7 @@
                             <img src="{% static 'images/logo.png' %}" alt="תמונה לוגו" class="task-image" />
                         {% endif %}
                     </td>
-                    <td>{{ task.title }}</td>
+                    <td class="task-title">{{ task.title }}</td>
                     <td>{{ task.deadline|date:"d/m/Y" }}</td>
                     <td>{{ task.points }}</td>
                 </tr>
@@ -106,5 +114,18 @@
             detailsRow.style.display = 'none';
         }
     }
+
+    document.getElementById("titleFilter").addEventListener("input", function() {
+        var filter = this.value.toUpperCase();
+        var taskRows = document.querySelectorAll("#taskBody .task-row");
+        
+        taskRows.forEach(function(row) {
+            var titleCell = row.querySelector(".task-title");
+            if (titleCell) {
+                var txtValue = titleCell.textContent || titleCell.innerText;
+                row.style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
+            }
+        });
+    });
 </script>
 {% endblock %}

@@ -15,6 +15,11 @@
     <div class="search-bar mb-3">
         <input type="text" id="searchInput" class="form-control" placeholder="חפש לפי שם משתמש...">
     </div>
+
+    <div class="mb-3">
+        <label for="available_teencoins" class="form-label">מטבעות זמינים</label>
+        <label> - {{ available_teencoins }}</label>
+    </div>
     
     <form method="post">
         {% csrf_token %}
@@ -56,6 +61,11 @@
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% if show_popup %}
+            alert("Not enough Teencoins to proceed!");
+        {% endif %}
+    });
     // JavaScript to handle select all functionality
     document.getElementById('select-all').addEventListener('click', function(event) {
         var checkboxes = document.querySelectorAll('.form-check-input');

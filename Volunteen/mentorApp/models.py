@@ -26,7 +26,6 @@ class Mentor(models.Model):
         
         task.save()  # Ensure task is updated after modifications
 
-
     def assign_teencoins_to_task(self, task, amount):
         """
         Allocates Teencoins from the mentor's balance to a task.

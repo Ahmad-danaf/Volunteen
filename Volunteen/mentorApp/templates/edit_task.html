@@ -5,6 +5,10 @@
     <h2 style="color: #ff6600;">ערוך משימה: {{ task.title }}</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <div class="mb-3">
+            <label for="available_teencoins" class="form-label">מטבעות זמינים</label>
+            <label> - {{ available_teencoins }}</label>
+        </div>
         {{ form.as_p }}
         <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> שמור שינויים</button>
     </form>
