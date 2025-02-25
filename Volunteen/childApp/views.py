@@ -31,7 +31,7 @@ from datetime import datetime
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.utils.timezone import localdate
-from Volunteen.constants import MAX_TEENCOINS_PER_DAY_SHOPPING,MAX_REWARDS_PER_DAY
+from Volunteen.constants import MAX_REWARDS_PER_DAY
 
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
@@ -333,25 +333,22 @@ def shop_rewards_view(request, shop_id):
     today = localdate()
     redemptions_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
     total_rewards_today = redemptions_today.count()
-    points_spent_today = redemptions_today.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    total_req_rewards_today =RedemptionRequest.objects.filter(child=child, shop=shop, date_requested__date=today).count()
 
     # Calculate remaining daily limits
-    remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today)
-    remaining_points = max(0, MAX_TEENCOINS_PER_DAY_SHOPPING - points_spent_today)
+    remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today- total_req_rewards_today)
 
     # Get the child's total available TeenCoins (active, unexpired)
     available_teencoins = TeenCoinManager.get_total_active_teencoins(child)
 
     # Mark each reward as affordable (or not) based on remaining points and available coins.
     for reward in rewards:
-        reward.affordable = (reward.points_required <= remaining_points and 
-                             reward.points_required <= available_teencoins)
+        reward.affordable = reward.points_required <= available_teencoins
 
     context = {
         "shop": shop,
         "rewards": rewards,
         "remaining_rewards": remaining_rewards,
-        "remaining_points": remaining_points,
         "available_teencoins": available_teencoins,
     }
     return render(request, 'shop_rewards.html', context)

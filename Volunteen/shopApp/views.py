@@ -202,29 +202,25 @@ def opening_hours_view(request):
     })
     
     
-    
+@login_required
 def pending_redemption_requests(request):
     """
     Retrieves today's pending redemption requests for the current shop,
     groups them by child, and aggregates totals for each child.
     """
-    # Get the shop for the currently logged in user
     shop = get_object_or_404(Shop, user=request.user)
     today = localdate()
 
-    # Query all pending redemption requests for today for this shop
     requests_qs = RedemptionRequest.objects.filter(
         shop=shop,
         status='pending',
         date_requested__date=today
     ).select_related('child', 'reward')
 
-    # Group requests by child using a dictionary
     grouped_requests = defaultdict(list)
     for req in requests_qs:
         grouped_requests[req.child].append(req)
 
-    # Build an aggregated summary per child
     aggregated = []
     for child, req_list in grouped_requests.items():
         total_requests = sum(req.quantity for req in req_list)
@@ -236,15 +232,13 @@ def pending_redemption_requests(request):
             'total_points': total_points,
         })
 
-    # Optionally sort the aggregated list (for example, by child's first name)
-    aggregated.sort(key=lambda x: x['child'].user.first_name)
+    aggregated.sort(key=lambda x: x['child'].user.username)
 
     context = {
         'aggregated_requests': aggregated,
         'today': today,
     }
     return render(request, 'pending_requests.html', context)
-
 
 @login_required
 @require_POST
@@ -263,19 +257,35 @@ def process_request(request):
         if not req_id or action not in ["approve", "reject"]:
             return JsonResponse({"status": "error", "message": "Invalid parameters."}, status=400)
 
-        # Get the redemption request ensuring it's pending.
+        # Retrieve the specific pending request by its ID.
         redemption_req = get_object_or_404(RedemptionRequest, id=req_id, status='pending')
         
-        # Ensure the request belongs to the currently logged-in shop.
+        # Ensure the request belongs to the current shop.
         shop = get_object_or_404(Shop, user=request.user)
         if redemption_req.shop != shop:
             return JsonResponse({"status": "error", "message": "Unauthorized access."}, status=403)
         
-        # Process the action
         if action == "approve":
-            redemption_req.approve() 
+            # Build a list for the single request.
+            selected_request = [{
+                'reward_id': redemption_req.reward.id,
+                'quantity': redemption_req.quantity,
+                'points': redemption_req.reward.points_required
+            }]
+            check_result = ShopManager.can_redeem_rewards(redemption_req.child, shop, selected_request)
+            if check_result["status"] == "error":
+                return JsonResponse(check_result, status=400)
+            result = ShopManager.approve_redemption_requests(redemption_req.child, selected_request)
+            if result["status"] == "error":
+                return JsonResponse(result, status=400)
+            # Mark this specific request as approved.
+            redemption_req.status = 'approved'
+            redemption_req.save()
         elif action == "reject":
-            redemption_req.reject()
+            # Use the reject utility for a list containing this request.
+            result = ShopManager.reject_redemption_requests([redemption_req])
+            if result["status"] == "error":
+                return JsonResponse(result, status=400)
         
         return JsonResponse({"status": "success", "message": "Request processed successfully."})
     
@@ -287,33 +297,52 @@ def process_request(request):
 @require_POST
 def batch_process_requests(request):
     """
-    Processes all pending redemption requests for a specific child for the current shop.
+    Processes a batch of pending redemption requests specified by their IDs for the current shop.
     Expects a JSON payload with:
-      - child_id: the ID of the child whose requests should be processed.
-      - action: "approve" or "reject" (applied to all pending requests for that child).
+      - request_ids: a list of RedemptionRequest IDs to process.
+      - action: "approve" or "reject" (applied to each request in the list).
     """
     try:
         data = json.loads(request.body)
-        child_id = data.get('child_id')
+        request_ids = data.get('request_ids')
         action = data.get('action')
-
-        if not child_id or action not in ["approve", "reject"]:
+        if not request_ids or not isinstance(request_ids, list) or action not in ["approve", "reject"]:
             return JsonResponse({"status": "error", "message": "Invalid parameters."}, status=400)
 
-        # Get the current shop
+        # Get the current shop.
         shop = get_object_or_404(Shop, user=request.user)
 
-        # Get all pending requests for this child and shop
-        pending_requests = RedemptionRequest.objects.filter(child__id=child_id, shop=shop, status='pending')
+        # Get all pending requests with the given IDs, ensuring they belong to the current shop.
+        pending_requests = RedemptionRequest.objects.filter(id__in=request_ids, shop=shop, status='pending').filter(date_requested__date=localdate())
         if not pending_requests.exists():
-            return JsonResponse({"status": "error", "message": "No pending requests found for this child."}, status=404)
+            return JsonResponse({"status": "error", "message": "No pending requests found with the given IDs."}, status=404)
 
-        # Process each request according to the specified action
-        for req in pending_requests:
-            if action == "approve":
-                req.approve()
-            elif action == "reject":
-                req.reject()
+        if action == "approve":
+            # Build a list of request data from the pending requests.
+            selected_requests = []
+            for req in pending_requests:
+                selected_requests.append({
+                    'reward_id': req.reward.id,
+                    'quantity': req.quantity,
+                    'points': req.reward.points_required,
+                    'request_id': req.id,
+                })
+            
+            child = pending_requests.first().child
+            check_result = ShopManager.can_redeem_rewards(child, shop, selected_requests)
+            if check_result["status"] == "error":
+                return JsonResponse(check_result, status=400)
+            result = ShopManager.approve_redemption_requests(child, selected_requests)
+            if result["status"] == "error":
+                return JsonResponse(result, status=400)
+            # Mark each processed request as approved.
+            for req in pending_requests:
+                req.status = 'approved'
+                req.save()
+        elif action == "reject":
+            result = ShopManager.reject_redemption_requests(pending_requests)
+            if result["status"] == "error":
+                return JsonResponse(result, status=400)
 
         return JsonResponse({"status": "success", "message": "Batch processing successful."})
     

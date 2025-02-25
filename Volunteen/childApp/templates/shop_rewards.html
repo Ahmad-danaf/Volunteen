@@ -14,23 +14,20 @@
       {% csrf_token %}
       
       <!-- Daily Limits & TeenCoins -->
-<div class="limit-box">
-    <h3>מגבלות יומיות</h3>
-    <ul>
-      <li>
-        <i class="fas fa-trophy" aria-hidden="true"></i>
-        פרסים שנותרו: <span id="remaining-rewards">{{ remaining_rewards }}</span>
-      </li>
-      <li>
-        <i class="fas fa-star" aria-hidden="true"></i>
-        נקודות שנותרו: <span id="remaining-points">{{ remaining_points }}</span>
-      </li>
-      <li>
-        <i class="fas fa-coins" aria-hidden="true"></i>
-        טינקואינס זמינים: <span id="available-teencoins">{{ available_teencoins }}</span>
-      </li>
-    </ul>
-  </div>
+      <div class="limit-box">
+        <h3>מגבלות יומיות</h3>
+        <div class="limit-values">
+          <span class="limit-item">
+            <i class="fas fa-trophy" aria-hidden="true"></i>
+            פרסים שנותרו: <span id="remaining-rewards">{{ remaining_rewards }}</span>
+          </span>
+          <span class="limit-item">
+            <i class="fas fa-coins" aria-hidden="true"></i>
+            טינקואינס זמינים: <span id="available-teencoins">{{ available_teencoins }}</span>
+          </span>
+        </div>
+      </div>
+      
   
 
       <!-- Rewards Grid -->
@@ -89,7 +86,6 @@
 <script>
   // Initial daily-limit & TeenCoin values from the server
 let initialRemainingRewards = parseInt('{{ remaining_rewards }}') || 0;
-let initialRemainingPoints = parseInt('{{ remaining_points }}') || 0;
 let initialTeencoins = parseInt('{{ available_teencoins }}') || 0;
 
 // The user's current selections
@@ -177,12 +173,10 @@ function recalcLimits() {
     let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
 
     let newRemainingRewards = initialRemainingRewards - totalQuantity;
-    let newRemainingPoints = initialRemainingPoints - totalPoints;
     let newTeencoins = initialTeencoins - totalPoints;
 
     // Clamp values at zero to avoid negative display
     document.getElementById('remaining-rewards').textContent = Math.max(newRemainingRewards, 0);
-    document.getElementById('remaining-points').textContent = Math.max(newRemainingPoints, 0);
     document.getElementById('available-teencoins').textContent = Math.max(newTeencoins, 0);
 }
 
@@ -317,29 +311,6 @@ function cancelRequest() {
   font-weight: 700;
 }
 
-/* Limit Box */
-.limit-box {
-  background: linear-gradient(120deg, #ffecb3, #ffeeba);
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 25px;
-  text-align: right;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.limit-box h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #555;
-}
-.limit-box ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.limit-box li {
-  margin-bottom: 5px;
-  font-weight: 500;
-}
 
 /* Rewards Grid */
 .rewards-grid {
@@ -484,96 +455,42 @@ function cancelRequest() {
   }
 }
 .limit-box {
-    background: linear-gradient(135deg, #fff9e6, #ffeeba);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: right;
-    transition: transform 0.3s ease;
-  }
-  
-  .limit-box:hover {
-    transform: scale(1.02);
-  }
-  
-  .limit-box h3 {
-    margin: 0 0 15px;
-    font-size: 1.6rem;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .limit-box ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .limit-box li {
-    margin-bottom: 10px;
-    font-size: 1rem;
-    color: #555;
-    display: flex;
-    align-items: center;
-  }
-  
-  .limit-box li i {
-    margin-left: 8px;
-    font-size: 1.2rem;
-    color: #ffb300;  /* Accent color */
-  }
-  
-  /* Smooth transitions for updated numbers */
-  .limit-box span {
-    transition: all 0.3s ease;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 480px) {
-    .limit-box {
-      padding: 15px;
-    }
-    .limit-box h3 {
-      font-size: 1.4rem;
-    }
-    .limit-box li {
-      font-size: 0.95rem;
-    }
-  }
-  .limit-box {
-  background: #fffbe6;
-  padding: 16px;
+  background: linear-gradient(135deg, #fffbe6, #ffeeba);
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   text-align: right;
   transition: transform 0.3s ease;
 }
-
 .limit-box:hover {
   transform: scale(1.02);
 }
-
 .limit-box h3 {
-  margin-bottom: 10px;
+  margin: 0 0 10px;
   font-size: 1.4rem;
   font-weight: bold;
   color: #333;
 }
-
-.limit-item {
-  background: #ffffff;
-  padding: 10px 15px;
-  border-radius: 8px;
+.limit-values {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #444;
-  margin-bottom: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;  /* Ensures proper wrapping on smaller screens */
 }
+.limit-item {
+  font-size: 1rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.limit-item i {
+  font-size: 1.2rem;
+  color: #ffb300; /* Accent color */
+}
+
 
 </style>
 <style>

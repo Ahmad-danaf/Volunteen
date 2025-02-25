@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Shop, Reward, Redemption, OpeningHours, Category
+from .models import Shop, Reward, Redemption, OpeningHours, Category, RedemptionRequest
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -10,7 +10,6 @@ class ShopAdmin(admin.ModelAdmin):
     list_display = ('name', 'city', 'get_category_names')
     list_filter = ('city', 'categories')
     search_fields = ('name',)
-
 
 @admin.register(Reward)
 class RewardAdmin(admin.ModelAdmin):
@@ -31,3 +30,16 @@ class OpeningHoursAdmin(admin.ModelAdmin):
     list_filter = ('day', 'shop')
     list_select_related = ('shop',)
     list_display_links = ('shop',)
+
+def make_pending(modeladmin, request, queryset):
+    queryset.update(status='pending')
+make_pending.short_description = "Mark selected requests as pending"
+
+@admin.register(RedemptionRequest)
+class RedemptionRequestAdmin(admin.ModelAdmin):
+    list_display = ('child', 'reward', 'status', 'date_requested')
+    search_fields = ('child__user__username', 'reward__title')
+    list_filter = ('status', 'date_requested')
+    list_select_related = ('child', 'reward')
+    list_display_links = ('child', 'reward')
+    actions = [make_pending]
