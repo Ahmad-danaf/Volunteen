@@ -336,6 +336,12 @@ def assign_points(request, task_id):
         for child_id in selected_children_ids:
             child = get_object_or_404(Child, id=child_id)
             task.mark_completed(child)
+            print(f"Task '{task.title}' marked as completed for child '{child.user.username}'.")
+            
+            completed_task = TaskCompletion.objects.get(task=task, child=child)
+            completed_task.remaining_coins = completed_task.bonus_points + task.points
+            completed_task.save()
+            print(f"Remaining coins for task '{task.title}' updated for child '{child.user.username}'.")
         messages.success(request, f"Points successfully assigned for task '{task.title}' to selected children.")
         return redirect('mentorApp:points_assigned_success', task_id=task.id)
 
@@ -344,6 +350,7 @@ def assign_points(request, task_id):
     for child in children:
         completed = TaskCompletion.objects.filter(task=task, child=child).exists()
         children_with_status.append({'child': child, 'completed': completed})
+        
 
     return render(request, 'assign_points.html', {'task': task, 'children_with_status': children_with_status})
 
@@ -405,12 +412,16 @@ def review_task(request):
                     continue
                 
                 if action == 'approve':
+                    print('Approving task...')
                     task_completion.status = 'approved'
                     task_completion.task.approve_task(task_completion.child)
+                    task_completion.remaining_coins = task_completion.task.points+task_completion.bonus_points
+                    print('Task approved.')
                 elif action == 'reject':
                     task_completion.status = 'rejected'
                 
                 task_completion.save()
+
                 processed_tasks += 1
 
             return JsonResponse({

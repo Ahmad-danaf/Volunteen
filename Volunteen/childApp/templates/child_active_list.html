@@ -10,7 +10,6 @@
             <th style="padding: 8px; text-align: left;">שם משימה</th>
             <th style="padding: 8px; text-align: left;">טינקאוינס</th>
             <th style="padding: 8px; text-align: left;">דדליין</th>
-            <th style="padding: 8px; text-align: left;">סטטוס</th>
         </tr>
     </thead>
     <tbody>
@@ -24,7 +23,6 @@
             </td>
             <td style="padding: 8px;">{{ assignment.points }}</td>
             <td style="padding: 8px;">{{ assignment.deadline|date:"d/m/Y" }}</td>
-            <td style="padding: 8px;">{{ assignment.status }}</td>
         </tr>
         {% empty %}
         <tr>

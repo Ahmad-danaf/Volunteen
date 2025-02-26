@@ -145,20 +145,6 @@
 </div>
 {% endif %}
 
-{% if not child.user.phone %}
-<div id="phoneNumberModal" class="modal">
-    <div class="modal-content">
-        <h3>הכנס מספר טלפון</h3>
-        <p>אנא הזן את מספר הטלפון שלך כדי להמשיך:</p>
-        <input type="tel" id="phoneNumberInput" placeholder="מספר טלפון ראשי" 
-               style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
-        <h4>אימות מספר הטלפון (שני)</h4>
-        <input type="tel" id="secPhoneNumberInput" placeholder="מספר טלפון שני" 
-               style="text-align: center; width: 100%; padding: 0.5rem; margin: 1rem 0;">
-        <button onclick="submitPhoneNumber()" class="btn">שמור</button>
-    </div>
-</div>
-{% endif %}
 
 {% endblock content %}
 

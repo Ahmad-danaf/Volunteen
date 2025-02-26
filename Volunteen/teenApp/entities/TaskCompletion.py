@@ -25,13 +25,6 @@ class TaskCompletion(models.Model):
     def __str__(self):
         return f"{self.child.user.username} - {self.task.title} ({self.status})"
 
-    def save(self, *args, **kwargs):
-        """ Automatically initialize remaining_coins when a task is approved. """
-        if self.status == "approved" and self.remaining_coins == 0 and not self.pk:
-            self.remaining_coins = self.bonus_points + self.task.points
-        elif self.status == "rejected":
-            self.remaining_coins = 0  # Reset if rejected
-        super().save(*args, **kwargs)
         
     def init_remaining_coins(self):
         """ Initialize remaining_coins to the sum of points and bonus points. """
