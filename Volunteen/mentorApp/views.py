@@ -18,6 +18,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum,IntegerField, F
 from datetime import timedelta
+from django.db import transaction
 
 @login_required
 def mentor_home(request):
@@ -156,52 +157,59 @@ def add_task(request, task_id=None, duplicate=False):
     mentor = get_object_or_404(Mentor, user=request.user)
     task = None
 
-    if task_id: # for duplicating
+    if task_id:
         original_task = get_object_or_404(Task, id=task_id)
-        print("1")
-        print(original_task)
         if duplicate:
-            # Create a new task with the same values, but DO NOT save yet
             task = Task(
                 title=f"{original_task.title} (העתק)",
                 description=original_task.description,
                 points=original_task.points,
                 deadline=original_task.deadline,
                 additional_details=original_task.additional_details,
-                img=original_task.img,  # Copy the image if needed
+                img=original_task.img,
             )
 
     if request.method == 'POST':
-         taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
-         if taskForm.is_valid():
-             new_task = taskForm.save(commit=False)
-             assigned_children = taskForm.cleaned_data['assigned_children']
-             total_cost = new_task.points * assigned_children.count()
- 
-             # Ensure mentor has enough teencoins
-             if mentor.available_teencoins < total_cost:
-                 messages.error(request, "Not enough Teencoins to assign this task.")
-             else:
-                 if 'checkin_checkout_type' in taskForm.cleaned_data:
-                    new_task.checkin_checkout_type = bool(int(taskForm.cleaned_data['checkin_checkout_type']))
-                 new_task.save()
-                 new_task.assigned_mentors.add(mentor)
-                 taskForm.save_m2m()
-                 
-                 # Deduct Teencoins
-                 mentor.available_teencoins -= total_cost
-                 mentor.save()
- 
-                 messages.success(request, f"Task added successfully! Remaining Teencoins: {mentor.available_teencoins}")
-                 return redirect('mentorApp:mentor_home')
+        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
+        
+        if taskForm.is_valid():
+            new_task = taskForm.save(commit=False)
+            assigned_children = taskForm.cleaned_data['assigned_children']
+            total_cost = new_task.points * assigned_children.count()
+
+            # טרנזאקציה כדי למנוע מצבים של חצי עדכון
+            with transaction.atomic():
+                mentor.refresh_from_db()
+                if mentor.available_teencoins < total_cost:
+                    messages.error(request, "אין לך מספיק Teencoins לשיוך המשימה.")
+                else:
+                    if 'checkin_checkout_type' in taskForm.cleaned_data:
+                        new_task.checkin_checkout_type = bool(int(taskForm.cleaned_data['checkin_checkout_type']))
+                    new_task.save()
+                    new_task.assigned_mentors.add(mentor)
+                    new_task.assigned_children.set(assigned_children)  # שיוך הילדים למשימה
+                    taskForm.save_m2m()  # שמירת קשרים בטופס
+
+                    # יצירת `TaskAssignment` לכל ילד שמשויך למשימה
+                    TaskAssignment.objects.bulk_create([
+                        TaskAssignment(task=new_task, child=child) for child in assigned_children
+                    ])
+
+                    # הורדת ה-Teencoins מהמנטור
+                    mentor.available_teencoins -= total_cost
+                    mentor.save()
+
+                    messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
+                    return redirect('mentorApp:mentor_home')
+
     else:
-         taskForm = TaskForm(mentor=mentor, instance=task)
+        taskForm = TaskForm(mentor=mentor, instance=task)
 
     return render(request, 'mentor_add_task.html', {
         'form': taskForm,
         'children': mentor.children.all(),
         'task': task,
-        'is_duplicate': duplicate,  # Pass duplication flag for UI updates
+        'is_duplicate': duplicate,
         'available_teencoins': mentor.available_teencoins
     })
 

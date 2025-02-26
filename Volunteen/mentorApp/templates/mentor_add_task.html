@@ -43,7 +43,7 @@
         gap: 40px;
     }
     .points {
-        width: 10%;
+        width: 100px;
     }
 </style>
 
@@ -62,7 +62,7 @@
         {% endif %}
 
         <div class="mb-3">
-            <label for="available_teencoins" class="form-label">מטבעות זמינים</label>
+            <label for="available_teencoins" class="form-label">טינקאוינס זמינים</label>
             <label> - {{ available_teencoins }}</label>
         </div>
 
@@ -78,7 +78,7 @@
 
         <div class="mb-3 points">
             <label for="points" class="form-label">ניקוד</label>
-            <input type="number" id="points" name="points" class="form-control" value="{{ form.points.value|default_if_none:'' }}" required>
+            <input type="number" id="points" name="points" class="form-control points" value="{{ form.points.value|default_if_none:'' }}" required>
         </div>
         
         <label class="form-label">הקצאה ל</label><br>
