@@ -9,12 +9,12 @@
 
   <!-- Optional Search Bar -->
   <div class="search-bar">
-    <input type="text" id="search-input" placeholder="חיפוש לפי שם ילד או זמן בקשה...">
+    <input type="text" id="search-input" placeholder="חיפוש לפי שם ילד, שם משתמש או זמן בקשה...">
   </div>
 
   {% for group in aggregated_requests %}
   <!-- Child Card -->
-  <div class="child-card">
+  <div class="child-card" data-child-id="{{ group.child.id }}">
     <div class="child-card-header" onclick="toggleCard(this)">
       <div class="child-info">
         {% if group.child.avatar %}
@@ -23,7 +23,10 @@
           <img src="{% static 'default-avatar.png' %}" alt="{{ group.child.user.first_name }}" class="child-avatar">
         {% endif %}
         <div class="child-details">
-          <h3 class="child-name">{{ group.child.user.first_name }} {{ group.child.user.last_name }}</h3>
+          <h3 class="child-name">
+            {{ group.child.user.first_name }} {{ group.child.user.last_name }}
+            <span class="child-username">({{ group.child.user.username }})</span>
+          </h3>
           <p class="child-summary">{{ group.total_requests }} בקשות | סך נקודות: {{ group.total_points }}</p>
         </div>
       </div>
@@ -45,7 +48,8 @@
             <p class="request-meta">
               כמות: {{ req.quantity }}<br>
               נקודות בשימוש: {{ req.points_used }}<br>
-              שעה: {{ req.date_requested|date:"H:i" }}
+              שעה: {{ req.date_requested|date:"H:i" }}<br>
+              <small class="req-id">מספר בקשה: {{ req.id }}</small>
             </p>
           </div>
           <div class="request-actions">
@@ -78,10 +82,10 @@
     const toggleIcon = headerElem.querySelector(".toggle-icon");
     if (cardBody.style.display === "none" || cardBody.style.display === "") {
       cardBody.style.display = "block";
-      toggleIcon.innerHTML = "&#9650;";
+      toggleIcon.innerHTML = "&#9650;"; // Up arrow
     } else {
       cardBody.style.display = "none";
-      toggleIcon.innerHTML = "&#9660;";
+      toggleIcon.innerHTML = "&#9660;"; // Down arrow
     }
   }
 
@@ -102,34 +106,49 @@
         statusBadge.textContent = (action === "approve") ? "אושר" : "נדחה";
         statusBadge.className = "status-badge " + ((action === "approve") ? "approved" : "rejected");
       } else {
-        alert("שגיאה: " + data.message);
+        alert("שגיאה ");
+        console.log("שגיאה: " + data.message);
       }
     })
     .catch(error => console.error("Error:", error));
   }
 
-  // Batch processing for all requests of a child
   function batchProcess(childId, action) {
+    // Select the child card using the data-child-id attribute
+    const childCard = document.querySelector(`.child-card[data-child-id="${childId}"]`);
+    if (!childCard) {
+      alert("לא נמצאו בקשות עבור הילד הזה.");
+      return;
+    }
+    // Gather all request IDs within this child's card. Each request item should have an id like "req-<id>"
+    const requestItems = childCard.querySelectorAll(".request-item");
+    const requestIds = Array.from(requestItems).map(item => {
+      // Assuming id is in format "req-123", we split and take the numeric part.
+      return parseInt(item.id.split("-")[1]);
+    });
+  
     fetch("{% url 'shopApp:batch_process_requests' %}", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}"
       },
-      body: JSON.stringify({ child_id: childId, action: action })
+      body: JSON.stringify({ request_ids: requestIds, action: action })
     })
     .then(response => response.json())
     .then(data => {
       if (data.status === "success") {
-        location.reload(); // Or dynamically update the UI
+        location.reload(); // Alternatively, update the UI dynamically
       } else {
-        alert("שגיאה: " + data.message);
+        console.log("שגיאה: " + data.message);
+        alert("שגיאה");
       }
     })
     .catch(error => console.error("Error:", error));
   }
+  
 
-  // Basic search by child name or time
+  // Basic search functionality
   document.getElementById("search-input").addEventListener("input", function() {
     const filter = this.value.toLowerCase();
     const cards = document.querySelectorAll(".child-card");
@@ -154,7 +173,7 @@ body {
   max-width: 600px;
   margin: auto;
   padding: 15px;
-  font-family: "Alef", sans-serif; /* Example Hebrew-friendly font */
+  font-family: "Alef", sans-serif;
   line-height: 1.5;
 }
 
@@ -208,18 +227,23 @@ body {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  margin-left: 8px; /* Because RTL, the avatar is on the right side */
+  margin-left: 8px;
 }
 .child-details {
   display: flex;
   flex-direction: column;
-  margin-right: 8px; /* Spacing between text and avatar */
+  margin-right: 8px;
 }
 .child-name {
   margin: 0;
   font-size: 1.1rem;
   font-weight: bold;
   color: #333;
+}
+.child-username {
+  font-size: 0.9rem;
+  color: #777;
+  margin-left: 5px;
 }
 .child-summary {
   margin: 0;
@@ -252,7 +276,7 @@ body {
 }
 .request-thumbnail {
   flex-shrink: 0;
-  margin-left: 8px; /* Since avatar is on the right in RTL, we add margin-left for spacing */
+  margin-left: 8px;
 }
 .reward-thumb {
   width: 60px;
@@ -274,10 +298,14 @@ body {
   font-size: 0.85rem;
   color: #555;
 }
+.req-id {
+  font-size: 0.75rem;
+  color: #888;
+}
 .request-actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Align to right in RTL */
+  align-items: flex-start;
   gap: 5px;
   margin-right: auto;
 }

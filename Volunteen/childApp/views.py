@@ -31,7 +31,7 @@ from datetime import datetime
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.utils.timezone import localdate
-from Volunteen.constants import MAX_TEENCOINS_PER_DAY_SHOPPING,MAX_REWARDS_PER_DAY
+from Volunteen.constants import MAX_REWARDS_PER_DAY
 
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
@@ -44,6 +44,26 @@ from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 
+def child_landing(request):
+
+    today = timezone.now().date()
+    start_of_month = today.replace(day=1)
+
+    top_children = Child.objects.annotate(
+        total_points=Sum(
+            Case(
+                When(
+                    taskcompletion__status='approved',
+                    taskcompletion__completion_date__gte=start_of_month, 
+                    then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
+                ),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        )
+    ).order_by('-total_points')[:3]
+
+    return render(request, 'child_landing.html', {'top_children': top_children})
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
@@ -199,69 +219,21 @@ def child_active_list(request):
 @login_required
 def child_points_history(request):
     """Retrieve and display the child's point history including completed tasks and redemptions."""
-    
-    child = Child.objects.select_related("user").get(user=request.user)
-    form = DateRangeForm(request.GET or None)
-    points_history = []
-    current_points = 0  # Reset to 0 to calculate balance dynamically
+    # Get the child's instance via the one-to-one relation with User
+    child = request.user.child
 
-    # Retrieve completed tasks
-    task_completions = ChildTaskManager.get_completed_tasks(child)
+    task_completions = TeenCoinManager.get_expiration_schedule(child)
 
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+    # Retrieve the redemption history for the child, most recent first.
+    redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
 
-    for task_completion in task_completions:
-        completed_date = task_completion.completion_date if task_completion.completion_date else None
-        task = task_completion.task
-        current_points += task.points  # Update balance dynamically
-
-        points_history.append({
-            'description': f"Completed Task: {task.title}",
-            'points': f"+{task.points}",
-            'date': completed_date,
-            'balance': current_points,
-            'string': f"ביצוע משימה : {task.title}"
-        
-        })
-
-        if task_completion.bonus_points > 0:
-            current_points += task_completion.bonus_points
-            points_history.append({
-                'description': f"Bonus Points for Task: {task.title}",
-                'points': f"+{task_completion.bonus_points}",
-                'date': completed_date,
-                'balance': current_points,
-                'string': f"{task.title } :בונוס"
-            })
-
-    # Retrieve redemptions
-    redemptions = ChildRedemptionManager.get_all_redemptions(child).select_related("shop")
-
-    if form.is_valid():
-        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
-
-    for redemption in redemptions:
-        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else None
-        current_points -= redemption.points_used  # Deduct points dynamically
-        
-        points_history.append({
-            'description': f"Redeemed: {redemption.shop.name}",
-            'points': f"-{redemption.points_used}",
-            'date': date_redeemed,
-            'balance': current_points,
-            'string': f"רכישה : {redemption.shop.name}"
-        })
-    # Sort the points history by date
-    points_history.sort(key=lambda x: x['date'], reverse=True)
-
-    return render(request, 'child_points_history.html', {
-        'points_history': points_history,
-        'form': form,
-        'current_balance': child.points  # Showing child's actual balance separately
-    })
+    # Pass both lists to the template.
+    context = {
+        'task_completions': task_completions,  # Earned coins (green transactions)
+        'redemptions': redemptions,            # Redeemed coins (red transactions)
+        "active_points": TeenCoinManager.get_total_active_teencoins(child)
+    }
+    return render(request, 'child_points_history.html', context)
 
 @login_required
 def rewards_view(request):
@@ -333,25 +305,22 @@ def shop_rewards_view(request, shop_id):
     today = localdate()
     redemptions_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
     total_rewards_today = redemptions_today.count()
-    points_spent_today = redemptions_today.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+    total_req_rewards_today =RedemptionRequest.objects.filter(child=child, shop=shop, date_requested__date=today).count()
 
     # Calculate remaining daily limits
-    remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today)
-    remaining_points = max(0, MAX_TEENCOINS_PER_DAY_SHOPPING - points_spent_today)
+    remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today- total_req_rewards_today)
 
     # Get the child's total available TeenCoins (active, unexpired)
     available_teencoins = TeenCoinManager.get_total_active_teencoins(child)
 
     # Mark each reward as affordable (or not) based on remaining points and available coins.
     for reward in rewards:
-        reward.affordable = (reward.points_required <= remaining_points and 
-                             reward.points_required <= available_teencoins)
+        reward.affordable = reward.points_required <= available_teencoins
 
     context = {
         "shop": shop,
         "rewards": rewards,
         "remaining_rewards": remaining_rewards,
-        "remaining_points": remaining_points,
         "available_teencoins": available_teencoins,
     }
     return render(request, 'shop_rewards.html', context)

@@ -23,7 +23,6 @@ SHOP_CATEGORIES=[
     ('OTHER', 'אחר'),
 ]
 MAX_REWARDS_PER_DAY = 2 # the maximum number of rewards that the child can buy in one day
-MAX_TEENCOINS_PER_DAY_SHOPPING = 30 # the TeenCoints that the child can pay in one day
 
 POINTS_PER_LEVEL = 100 # the number of points needed to reach the next level
 LEVELS = {

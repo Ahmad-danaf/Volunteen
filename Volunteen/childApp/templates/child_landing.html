@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>Volunteen - דף משחקים לילדים</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/volunteen_logo.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            text-align: right;
+            direction: rtl;
+            margin: 0;
+        }
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            font-size: 1.3rem;
+        }
+        .cta-buttons {
+            margin-top: 20px;
+        }
+        .cta-buttons a {
+            background: #fff;
+            color: #ff5722;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .cta-buttons a:hover {
+            background: #ffcc80;
+        }
+        .game-steps {
+            padding: 2rem;
+            text-align: center;
+            background: white;
+            color: black;
+        }
+        .game-steps h2 {
+            color: #ff5722;
+        }
+        .game-steps .steps {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .game-steps .step {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 10px;
+            width: 250px;
+            text-align: center;
+        }
+        .leaderboard, .prizes, .activity-photos {
+            padding: 2rem;
+            text-align: center;
+            background: #f8f8f8;
+            color: black;
+        }
+        .leaderboard h2, .prizes h2, .activity-photos h2 {
+            color: #ff5722;
+        }
+        .leaderboard ul {
+            list-style: none;
+            padding: 0;
+        }
+        .leaderboard li {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .activity-photos img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        .social-links {
+            text-align: center;
+            padding: 2rem;
+        }
+        .social-links a {
+            margin: 0 10px;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .home-button {
+    background: #ffffff;
+    color: #333;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 10px;
+    display: inline-block;
+    transition: 0.3s;
+    border: 2px solid #ff5722;
+}
+
+.home-button:hover {
+    background: #ffcc80;
+}
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>שחקו, צברו נקודות, וזכו בפרסים! 🎁</h1>
+        <p>הצטרפו לאתגר הגדול - השלימו משימות, אספו נקודות, והתחרו עם חברים!</p>
+        <div class="cta-buttons">
+            <a href="/login">יש לכם חשבון? התחברו!</a>
+            <a href="https://wa.me/972522865816">הצטרפו עכשיו!</a>
+            <a href="/" class="home-button">🏠 חזרה לדף הבית</a>
+        </div>
+    </section>
+    
+    <section class="game-steps">
+        <h2>איך זה עובד?</h2>
+        <div class="steps">
+            <div class="step">🎮 שחקו ובצעו משימות מהנות!</div>
+            <div class="step">💎 צברו נקודות על ההצלחות שלכם!</div>
+            <div class="step">🏆 השתמשו בנקודות כדי לקבל פרסים שווים בבתי העסק!</div>
+        </div>
+    </section>
+    
+    <section class="leaderboard">
+        <h2>מצטייני החודש 🎖️</h2>
+        <ul>
+            {% for child in top_children %}
+                <li>
+                    {% if forloop.counter == 1 %}🏅{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% endif %}
+                    {{ child.user.username }} - {{ child.total_points }} טינקאוינס
+                </li>
+            {% empty %}
+                <li>עוד אין מצטיינים לחודש זה! היו הראשונים לשחק 🎮</li>
+            {% endfor %}
+        </ul>
+    </section>
+    
+    <section class="prizes">
+        <h2>מה מחכה לכם? 🎁</h2>
+        <p>קבלו פרסים שווים מהעסקים המקומיים המשתתפים!</p>
+        <img src="{% static 'images/prizes1.jpg' %}" alt="פרסים" width="50%">
+        <img src="{% static 'images/prizes.jpg' %}" alt="פרסים" width="50%">
+        <img src="{% static 'images/prizes2.jpg' %}" alt="פרסים" width="50%">
+    </section>
+    
+    <section class="activity-photos">
+        <h2>רגעים בלתי נשכחים 🎉</h2>
+        <img src="{% static 'images/ACTIVITY.jpg' %}" alt="פעילות 1">
+        <img src="{% static 'images/ACTIVITY11.jpg' %}" alt="פעילות 2">
+        <img src="{% static 'images/activity3.jpg' %}" alt="פעילות 3">
+    </section>
+    
+    {% include "includes/floating_socials.html" %}
+</body>
+</html>

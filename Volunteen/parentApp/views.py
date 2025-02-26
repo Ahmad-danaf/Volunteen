@@ -14,6 +14,10 @@ from django.templatetags.static import static
 from shopApp.models import Shop, Reward, Redemption, Category
 from Volunteen.constants import AVAILABLE_CITIES
 
+
+def parent_landing(request):
+    return render(request, 'parent_landing.html')
+
 def child_selection(request):
     """
     Render a page showing cards for each child.

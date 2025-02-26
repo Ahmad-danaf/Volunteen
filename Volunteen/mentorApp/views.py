@@ -279,7 +279,7 @@ def assign_task(request, task_id):
     if request.method == 'POST':
         selected_children_ids = request.POST.getlist('children')
         selected_children_ids = [int(child_id) for child_id in selected_children_ids]
-        
+
         total_cost = task.points * len(selected_children_ids)
         
         if mentor.available_teencoins < total_cost:
