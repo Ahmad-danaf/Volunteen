@@ -1,70 +1,214 @@
 {% extends 'child_base.html' %}
-{% load static %}
-{% block title %}היסטוריית טינקוינס{% endblock %}
+{% block extra_css %}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap');
 
+    /* Base styling */
+    body {
+      margin: 0;
+      font-family: 'Assistant', sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      font-size: 2.2em;
+      margin: 0;
+      font-weight: 600;
+    }
+    .balance {
+      font-size: 1.5em;
+      color: #555;
+      margin-top: 10px;
+    }
+    /* Toggle Buttons */
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+    .toggle-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      font-size: 1.1em;
+      padding: 12px 0;
+      cursor: pointer;
+      transition: background-color 0.3s, border-bottom 0.3s, color 0.3s;
+    }
+    .toggle-btn.active {
+      border-bottom: 4px solid #4caf50;
+      font-weight: 600;
+      color: #4caf50;
+    }
+    .toggle-btn:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    /* Section Styling */
+    section {
+      margin-bottom: 30px;
+    }
+    h2 {
+      font-size: 1.6em;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .transaction-card {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .transaction-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+    }
+    .transaction-icon {
+      font-size: 2.2em;
+      margin-right: 15px;
+    }
+    .transaction-details {
+      flex: 1;
+    }
+    .transaction-title {
+      font-size: 1.3em;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .transaction-meta {
+      font-size: 1em;
+      color: #666;
+      line-height: 1.5em;
+    }
+    .expiration-info {
+      font-size: 0.95em;
+      color: #777;
+      margin-top: 5px;
+    }
+    /* Colored Borders */
+    .green {
+      border-left: 6px solid #4caf50;
+    }
+    .red {
+      border-left: 6px solid #f44336;
+    }
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+      .transaction-card {
+        padding: 10px;
+      }
+      .transaction-icon {
+        font-size: 1.8em;
+      }
+      header h1 {
+        font-size: 1.8em;
+      }
+      .balance {
+        font-size: 1.3em;
+      }
+    }
+  </style>
+{% endblock %}
 {% block content %}
-    <h1>היסטוריית טינקוינס</h1>
-    <form method="get">
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">סנן</button>
-    </form>
-    <style>
-        .completed-task {
-            color: green;
-            font-weight: bold;
-        }
-        .bonus-points {
-            color: green;
-            font-weight: bold;
-        }
-        .redeemed {
-            color: red;
-            font-weight: bold;
-        }
-        .points-completed {
-            color: green;
-        }
-        .points-bonus {
-            color: green;
-        }
-        .points-redeemed {
-            color: red;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            direction: rtl;
-        }
-        th, td {
-            padding: 8px;
-            text-align: right;
-        }
-        .points {
-            direction: ltr;
-        }
-    </style>
-    <table>
-        <thead>
-            <tr style="background-color: #007bff; color: white;"> 
-                <th>תיאור</th>
-                <th>טינקוינס</th>
-                <th>תאריך</th>
-                <th>יתרה</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in points_history %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td class="{% if 'Completed Task' in entry.description %}completed-task{% elif 'Bonus Points' in entry.description %}completed-task{% elif 'Redeemed' in entry.description %}redeemed{% endif %}">{{entry.string}}</td>
-                    <td class="{% if 'Completed Task' in entry.description %}points-completed{% elif 'Bonus Points' in entry.description %}points-bonus{% elif 'Redeemed' in entry.description %}points-redeemed{% endif %} points">{{ entry.points }}</td>
-                    <td>{{ entry.date|date:"d/m/Y" }}</td>
-                    <td class="points">{{ entry.balance }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4" style="padding: 8px; text-align: center;">אין עדיין </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <div class="container">
+    <header>
+      <h1>חשבון הנקודות שלי</h1>
+      <p class="balance">סה"כ נקודות: {{ active_points }}</p>
+    </header>
+
+    <!-- Toggle Buttons for Switching Views -->
+    <div class="toggle-buttons">
+      <button id="toggleTasks" class="toggle-btn active">נקודות שהרוויחת</button>
+      <button id="toggleRedemptions" class="toggle-btn">נקודות שנממשו</button>
+    </div>
+
+    <!-- Earned Points Section -->
+    <section id="tasksSection">
+      <h2 style="color: #4caf50;"><i class="fas fa-check-circle"></i>נקודות שהושגו</h2>
+      <div class="transaction-list">
+        {% for comp in task_completions %}
+          <div class="transaction-card green">
+            <div class="transaction-icon">
+              <i class="fas fa-coins" style="color: #4caf50;"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">{{ comp.task_title }}</div>
+              <div class="transaction-meta">
+                תאריך: {{ comp.completion_date|date:"d/m/Y" }}<br>
+                נקודות מקוריות: {{ comp.original_points }}, בונוס: {{ comp.bonus_points }}<br>
+                נקודות שנותרו: {{ comp.remaining_coins }}
+              </div>
+              <div class="expiration-info">
+                תפוגה: {{ comp.expires_on|date:"d/m/Y" }}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p>לא נמצאו נקודות שהרוויחת.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Redeemed Points Section -->
+    <section id="redemptionsSection" style="display: none;">
+      <h2 style="color: #f44336;"><i class="fas fa-shopping-cart"></i> נקודות שנממשו</h2>
+      <div class="transaction-list">
+        {% for red in redemptions %}
+          <div class="transaction-card red">
+            <div class="transaction-icon">
+              <i class="fas fa-hand-holding-usd" style="color: #f44336;"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">מימוש ב-{{ red.shop.name }}</div>
+              <div class="transaction-meta">
+                תאריך מימוש: {{ red.date_redeemed|date:"d/m/Y" }}<br>
+                נקודות בשימוש: {{ red.points_used }}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p>לא בוצעו מימושים עדיין.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Toggle functionality between earned points and redeemed points
+    document.getElementById('toggleTasks').addEventListener('click', function() {
+      document.getElementById('tasksSection').style.display = 'block';
+      document.getElementById('redemptionsSection').style.display = 'none';
+      this.classList.add('active');
+      document.getElementById('toggleRedemptions').classList.remove('active');
+    });
+    document.getElementById('toggleRedemptions').addEventListener('click', function() {
+      document.getElementById('tasksSection').style.display = 'none';
+      document.getElementById('redemptionsSection').style.display = 'block';
+      this.classList.add('active');
+      document.getElementById('toggleTasks').classList.remove('active');
+    });
+  </script>
 {% endblock %}

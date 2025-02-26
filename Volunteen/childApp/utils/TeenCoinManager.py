@@ -25,12 +25,20 @@ class TeenCoinManager:
     def get_expiration_schedule(child):
         """Return details of when each task’s coins will expire."""
         schedule = []
-        active_completions = TeenCoinManager.get_active_task_completions(child)
+        
+        active_completions = TaskCompletion.objects.filter(
+            child=child,
+            status='approved',
+            completion_date__gte=timezone.now() - TeenCoinManager.EXPIRATION_DELTA,
+        ).order_by('-completion_date')
         for comp in active_completions:
             schedule.append({
                 'task_id': comp.task.id,
                 'task_title': comp.task.title,
                 'remaining_coins': comp.remaining_coins,
+                'completion_date': comp.completion_date,
+                'original_points': comp.task.points,
+                'bonus_points': comp.bonus_points,
                 'expires_on': comp.completion_date + TeenCoinManager.EXPIRATION_DELTA
             })
         return schedule

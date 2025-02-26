@@ -199,69 +199,21 @@ def child_active_list(request):
 @login_required
 def child_points_history(request):
     """Retrieve and display the child's point history including completed tasks and redemptions."""
-    
-    child = Child.objects.select_related("user").get(user=request.user)
-    form = DateRangeForm(request.GET or None)
-    points_history = []
-    current_points = 0  # Reset to 0 to calculate balance dynamically
+    # Get the child's instance via the one-to-one relation with User
+    child = request.user.child
 
-    # Retrieve completed tasks
-    task_completions = ChildTaskManager.get_completed_tasks(child)
+    task_completions = TeenCoinManager.get_expiration_schedule(child)
 
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-        task_completions = task_completions.filter(completion_date__range=(start_date, end_date))
+    # Retrieve the redemption history for the child, most recent first.
+    redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
 
-    for task_completion in task_completions:
-        completed_date = task_completion.completion_date if task_completion.completion_date else None
-        task = task_completion.task
-        current_points += task.points  # Update balance dynamically
-
-        points_history.append({
-            'description': f"Completed Task: {task.title}",
-            'points': f"+{task.points}",
-            'date': completed_date,
-            'balance': current_points,
-            'string': f"ביצוע משימה : {task.title}"
-        
-        })
-
-        if task_completion.bonus_points > 0:
-            current_points += task_completion.bonus_points
-            points_history.append({
-                'description': f"Bonus Points for Task: {task.title}",
-                'points': f"+{task_completion.bonus_points}",
-                'date': completed_date,
-                'balance': current_points,
-                'string': f"{task.title } :בונוס"
-            })
-
-    # Retrieve redemptions
-    redemptions = ChildRedemptionManager.get_all_redemptions(child).select_related("shop")
-
-    if form.is_valid():
-        redemptions = redemptions.filter(date_redeemed__range=(start_date, end_date))
-
-    for redemption in redemptions:
-        date_redeemed = redemption.date_redeemed if redemption.date_redeemed else None
-        current_points -= redemption.points_used  # Deduct points dynamically
-        
-        points_history.append({
-            'description': f"Redeemed: {redemption.shop.name}",
-            'points': f"-{redemption.points_used}",
-            'date': date_redeemed,
-            'balance': current_points,
-            'string': f"רכישה : {redemption.shop.name}"
-        })
-    # Sort the points history by date
-    points_history.sort(key=lambda x: x['date'], reverse=True)
-
-    return render(request, 'child_points_history.html', {
-        'points_history': points_history,
-        'form': form,
-        'current_balance': child.points  # Showing child's actual balance separately
-    })
+    # Pass both lists to the template.
+    context = {
+        'task_completions': task_completions,  # Earned coins (green transactions)
+        'redemptions': redemptions,            # Redeemed coins (red transactions)
+        "active_points": TeenCoinManager.get_total_active_teencoins(child)
+    }
+    return render(request, 'child_points_history.html', context)
 
 @login_required
 def rewards_view(request):
