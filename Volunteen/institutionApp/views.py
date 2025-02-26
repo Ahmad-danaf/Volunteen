@@ -7,6 +7,12 @@ from .models import Institution, TeencoinsTransfer
 from mentorApp.models import Mentor
 from django.db.models import Sum, Q
 
+
+def institution_landing(request):
+    """
+    Renders the institution landing page.
+    """
+    return render(request, 'institution_landing.html')
 @login_required
 def institution_home(request):
     """

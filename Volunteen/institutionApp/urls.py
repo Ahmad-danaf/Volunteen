@@ -9,5 +9,6 @@ urlpatterns = [
     path('transfer-history/', views.get_transfer_history, name='transfer_history'),
     path('balances/', views.institution_balances, name='institution_balances'),
     path('mentor-management/', views.mentor_management, name='mentor_management'),
+    path('landing/', views.institution_landing, name='institution_landing'),
 
 ]

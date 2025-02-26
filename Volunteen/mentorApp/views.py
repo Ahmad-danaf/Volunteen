@@ -248,10 +248,15 @@ def assign_task(request, task_id):
                 if child.user.phone:
                     phone_str = str(child.user.phone)
                     msg = (
-                        f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
-                        f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
-                        "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
-                    )
+                            f"🚀💡 *היי {child.user.username}, יש לך משימה חדשה שמחכה לך!* 💡🚀\n\n"
+                            f"🔥 *המנטור שלך {mentor.user.first_name} הכין לך אתגר מיוחד!* 🔥\n"
+                            f"💥 זאת ההזדמנות שלך להרוויח *{task.points} טינקאוינס!* 💰🏆\n\n"
+                            f"📌 *משימה:* {task.title}\n"
+                            f"🕒 *דדליין:* {task.deadline}\n\n"
+                            f"⚡ *אל תפספס! כל משימה מקרבת אותך לפרסים שווים!* 🎁✨\n"
+                            f"📲 *היכנס עכשיו והתחל לבצע!* >>> https://www.volunteen.site/"
+                        )
+
                     NotificationManager.sent_whatsapp(msg, phone_str)
 
             except Child.DoesNotExist:
