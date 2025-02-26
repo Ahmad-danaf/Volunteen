@@ -26,35 +26,86 @@
                         <td>{{ child.user.username }}</td>
                         <td>{{ child.user.phone }}</td> 
                         <td>{{ child.points }}</td>
-                        <td>{{ child.task_total_points }}</td> <!-- Total points from tasks and bonuses -->
+                        <td>{{ child.task_total_points }}</td>
                         <td>
-                            <button class="view-tasks-btn" onclick="toggleTasks({{ child.id }})">הצג משימות</button>
-                        </td>
-                    </tr>
-                    <tr id="tasks-{{ child.id }}" class="hidden">
-                        <td colspan="5">
-                            <ul>
-                                {% for task_completion in child.taskcompletion_set.all %}
-                                    <li>
-                                        {{ task_completion.task.title }} - הושלם בתאריך: {{ task_completion.completion_date|date:"F j, Y" }} - TeenCoins: {{ task_completion.task.points }} + בונוס: {{ task_completion.bonus_points }}
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                            <button class="view-tasks-btn" 
+                                    data-child-name="{{ child.user.username }}"
+                                    data-tasks='[
+                                        {% for task_completion in child.taskcompletion_set.all %}
+                                            {"title": "{{ task_completion.task.title }}", 
+                                            "completion_date": "{{ task_completion.completion_date|date:'Y-m-d' }}", 
+                                            "points": "{{ task_completion.task.points }}", 
+                                            "bonus_points": "{{ task_completion.bonus_points }}"}
+                                            {% if not forloop.last %},{% endif %}
+                                        {% endfor %}
+                                    ]'
+                                    onclick="openTasksPopup(this)">
+                                הצג משימות
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
-                {% if children|length == 0 %}
-                <tr>
-                    <td colspan="5" class="text-center">לא נמצאו ילדים</td>
-                </tr>
-                {% endif %}
-            </tbody>
+            </tbody>            
         </table>
     </div>
     <a href="{% url 'mentorApp:mentor_home' %}" class="button">חזרה לעמוד הבית</a>
 </div>
+<div id="tasksPopup" class="popup hidden">
+    <div class="popup-content">
+        <span class="close" onclick="closeTasksPopup()">&times;</span>
+        <h2 id="popupTitle">משימות שהושלמו</h2>
+        <label for="sortTasks">מיין לפי תאריך:</label>
+        <select id="sortTasks" onchange="sortTasksByDate()">
+            <option value="asc">מהישן לחדש</option>
+            <option value="desc">מהחדש לישן</option>
+        </select>
+        <ul id="tasksList"></ul>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/mentor_children_details.js' %}"></script>
+<script>
+function openTasksPopup(button) {
+    let tasksData = JSON.parse(button.getAttribute("data-tasks"));
+    let childName = button.getAttribute("data-child-name");
+
+    let tasksList = document.getElementById("tasksList");
+    tasksList.innerHTML = "";
+
+    if (tasksData.length === 0) {
+        tasksList.innerHTML = "<li>אין משימות שהושלמו</li>";
+    } else {
+        tasksData.forEach(task => {
+            let li = document.createElement("li");
+            li.textContent = `${task.title} - הושלם בתאריך: ${task.completion_date} - TeenCoins: ${task.points} + בונוס: ${task.bonus_points}`;
+            tasksList.appendChild(li);
+        });
+    }
+
+    document.getElementById("popupTitle").textContent = `משימות שהושלמו עבור ${childName}`;
+    document.getElementById("tasksPopup").classList.remove("hidden");
+}
+
+function closeTasksPopup() {
+    document.getElementById("tasksPopup").classList.add("hidden");
+}
+
+function sortTasksByDate() {
+    let tasksList = document.getElementById("tasksList");
+    let tasks = Array.from(tasksList.children);
+    let sortOrder = document.getElementById("sortTasks").value;
+
+    tasks.sort((a, b) => {
+        let dateA = new Date(a.textContent.split(" הושלם בתאריך: ")[1].split(" - ")[0]);
+        let dateB = new Date(b.textContent.split(" הושלם בתאריך: ")[1].split(" - ")[0]);
+        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+
+    tasksList.innerHTML = "";
+    tasks.forEach(task => tasksList.appendChild(task));
+}
+</script>
 {% endblock %}

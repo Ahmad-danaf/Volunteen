@@ -54,6 +54,33 @@ ul {
     list-style-type: none;
     padding: 0;
 }
+
+.popup {
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 50%;
+    max-width: 500px;
+}
+.popup.hidden {
+    display: none;
+}
+.popup-content {
+    text-align: center;
+}
+.close {
+    cursor: pointer;
+    font-size: 20px;
+    float: right;
+}
+
 @media (max-width: 768px) {
     table {
         font-size: 0.8em;

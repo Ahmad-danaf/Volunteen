@@ -8,16 +8,21 @@ class TaskForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+    checkin_checkout_type = forms.BooleanField(
+        required=False,
+        widget=forms.Select(choices=[(False, "תמונה אחת"), (True, "צ'ק אין - צ'ק אאוט")])
+    )
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'points', 'deadline', 'img', 'additional_details', 'assigned_children']
+        fields = ['title', 'description', 'points', 'deadline', 'img', 'checkin_checkout_type', 'additional_details', 'assigned_children']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'points': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            'checkin_checkout_type': forms.Select(attrs={'class': 'form-control'}),
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
