@@ -44,6 +44,26 @@ from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 
+def child_landing(request):
+
+    today = timezone.now().date()
+    start_of_month = today.replace(day=1)
+
+    top_children = Child.objects.annotate(
+        total_points=Sum(
+            Case(
+                When(
+                    taskcompletion__status='approved',
+                    taskcompletion__completion_date__gte=start_of_month, 
+                    then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
+                ),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        )
+    ).order_by('-total_points')[:3]
+
+    return render(request, 'child_landing.html', {'top_children': top_children})
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)

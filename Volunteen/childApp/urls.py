@@ -14,6 +14,8 @@ urlpatterns = [
     path('save_phone_number/', child_views.save_phone_number, name='save_phone_number'),
     path('rate/<int:redemption_id>/', child_views.rate_redemption_view, name='rate_redemption'),
 
+    path('landing/', child_views.child_landing, name='child_landing'), 
+
     path('tasks/check-in-out/', child_views.task_check_in_out, name='task_check_in_out'),
     path('tasks/<int:task_id>/check-in/', child_views.check_in, name='check_in'),
     path('tasks/<int:task_id>/check-out/', child_views.check_out, name='check_out'),      

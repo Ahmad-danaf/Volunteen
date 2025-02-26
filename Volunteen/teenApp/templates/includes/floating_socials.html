@@ -1,0 +1,73 @@
+<style>
+
+   /* אייקונים צפים לרשתות חברתיות */
+        .floating-socials {
+           position: fixed;
+           bottom: 20px;
+           right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .floating-socials a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background-color: #25d366; /* צבע ברירת מחדל ל-WhatsApp */
+            color: white;
+            text-decoration: none;
+            font-size: 20px;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .floating-socials a:hover {
+            transform: scale(1.1);
+        }
+        
+.floating-socials .instagram {
+    background: radial-gradient(circle at 30% 107%, 
+                #fdf497 0%, #fdf497 5%, #fd5949 45%, 
+                #d6249f 60%, #285AEB 90%);
+               }
+               .floating-socials .facebook {
+                  background-color: #1877F2;
+               }
+               .whatsapp {
+                  background-color: #25D366;
+               }
+               .instagram {
+                  background: radial-gradient(circle at 30% 107%, 
+                  #fdf497 0%, #fdf497 5%, #fd5949 45%, 
+                  #d6249f 60%, #285AEB 90%);
+               }
+               </style>
+
+<div class="floating-socials">
+   <!-- WhatsApp -->
+    <a class="whatsapp" 
+    href="https://wa.me/972522865816" 
+       target="_blank" 
+       title="דברו איתנו ב-WhatsApp">
+       <i class="fa-brands fa-whatsapp"></i>
+       </a>
+       
+    <!-- Instagram -->
+    <a class="instagram" 
+       href="https://instagram.com/volunteen.site" 
+       target="_blank"
+       title="עקבו אחרינו ב-Instagram">
+       <i class="fa-brands fa-instagram"></i>
+    </a>
+
+    <!-- Facebook -->
+    <a class="facebook" 
+    href="https://www.facebook.com/profile.php?id=61570904787298" 
+    target="_blank"
+    title="הצטרפו אלינו ב-Facebook">
+    <i class="fa-brands fa-facebook"></i>
+    </a>
+    </div>

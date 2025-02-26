@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteen - להורים</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/volunteen_logo.ico' %}">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            direction: rtl;
+            background: linear-gradient(to bottom, #ff9800, #ff5722);
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+        }
+
+        .logo {
+            width: 150px;
+        }
+
+        .hero {
+            padding: 20px;
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            color: #ff5722;
+        }
+
+        .hero .highlight {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .hero .brand {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .cta-button, .nav-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .cta-button {
+            background: #25d366;
+            color: white;
+        }
+
+        .cta-button:hover {
+            background: #20b358;
+        }
+
+        .nav-button {
+            background: white;
+            color: #ff5722;
+            border: 2px solid #ff5722;
+            margin-right: 10px;
+        }
+
+        .nav-button:hover {
+            background: #ff5722;
+            color: white;
+        }
+
+        .benefits {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .benefits h2 {
+            color: #ff5722;
+        }
+
+        .benefit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .benefit-item {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .info-box {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .info-box h2 {
+            color: #ff5722;
+        }
+
+        .prizes img {
+            width: 100%;
+            border-radius: 15px;
+        }
+
+        footer {
+            margin-top: 30px;
+            padding: 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{% static 'images/volunteen_logo.ico' %}" alt="Volunteen Logo" class="logo">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+        </header>
+
+        <section class="hero">
+            <h1>ניסית הכל, אבל הילד עדיין דבוק למסכים? 📱</h1>
+            <p class="highlight">מעודד/ת אותו להתנדב, אבל הוא לא זז מהבית? 🏠</p>
+            <p class="highlight">רוצה ללמד ערכים, אבל הטיקטוק מנצח בכל פעם? 😤</p>
+
+            <h2>סוף סוף, מקום שיפתור הכל!</h2>
+            <p class="highlight">כל מה שחלמת לבן שלך נמצא כאן – ב-<span class="brand">Volunteen</span>!</p>
+
+            <a href="https://wa.me/972522865816" class="cta-button">
+                📩 הצטרפו עכשיו דרך WhatsApp!
+            </a>
+
+            <div class="nav-buttons">
+                <a href="/" class="nav-button">🔙 חזרה לדף הבית</a>
+                <a href="/login" class="nav-button">🔐 התחברות</a>
+            </div>
+        </section>
+        <section class="benefits">
+            <h2>למה כדאי לילדכם להצטרף ל-Volunteen?</h2>
+            <div class="benefit-list">
+                <div class="benefit-item">🌟 הזדמנות לפתח אחריות ומנהיגות</div>
+                <div class="benefit-item">🎁 צבירת נקודות והמרתן לפרסים שווים</div>
+                <div class="benefit-item">💡 עידוד נתינה והתנדבות בקהילה</div>
+                <div class="benefit-item">🤝 חוויות מגבשות עם חברים</div>
+            </div>
+        </section>
+        
+        <div class="info-box prizes">
+            <h2>פרסים וחוויות שמחכים לילדכם!</h2>
+            <p>🎟️ השתתפות בפעילויות חווייתיות ואירועים מיוחדים</p>
+            <p>🎮 משחקים ואתגרים מהנים עם פרסים</p>
+            <p>🎁 הטבות שוות בבתי עסק מקומיים</p>
+            <p>🍕 קינוחים, מאפים וארוחות במסעדות נבחרות</p>
+            <img src="{% static 'images/prizes.jpg' %}" alt="פרסים">
+        </div>
+        
+        {% include "includes/floating_socials.html" %}
+        <footer>
+            <p>© 2025 Volunteen - כל הזכויות שמורות</p>
+        </footer>
+    </div>
+</body>
+</html>

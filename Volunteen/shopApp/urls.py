@@ -17,4 +17,6 @@ urlpatterns = [
     path('batch-process-requests/', views.batch_process_requests, name='batch_process_requests'),
     path('process-request/', views.process_request, name='process_request'),
 
+    path('landing/', views.shop_landing, name='shop_landing'),
+
 ]

@@ -18,6 +18,9 @@ from django.contrib import messages
 from .utils.shop_manager import ShopManager
 from collections import defaultdict
 
+def shop_landing(request):
+    return render(request, 'shop_landing.html')
+
 @login_required
 def shop_redeem_points(request):
     if request.method == 'POST':
