@@ -1,18 +1,9 @@
+{% extends "parent_base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>בחרו ילד - Volunteen</title>
   
-  <!-- Bootstrap 5 RTL CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-  
-  <!-- Font Awesome for icons -->
+  {% block extra_css %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   
-  <!-- Custom CSS -->
   <style>
     body {
       text-align: right;
@@ -35,9 +26,9 @@
       margin-bottom: 1rem;
     }
   </style>
-</head>
-<body>
+  {% endblock extra_css %}
   
+  {% block content %}  
   <!-- Page Header -->
   <nav class="navbar navbar-light bg-light mb-4">
     <div class="container-fluid">
@@ -68,7 +59,7 @@
                   <p class="card-text">
                     משימות שהוקצו: <strong>{{ child.assigned_tasks_count }}</strong><br>
                     משימות שהושלמו: <strong>{{ child.completed_tasks_count }}</strong><br>
-                    Teen Coins בשימוש: <strong>{{ child.teen_coins_used }}</strong>
+                    Teen Coins שמומשו: <strong>{{ child.teen_coins_used }}</strong>
                   </p>
                 </div>
               </div>
@@ -85,7 +76,4 @@
     </div>
   </div>
   
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  {% endblock content %}

@@ -160,15 +160,24 @@
                 <li>
                     <strong>{{ task.title }}</strong>
                     <p>{{ task.description }}</p>
-                    <small>תאריך יעד: {{ task.due_date|date:"d/m/Y H:i" }}</small>
-                    <div class="task-status {% if task in child.completed_tasks.all %}completed{% else %}pending{% endif %}">
-                        {% if task in child.completed_tasks.all %}הושלם{% else %}ממתין{% endif %}
+                    {% if task.completion_date %}
+                      
+                    <small>תאריך השלמה: {{ task.completion_date|date:"d/m/Y H:i" }}</small>
+                    {% else %}
+                    <small>תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</small>
+                    {% endif %}
+                    
+                    <div class="task-status {% if task.completion_status|lower == 'approved' %}completed{% else %}pending{% endif %}">
+                        {% if task.completion_status|lower == "approved" %}
+                        
+                         הושלם{% else %}ממתין{% endif %}
                     </div>
                 </li>
                 {% empty %}
                 <li>אין משימות להצגה</li>
                 {% endfor %}
             </ul>
+            
         </div>
     </div>
 

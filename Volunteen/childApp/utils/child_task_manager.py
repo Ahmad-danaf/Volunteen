@@ -5,6 +5,7 @@ from django.db.models import Q
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
+from django.db.models import Subquery, OuterRef
 
 class ChildTaskManager:
 
@@ -54,7 +55,7 @@ class ChildTaskManager:
         """
         Retrieve all TaskCompletion records for tasks the child has completed and were approved.
         """
-        return TaskCompletion.objects.filter(child=child, status="approved").select_related("task")
+        return TaskCompletion.objects.filter(child=child, status="approved")
 
     @staticmethod
     def get_pending_tasks(child):
@@ -113,39 +114,58 @@ class ChildTaskManager:
     @staticmethod
     def get_tasks_by_status(child, status_filter):
         """
-        Retrieve tasks filtered by status ('completed', 'pending', 'all').
+        Return a queryset of Task objects filtered by 'completed', 'pending', or 'all'.
         """
+        assigned_tasks_ids = TaskAssignment.objects.filter(child=child).values_list("task_id", flat=True)
+        tasks = Task.objects.filter(id__in=assigned_tasks_ids)
+        completed_tasks_ids = TaskCompletion.objects.filter(child=child, status="approved").values_list("task_id", flat=True)
+
         if status_filter == 'completed':
-            return ChildTaskManager.get_completed_tasks(child)
+            return tasks.filter(id__in=completed_tasks_ids)
         elif status_filter == 'pending':
-            return ChildTaskManager.get_pending_tasks(child)
-        return ChildTaskManager.get_all_tasks(child)
+            return tasks.exclude(id__in=completed_tasks_ids)
+        return tasks  # 'all'
 
     @staticmethod
-    def get_tasks_by_date_filter(child, date_filter):
+    def get_tasks_by_date_filter(tasks, date_filter):
         """
-        Retrieve tasks filtered by date ('today', 'this_week', 'this_month', 'all').
+        Filter a queryset of Task objects by date based on their 'deadline'.
         """
         today = timezone.now().date()
-        tasks = ChildTaskManager.get_all_tasks(child)
-
         if date_filter == 'today':
-            return tasks.filter(completed_date__date=today)
+            return tasks.filter(deadline=today)
         elif date_filter == 'this_week':
             start_of_week = today - timedelta(days=today.weekday())
-            return tasks.filter(completed_date__date__gte=start_of_week)
+            end_of_week = start_of_week + timedelta(days=6)
+            return tasks.filter(deadline__range=[start_of_week, end_of_week])
         elif date_filter == 'this_month':
-            return tasks.filter(completed_date__month=today.month)
-
+            return tasks.filter(deadline__year=today.year, deadline__month=today.month)
         return tasks
 
     @staticmethod
     def get_filtered_tasks_by_status_date(child, status_filter, date_filter):
         """
-        Retrieve tasks based on both status and date filters.
+        Combine status and date filters to return Task objects.
         """
         tasks = ChildTaskManager.get_tasks_by_status(child, status_filter)
-        return ChildTaskManager.get_tasks_by_date_filter(child, date_filter).filter(id__in=tasks)
+        tasks = tasks.annotate(
+            completion_date=Subquery(
+                TaskCompletion.objects.filter(
+                    child=child, task=OuterRef('pk')
+                ).values('completion_date')[:1]
+            ),
+            completion_status=Subquery(
+                TaskCompletion.objects.filter(
+                    child=child, task=OuterRef('pk')
+                ).values('status')[:1]
+            ),
+            mentor_feedback=Subquery(
+                TaskCompletion.objects.filter(
+                    child=child, task=OuterRef('pk')
+                ).values('mentor_feedback')[:1]
+            )
+        )
+        return ChildTaskManager.get_tasks_by_date_filter(tasks, date_filter)
 
     @staticmethod
     def get_assigned_tasks_count(child):

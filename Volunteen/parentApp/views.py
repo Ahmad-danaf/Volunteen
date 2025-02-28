@@ -52,7 +52,6 @@ def parent_dashboard(request,child_id):
     # Fetch summary data using your utility classes
     assigned_tasks_count = ChildTaskManager.get_assigned_tasks_count(selected_child)
     completed_tasks_count = ChildTaskManager.get_completed_tasks_count(selected_child)
-    total_tasks_count = ChildTaskManager.get_total_tasks_count(selected_child)
     teen_coins_used = ChildRedemptionManager.get_teen_coins_used(selected_child)
 
     context = {
@@ -60,7 +59,6 @@ def parent_dashboard(request,child_id):
         'selected_child_id': selected_child.id,
         'assigned_tasks_count': assigned_tasks_count,
         'completed_tasks_count': completed_tasks_count,
-        'total_tasks_count': total_tasks_count,
         'teen_coins_used': teen_coins_used,
     }
     return render(request, 'parent_dashboard.html', context)
@@ -77,7 +75,6 @@ def task_dashboard(request, child_id):
 
     # Retrieve filtered tasks using the utility class
     filtered_tasks = ChildTaskManager.get_filtered_tasks_by_status_date(child, status_filter, date_filter)
-
     context = {
         'child': child,
         'all_tasks': filtered_tasks,
@@ -158,4 +155,4 @@ def all_rewards(request, child_id):
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list, 
     }
-    return render(request, 'reward.html', context)
+    return render(request, 'parent_reward_list.html', context)
