@@ -7,63 +7,35 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
-from django.db.models import (
-    Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField, OuterRef, Subquery
-)
-from childApp.utils.child_level_management import calculate_total_points
 from django.utils.timezone import now
 from django.utils import timezone
-from teenApp.interface_adapters.forms import DateRangeForm
+from teenApp.interface_adapters.forms import DateRangeForm,DateRangeCityForm
 import json
 from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
 from teenApp.entities.TaskCompletion import TaskCompletion
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from datetime import datetime
-from teenApp.entities.TaskCompletion import TaskCompletion
-from childApp.models import Child
 from django.utils.timezone import localdate
-from Volunteen.constants import MAX_REWARDS_PER_DAY
-
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-from Volunteen.constants import AVAILABLE_CITIES
-from Volunteen.constants import LEVELS,POINTS_PER_LEVEL
-from Volunteen.constants import AVAILABLE_CITIES, SHOP_CATEGORIES
+from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
+from childApp.utils.leaderboard_manager import LeaderboardUtils
 
 def child_landing(request):
-
-    today = timezone.now().date()
-    start_of_month = today.replace(day=1)
-
-    top_children = Child.objects.annotate(
-        total_points=Sum(
-            Case(
-                When(
-                    taskcompletion__status='approved',
-                    taskcompletion__completion_date__gte=start_of_month, 
-                    then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                ),
-                default=Value(0),
-                output_field=IntegerField()
-            )
-        )
-    ).order_by('-total_points')[:3]
-
+    top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
     return render(request, 'child_landing.html', {'top_children': top_children})
+
+
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
@@ -381,43 +353,22 @@ def cancel_request(request):
 
 @login_required
 def points_leaderboard(request):
-    form = DateRangeForm(request.GET or None)
-    children = Child.objects.all()
-
-    # Get the default date range from the database if no dates are selected
-    default_start_date = TaskCompletion.objects.filter(status='approved').aggregate(Min('completion_date'))['completion_date__min']
-    default_end_date = TaskCompletion.objects.filter(status='approved').aggregate(Max('completion_date'))['completion_date__max']
-
-    # If the form is valid and dates are provided, use them; otherwise, use the default range
-    if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
+    form = DateRangeCityForm(request.GET or None)
+    if form.is_valid():
+        city = form.cleaned_data.get('city')  
+        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
+        else:
+            start_date = None
+            end_date = None
     else:
-        start_date = default_start_date
-        end_date = default_end_date
+        city = None
+        start_date = None
+        end_date = None
 
-    if start_date and end_date:
-        children = children.annotate(
-            task_points_within_range=Sum(
-                Case(
-                    When(
-                        taskcompletion__completion_date__range=(start_date, end_date),
-                        taskcompletion__status='approved',  # Filter only approved tasks
-                        then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                    ),
-                    default=Value(0),
-                    output_field=IntegerField()
-                )
-            )
-        ).order_by('-task_points_within_range')
-    else:
-        children = children.annotate(
-            task_points_within_range=Value(0, output_field=IntegerField())
-        )
-
-    for child in children:
-        child.total_points = calculate_total_points(child)
-
+    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
 
 @csrf_exempt

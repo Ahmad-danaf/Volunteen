@@ -10,4 +10,5 @@ urlpatterns = [
     path('child/tasks/<int:child_id>/', views.task_dashboard, name='task_dashboard'),
     path('child/redeemtion/<int:child_id>/', views.redeemtion_dashboard, name='redeemtion_dashboard'),
     path('child/all-rewards/<int:child_id>/', views.all_rewards, name='all_rewards'),
+    path('all-children-leaderboard/', views.all_children_points_leaderboard, name='all_children_leaderboard'),
     ]

@@ -25,6 +25,10 @@
       object-fit: cover;
       margin-bottom: 1rem;
     }
+    #title {
+      margin-right: 0.5rem;
+      color: orangered;
+    }
   </style>
   {% endblock extra_css %}
   
@@ -32,8 +36,8 @@
   <!-- Page Header -->
   <nav class="navbar navbar-light bg-light mb-4">
     <div class="container-fluid">
-      <span class="navbar-brand mb-0 h1">
-        <i class="fas fa-users"></i> בחרו ילד לצפייה בפרטים
+      <span class="navbar-brand mb-0 h1" id="title">
+        <i class="fas fa-users" ></i> בחרו ילד לצפייה בפרטים
       </span>
     </div>
   </nav>
@@ -57,8 +61,8 @@
                   
                   <h5 class="card-title">{{ child.user.username }}</h5>
                   <p class="card-text">
-                    משימות שהוקצו: <strong>{{ child.assigned_tasks_count }}</strong><br>
-                    משימות שהושלמו: <strong>{{ child.completed_tasks_count }}</strong><br>
+                    משימות שהוקצו על ידי המנטורים: <strong>{{ child.assigned_tasks_count }}</strong><br>
+                    משימות שהילד השלים: <strong>{{ child.completed_tasks_count }}</strong><br>
                     Teen Coins שמומשו: <strong>{{ child.teen_coins_used }}</strong>
                   </p>
                 </div>

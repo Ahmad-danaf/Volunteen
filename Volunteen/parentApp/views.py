@@ -13,7 +13,8 @@ from django.utils.timezone import now
 from django.templatetags.static import static
 from shopApp.models import Shop, Reward, Redemption, Category
 from Volunteen.constants import AVAILABLE_CITIES
-
+from childApp.utils.leaderboard_manager import LeaderboardUtils
+from teenApp.interface_adapters.forms import DateRangeCityForm
 
 def parent_landing(request):
     return render(request, 'parent_landing.html')
@@ -156,3 +157,24 @@ def all_rewards(request, child_id):
         'categories_list': categories_list, 
     }
     return render(request, 'parent_reward_list.html', context)
+
+
+@login_required
+def all_children_points_leaderboard(request):
+    form = DateRangeCityForm(request.GET or None)
+    if form.is_valid():
+        city = form.cleaned_data.get('city')  
+        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
+        else:
+            start_date = None
+            end_date = None
+    else:
+        city = None
+        start_date = None
+        end_date = None
+
+    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
+    return render(request, 'all_children_points_leaderboard.html', {'children': children, 'form': form})

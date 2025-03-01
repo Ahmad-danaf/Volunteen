@@ -187,6 +187,26 @@
                 padding: 0.4rem 0.8rem;
             }
         }
+        .reward-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 1rem;
+            gap: 1rem;
+            scroll-snap-type: x mandatory;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+        
+        /* Improve scrolling experience */
+        .reward-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .reward-scroll::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
         
     </style>
 </head>
@@ -276,15 +296,58 @@
         
             // Run filtering on page load
             filterShops();
-        });
-        document.querySelectorAll('.shop-card').forEach(card => {
-            card.addEventListener('click', () => {
-                card.classList.toggle('active');
-                const rewards = card.querySelector('.rewards-container');
-                rewards.style.maxHeight = rewards.style.maxHeight ? null : `${rewards.scrollHeight}px`;
+
+
+             // Prevent click inside rewards from triggering shop toggle
+            document.querySelectorAll('.reward-scroll').forEach(rewardScroll => {
+                rewardScroll.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent click from bubbling to .shop-card
+                });
             });
+    });
+    // Toggle shop rewards when clicking on shop card
+    document.querySelectorAll('.shop-card').forEach(card => {
+        card.addEventListener('click', function () {
+            if (event.target.closest('.reward-scroll')) return; // Ignore clicks inside rewards
+
+            this.classList.toggle('active');
+            const rewards = this.querySelector('.rewards-container');
+            rewards.style.maxHeight = rewards.style.maxHeight ? null : `${rewards.scrollHeight}px`;
         });
-        </script>
+    });
+         // Enable swipe scrolling for reward-scroll
+    document.querySelectorAll('.reward-scroll').forEach(scrollContainer => {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        scrollContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            scrollContainer.classList.add('active');
+            startX = e.pageX - scrollContainer.offsetLeft;
+            scrollLeft = scrollContainer.scrollLeft;
+        });
+
+        scrollContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            scrollContainer.classList.remove('active');
+        });
+
+        scrollContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            scrollContainer.classList.remove('active');
+        });
+
+        scrollContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - scrollContainer.offsetLeft;
+            const walk = (x - startX) * 2;
+            scrollContainer.scrollLeft = scrollLeft - walk;
+        });
+    });
+        
+</script>
 
     
 </body>

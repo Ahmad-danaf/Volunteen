@@ -1,6 +1,6 @@
 AVAILABLE_CITIES = [
     ('TLV', 'תל אביב יפו'),
-    ('TAM', 'טמרה'),
+    ('SKN', 'סכנין'),
 ]
 SHOP_CATEGORIES=[
  ('fast_food', 'אוכל מהיר'),

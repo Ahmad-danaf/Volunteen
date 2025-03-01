@@ -45,8 +45,8 @@
           <div class="card-body">
             <h5 class="card-title"><i class="fas fa-tasks"></i> משימות</h5>
             <p class="card-text">
-              שהוקצו: <strong>{{ assigned_tasks_count }}</strong><br>
-              שהושלמו: <strong>{{ completed_tasks_count }}</strong><br>
+              משימות שהוקצו על ידי המנטורים: <strong>{{ assigned_tasks_count }}</strong><br>
+              משימות שהילד השלים: <strong>{{ completed_tasks_count }}</strong><br>
             </p>
           </div>
         </div>
@@ -66,7 +66,7 @@
       
       <!-- 3. Points / Leaderboard Card -->
       <div class="col-md-4 mb-3">
-        <div class="card shadow-sm" onclick="location.href='{% url 'childApp:points_leaderboard' %}'">
+        <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:all_children_leaderboard' %}'">
           <div class="card-body">
             <h5 class="card-title"><i class="fas fa-trophy"></i> ניקוד</h5>
             <p class="card-text">
