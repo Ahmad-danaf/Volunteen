@@ -13,7 +13,7 @@ from django.utils.timezone import now
 from django.templatetags.static import static
 from shopApp.models import Shop, Reward, Redemption, Category
 from Volunteen.constants import AVAILABLE_CITIES
-from childApp.utils.leaderboard_manager import LeaderboardUtils
+from Volunteen.childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.interface_adapters.forms import DateRangeCityForm
 
 def parent_landing(request):

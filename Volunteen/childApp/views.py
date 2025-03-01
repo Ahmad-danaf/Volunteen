@@ -29,7 +29,7 @@ from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
-from childApp.utils.leaderboard_manager import LeaderboardUtils
+from Volunteen.childApp.utils.LeaderboardUtils import LeaderboardUtils
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
