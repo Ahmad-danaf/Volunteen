@@ -1,0 +1,112 @@
+{% extends "shop_base.html" %}
+{% load static %}
+
+{% block title %}מימושים - {{ shop.name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-4" dir="rtl">
+  <!-- Header -->
+  <header class="flex items-center justify-between mb-4">
+    <div class="flex items-center space-x-2">
+      <img src="{% static 'shop_icon.svg' %}" alt="סמל החנות" class="w-8 h-8">
+      <h1 class="text-2xl font-bold">{{ shop.name }}</h1>
+    </div>
+  </header>
+
+  <!-- Filter/Search Bar -->
+  <div class="mb-4">
+    <input type="text" id="searchInput" placeholder="חיפוש לפי שם ילד, פרס או תאריך..." class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+  </div>
+
+  <!-- Redemption Transactions List -->
+  <div id="redemptionsList" class="space-y-4">
+    {% for redemption in redemptions %}
+      <div class="redemption-card bg-white rounded-xl shadow-lg p-4 flex flex-col space-y-2 transform transition-opacity duration-500 opacity-0 animate-fadeIn" data-child="{{ redemption.child.user.username|lower }}" data-reward="{{ redemption.reward.title|lower }}" data-date="{{ redemption.date_redeemed|date:'d/m/Y H:i' }}">
+        <div class="flex items-center justify-between">
+          <!-- Child Profile and Username -->
+          <div class="flex items-center space-x-2">
+            <img src="{% if redemption.child.avatar %}{{ redemption.child.avatar.url }}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="{{ redemption.child.user.username }}" class="w-10 h-10 rounded-full object-cover">
+            <span class="font-bold text-lg">{{ redemption.child.user.username }}</span>
+          </div>
+          <!-- Date & Time (Fixed Position to the Left) -->
+          <div class="flex items-center text-gray-600 ml-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm">{{ redemption.date_redeemed|date:"d/m/Y" }}</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <!-- Reward Info -->
+          <div class="flex items-center space-x-2">
+            {% if redemption.reward.img %}
+              <img src="{{ redemption.reward.img.url }}" alt="{{ redemption.reward.title }}" class="w-12 h-12 rounded-md object-cover">
+            {% else %}
+              <div class="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4m16 0H4" />
+                </svg>
+              </div>
+            {% endif %}
+            <div>
+              <p class="font-semibold">{{ redemption.reward.title }}</p>
+              <p class="text-sm text-gray-600">כמות: {{ redemption.quantity }}</p>
+            </div>
+          </div>
+          <!-- Points Used -->
+          <div class="text-right">
+            <p class="text-xl font-bold text-red-600">{{ redemption.points_used }} נקודות</p>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-center text-gray-600">אין מימושים להציג</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Fade-in animation for cards after page load
+  window.addEventListener("load", () => {
+    document.querySelectorAll(".redemption-card").forEach(card => {
+      card.style.opacity = 1;
+    });
+  });
+
+  // Basic search functionality to filter redemptions
+  const searchInput = document.getElementById("searchInput");
+  searchInput.addEventListener("input", function() {
+    const filter = this.value.toLowerCase();
+    document.querySelectorAll(".redemption-card").forEach(card => {
+      const childName = card.getAttribute("data-child");
+      const rewardName = card.getAttribute("data-reward");
+      const dateText = card.getAttribute("data-date");
+      if (childName.includes(filter) || rewardName.includes(filter) || dateText.includes(filter)) {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  });
+
+ 
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+</style>
+{% endblock %}

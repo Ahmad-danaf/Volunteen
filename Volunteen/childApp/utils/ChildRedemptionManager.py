@@ -1,6 +1,6 @@
 from django.utils.timezone import now, timedelta
 from django.db.models import Sum, Count
-from shopApp.models import Redemption, Shop
+from shopApp.models import Redemption, Shop, RedemptionRequest
 from django.shortcuts import get_object_or_404
 
 class ChildRedemptionManager:
@@ -76,3 +76,13 @@ class ChildRedemptionManager:
     def get_teen_coins_used(child):
         """Retrieve the total number of teen coins used by the child."""
         return Redemption.objects.filter(child=child).aggregate(total=Sum('points_used'))['total'] or 0
+    
+    @staticmethod
+    def get_not_approved_requests(child):
+        """Retrieve all pending requests for the child."""
+        return RedemptionRequest.objects.filter(
+            child=child
+        ).exclude(status="approved").order_by("-date_requested")
+    
+    
+

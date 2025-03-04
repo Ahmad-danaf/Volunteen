@@ -17,93 +17,11 @@ from teenApp.utils import NotificationManager
 from django.contrib import messages
 from .utils.shop_manager import ShopManager
 from collections import defaultdict
+from Volunteen.constants import REDEMPTION_REQUEST_EXPIRATION_MINUTES
 
 def shop_landing(request):
     return render(request, 'shop_landing.html')
 
-@login_required
-def shop_redeem_points(request):
-    if request.method == 'POST':
-        if 'selected_rewards' in request.POST:
-            selected_rewards = request.POST.get('selected_rewards')
-            request.session['selected_rewards'] = selected_rewards
-            return redirect('shopApp:shop_identify_child')
-        
-    shop = Shop.objects.get(user=request.user)
-    now = datetime.now()
-    start_of_month = now.replace(day=1)
-    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-    remaining_points = shop.max_points - points_used_this_month
-
-    rewards = Reward.objects.filter(
-        shop=shop,
-        points_required__lte=remaining_points
-    )
-
-    return render(request, 'shop_redeem_points.html', {'rewards': rewards, 'remaining_points': remaining_points})
-
-
-@login_required
-def shop_identify_child(request):
-    id_form = IdentifyChildForm()
-
-    if request.method == 'POST':
-        id_form = IdentifyChildForm(request.POST)
-        if id_form.is_valid():
-            identifier = id_form.cleaned_data['identifier']
-            secret_code = id_form.cleaned_data['secret_code']
-            try:
-                child = Child.objects.get(identifier=identifier, secret_code=secret_code)
-                # Update secret code
-                child.secret_code=get_random_digits()
-                child.save()
-                request.session['child_id'] = child.id
-                return redirect('shopApp:shop_complete_transaction')
-            except Child.DoesNotExist:
-                return render(request, 'shop_invalid_identifier.html', {'id_form': id_form})
-
-    return render(request, 'shop_identify_child.html', {'id_form': id_form})
-
-
-@login_required
-def shop_complete_transaction(request):
-    # Extract child ID from session
-    child_id = request.session.get('child_id')
-    if not child_id:
-        return redirect('shopApp:shop_identify_child')
-
-    # Extract selected rewards from session
-    selected_rewards_json = request.session.get('selected_rewards')
-    if not selected_rewards_json:
-        return redirect('shopApp:shop_redeem_points')
-
-    selected_rewards = json.loads(selected_rewards_json)
-    child = get_object_or_404(Child, id=child_id)
-    shop = get_object_or_404(Shop, user=request.user)
-
-    # Call the utility class for redemption logic
-    result = ShopManager.redeem_teencoins_for_rewards(child, shop, selected_rewards)
-
-    if result["status"] == "error":
-        return render(request, 'shop_redemption_error.html', {"message": result["message"]})
-
-    # Clear session data after successful redemption
-    request.session['selected_rewards'] = json.dumps([])
-    request.session.pop('child_id', None)
-
-    return render(request, 'shop_redemption_success.html', {
-        "child": child,
-        "points_used": result["points_used"],
-        "receipt": result["redemptions"],
-    })
-    
-@login_required
-def shop_cancel_transaction(request):
-    # Clear session data related to the transaction
-    request.session.pop('child_id', None)
-    request.session['selected_rewards'] = json.dumps([])
-    return JsonResponse({'status': 'ok'})
 
 @login_required
 def shop_home(request):
@@ -120,8 +38,6 @@ def shop_home(request):
     }
     return render(request, 'shop_home.html', context)
 
-def get_random_digits(n=3):
-    return ''.join(str(random.randint(0, 9)) for _ in range(n))
 
 @login_required
 def shop_redemption_history(request):
@@ -143,6 +59,19 @@ def shop_redemption_history(request):
         'recent_redemptions': last_redemptions,
     }
     return render(request, 'shop_redemption_history.html', context)
+
+
+@login_required
+def shop_redemptions_view(request):
+    shop = get_object_or_404(Shop, user=request.user)
+    # Retrieve all redemption transactions for the shop, latest first
+    redemptions = Redemption.objects.filter(shop=shop).order_by('-date_redeemed')
+    
+    context = {
+        'shop': shop,
+        'redemptions': redemptions,
+    }
+    return render(request, 'shop_redemptions.html', context)
 
 @require_POST
 def toggle_reward_visibility(request, reward_id):
@@ -211,6 +140,7 @@ def pending_redemption_requests(request):
     Retrieves today's pending redemption requests for the current shop,
     groups them by child, and aggregates totals for each child.
     """
+    ShopManager.expire_old_requests()
     shop = get_object_or_404(Shop, user=request.user)
     today = localdate()
 
@@ -240,6 +170,7 @@ def pending_redemption_requests(request):
     context = {
         'aggregated_requests': aggregated,
         'today': today,
+        'expiration_time': REDEMPTION_REQUEST_EXPIRATION_MINUTES
     }
     return render(request, 'pending_requests.html', context)
 
@@ -275,7 +206,7 @@ def process_request(request):
                 'quantity': redemption_req.quantity,
                 'points': redemption_req.reward.points_required
             }]
-            check_result = ShopManager.can_redeem_rewards(redemption_req.child, shop, selected_request)
+            check_result = ShopManager.can_redeem_rewards(redemption_req.child, shop, selected_request, is_approval=True)
             if check_result["status"] == "error":
                 return JsonResponse(check_result, status=400)
             result = ShopManager.approve_redemption_requests(redemption_req.child, selected_request)
@@ -332,7 +263,7 @@ def batch_process_requests(request):
                 })
             
             child = pending_requests.first().child
-            check_result = ShopManager.can_redeem_rewards(child, shop, selected_requests)
+            check_result = ShopManager.can_redeem_rewards(child, shop, selected_requests, is_approval=True)
             if check_result["status"] == "error":
                 return JsonResponse(check_result, status=400)
             result = ShopManager.approve_redemption_requests(child, selected_requests)
@@ -349,5 +280,42 @@ def batch_process_requests(request):
 
         return JsonResponse({"status": "success", "message": "Batch processing successful."})
     
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def approve_all_pending_requests(request):
+    """
+    Approves all pending redemption requests for the current shop,
+    grouped by child. Returns partial success if some children fail.
+    Expects a JSON payload:
+        { "request_ids": [1, 2, 3, ...] }
+    """
+    try:
+        data = json.loads(request.body)
+        request_ids = data.get("request_ids", [])  
+        action = data.get("action", "approve")     # default to 'approve'
+        
+        # Must be "approve" for this flow
+        if action != "approve":
+            return JsonResponse({"status": "error", "message": "Invalid action."}, status=400)
+        
+        shop = get_object_or_404(Shop, user=request.user)
+        
+        # If no request_ids provided, you could default to all pending requests for the shop
+        if request_ids:
+            requests_qs = RedemptionRequest.objects.filter(
+                id__in=request_ids, shop=shop, status='pending'
+            )
+        else:
+            return JsonResponse({"status": "error", "message": "לא ניתן לאשר את כל הבקשות לכולם"}, status=400)
+        
+        if not requests_qs.exists():
+            return JsonResponse({"status": "error", "message": "לא ניתן לאשר את כל הבקשות לכולם"}, status=404)
+        
+        result = ShopManager.approve_multiple_children(shop, requests_qs)
+        return JsonResponse(result)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)

@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from teenApp.entities.TaskCompletion import TaskCompletion
-#need to remove:duration
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name='Title')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)

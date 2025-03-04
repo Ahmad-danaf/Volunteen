@@ -5,7 +5,7 @@ from django.db.models import Q
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef, F
 
 class ChildTaskManager:
 
@@ -30,7 +30,6 @@ class ChildTaskManager:
         Retrieve all Task objects assigned to a child that have not been completed.
         Includes the `is_new` field from `TaskAssignment` and `status` from `TaskCompletion`.
         """
-        from django.db.models import F, Subquery, OuterRef  # Needed for annotation
 
         # Retrieve only the task IDs that were completed
         completed_task_ids = TaskCompletion.objects.filter(

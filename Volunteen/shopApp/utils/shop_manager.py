@@ -4,10 +4,19 @@ from shopApp.models import Reward, Redemption, RedemptionRequest, Shop
 from childApp.models import Child
 from teenApp.utils import NotificationManager
 from childApp.utils.TeenCoinManager import TeenCoinManager  
-from Volunteen.constants import MAX_REWARDS_PER_DAY
+from Volunteen.constants import MAX_REWARDS_PER_DAY, REDEMPTION_REQUEST_EXPIRATION_MINUTES
 from django.utils.timezone import now, localdate
 from django.db.models import Sum
+import random
+from django.utils import timezone
+from datetime import timedelta
+from collections import defaultdict
+
 class ShopManager:
+    
+    @staticmethod
+    def get_random_digits(n=3):
+        return ''.join(str(random.randint(0, 9)) for _ in range(n))
     
     @staticmethod
     def get_all_shop_rewards(shop_id):
@@ -45,9 +54,9 @@ class ShopManager:
 
         # Check if reward count and points exceed the daily limit
         if total_rewards_requested > MAX_REWARDS_PER_DAY:
-            return {"status": "error", "message": "ניתן לרכוש מקסימום 2 פרסים בפעולה אחת."}
+            return {"status": "error", "message": f"ניתן לרכוש מקסימום {MAX_REWARDS_PER_DAY} פרסים בפעולה אחת."}
 
-        if total_rewards_today + total_rewards_requested > 2:
+        if total_rewards_today + total_rewards_requested > MAX_REWARDS_PER_DAY:
             return {"status": "error", "message": "הילד הגיע למגבלת הנקודות היומית של החנות."}
 
         # Enforce shop's monthly redemption limit
@@ -77,8 +86,10 @@ class ShopManager:
                 points_used += reward['quantity'] * reward['points']
                 redemption = Redemption.objects.create(
                     child=child,
+                    reward=reward_obj,
                     points_used=reward['quantity'] * reward['points'],
-                    shop=reward_obj.shop
+                    shop=reward_obj.shop,
+                    quantity=reward['quantity']
                 )
                 redemptions.append({
                     "title": reward_obj.title,
@@ -101,43 +112,131 @@ class ShopManager:
     
     
     @staticmethod
-    def can_redeem_rewards(child, shop, selected_rewards):
+    def can_redeem_rewards(child, shop, selected_rewards, is_approval=False):
         """
         Checks if a child can redeem the requested rewards based on daily limits, available TeenCoins,
         and the shop’s monthly limit.
         """
+        
         today = localdate()
+        start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        # Fetch the child's redemptions for today (both pending and approved)
-        redemptions_today = RedemptionRequest.objects.filter(child=child, shop=shop, date_requested__date=today, status='pending')
-        approved_redemptions_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
+        # Include only pending requests created within the last REDEMPTION_REQUEST_EXPIRATION_MINUTES
+        recent_pending_requests = RedemptionRequest.objects.filter(
+            child=child, shop=shop, date_requested__date=today, status="pending",
+            locked_at__gte=timezone.now() - timedelta(minutes=REDEMPTION_REQUEST_EXPIRATION_MINUTES)
+        )
+        recent_pending_requests_count=0
+        for req in recent_pending_requests:
+            recent_pending_requests_count+=req.quantity
 
-        total_rewards_today = redemptions_today.count() + approved_redemptions_today.count()
-        approved_total = approved_redemptions_today.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-
-        # Calculate the requested rewards and total points needed
+        total_redemption_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
+        total_rewards_today=0
+        for redemption in total_redemption_today:
+            total_rewards_today+=redemption.quantity
         total_rewards_requested = sum(r['quantity'] for r in selected_rewards)
+        if is_approval:
+            if total_rewards_today + total_rewards_requested> MAX_REWARDS_PER_DAY:
+                return {"status": "error", "message": "הילד הגיע למגבלות הרכישות היומיות."}
+        else:
+            if total_rewards_today + recent_pending_requests_count + total_rewards_requested > MAX_REWARDS_PER_DAY:
+                return {"status": "error", "message": "הילד הגיע למגבלות הרכישות היומיות."}
+
         total_points_needed = sum(r['quantity'] * r['points'] for r in selected_rewards)
-
-        if total_rewards_requested > MAX_REWARDS_PER_DAY:
-            return {"status": "error", "message": "ניתן לרכוש מקסימום 2 פרסים בפעולה אחת."}
-
-        if total_rewards_today + total_rewards_requested > MAX_REWARDS_PER_DAY:
-            return {"status": "error", "message": "הילד הגיע למגבלת הנקודות היומית של החנות."}
-
         if TeenCoinManager.get_total_active_teencoins(child) < total_points_needed:
-            return {"status": "error", "message": "אין לך מספיק טינקואינס."}
+            return {"status": "error", "message": "אין לך מספיק טינקואינס לביצוע הרכישה."}
 
-        start_of_month = now().replace(day=1)
+        # Check shop’s available monthly limit (including locked points)
         points_used_this_month = Redemption.objects.filter(
             shop=shop, date_redeemed__gte=start_of_month
         ).aggregate(total_points=Sum('points_used'))['total_points'] or 0
 
-        remaining_points = shop.max_points - points_used_this_month
-        if total_points_needed > remaining_points:
+        locked_points_this_month = shop.locked_usage_this_month
+
+        if total_points_needed > (shop.max_points - (points_used_this_month + locked_points_this_month)):
             return {"status": "error", "message": "החנות עברה את מגבלת הנקודות החודשית."}
 
         return {"status": "success", "message": "הבקשה תקפה וניתן לבצע מימוש."}
+    
+    
+    
+    
+    
+    @staticmethod
+    def approve_multiple_children(shop, requests_qs):
+        """
+        Takes a queryset of RedemptionRequest objects (all 'pending', same shop),
+        groups them by child, and attempts to approve them child by child.
+
+        Returns a structure like:
+        {
+            "status": "success" or "partial_success" or "error",
+            "results": [
+                {
+                    "child_id": <child.id>,
+                    "status": "success" or "error",
+                    "message": "Approved all" or "Not enough points" etc.
+                },
+                ...
+            ]
+        }
+        """
+        grouped_by_child = defaultdict(list)
+        for req in requests_qs:
+            grouped_by_child[req.child].append(req)
+        
+        results = []
+        overall_status = "success"
+
+        for child, child_requests in grouped_by_child.items():
+            # Build selected_requests structure
+            selected_requests = []
+            for r in child_requests:
+                selected_requests.append({
+                    'reward_id': r.reward.id,
+                    'quantity': r.quantity,
+                    'points': r.reward.points_required,
+                    'request_id': r.id
+                })
+            
+            # Validate
+            check_result = ShopManager.can_redeem_rewards(child, shop, selected_requests, is_approval=True)
+            if check_result["status"] == "error":
+                # Mark all requests from this child as failing
+                results.append({
+                    "child_id": child.id,
+                    "status": "error",
+                    "message": check_result["message"]
+                })
+                overall_status = "partial_success"
+                continue
+            
+            # Approve (deduct points, create redemptions)
+            approval_result = ShopManager.approve_redemption_requests(child, selected_requests)
+            if approval_result["status"] == "error":
+                results.append({
+                    "child_id": child.id,
+                    "status": "error",
+                    "message": approval_result["message"]
+                })
+                overall_status = "partial_success"
+                continue
+
+            # Mark each request as approved
+            for r in child_requests:
+                r.status = 'approved'
+                r.save()
+
+            results.append({
+                "child_id": child.id,
+                "status": "success",
+                "message": f"Approved {len(child_requests)} requests for child {child}"
+            })
+
+        return {
+            "status": overall_status,
+            "results": results
+        }
     
     
     @staticmethod
@@ -168,8 +267,10 @@ class ShopManager:
                 
                 redemption = Redemption.objects.create(
                     child=child,
+                    reward=reward_obj,
                     points_used=current_points,
-                    shop=reward_obj.shop
+                    shop=reward_obj.shop,
+                    quantity=item['quantity']
                 )
                 redemptions.append({
                     "title": reward_obj.title,
@@ -205,3 +306,30 @@ class ShopManager:
             return {"status": "success", "message": "הבקשות נדחו בהצלחה."}
         except Exception as e:
             return {"status": "error", "message": str(e)}
+        
+        
+    @staticmethod
+    def expire_old_requests():
+        """
+        Expires all pending redemption requests older than REDEMPTION_REQUEST_EXPIRATION_MINUTES m.
+        For each expired request:
+            - Marks it as 'expired'
+            - Returns the locked points to the child's balance
+            - Unlocks the points from the shop's monthly limit
+        Returns:
+            The number of requests that were expired.
+        """
+        expiration_threshold = timezone.now() - timedelta(minutes=REDEMPTION_REQUEST_EXPIRATION_MINUTES)
+        expired_requests = RedemptionRequest.objects.filter(
+            status='pending',
+            locked_at__lt=expiration_threshold
+        )
+        expired_count = expired_requests.count()
+
+        for req in expired_requests:
+            req.status = 'expired'
+            # Unlock the locked points from the shop's monthly usage
+            req.shop.unlock_monthly_points(req.locked_points)
+            req.save()
+
+        return expired_count

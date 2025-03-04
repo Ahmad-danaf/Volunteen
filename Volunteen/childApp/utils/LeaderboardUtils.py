@@ -3,7 +3,7 @@ from django.utils import timezone
 from childApp.models import Child
 from teenApp.entities.TaskCompletion import TaskCompletion
 from .child_level_management import calculate_total_points  
-from datetime import datetime, time
+from datetime import datetime, time,date, timedelta
 
 class LeaderboardUtils:
     @staticmethod
@@ -68,3 +68,56 @@ class LeaderboardUtils:
         if limit:
             qs = qs[:limit]
         return qs
+    
+    
+    @staticmethod
+    def update_child_streak(child: Child):
+        """
+        Updates the child's daily streak progress if they haven't checked in today.
+        
+        If the child's last streak date was yesterday, the streak continues.
+        If the last streak date was more than a day ago, the streak resets.
+        
+        :param child: The Child instance to update.
+        :return: The updated streak count.
+        """
+        today = date.today()
+
+        if child.last_streak_date == today:
+            return child.streak_count  
+
+        # Update streak logic
+        if child.last_streak_date == today - timedelta(days=1):
+            child.streak_count += 1  # Continue streak
+        else:
+            child.streak_count = 1  # Reset streak
+
+        child.last_streak_date = today
+        child.save()
+
+        return child.streak_count
+
+
+    @staticmethod
+    def get_current_streak(child: Child):
+        """
+        Retrieves the child's correct streak count based on the last recorded date.
+
+        - If the last streak date is today → return current streak count.
+        - If the last streak date was yesterday → return existing streak count.
+        - If the last streak date was more than 1 day ago → streak resets to 0.
+
+        :param child: The Child instance.
+        :return: The correct streak count.
+        """
+        today = date.today()
+
+        if child.last_streak_date == today:
+            return child.streak_count  # Streak remains unchanged
+        
+        if child.last_streak_date == today - timedelta(days=1):
+            return child.streak_count  # Continue streak
+        
+        child.streak_count = 0
+        child.save()
+        return 0  # Reset streak (more than 1 day gap)

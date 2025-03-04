@@ -1,0 +1,63 @@
+{% extends "child_base.html" %}
+{% load static %}
+
+{% block title %}בקשות הממתינות שלי{% endblock %}
+{% block extra_head %}
+    <script src="https://cdn.tailwindcss.com"></script>
+{% endblock extra_head %}
+{% block content %}
+<div class="container mx-auto px-4 py-4" dir="rtl">
+  <!-- Header -->
+  <header class="mb-4">
+    <h2 class="text-2xl font-bold text-center">בקשות פדיון ממתינות</h2>
+  </header>
+
+  <!-- If there are pending requests -->
+  {% if requests %}
+  <div class="space-y-4">
+    {% for request in requests %}
+    <div class="bg-white shadow-lg rounded-xl p-4 flex items-center justify-between border border-gray-200">
+      <!-- Reward Info -->
+      <div class="flex items-center space-x-2">
+        {% if request.reward.img %}
+        <img src="{{ request.reward.img.url }}" alt="{{ request.reward.title }}" class="w-12 h-12 rounded-md object-cover">
+        {% else %}
+        <div class="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4m16 0H4" />
+          </svg>
+        </div>
+        {% endif %}
+        <div>
+          <p class="font-semibold">{{ request.reward.title }}</p>
+          <p class="text-sm text-gray-600">חנות: {{ request.shop.name }}</p>
+          <p class="text-sm text-gray-600">כמות: {{ request.quantity }}</p>
+        </div>
+      </div>
+
+      <!-- Status Badge -->
+      <div class="text-right">
+        <p class="text-xs text-gray-500">{{ request.date_requested|date:"d/m/Y" }}</p>
+        <span class="px-3 py-1 text-xs font-bold rounded-full 
+          {% if request.status == 'pending' %} bg-yellow-100 text-yellow-600 
+          {% elif request.status == 'rejected' %} bg-red-100 text-red-600 
+          {% elif request.status == 'expired' %} bg-gray-100 text-gray-600 
+          {% endif %}">
+          {% if request.status == "pending" %}
+            ממתין לאישור
+          {% elif request.status == "rejected" %}
+            נדחה
+          {% elif request.status == "expired" %}
+            פג תוקף
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <p class="text-center text-gray-600 mt-4">אין בקשות ממתינות.</p>
+  {% endif %}
+</div>
+{% endblock %}
