@@ -170,7 +170,7 @@ def add_task(request, task_id=None, duplicate=False):
             )
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST, files=request.FILES, instance=task if not duplicate else None)
+        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
         
         if taskForm.is_valid():
             new_task = taskForm.save(commit=False)
