@@ -47,14 +47,12 @@
         {% endif %}
         <div class="child-details">
           <h3 class="child-name">
-            {{ group.child.user.first_name }} {{ group.child.user.last_name }}
             <span class="child-username"
               >({{ group.child.user.username }})</span
             >
           </h3>
           <p class="child-summary">
-            {{ group.total_requests }} בקשות | סך נקודות: {{ group.total_points
-            }}
+            {{ group.total_requests }} בקשות | סך נקודות: {{ group.total_points}}
           </p>
         </div>
       </div>

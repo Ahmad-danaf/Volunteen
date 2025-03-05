@@ -516,6 +516,7 @@ def child_not_approved_requests(request):
     """
     Displays all redemption requests for the logged-in child that are not approved.
     """
+    ShopManager.expire_old_requests()
     child = request.user.child  
     pending_requests = ChildRedemptionManager.get_not_approved_requests(child)
     return render(request, "child_not_approved_requests.html", {"requests": pending_requests})
