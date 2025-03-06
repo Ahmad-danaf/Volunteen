@@ -143,43 +143,48 @@
         function submitCheckOut() {
             const preview = document.getElementById('preview');
             const dataURL = preview.src;
-
+        
             if (!dataURL || dataURL.trim() === "") {
                 alert("אנא בחר תמונה לפני ביצוע צ'ק-אאוט.");
                 return;
             }
-
+        
+            const checkOutButton = document.getElementById('checkOutButton');
+            checkOutButton.disabled = true;  // Disable button
+            checkOutButton.innerText = "שולח..."; // Indicate progress
+        
             fetch(dataURL)
                 .then(res => res.blob())
                 .then(blob => {
                     const formData = new FormData();
                     const taskId = "{{ task.id }}";
-
+        
                     formData.append('image', blob, 'checkout_image.jpg');
                     formData.append('task_id', taskId);
-
-                    fetch("{% url 'childApp:submit_check_out' %}", {
+        
+                    return fetch("{% url 'childApp:submit_check_out' %}", {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': '{{ csrf_token }}'
                         },
                         body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("תהליך צ'ק-אאוט בוצע בהצלחה!");
-                            window.location.href = "{% url 'childApp:child_home' %}";
-                        } else {
-                            alert(data.error || "שגיאה בלתי צפויה.");
-                        }
-                    })
-                    .catch(error => {
-                        alert("שגיאה בעת שליחת צ'ק-אאוט.");
                     });
                 })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("צ'ק-אאוט נשמר בהצלחה!");
+                        window.location.href = "{% url 'childApp:child_home' %}";
+                    } else {
+                        throw new Error(data.error || "שגיאה בלתי צפויה.");
+                    }
+                })
                 .catch(error => {
-                    alert("שגיאה בהמרת התמונה לפני השליחה.");
+                    alert(error.message);
+                })
+                .finally(() => {
+                    checkOutButton.disabled = false;  // Re-enable button
+                    checkOutButton.innerText = "אישור צ'ק-אאוט";  // Restore original text
                 });
         }
     </script>

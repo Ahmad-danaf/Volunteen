@@ -4,7 +4,7 @@ from django.db.models import Sum, F, Prefetch
 from django.templatetags.static import static
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django_q.tasks import async_task  
 from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
 from django.utils.timezone import now
@@ -30,6 +30,7 @@ from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
+from childApp.utils.check_in_out_utils import process_check_in, process_check_out
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
@@ -406,17 +407,10 @@ def save_phone_number(request):
 def task_check_in_out(request):
     """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
-
     # Retrieve assigned tasks that are not completed
-    assigned_tasks = ChildTaskManager.get_all_child_active_tasks(child)
-
-    filtered_tasks = []
-    for task in assigned_tasks:
-        task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
-        if not task_completion or not task_completion.checkout_img:
-            filtered_tasks.append(task)
-
-    return render(request, 'task_check_in_out.html', {'tasks': filtered_tasks})
+    assigned_tasks = ChildTaskManager.get_unresolved_tasks_for_child(child)
+    
+    return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})
 
 @login_required
 def check_in(request, task_id):
@@ -452,54 +446,46 @@ def no_check_in(request):
 @csrf_exempt
 @login_required
 def submit_check_in(request):
-    """Submit a check-in image for a task."""
+    """Enqueue a background task to process a check-in image."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
-
     if not task_id or not image:
         return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
     child = request.user.child
-    task = get_object_or_404(Task, id=task_id)
 
-    task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+    # Read the image file into bytes so it can be passed to the task.
+    image_data = image.read()
 
-    # Save image
-    task_completion.checkin_img = default_storage.save(f'checkin_images/{child.id}_{task.id}_checkin.jpg', image)
-    task_completion.save()
+    # Enqueue the task. (child.id and task_id are integers/strings; image_data is bytes.)
+    async_task('childApp.utils.check_in_out_utils.process_check_in', child.id, task_id, image_data)
 
-    return JsonResponse({'success': True, 'message': 'צ\'ק-אין נשמר בהצלחה.'})
+    return JsonResponse({'success': True, 'message': "צ'ק-אין נשלח לעיבוד ברקע."})
 
 @csrf_exempt
 @login_required
 def submit_check_out(request):
-    """Submit a check-out image for a task, ensuring check-in was completed first."""
+    """Enqueue a background task to process a check-out image."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
-
     if not task_id or not image:
         return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
     child = request.user.child
-    task = get_object_or_404(Task, id=task_id)
 
-    task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
+    # Read the image file into bytes.
+    image_data = image.read()
 
-    if not task_completion.checkin_img:
-        return redirect('childApp:no_check_in')
+    # Enqueue the check-out task.
+    async_task('childApp.utils.check_in_out_utils.process_check_out', child.id, task_id, image_data)
 
-    # Save image
-    task_completion.checkout_img = default_storage.save(f'checkout_images/{child.id}_{task.id}_checkout.jpg', image)
-    task_completion.status = 'pending'
-    task_completion.save()
-
-    return JsonResponse({'success': True, 'message': 'צ\'ק-אאוט נשמר. ההמתנה לאישור המנטור.'})
+    return JsonResponse({'success': True, 'message': "צ'ק-אאוט נשלח לעיבוד ברקע."})
 
 @login_required
 def mark_tasks_as_viewed(request):

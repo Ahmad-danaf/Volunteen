@@ -29,3 +29,4 @@ python-dotenv
 psycopg2==2.9.10
 psycopg2-binary==2.9.10
 python-dateutil==2.9.0
+django-q2==1.7.6

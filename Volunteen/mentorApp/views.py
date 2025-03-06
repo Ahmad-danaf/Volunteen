@@ -392,6 +392,8 @@ def mentor_task_images(request):
         completion_date__gte=seven_days_ago 
     )
     return render(request, 'mentor_task_images.html', {'completions': task_completions})
+
+
 @csrf_exempt
 @login_required
 def review_task(request):
@@ -412,11 +414,9 @@ def review_task(request):
                     continue
                 
                 if action == 'approve':
-                    print('Approving task...')
                     task_completion.status = 'approved'
                     task_completion.task.approve_task(task_completion.child)
                     task_completion.remaining_coins = task_completion.task.points+task_completion.bonus_points
-                    print('Task approved.')
                 elif action == 'reject':
                     task_completion.status = 'rejected'
                 

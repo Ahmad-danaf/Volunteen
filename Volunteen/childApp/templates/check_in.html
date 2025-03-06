@@ -147,47 +147,53 @@
 
       
         function submitCheckIn() {
-            const preview = document.getElementById('preview');
-            const dataURL = preview.src; 
+    const preview = document.getElementById('preview');
+    const dataURL = preview.src; 
 
-            if (!dataURL || dataURL.trim() === "") {
-                alert("אנא בחר תמונה לפני ביצוע צ'ק-אין.");
-                return;
+    if (!dataURL || dataURL.trim() === "") {
+        alert("אנא בחר תמונה לפני ביצוע צ'ק-אין.");
+        return;
+    }
+
+    const checkInButton = document.getElementById('checkInButton');
+    checkInButton.disabled = true;  // Disable button
+    checkInButton.innerText = "שולח..."; // Indicate progress
+
+    fetch(dataURL)
+        .then(res => res.blob())
+        .then(blob => {
+            const formData = new FormData();
+            const taskId = "{{ task.id }}";
+
+            formData.append('image', blob, 'checkin_image.jpg');
+            formData.append('task_id', taskId);
+
+            return fetch("{% url 'childApp:submit_check_in' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            });
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("צ'ק-אין נשמר בהצלחה!");
+                window.location.href = "{% url 'childApp:child_home' %}";
+            } else {
+                throw new Error(data.error || "שגיאה בלתי צפויה.");
             }
+        })
+        .catch(error => {
+            alert(error.message);
+        })
+        .finally(() => {
+            checkInButton.disabled = false;  // Re-enable button
+            checkInButton.innerText = "אישור צ'ק-אין";  // Restore original text
+        });
+}
 
-            fetch(dataURL)
-                .then(res => res.blob())
-                .then(blob => {
-                    const formData = new FormData();
-                    const taskId = "{{ task.id }}";
-
-                    formData.append('image', blob, 'checkin_image.jpg');
-                    formData.append('task_id', taskId);
-
-                    fetch("{% url 'childApp:submit_check_in' %}", {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("צ'ק-אין נשמר בהצלחה!");
-                            window.location.href = "{% url 'childApp:child_home' %}";
-                        } else {
-                            alert(data.error || "שגיאה בלתי צפויה.");
-                        }
-                    })
-                    .catch(error => {
-                        alert("שגיאה בעת שליחת צ'ק-אין.");
-                    });
-                })
-                .catch(error => {
-                    alert("שגיאה בהמרת התמונה לפני השליחה.");
-                });
-        }
     </script>
 </body>
 </html>

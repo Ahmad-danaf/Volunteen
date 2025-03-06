@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'django_q',
     'captcha',
     
     # 2FA
@@ -182,3 +182,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+Q_CLUSTER = {
+    'name': 'VolunteenCluster',
+    'workers': 4,  # number of workers
+    'timeout': 120,  # timeout for tasks
+    'retry': 180,  # retry failed tasks after 3 minutes
+    'bulk': 5,  # process 5 tasks at a time
+    'orm': 'default',  # use django orm as the broker (default)
+    "sync": False,
+}

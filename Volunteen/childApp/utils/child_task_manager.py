@@ -200,3 +200,29 @@ class ChildTaskManager:
         Retrieve the list of new tasks assigned to the child.
         """
         return TaskAssignment.objects.filter(child=child, is_new=True)
+    
+    
+    @staticmethod
+    def get_unresolved_tasks_for_child(child):
+        """
+        Returns all tasks assigned to a child that are either:
+        - Not in TaskCompletion at all.
+        - In TaskCompletion but not approved or rejected.
+        """
+        # Get tasks assigned to the child
+        assigned_task_ids = TaskAssignment.objects.filter(child=child).values_list('task_id', flat=True)
+
+        # Get tasks that are either approved or rejected
+        excluded_task_ids = TaskCompletion.objects.filter(
+            child=child, status__in=['approved', 'rejected']
+        ).values_list('task_id', flat=True)
+
+        # Filter tasks: Assigned to the child but not approved or rejected
+        unapproved_tasks = Task.objects.filter(
+            id__in=assigned_task_ids
+        ).exclude(id__in=excluded_task_ids)
+
+        return unapproved_tasks
+    
+    
+ 
