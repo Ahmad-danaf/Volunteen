@@ -26,7 +26,7 @@
             type="checkbox"
             class="select-checkbox"
             data-id="{{ completion.id }}"
-            {% if completion.status not in ['pending', 'checked_in', 'checked_out'] %}disabled{% endif %}
+            {% if completion.status != 'pending' and completion.status != 'checked_in' and completion.status != 'checked_out' %}disabled{% endif %}
             />
         </td>
         <td>{{ completion.child.user.username }}</td>
