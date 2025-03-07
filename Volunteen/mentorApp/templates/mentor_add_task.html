@@ -188,12 +188,14 @@
                     cb.checked = false;
                 });
                 checkAll.disabled = true;
+                checkAll.checked = false;
             } else {
                 childCheckboxes.forEach(cb => {
                     cb.disabled = false;
                     cb.checked = false;
                 });
                 checkAll.disabled = maxChildren === 0 || taskPoints > availableTeencoins / 2;
+                checkAll.checked = false;
             }
         }
 
@@ -202,14 +204,34 @@
             var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
             var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
             
-            if (selectedChildren.length > 0) {
+            // Case 1: Points exceed available teencoins → Disable all
+            if (taskPoints > availableTeencoins) {
                 childCheckboxes.forEach(cb => {
-                    if (!cb.checked) cb.disabled = true;
+                    cb.disabled = true;
+                    cb.checked = false;
                 });
-            } else {
-                childCheckboxes.forEach(cb => cb.disabled = false);
+                checkAll.disabled = true;
+                return;
             }
-            checkAll.disabled = selectedChildren.length > 0 || availableTeencoins < taskPoints || taskPoints > availableTeencoins / 2;
+
+            // Case 2: Disable "Check All" if points are more than half of available teencoins
+            // Case 3: Disable "Check All" if selecting all children would exceed available teencoins
+            var canAssignAll = (taskPoints * childCheckboxes.length) <= availableTeencoins;
+            checkAll.disabled = !canAssignAll || taskPoints > availableTeencoins / 2;
+
+            // Case 4 & 5: A child is selected, manage remaining teencoins
+            childCheckboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.disabled = remainingTeencoins < taskPoints; // Disable if not enough teencoins for another child
+                }
+            });
+
+            // Case 6: If no child is selected, enable checkboxes based on available teencoins
+            if (selectedChildren.length === 0) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = taskPoints > availableTeencoins;
+                });
+            }
         }
 
         pointsInput.addEventListener('input', updateAssignmentLimit);
