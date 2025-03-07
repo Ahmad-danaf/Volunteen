@@ -13,7 +13,8 @@ from django.utils.timezone import now
 from django.templatetags.static import static
 from shopApp.models import Shop, Reward, Redemption, Category
 from Volunteen.constants import AVAILABLE_CITIES
-
+from childApp.utils.LeaderboardUtils import LeaderboardUtils
+from teenApp.interface_adapters.forms import DateRangeCityForm
 
 def parent_landing(request):
     return render(request, 'parent_landing.html')
@@ -52,7 +53,6 @@ def parent_dashboard(request,child_id):
     # Fetch summary data using your utility classes
     assigned_tasks_count = ChildTaskManager.get_assigned_tasks_count(selected_child)
     completed_tasks_count = ChildTaskManager.get_completed_tasks_count(selected_child)
-    total_tasks_count = ChildTaskManager.get_total_tasks_count(selected_child)
     teen_coins_used = ChildRedemptionManager.get_teen_coins_used(selected_child)
 
     context = {
@@ -60,7 +60,6 @@ def parent_dashboard(request,child_id):
         'selected_child_id': selected_child.id,
         'assigned_tasks_count': assigned_tasks_count,
         'completed_tasks_count': completed_tasks_count,
-        'total_tasks_count': total_tasks_count,
         'teen_coins_used': teen_coins_used,
     }
     return render(request, 'parent_dashboard.html', context)
@@ -77,7 +76,6 @@ def task_dashboard(request, child_id):
 
     # Retrieve filtered tasks using the utility class
     filtered_tasks = ChildTaskManager.get_filtered_tasks_by_status_date(child, status_filter, date_filter)
-
     context = {
         'child': child,
         'all_tasks': filtered_tasks,
@@ -158,4 +156,25 @@ def all_rewards(request, child_id):
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list, 
     }
-    return render(request, 'reward.html', context)
+    return render(request, 'parent_reward_list.html', context)
+
+
+@login_required
+def all_children_points_leaderboard(request):
+    form = DateRangeCityForm(request.GET or None)
+    if form.is_valid():
+        city = form.cleaned_data.get('city')  
+        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
+        else:
+            start_date = None
+            end_date = None
+    else:
+        city = None
+        start_date = None
+        end_date = None
+
+    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
+    return render(request, 'all_children_points_leaderboard.html', {'children': children, 'form': form})

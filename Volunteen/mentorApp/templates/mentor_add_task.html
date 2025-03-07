@@ -97,9 +97,11 @@
         </div>
         
         <div class="mb-3">
-            <label for="img" class="form-label">תמונת המשימה</label>
-            <input type="file" id="img" name="img" class="form-control" accept="image/*" onchange="previewImage(event)">
-            <img id="preview" src="{{ form.img.value.url }}" alt="Task Image" width="100" style="display: none; margin-top: 10px;">
+            <label for="image" class="form-label">תמונת המשימה</label>
+            <input type="file" id="image" name="img" class="form-control">
+            {% if form.img.value %}
+                <img src="{{ form.img.value.url }}" alt="Task Image" width="100">
+            {% endif %}
         </div>
 
         <div class="mb-3">
@@ -219,24 +221,6 @@
             updateTeencoins();
         });
     });
-
-    function previewImage(event) {
-        const input = event.target;
-        const preview = document.getElementById('preview');
-
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.style.display = 'none';
-        }
-    }
 
 </script>
 {% endblock %}

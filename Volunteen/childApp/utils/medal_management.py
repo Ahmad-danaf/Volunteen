@@ -1,5 +1,5 @@
 import os
-from childApp.utilities import medal_criteria
+from childApp.utils import medal_criteria
 import json
 from childApp.models import Medal
 
@@ -7,7 +7,7 @@ def load_medals_from_json():
     """
     Load medal definitions from a JSON file and create or update Medal objects in the database.
     """
-    file_path = os.path.join(os.path.dirname(__file__), './utilities/data/medals.json')
+    file_path = os.path.join(os.path.dirname(__file__), './utils/data/medals.json')
     with open(file_path, 'r', encoding='utf-8') as f:
         medals_data = json.load(f)
     

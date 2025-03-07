@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from teenApp.entities.TaskCompletion import TaskCompletion
-#need to remove:duration
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name='Title')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)
@@ -9,7 +8,7 @@ class Task(models.Model):
     description = models.TextField(verbose_name='Task Description', help_text='Enter the task details')
     additional_details = models.TextField(verbose_name='Additional Details', help_text='Enter any additional details about the task', blank=True, null=True)
     points = models.IntegerField(verbose_name='Points', help_text='Enter the points for the task')
-    img = models.ImageField(verbose_name="Image", upload_to='media/images/', null=True, blank=True)
+    img = models.ImageField(verbose_name="Image", upload_to='media/images/', null=True, blank=True, default='defaults/no-image.png')
     assigned_children = models.ManyToManyField('childApp.Child', related_name='assigned_tasks', verbose_name='Assigned Children', blank=True)
     assigned_mentors = models.ManyToManyField('mentorApp.Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
     total_bonus_points = models.IntegerField(default=0, verbose_name='Total Bonus Points', help_text='Total bonus points assigned to this task')

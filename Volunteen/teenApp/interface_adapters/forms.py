@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from captcha.fields import CaptchaField
 from django import forms
 from teenApp.entities.task import Task
-
+from Volunteen.constants import AVAILABLE_CITIES
 from django import forms
 
 
@@ -43,4 +43,21 @@ class DateRangeForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
         label="עד תאריך"
+    )
+    
+class DateRangeCityForm(forms.Form):
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="מתאריך"
+    )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="עד תאריך"
+    )
+    city = forms.ChoiceField(
+        choices=[('ALL', 'כל הערים')] + AVAILABLE_CITIES,
+        required=False,
+        label='עיר'
     )

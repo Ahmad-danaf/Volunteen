@@ -12,7 +12,8 @@
 
     <!-- Include custom styles -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/child_base.css' %}">
-    <link rel="icon" type="image/x-icon" href="{% static 'images/volunteen_logo.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.png' %}">
+    {% block extra_head %}{% endblock %}
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -27,13 +28,13 @@
 
     <!-- Footer with centered logo and support email -->
     <footer>
-        &copy; 2024 Volunteen
+        &copy; 2025 Volunteen
         <div class="support-email">
             <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - לעזרה או תמיכה, צרו קשר ב
         </div>
     </footer>
     
-    <!-- בלוק לטעינת סקריפטים נוספים -->
     {% block extra_scripts %}{% endblock %}
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -19,9 +19,7 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def home_redirect(request):
-    user_groups = list(request.user.groups.values_list('name', flat=True))  # קבלת כל הקבוצות של המשתמש
-    print(f"User: {request.user.username}, Groups: {user_groups}")  # הדפסה לניטור בקונסולה
-
+    user_groups = list(request.user.groups.values_list('name', flat=True))  
     if 'Children' in user_groups:
         return redirect('childApp:child_home')
     elif 'Mentors' in user_groups:

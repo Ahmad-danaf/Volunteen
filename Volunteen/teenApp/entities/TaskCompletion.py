@@ -7,6 +7,8 @@ class TaskCompletion(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('checked_in', 'Checked In'),
+        ('checked_out', 'Checked Out'),
     ]
 
     child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE)
@@ -16,7 +18,7 @@ class TaskCompletion(models.Model):
     remaining_coins = models.IntegerField(default=0, help_text="Unredeemed TeenCoins from this task.")
     checkin_img = models.ImageField(upload_to='checkin_images/', null=True, blank=True, verbose_name='Check-In Image')
     checkout_img = models.ImageField(upload_to='checkout_images/', null=True, blank=True, verbose_name='Check-Out Image')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name='Status')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Status')
     mentor_feedback = models.TextField(null=True, blank=True, verbose_name='Mentor Feedback')
 
     class Meta:

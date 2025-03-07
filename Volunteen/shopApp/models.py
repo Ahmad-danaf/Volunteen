@@ -5,6 +5,7 @@ from Volunteen.constants import AVAILABLE_CITIES,SHOP_CATEGORIES
 from datetime import timedelta
 from django.utils.timezone import now
 from datetime import datetime
+from django.utils import timezone
 
 class Category(models.Model):
     code = models.CharField(max_length=50, unique=True)
@@ -32,6 +33,8 @@ class Shop(models.Model):
         null=True,
     )
     categories = models.ManyToManyField(Category, related_name="shops", verbose_name="Categories")
+    locked_usage_this_month = models.IntegerField(default=0, verbose_name='Locked Points This Month')
+
   
     def __str__(self):
         return self.name
@@ -89,6 +92,19 @@ class Shop(models.Model):
 
         return False
 
+    def lock_monthly_points(self, points):
+        """
+        Increase locked_usage_this_month to reflect newly locked points.
+        """
+        self.locked_usage_this_month += points
+        self.save()
+
+    def unlock_monthly_points(self, points):
+        """
+        Decrease locked_usage_this_month to reflect freed points.
+        """
+        self.locked_usage_this_month = max(self.locked_usage_this_month - points, 0)
+        self.save()
 
 class OpeningHours(models.Model):
     DAYS_OF_WEEK = [
@@ -134,6 +150,7 @@ class RedemptionRequest(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
     ]
 
     child = models.ForeignKey(Child, on_delete=models.CASCADE, verbose_name='Child')
@@ -143,14 +160,22 @@ class RedemptionRequest(models.Model):
     points_used = models.IntegerField(verbose_name='Total Points Used')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name='Request Status')
     date_requested = models.DateTimeField(auto_now_add=True, verbose_name='Date Requested')
+    locked_points = models.IntegerField(default=0, verbose_name='Locked Points') # Points locked when the request is created
+    locked_at = models.DateTimeField(null=True, blank=True, verbose_name='Locked At') # Timestamp when points were locked
 
     def __str__(self):
         return f'{self.child} requested {self.quantity} x {self.reward.title} at {self.shop}'
+    
+    def is_expired(self):
+        """Check if request has expired (older than 30 minutes)."""
+        return self.status == "pending" and self.locked_at and (timezone.now() - self.locked_at) > timedelta(minutes=30)
 
     
         
 class Redemption(models.Model):
     child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE, verbose_name='Child')
+    reward = models.ForeignKey('shopApp.Reward', on_delete=models.CASCADE, verbose_name='Reward Used', null=True, blank=True)
+    quantity = models.IntegerField(verbose_name='Quantity', null=True, blank=True, default=1)
     points_used = models.IntegerField(verbose_name='Points Used')
     date_redeemed = models.DateTimeField(auto_now_add=True, verbose_name='Date Redeemed')
     shop = models.ForeignKey('shopApp.Shop', on_delete=models.CASCADE, verbose_name='Shop')
@@ -159,7 +184,7 @@ class Redemption(models.Model):
     notes = models.TextField(null=True, blank=True, verbose_name='Notes')  # Optional text for additional feedback
 
     def __str__(self):
-        return f'{self.child} redeemed {self.points_used} points at {self.shop} on {self.date_redeemed}'
+        return f'{self.child} redeemed {self.points_used} points for {self.reward} at {self.shop} on {self.date_redeemed}'
     
     def can_rate(self):
         """

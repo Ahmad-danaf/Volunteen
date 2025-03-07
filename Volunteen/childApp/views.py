@@ -7,67 +7,38 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
-from django.db.models import (
-    Sum, F, Prefetch, Min, Max, Case, When, Value, IntegerField, OuterRef, Subquery
-)
-from childApp.utils.child_level_management import calculate_total_points
 from django.utils.timezone import now
 from django.utils import timezone
-from teenApp.interface_adapters.forms import DateRangeForm
+from teenApp.interface_adapters.forms import DateRangeForm,DateRangeCityForm
 import json
 from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
 from teenApp.entities.TaskCompletion import TaskCompletion
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from datetime import datetime
-from teenApp.entities.TaskCompletion import TaskCompletion
-from childApp.models import Child
 from django.utils.timezone import localdate
-from Volunteen.constants import MAX_REWARDS_PER_DAY
-
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-from Volunteen.constants import AVAILABLE_CITIES
-from Volunteen.constants import LEVELS,POINTS_PER_LEVEL
-from Volunteen.constants import AVAILABLE_CITIES, SHOP_CATEGORIES
+from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
+from childApp.utils.LeaderboardUtils import LeaderboardUtils
 
 def child_landing(request):
-
-    today = timezone.now().date()
-    start_of_month = today.replace(day=1)
-
-    top_children = Child.objects.annotate(
-        total_points=Sum(
-            Case(
-                When(
-                    taskcompletion__status='approved',
-                    taskcompletion__completion_date__gte=start_of_month, 
-                    then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                ),
-                default=Value(0),
-                output_field=IntegerField()
-            )
-        )
-    ).order_by('-total_points')[:3]
-
+    top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
     return render(request, 'child_landing.html', {'top_children': top_children})
+
+
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
-
     current_day = datetime.now().weekday()
     current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
     greetings = {
@@ -94,6 +65,7 @@ def child_home(request):
     progress_to_next_level = calculate_progress(child)
 
     active_points = TeenCoinManager.get_total_active_teencoins(child)
+    LeaderboardUtils.get_current_streak(child)
     return render(request, 'child_home.html', {
         'child': child,
         'active_points': active_points,
@@ -102,7 +74,7 @@ def child_home(request):
         'new_tasks': new_tasks,
         'level_name': LEVELS[child.level],
         'level': child.level,
-        'progress_percent': progress_to_next_level  # Pass the computed percentage to the template
+        'progress_percent': progress_to_next_level,
     })
 
 @login_required
@@ -210,7 +182,7 @@ def child_active_list(request):
         assignments = ChildTaskManager.get_all_child_active_tasks(child)
         
 
-        return render(request, 'child_active_list.html', {'assignments': assignments})
+        return render(request, 'child_active_list.html', {'tasks': assignments})
     
     except Child.DoesNotExist:
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
@@ -260,7 +232,7 @@ def rewards_view(request):
                 'title': reward.title,
                 'img_url': reward.img.url if reward.img else static('images/logo.png'),
                 'points': reward.points_required,
-                'sufficient_points': child.points >= reward.points_required
+                'sufficient_points': TeenCoinManager.get_total_active_teencoins(child) >= reward.points_required
             }
             for reward in shop.rewards.filter(is_visible=True)
         ]
@@ -295,6 +267,7 @@ def shop_rewards_view(request, shop_id):
     """
     Display available rewards for a given shop and allow teens to submit redemption requests.
     """
+    ShopManager.expire_old_requests()
     child = get_object_or_404(Child, user=request.user)
     shop = get_object_or_404(Shop, id=shop_id)
 
@@ -304,9 +277,13 @@ def shop_rewards_view(request, shop_id):
     # Calculate daily redemption statistics
     today = localdate()
     redemptions_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
-    total_rewards_today = redemptions_today.count()
-    total_req_rewards_today =RedemptionRequest.objects.filter(child=child, shop=shop, date_requested__date=today).count()
-
+    total_rewards_today = 0
+    for redemption in redemptions_today:
+        total_rewards_today+=redemption.quantity
+    total_req_today =RedemptionRequest.objects.filter(child=child, shop=shop, date_requested__date=today, status="pending")
+    total_req_rewards_today=0
+    for req in total_req_today:
+        total_req_rewards_today+=req.quantity
     # Calculate remaining daily limits
     remaining_rewards = max(0, MAX_REWARDS_PER_DAY - total_rewards_today- total_req_rewards_today)
 
@@ -332,6 +309,7 @@ def submit_redemption_request(request):
     - Uses `can_redeem_rewards` to validate limits.
     - Creates a `RedemptionRequest` if valid.
     """
+    ShopManager.expire_old_requests()
     if request.method != "POST":
         return JsonResponse({"status": "error", "message": "Invalid request method."}, status=400)
 
@@ -344,20 +322,30 @@ def submit_redemption_request(request):
         if not selected_rewards:
             return JsonResponse({"status": "error", "message": "לא נבחרו פרסים."})
 
-        # Check if the child can redeem these rewards
+       #check if the child can redeem these rewards
         validation_result = ShopManager.can_redeem_rewards(child, shop, selected_rewards)
         if validation_result["status"] == "error":
             return JsonResponse(validation_result)
 
-        # Create pending redemption request
+        
+        total_points_needed = sum(item['quantity'] * item['points'] for item in selected_rewards)
+
+        # Lock shop's monthly points immediately
+        shop.lock_monthly_points(total_points_needed)
+
+        now_ts = timezone.now()
         for reward_data in selected_rewards:
             reward = get_object_or_404(Reward, id=reward_data['reward_id'])
+            req_points = reward_data['quantity'] * reward.points_required
+
             RedemptionRequest.objects.create(
                 child=child,
                 shop=reward.shop,
                 reward=reward,
                 quantity=reward_data['quantity'],
-                points_used=reward_data['quantity'] * reward.points_required,
+                points_used=req_points,
+                locked_points=req_points,
+                locked_at=now_ts,
                 status="pending"
             )
 
@@ -365,8 +353,8 @@ def submit_redemption_request(request):
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": f"שגיאה: {str(e)}"}, status=500)
-
-
+    
+    
 @require_POST
 def cancel_request(request):
     """
@@ -381,43 +369,22 @@ def cancel_request(request):
 
 @login_required
 def points_leaderboard(request):
-    form = DateRangeForm(request.GET or None)
-    children = Child.objects.all()
-
-    # Get the default date range from the database if no dates are selected
-    default_start_date = TaskCompletion.objects.filter(status='approved').aggregate(Min('completion_date'))['completion_date__min']
-    default_end_date = TaskCompletion.objects.filter(status='approved').aggregate(Max('completion_date'))['completion_date__max']
-
-    # If the form is valid and dates are provided, use them; otherwise, use the default range
-    if form.is_valid() and form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
+    form = DateRangeCityForm(request.GET or None)
+    if form.is_valid():
+        city = form.cleaned_data.get('city')  
+        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
+        else:
+            start_date = None
+            end_date = None
     else:
-        start_date = default_start_date
-        end_date = default_end_date
+        city = None
+        start_date = None
+        end_date = None
 
-    if start_date and end_date:
-        children = children.annotate(
-            task_points_within_range=Sum(
-                Case(
-                    When(
-                        taskcompletion__completion_date__range=(start_date, end_date),
-                        taskcompletion__status='approved',  # Filter only approved tasks
-                        then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                    ),
-                    default=Value(0),
-                    output_field=IntegerField()
-                )
-            )
-        ).order_by('-task_points_within_range')
-    else:
-        children = children.annotate(
-            task_points_within_range=Value(0, output_field=IntegerField())
-        )
-
-    for child in children:
-        child.total_points = calculate_total_points(child)
-
+    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
     return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
 
 @csrf_exempt
@@ -542,3 +509,15 @@ def mark_tasks_as_viewed(request):
         TaskAssignment.objects.filter(child=child, is_new=True).update(is_new=False)
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
+
+
+@login_required
+def child_not_approved_requests(request):
+    """
+    Displays all redemption requests for the logged-in child that are not approved.
+    """
+    ShopManager.expire_old_requests()
+    child = request.user.child  
+    pending_requests = ChildRedemptionManager.get_not_approved_requests(child)
+    return render(request, "child_not_approved_requests.html", {"requests": pending_requests})
+   

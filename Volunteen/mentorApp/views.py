@@ -170,7 +170,7 @@ def add_task(request, task_id=None, duplicate=False):
             )
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST, files=request.FILES, instance=task if not duplicate else None)
+        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
         
         if taskForm.is_valid():
             new_task = taskForm.save(commit=False)
@@ -383,15 +383,20 @@ def send_whatsapp_message(request):
 
 @login_required
 def mentor_task_images(request):
+    """
+    Retrieves task completions assigned to the mentor that are in 'pending', 'checked_in', or 'checked_out' status
+    within the last 7 days.
+    """
     mentor = get_object_or_404(Mentor, user=request.user)
     seven_days_ago = timezone.now() - timedelta(days=7)  
 
     task_completions = TaskCompletion.objects.filter(
         task__assigned_mentors=mentor,
-        status='pending', 
-        completion_date__gte=seven_days_ago 
+        status__in=['pending', 'checked_in', 'checked_out'],  
+        completion_date__gte=seven_days_ago
     )
     return render(request, 'mentor_task_images.html', {'completions': task_completions})
+
 @csrf_exempt
 @login_required
 def review_task(request):
