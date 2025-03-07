@@ -414,7 +414,7 @@ def review_task(request):
             for task_id in task_ids:
                 task_completion = get_object_or_404(TaskCompletion, id=task_id)
                 
-                if task_completion.status != 'pending':
+                if task_completion.status =='approved' or task_completion.status == 'rejected':
                     continue
                 
                 if action == 'approve':
