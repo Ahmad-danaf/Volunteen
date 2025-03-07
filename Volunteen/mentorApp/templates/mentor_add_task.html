@@ -176,32 +176,38 @@
         var pointsInput = document.getElementById('points');
         var availableTeencoins = {{ available_teencoins }};
 
-        pointsInput.addEventListener('input', function() {
+        function updateAssignmentLimit() {
             var taskPoints = parseInt(pointsInput.value, 10) || 0;
             var maxChildren = Math.floor(availableTeencoins / taskPoints);
             
-            childCheckboxes.forEach(function(checkbox, index) {
-                checkbox.disabled = index >= maxChildren;
-                checkbox.checked = false;
-            });
-            checkAll.disabled = maxChildren === 0;
-        });
-        checkAll.addEventListener('change', function() {
-            var taskPoints = parseInt(pointsInput.value, 10) || 0;
-            var maxChildren = Math.floor(availableTeencoins / taskPoints);
-            
-            childCheckboxes.forEach(function(checkbox, index) {
-                if (index < maxChildren) {
-                    checkbox.checked = checkAll.checked;
-                }
-            });
-        });
+            if (taskPoints > availableTeencoins) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+                checkAll.disabled = true;
+            } else {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    cb.checked = false;
+                });
+                checkAll.disabled = maxChildren === 0 || taskPoints > availableTeencoins / 2;
+            }
+        }
 
         function updateTeencoins() {
-            var points = parseInt(pointsInput.value) || 0;
-            var assignedCount = Array.from(childCheckboxes).filter(cb => cb.checked).length;
-            var remainingTeencoins = availableTeencoins - (assignedCount * points);
-            availableTeencoinsLabel.textContent = ` - ${Math.max(remainingTeencoins, 0)}`;
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
+            var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
+            
+            if (selectedChildren.length > 0) {
+                childCheckboxes.forEach(cb => {
+                    if (!cb.checked) cb.disabled = true;
+                });
+            } else {
+                childCheckboxes.forEach(cb => cb.disabled = false);
+            }
+            checkAll.disabled = selectedChildren.length > 0 || availableTeencoins < taskPoints || taskPoints > availableTeencoins / 2;
         }
 
         pointsInput.addEventListener('input', updateAssignmentLimit);
