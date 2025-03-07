@@ -20,8 +20,9 @@
     </thead>
     <tbody>
       {% for completion in completions %}
-      <tr id="task-row-{{ completion.id }}" class="{% if completion.status != 'pending' %}completed-task{% endif %}">
-        <td>
+      <tr id="task-row-{{ completion.id }}" 
+      class="{% if completion.status != 'pending' and completion.status != 'checked_in' and completion.status != 'checked_out' %}completed-task{% endif %}">
+          <td>
           <input
             type="checkbox"
             class="select-checkbox"
