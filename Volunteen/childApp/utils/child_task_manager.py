@@ -5,7 +5,7 @@ from django.db.models import Q
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from django.db.models import Subquery, OuterRef, F
+from django.db.models import Subquery, OuterRef, F, Value, CharField
 
 class ChildTaskManager:
 
@@ -208,6 +208,7 @@ class ChildTaskManager:
         Returns all tasks assigned to a child that are either:
         - Not in TaskCompletion at all.
         - In TaskCompletion but not approved or rejected.
+        Also includes the status from TaskCompletion (if exists).
         """
         # Get tasks assigned to the child
         assigned_task_ids = TaskAssignment.objects.filter(child=child).values_list('task_id', flat=True)
@@ -217,12 +218,18 @@ class ChildTaskManager:
             child=child, status__in=['approved', 'rejected']
         ).values_list('task_id', flat=True)
 
+        # Subquery to fetch the latest status of the task for the child
+        latest_status_subquery = TaskCompletion.objects.filter(
+            task=OuterRef("pk"), child=child
+        ).values("status")[:1]  # Fetch only one latest status
+
         # Filter tasks: Assigned to the child but not approved or rejected
         unapproved_tasks = Task.objects.filter(
             id__in=assigned_task_ids
-        ).exclude(id__in=excluded_task_ids)
+        ).exclude(id__in=excluded_task_ids).annotate(
+            status=Subquery(latest_status_subquery, output_field=CharField())  # Attach status
+        )
 
         return unapproved_tasks
-    
     
  

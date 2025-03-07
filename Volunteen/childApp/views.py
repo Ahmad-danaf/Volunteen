@@ -408,7 +408,7 @@ def task_check_in_out(request):
     """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
     # Retrieve assigned tasks that are not completed
-    assigned_tasks = ChildTaskManager.get_unresolved_tasks_for_child(child)
+    assigned_tasks = ChildTaskManager.get_unresolved_tasks_for_child(child).order_by('deadline')
     
     return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})
 
