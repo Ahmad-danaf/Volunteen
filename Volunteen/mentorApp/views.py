@@ -12,7 +12,7 @@ from teenApp.use_cases.assign_bonus_points import AssignBonusPoints
 from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
 from teenApp.interface_adapters.forms import DateRangeForm
-from teenApp.utils import NotificationManager
+from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt

@@ -3,7 +3,7 @@ from teenApp.entities.task import Task
 from teenApp.entities.TaskCompletion import TaskCompletion
 from mentorApp.forms import TaskForm
 from childApp.models import Child
-from teenApp.utils import NotificationManager
+from teenApp.utils.NotificationManager import NotificationManager
 from django.db.models import Sum, F, IntegerField
 
 class MentorTaskManager:

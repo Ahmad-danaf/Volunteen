@@ -13,7 +13,7 @@ from django.db.models import Sum, F
 from django.db.models.functions import TruncMonth
 import json
 from django.views.decorators.http import require_POST
-from teenApp.utils import NotificationManager
+from teenApp.utils.NotificationManager import NotificationManager
 from django.contrib import messages
 from .utils.shop_manager import ShopManager
 from collections import defaultdict
