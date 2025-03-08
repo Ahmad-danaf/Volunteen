@@ -1,0 +1,72 @@
+{% extends 'mentor_base.html' %}
+{% load static %}
+{% block title %}בית חונך{% endblock %}
+
+{% block content %}
+<style>
+/* התאמה למסכים קטנים */
+@media only screen and (max-width: 428px) {
+    .btn {
+        font-size: 14px; /* הקטנת טקסט */
+        padding: 12px; /* התאמת ריווח פנימי */
+    }
+}
+
+</style>
+    <div class="section">
+        <h3 dir="rtl">ביצועי הילדים</h3>
+        <table class="performance-table">
+            <thead>
+                <tr>
+                    <th>ילד</th>
+                    <th>יעילות</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in children %}
+                    <tr style="background-color: {{ item.performance_color }};">
+                        <td>{{ item.child.user.username }}</td>
+                        <td>{{ item.efficiency_rate }}%</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_home.css' %}">
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('tasksChart').getContext('2d');
+        var openTasks = {{ open_tasks }};
+        var completedTasks = {{ completed_tasks }};
+        var totalTasks = {{ total_tasks }};
+
+        var chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['משימות פתוחות', 'משימות שהושלמו'],
+                datasets: [{
+                    data: [openTasks, completedTasks],
+                    backgroundColor: ['#FF9800', '#007bff'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'סקירת משימות'
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

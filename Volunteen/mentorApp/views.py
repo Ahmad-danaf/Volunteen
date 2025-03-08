@@ -82,6 +82,40 @@ def mentor_children_details(request):
     return render(request, 'mentor_children_details.html', {'children': children})
 
 @login_required
+def children_performance(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    tasks = Task.objects.filter(assigned_mentors=mentor)
+
+    for task in tasks:
+        if task.is_overdue():
+            task.completed = True
+            task.save()
+
+    total_tasks = tasks.count()
+    completed_tasks = tasks.filter(completed=True).count()
+    efficiency_rate = round((completed_tasks / total_tasks) * 100, 2) if total_tasks > 0 else 0
+
+    children = []
+    for child in mentor.children.all():
+        completed = TaskCompletion.objects.filter(child=child, task__in=tasks).count()
+        assigned_tasks_by_mentor = tasks.filter(assigned_children=child).count()
+        efficiency = round((completed / assigned_tasks_by_mentor) * 100, 2) if assigned_tasks_by_mentor > 0 else 0
+        efficiency = int(efficiency) if efficiency == int(efficiency) else efficiency
+        performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
+        children.append({
+            'child': child,
+            'efficiency_rate': efficiency,
+            'performance_color': performance_color,
+        })
+
+    context = {
+        'efficiency_rate': efficiency_rate,
+        'children': children,
+    }
+    
+    return render(request, 'mentor_children_performance.html', context)
+
+@login_required
 def mentor_completed_tasks_view(request):
     mentor = get_object_or_404(Mentor, user=request.user)
     form = DateRangeForm(request.GET or None)

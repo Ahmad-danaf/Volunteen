@@ -69,6 +69,7 @@
         <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
         <!-- <a href="{% url 'mentorApp:send_whatsapp_message' %}" class="btn mentor-btn"><i class="fas fa-paper-plane"></i> שליחת הודעה לילדים</a> -->
         <!-- <a href="{% url 'mentorApp:assign_bonus' %}" class="btn mentor-btn"><i class="fas fa-star"></i> מתן נקודות בונוס</a> -->
+        <a href="{% url 'mentorApp:children_performance' %}" class="btn mentor-btn"><i class="fas fa-star"></i>ביצועי ילדים</a>
     </div>
 
     <!-- <div class="section" dir="rtl">
@@ -81,26 +82,6 @@
             <canvas id="tasksChart"></canvas>
         </div>
     </div> -->
-
-    <div class="section">
-        <h3 dir="rtl">ביצועי הילדים</h3>
-        <table class="performance-table">
-            <thead>
-                <tr>
-                    <th>ילד</th>
-                    <th>יעילות</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in children %}
-                    <tr style="background-color: {{ item.performance_color }};">
-                        <td>{{ item.child.user.username }}</td>
-                        <td>{{ item.efficiency_rate }}%</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 {% endblock %}
 
 {% block extra_css %}
