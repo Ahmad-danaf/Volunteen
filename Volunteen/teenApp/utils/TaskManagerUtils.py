@@ -38,8 +38,8 @@ class TaskManagerUtils:
         Raises:
             ValueError: If the task completion is not in a pending state.
         """
-        if task_completion.status != 'pending':
-            raise ValueError("Task completion is not in a pending state.")
+        if task_completion.status=='approved':
+            raise ValueError("Task completion is already approved.")
         
         task_completion.status = 'approved'
         task_completion.approved_by = user
@@ -62,11 +62,10 @@ class TaskManagerUtils:
         Raises:
             ValueError: If the task completion is not in a pending state.
         """
-        if task_completion.status != 'pending':
-            raise ValueError("Task completion is not in a pending state.")
+        if task_completion.status == 'rejected':
+            raise ValueError("Task completion is already rejected.")
         
         task_completion.status = 'rejected'
-        # Reusing mentor_feedback field for feedback; can be renamed if a more generic name is needed.
         task_completion.mentor_feedback = feedback
         task_completion.save()
         return task_completion

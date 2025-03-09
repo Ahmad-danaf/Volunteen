@@ -130,7 +130,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="filter-section">
-                <form method="GET" action="{% url 'parentApp:task_dashboard' child.id %}">
+                <form method="GET" action="{% url 'parentApp:mentor_task_dashboard' child.id %}">
                     <label for="status">סטטוס:</label>
                     <select name="status" id="status">
                         <option value="all" {% if status_filter == 'all' %}selected{% endif %}>הכל</option>

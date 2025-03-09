@@ -12,9 +12,17 @@ from django.db.models import Prefetch, Sum
 from django.utils.timezone import now
 from django.templatetags.static import static
 from shopApp.models import Shop, Reward, Redemption, Category
+from teenApp.entities.TaskAssignment import TaskAssignment
+from teenApp.entities.TaskCompletion import TaskCompletion
 from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.interface_adapters.forms import DateRangeCityForm
+from parentApp.utils.ParentTaskUtils import ParentTaskUtils
+from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
+import json
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 def parent_landing(request):
     return render(request, 'parent_landing.html')
@@ -51,22 +59,26 @@ def parent_dashboard(request,child_id):
     selected_child  = get_object_or_404(Child, id=child_id)
     
     # Fetch summary data using your utility classes
-    assigned_tasks_count = ChildTaskManager.get_assigned_tasks_count(selected_child)
-    completed_tasks_count = ChildTaskManager.get_completed_tasks_count(selected_child)
+    mentor_assigned_tasks_count = MentorTaskUtils.get_assigned_tasks_count(selected_child)
+    mentor_completed_tasks_count = MentorTaskUtils.get_completed_tasks_count(selected_child)
+    parent_assigned_tasks_count = ParentTaskUtils.get_assigned_tasks_count(selected_child)
+    parent_completed_tasks_count = ParentTaskUtils.get_completed_tasks_count(selected_child)
     teen_coins_used = ChildRedemptionManager.get_teen_coins_used(selected_child)
 
     context = {
         'selected_child': selected_child,
         'selected_child_id': selected_child.id,
-        'assigned_tasks_count': assigned_tasks_count,
-        'completed_tasks_count': completed_tasks_count,
+        'mentor_assigned_tasks_count': mentor_assigned_tasks_count,
+        'mentor_completed_tasks_count': mentor_completed_tasks_count,
+        'parent_assigned_tasks_count': parent_assigned_tasks_count,
+        'parent_completed_tasks_count': parent_completed_tasks_count,
         'teen_coins_used': teen_coins_used,
     }
     return render(request, 'parent_dashboard.html', context)
 
 
 @login_required
-def task_dashboard(request, child_id):
+def mentor_task_dashboard(request, child_id):
     # Fetch the child object
     child = get_object_or_404(Child, id=child_id)
 
@@ -75,14 +87,14 @@ def task_dashboard(request, child_id):
     date_filter = request.GET.get('date', 'all')  # 'all', 'today', 'this_week', 'this_month'
 
     # Retrieve filtered tasks using the utility class
-    filtered_tasks = ChildTaskManager.get_filtered_tasks_by_status_date(child, status_filter, date_filter)
+    filtered_tasks = MentorTaskUtils.get_mentor_tasks_by_status_date(child, status_filter, date_filter)
     context = {
         'child': child,
         'all_tasks': filtered_tasks,
         'status_filter': status_filter,
         'date_filter': date_filter,
     }
-    return render(request, 'task_dashboard.html', context)
+    return render(request, 'mentor_task_dashboard.html', context)
 
 
 @login_required
@@ -129,7 +141,7 @@ def all_rewards(request, child_id):
                 'title': reward.title,
                 'img_url': reward.img.url if reward.img else static('images/logo.png'),
                 'points': reward.points_required,
-                'sufficient_points': child.points >= reward.points_required
+                'sufficient_points': TeenCoinManager.get_total_active_teencoins(child) >= reward.points_required
             }
             for reward in shop.rewards.filter(is_visible=True)
         ]
@@ -151,7 +163,7 @@ def all_rewards(request, child_id):
                             
     context = {
         'shops': shops_with_images,
-        'child_points': child.points,
+        'child_points': TeenCoinManager.get_total_active_teencoins(child),
         'child_city': child_city,
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list, 
@@ -178,3 +190,298 @@ def all_children_points_leaderboard(request):
 
     children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
     return render(request, 'all_children_points_leaderboard.html', {'children': children, 'form': form})
+
+
+@login_required
+def parent_tasks_view(request):
+    """
+    View for parent to manage tasks - both create new tasks and view/approve existing ones.
+    This view supports three tabs:
+    1. Active tasks - Tasks assigned but not yet started
+    2. Pending review - Tasks in progress (pending, checked_in) 
+    3. Completed tasks - Tasks that have been approved
+    
+    By default, shows tasks within a 3-month window (past month, current month, next month).
+    Can filter tasks by date range if specified in the request.
+    """
+    # Get the parent object
+    try:
+        parent = request.user.parent
+    except Parent.DoesNotExist:
+        return HttpResponseForbidden("Only parents can access this view.")
+    
+    children = ParentTaskUtils.get_children(parent)
+    children_list = [{
+        "id": child.id,
+        "name": child.user.username,  
+        "selected": False
+    } for child in children]
+    
+    # Get all tasks created by this parent
+    assignments = ParentTaskUtils.get_tasks_assigned_by_parent(parent)
+
+    # Setup default date filtering (past month, current month, next month)
+    today = datetime.today().date()
+    first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+    last_day_next_month = today + relativedelta(months=1, day=31)
+
+    # Get filters from request
+    start_date_str = request.GET.get("start_date")
+    end_date_str = request.GET.get("end_date")
+    show_all = request.GET.get("show_all") == "true"
+
+    # Parse user-defined date filters if provided
+    try:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date() if start_date_str else None
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else None
+    except ValueError:
+        start_date, end_date = None, None  # Ignore invalid inputs
+
+    # Apply default date range if no filters are provided and show_all is False
+    if not show_all:
+        start_date = start_date or first_day_last_month
+        end_date = end_date or last_day_next_month
+
+    # Convert to template-friendly format
+    date_filter = {
+        "start_date": start_date.strftime("%Y-%m-%d") if start_date else None,
+        "end_date": end_date.strftime("%Y-%m-%d") if end_date else None,
+        "show_all": show_all,
+    }
+
+    # Filter assignments 
+    if not show_all:
+        assignments = assignments.filter(task__deadline__range=(start_date, end_date))
+        
+    # Dictionaries to store tasks grouped by task ID
+    active_tasks_dict = {}
+    pending_tasks_dict = {}
+    completed_tasks_dict = {}
+    
+    # Process assignments and group them by task
+    for assignment in assignments:
+        task = assignment.task
+        
+        # Get all related task completions for this assignment
+        task_completions = TaskCompletion.objects.filter(
+            task=task, 
+            child=assignment.child
+        )
+        
+        if not task_completions.exists():
+            # This task is active but not started yet
+            if task.id not in active_tasks_dict:
+                # Initialize task with first child
+                active_tasks_dict[task.id] = {
+                    "id": task.id,
+                    "name": task.title,
+                    "description": task.description,
+                    "points": task.points,
+                    "dueDate": task.deadline.strftime("%Y-%m-%d"),
+                    "status": "active",
+                    "assignedTo": [assignment.child.id],
+                    "assignmentIds": [assignment.id],
+                    "children": [{
+                        "id": assignment.child.id,
+                        "name": assignment.child.user.username
+                    }]
+                }
+            else:
+                # Add additional child to existing task
+                active_tasks_dict[task.id]["assignedTo"].append(assignment.child.id)
+                active_tasks_dict[task.id]["assignmentIds"].append(assignment.id)
+                active_tasks_dict[task.id]["children"].append({
+                    "id": assignment.child.id,
+                    "name": assignment.child.user.username
+                })
+        else:
+            # Get the most recent task completion
+            completion = task_completions.latest('completion_date')
+            
+            if completion.status in ['pending', 'checked_in']:
+                # Task is in progress and pending review
+                # Each completion is handled separately since it represents a unique submission
+                pending_tasks_dict[completion.id] = {
+                    "id": task.id,
+                    "name": task.title,
+                    "description": task.description,
+                    "points": task.points,
+                    "dueDate": task.deadline.strftime("%Y-%m-%d"),
+                    "status": completion.status,
+                    "assignedTo": [assignment.child.id],
+                    "assignmentId": assignment.id,
+                    "completionId": completion.id,
+                    "childName": completion.child.user.username,
+                    "childId": completion.child.id,
+                    "checkin_img": completion.checkin_img.url if completion.checkin_img else None,
+                    "checkout_img": completion.checkout_img.url if completion.checkout_img else None
+                }
+            elif completion.status == 'approved':
+                # Task is completed - each completion is handled separately
+                completed_tasks_dict[completion.id] = {
+                    "id": task.id,
+                    "name": task.title,
+                    "description": task.description,
+                    "points": task.points,
+                    "dueDate": task.deadline.strftime("%Y-%m-%d"),
+                    "status": "completed",
+                    "assignedTo": [assignment.child.id],
+                    "assignmentId": assignment.id,
+                    "completionId": completion.id,
+                    "childName": completion.child.user.username,
+                    "childId": completion.child.id,
+                    "completedDate": completion.completion_date.strftime("%Y-%m-%d") if completion.completion_date else None
+                }
+    
+    # Convert dictionaries to lists for the frontend
+    active_tasks = list(active_tasks_dict.values())
+    pending_tasks = list(pending_tasks_dict.values())
+    completed_tasks = list(completed_tasks_dict.values())
+    
+    # Combine all task lists into a structure for the frontend
+    all_tasks = {
+        "active": active_tasks,
+        "pending": pending_tasks,
+        "completed": completed_tasks
+    }
+    
+    context = {
+        "children_json": json.dumps(children_list),
+        "parent_tasks_json": json.dumps(all_tasks),
+        "date_filter_json": json.dumps(date_filter),
+        "available_teencoins": parent.available_teencoins,
+    }
+    return render(request, "parent_tasks.html", context)
+
+@login_required
+def create_parent_task(request):
+    """
+    Handles creating a new task assignment by the parent.
+    Expects a JSON payload with:
+      - name: Task title
+      - description: Task description
+      - points: Task points (and cost)
+      - dueDate: Due date (YYYY-MM-DD)
+      - selectedChildren: List of child IDs (that belong to the parent)
+      
+    The parent's available teencoins must be sufficient; otherwise an error is returned.
+    """
+    if request.method != "POST":
+        return HttpResponseBadRequest("Invalid request method.")
+
+    try:
+        parent = request.user.parent
+    except Parent.DoesNotExist:
+        return HttpResponseForbidden("Only parents can create tasks.")
+    
+    try:
+        data = json.loads(request.body)
+        name = data.get('name')
+        description = data.get('description')
+        points = int(data.get('points', 0))
+        due_date = data.get('dueDate')
+        selected_children = data.get('selectedChildren', [])
+        
+        # Validate the data
+        if not name or not description or points <= 0 or not due_date or not selected_children:
+            return JsonResponse({"success": False, "message": "נתונים חסרים או לא תקינים."}, status=400)
+        
+        # Check if parent has enough teencoins
+        total_cost = points * len(selected_children)
+        if parent.available_teencoins < total_cost:
+            return JsonResponse({
+                "success": False, 
+                "message": f"אין מספיק TEENCoins. נדרש: {total_cost}, זמין: {parent.available_teencoins}."
+            }, status=400)
+           
+        task, assignments = ParentTaskUtils.create_and_assign_task(
+            parent=parent,
+            name=name,
+            description=description,
+            points=points,
+            due_date=due_date,
+            selected_children=selected_children
+        )
+
+        # Get list of children with names for the response
+        children_list = []
+        assignment_ids = []
+        for assignment in assignments:
+            children_list.append({
+                "id": assignment.child.id,
+                "name": assignment.child.user.username
+            })
+            assignment_ids.append(assignment.id)
+        
+        # Return success response with the new task data
+        return JsonResponse({
+            "success": True,
+            "message": "המשימה נוצרה בהצלחה!",
+            "task": {
+                "id": task.id,
+                "name": task.title,
+                "description": task.description,
+                "points": task.points,
+                "dueDate": task.deadline.strftime("%Y-%m-%d"),
+                "status": "pending",
+                "assignedTo": [assignment.child.id for assignment in assignments],
+                "assignmentIds": assignment_ids,
+                "children": children_list
+            },
+            "updatedTeencoins": parent.available_teencoins
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "פורמט JSON לא תקין."}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)
+
+@login_required
+def approve_task_completion(request):
+    """
+    Handles the approval of a task completion by a parent.
+    Expects a JSON payload with:
+      - completionId: The ID of the TaskCompletion to approve
+    """
+    if request.method != "POST":
+        return HttpResponseBadRequest("Invalid request method.")
+    
+    try:
+        parent = request.user.parent
+    except Parent.DoesNotExist:
+        return HttpResponseForbidden("Only parents can approve tasks.")
+    
+    try:
+        data = json.loads(request.body)
+        completion_id = data.get('completionId')
+        
+        if not completion_id:
+            return JsonResponse({"success": False, "message": "מזהה השלמת משימה חסר."}, status=400)
+        
+        try:
+            task_completion = TaskCompletion.objects.get(id=completion_id)
+            
+            # Verify that this completion is for a child of this parent
+            if task_completion.child.parent != parent:
+                return JsonResponse({"success": False, "message": "אין לך הרשאה לאשר משימה זו."}, status=403)
+            
+            # Approve the task completion
+            ParentTaskUtils.approve_task_completion(parent.user, task_completion)
+            
+            # Get updated points for the child using TeenCoinManager
+            child_points = TeenCoinManager.get_total_active_teencoins(task_completion.child)
+            
+            return JsonResponse({
+                "success": True,
+                "message": "המשימה אושרה בהצלחה!",
+                "updatedCompletionStatus": "approved",
+                "childPoints": child_points,
+            })
+            
+        except TaskCompletion.DoesNotExist:
+            return JsonResponse({"success": False, "message": "השלמת המשימה לא נמצאה."}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "פורמט JSON לא תקין."}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)

@@ -174,7 +174,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">משימות אחרונות</h5>
-                    <button class="toggle-tasks-btn" data-url="{% url 'parentApp:task_dashboard' child_id=child.id %}" onclick="goToTasks(this)">הצג את כל המשימות</button>
+                    <button class="toggle-tasks-btn" data-url="{% url 'parentApp:mentor_task_dashboard' child_id=child.id %}" onclick="goToTasks(this)">הצג את כל המשימות</button>
                     <ul class="task-list" id="recent-tasks">
                         {% for task in recent_tasks %}
                         <li>
