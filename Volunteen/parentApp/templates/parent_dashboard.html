@@ -56,7 +56,7 @@
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:parent_tasks' %}'">
           <div class="card-body">
-            <h5 class="card-title"><i class="fas fa-tasks"></i> משימות שהילד קיבל מההורים</h5>
+            <h5 class="card-title"><i class="fas fa-tasks"></i> תנו משימות ועזרו לילד להתקדם :)</h5>
             <p class="card-text">
               משימות שהוקצו על ידי ההורים: <strong>{{ parent_assigned_tasks_count }}</strong><br>
               משימות שהילד השלים: <strong>{{ parent_completed_tasks_count }}</strong><br>
@@ -71,7 +71,7 @@
           <div class="card-body">
             <h5 class="card-title"><i class="fas fa-coins"></i> פרסים שנרכשו</h5>
             <p class="card-text">
-              Teen Coins שמומשו: <strong>{{ teen_coins_used }}</strong>
+              נקודות שמומשו: <strong>{{ teen_coins_used }}</strong>
             </p>
           </div>
         </div>
