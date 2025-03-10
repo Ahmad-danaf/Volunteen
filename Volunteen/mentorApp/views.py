@@ -8,7 +8,6 @@ from django.db.models import Prefetch
 from django.http import JsonResponse
 from mentorApp.models import Mentor
 from teenApp.entities.task import Task
-from teenApp.use_cases.assign_bonus_points import AssignBonusPoints
 from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
 from teenApp.interface_adapters.forms import DateRangeForm
@@ -84,11 +83,7 @@ def mentor_children_details(request):
 
 
 
-assign_bonus_points = AssignBonusPoints(
-    child_repository=ChildRepository(),
-    task_repository=TaskRepository(),
-    mentor_repository=MentorRepository()
-)
+
 
 
 
