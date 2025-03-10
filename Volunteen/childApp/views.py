@@ -103,7 +103,7 @@ def update_streak(request):
 
 @login_required
 def top_streaks(request):
-    top_children = Child.objects.order_by('-streak_count')[:10]
+    top_children = Child.objects.order_by('-streak_count')
     return render(request, "streak_leaderboard.html", {"top_children": top_children})
 
 @login_required

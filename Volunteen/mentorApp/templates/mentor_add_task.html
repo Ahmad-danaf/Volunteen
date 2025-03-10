@@ -109,32 +109,7 @@
             <label for="additional_details" class="form-label">פרטים נוספים</label>
             <textarea id="additional_details" name="additional_details" class="form-control" rows="3">{{ form.additional_details.value|default_if_none:'' }}</textarea>
         </div>
-        <!--         
-        <div class="form-check mb-3 snooze-container">
-            <input type="checkbox" id="snooze" name="snooze" class="form-check-input">
-            <label for="snooze" class="form-check-label">חזור על משימה</label>
-        </div> -->
-        
-        <!-- <div class="mb-3" id="repeat-options" style="display: none;">
-            <select id="repeat" name="repeat" class="form-control">
-                <option value="daily">יומי</option>
-                <option value="weekly">שבועי</option>
-                <option value="monthly">חודשי</option>
-            </select>
-        </div>
-        
-        <div class="mb-3" id="weekly-options" style="display: none;">
-            <label for="week-day" class="form-label">בחר יום בשבוע</label>
-            <select id="week-day" name="week_day" class="form-control">
-                <option value="sunday">ראשון</option>
-                <option value="monday">שני</option>
-                <option value="tuesday">שלישי</option>
-                <option value="wednesday">רביעי</option>
-                <option value="thursday">חמישי</option>
-                <option value="friday">שישי</option>
-                <option value="saturday">שבת</option>
-            </select>
-        </div> -->
+       
         
         <button type="submit" class="btn-submit w-100">הוסף משימה</button>
     </form>
@@ -146,24 +121,7 @@
         var today = new Date().toISOString().split('T')[0];
         deadlineInput.setAttribute('min', today);
         
-        // // Show/hide repeat options
-        // var snoozeCheckbox = document.getElementById('snooze');
-        // var repeatOptions = document.getElementById('repeat-options');
-        // var weeklyOptions = document.getElementById('weekly-options');
-
-        // repeatOptions.style.display = snoozeCheckbox.checked ? 'block' : 'none';
-        // weeklyOptions.style.display = document.getElementById('repeat').value === 'weekly' ? 'block' : 'none';
-
-        // snoozeCheckbox.addEventListener('change', function() {
-        //     repeatOptions.style.display = this.checked ? 'block' : 'none';
-        //     if (!this.checked) {
-        //         weeklyOptions.style.display = 'none';
-        //     }
-        // });
-
-        // document.getElementById('repeat').addEventListener('change', function() {
-        //     weeklyOptions.style.display = this.value === 'weekly' ? 'block' : 'none';
-        // });
+        
 
         // check all childs
         var checkAll = document.getElementById('checkAll');

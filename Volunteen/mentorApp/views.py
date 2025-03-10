@@ -111,7 +111,8 @@ def add_task(request, task_id=None, duplicate=False):
             }
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST)
+        taskForm = TaskForm(mentor=mentor, data=request.POST, files=request.FILES)
+
 
         if taskForm.is_valid():
             # Extract task fields and assigned children
