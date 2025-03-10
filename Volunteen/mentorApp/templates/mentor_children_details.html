@@ -69,13 +69,25 @@
 <script src="{% static 'js/mentor_children_details.js' %}"></script>
 <script>
 function openTasksPopup(button) {
-    let tasksData = JSON.parse(button.getAttribute("data-tasks"));
-    let childName = button.getAttribute("data-child-name");
+    let tasksData;
+    try {
+        tasksData = JSON.parse(button.getAttribute("data-tasks").replace(/'/g, '"'));
+    } catch (error) {
+        console.error("Error parsing tasks JSON:", error);
+        tasksData = [];
+    }
 
+    let childName = button.getAttribute("data-child-name");
     let tasksList = document.getElementById("tasksList");
+
+    if (!tasksList) {
+        console.error("tasksList element not found.");
+        return;
+    }
+
     tasksList.innerHTML = "";
 
-    if (tasksData.length === 0) {
+    if (!tasksData || tasksData.length === 0) {
         tasksList.innerHTML = "<li>אין משימות שהושלמו</li>";
     } else {
         tasksData.forEach(task => {
@@ -85,16 +97,28 @@ function openTasksPopup(button) {
         });
     }
 
-    document.getElementById("popupTitle").textContent = `משימות שהושלמו עבור ${childName}`;
-    document.getElementById("tasksPopup").classList.remove("hidden");
+    let popup = document.getElementById("tasksPopup");
+    if (popup) {
+        document.getElementById("popupTitle").textContent = `משימות שהושלמו עבור ${childName}`;
+        popup.classList.remove("hidden");
+    } else {
+        console.error("Popup element not found.");
+    }
 }
 
 function closeTasksPopup() {
-    document.getElementById("tasksPopup").classList.add("hidden");
+    let popup = document.getElementById("tasksPopup");
+    if (popup) {
+        popup.classList.add("hidden");
+    } else {
+        console.error("Popup element not found.");
+    }
 }
 
 function sortTasksByDate() {
     let tasksList = document.getElementById("tasksList");
+    if (!tasksList) return;
+
     let tasks = Array.from(tasksList.children);
     let sortOrder = document.getElementById("sortTasks").value;
 
@@ -107,5 +131,6 @@ function sortTasksByDate() {
     tasksList.innerHTML = "";
     tasks.forEach(task => tasksList.appendChild(task));
 }
+
 </script>
 {% endblock %}
