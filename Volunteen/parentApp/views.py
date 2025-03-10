@@ -18,7 +18,6 @@ from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.interface_adapters.forms import DateRangeCityForm
 from parentApp.utils.ParentTaskUtils import ParentTaskUtils
-from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 import json
 from datetime import datetime, timedelta
@@ -59,8 +58,8 @@ def parent_dashboard(request,child_id):
     selected_child  = get_object_or_404(Child, id=child_id)
     
     # Fetch summary data using your utility classes
-    mentor_assigned_tasks_count = MentorTaskUtils.get_assigned_tasks_count(selected_child)
-    mentor_completed_tasks_count = MentorTaskUtils.get_completed_tasks_count(selected_child)
+    mentor_assigned_tasks_count = ChildTaskManager.get_mentor_assigned_tasks_count(selected_child)
+    mentor_completed_tasks_count = ChildTaskManager.get_mentor_completed_tasks_count(selected_child)
     parent_assigned_tasks_count = ParentTaskUtils.get_assigned_tasks_count(selected_child)
     parent_completed_tasks_count = ParentTaskUtils.get_completed_tasks_count(selected_child)
     teen_coins_used = ChildRedemptionManager.get_teen_coins_used(selected_child)
@@ -87,7 +86,7 @@ def mentor_task_dashboard(request, child_id):
     date_filter = request.GET.get('date', 'all')  # 'all', 'today', 'this_week', 'this_month'
 
     # Retrieve filtered tasks using the utility class
-    filtered_tasks = MentorTaskUtils.get_mentor_tasks_by_status_date(child, status_filter, date_filter)
+    filtered_tasks = ChildTaskManager.get_mentor_tasks_by_status_date(child, status_filter, date_filter)
     context = {
         'child': child,
         'all_tasks': filtered_tasks,
