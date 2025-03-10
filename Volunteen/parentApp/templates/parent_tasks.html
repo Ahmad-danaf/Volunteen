@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=375px, initial-scale=1.0" />
+    <title>משימות הילדים</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FDCD22",
+              secondary: "#4A90E2",
+            },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      :where([class^="ri-"])::before {
+        content: "\f3c2";
+      }
+      .task-card {
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+      }
+      .action-buttons {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .modal {
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+      }
+      .modal.show {
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <nav
+      class="fixed top-0 right-0 left-0 h-16 bg-primary flex items-center justify-between px-4 z-50"
+    >
+      <!-- Link to Parent Home -->
+      <a
+        href="{% url 'parentApp:parent_home' %}"
+        class="w-8 h-8 flex items-center justify-center"
+      >
+        <i class="ri-user-3-line text-xl"></i>
+      </a>
+
+      <h1 class="text-lg font-bold">משימות הילדים</h1>
+
+      <!-- Link to Parent Tasks -->
+      <a
+        href="{% url 'parentApp:parent_tasks' %}"
+        class="w-8 h-8 flex items-center justify-center"
+        >
+        <i class="ri-refresh-line text-xl"></i>
+    </a>
+
+    </nav>
+
+    <div class="mt-20 px-4">
+      <!-- Display parent's available TEENCoins -->
+      <div class="mb-4 text-center text-sm font-medium text-gray-700">
+        מאזן TEENCoins:
+        <span id="availableTeencoins">{{ available_teencoins }}</span>
+      </div>
+
+      <!-- Date filter UI -->
+      <div class="mb-4 bg-white rounded-lg p-3 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-medium">סינון לפי תאריך</h3>
+          <button id="toggleFilterBtn" class="text-xs text-primary">
+            <i class="ri-filter-3-line mr-1"></i>
+            <span>הצג אפשרויות</span>
+          </button>
+        </div>
+
+        <div id="dateFilterOptions" class="hidden">
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1"
+                >מתאריך</label
+              >
+              <input
+                type="date"
+                id="startDateFilter"
+                class="w-full p-2 text-xs border rounded !rounded-button"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1"
+                >עד תאריך</label
+              >
+              <input
+                type="date"
+                id="endDateFilter"
+                class="w-full p-2 text-xs border rounded !rounded-button"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center mb-2">
+            <input type="checkbox" id="showAllTasks" class="mr-2" />
+            <label for="showAllTasks" class="text-xs">הצג את כל המשימות</label>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              id="applyFilterBtn"
+              class="flex-1 bg-primary text-xs py-1 px-3 rounded !rounded-button"
+            >
+              החל סינון
+            </button>
+            <button
+              id="resetFilterBtn"
+              class="flex-1 border text-xs py-1 px-3 rounded !rounded-button"
+            >
+              איפוס
+            </button>
+          </div>
+        </div>
+
+        <div id="currentFilterInfo" class="text-xs text-gray-500 mt-1">
+          מציג משימות מהחודש הקודם, החודש הנוכחי והחודש הבא
+        </div>
+      </div>
+
+      <div class="flex rounded-full bg-white p-1 mb-6">
+        <button
+          id="activeTabBtn"
+          class="flex-1 py-2 px-4 rounded-full text-sm font-medium bg-primary"
+          onclick="switchTab('active')"
+        >
+          פעילות
+        </button>
+        <button
+          id="pendingTabBtn"
+          class="flex-1 py-2 px-4 rounded-full text-sm font-medium"
+          onclick="switchTab('pending')"
+        >
+          בביצוע
+        </button>
+        <button
+          id="completedTabBtn"
+          class="flex-1 py-2 px-4 rounded-full text-sm font-medium"
+          onclick="switchTab('completed')"
+        >
+          הושלם
+        </button>
+      </div>
+      <div id="activeTaskList" class="space-y-4 mb-24 task-list"></div>
+      <div id="pendingTaskList" class="space-y-4 mb-24 task-list hidden"></div>
+      <div
+        id="completedTaskList"
+        class="space-y-4 mb-24 task-list hidden"
+      ></div>
+    </div>
+    <button
+      id="addTaskBtn"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg !rounded-button"
+    >
+      <i class="ri-add-line text-2xl"></i>
+    </button>
+    <div
+      id="taskModal"
+      class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50"
+    >
+      <h3 class="text-lg font-bold mb-4">משימה חדשה</h3>
+      <form id="taskForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">בחר ילד</label>
+          <div class="relative">
+            <button
+              type="button"
+              id="childSelectBtn"
+              class="w-full p-2 border rounded !rounded-button text-right flex items-center justify-between"
+              onclick="toggleChildSelect()"
+            >
+              <span id="selectedChildren">בחר ילד</span>
+              <i class="ri-arrow-down-s-line"></i>
+            </button>
+            <div
+              id="childSelectDropdown"
+              class="hidden absolute top-full left-0 right-0 mt-1 bg-white border rounded !rounded-button shadow-lg z-10"
+            >
+              <div class="p-2 border-b">
+                <label class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="selectAllChildren"
+                    onchange="toggleAllChildren()"
+                  />
+                  <span>בחר הכל</span>
+                </label>
+              </div>
+              <div class="max-h-48 overflow-y-auto" id="childrenList"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">שם המשימה</label>
+          <input
+            type="text"
+            name="name"
+            class="w-full p-2 border rounded !rounded-button"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">תיאור</label>
+          <textarea
+            name="description"
+            class="w-full p-2 border rounded !rounded-button"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <label class="block text-sm font-medium mb-1">נקודות</label>
+            <input
+              type="number"
+              name="points"
+              class="w-full p-2 border rounded !rounded-button"
+              min="1"
+              required
+            />
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium mb-1">תאריך יעד</label>
+            <input
+              type="date"
+              name="dueDate"
+              class="w-full p-2 border rounded !rounded-button"
+              required
+            />
+          </div>
+        </div>
+        <div class="flex gap-4 mt-6">
+          <button
+            type="button"
+            class="flex-1 py-2 px-4 border rounded !rounded-button"
+            onclick="closeModal()"
+          >
+            ביטול
+          </button>
+          <button
+            type="submit"
+            class="flex-1 py-2 px-4 bg-primary rounded !rounded-button"
+          >
+            הוסף משימה
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Approval Confirmation Modal -->
+    <div
+      id="approvalModal"
+      class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50"
+    >
+      <h3 class="text-lg font-bold mb-4">אישור המשימה</h3>
+      <p class="mb-4">
+        האם אתה בטוח שברצונך לאשר את המשימה? הילד יקבל את הנקודות עבור השלמת
+        המשימה.
+      </p>
+      <div id="approvalTaskDetails" class="mb-4 p-3 bg-gray-50 rounded-lg">
+        <!-- Task details will be inserted here -->
+      </div>
+      <div class="flex gap-4 mt-6">
+        <button
+          type="button"
+          class="flex-1 py-2 px-4 border rounded !rounded-button"
+          onclick="closeApprovalModal()"
+        >
+          ביטול
+        </button>
+        <button
+          id="confirmApprovalBtn"
+          type="button"
+          class="flex-1 py-2 px-4 bg-primary rounded !rounded-button"
+          data-completion-id=""
+        >
+          אשר משימה
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div
+      id="toast"
+      class="fixed top-20 left-1/2 -translate-x-1/2 bg-white px-4 py-2 rounded-lg shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none"
+    >
+      <span id="toastMessage"></span>
+    </div>
+
+    <!-- CSRF Token for POST requests -->
+    <input type="hidden" id="csrfToken" value="{{ csrf_token }}" />
+
+    <script>
+      // Initialize children and tasks from Django context variables
+      const children = JSON.parse("{{ children_json|escapejs }}");
+      const allTasks = JSON.parse("{{ parent_tasks_json|escapejs }}");
+      const dateFilter = JSON.parse("{{ date_filter_json|escapejs }}");
+      let currentTab = "active";
+
+      // Date filter initialization
+      function initializeDateFilter() {
+        const startDateInput = document.getElementById("startDateFilter");
+        const endDateInput = document.getElementById("endDateFilter");
+        const showAllCheckbox = document.getElementById("showAllTasks");
+        const toggleFilterBtn = document.getElementById("toggleFilterBtn");
+        const applyFilterBtn = document.getElementById("applyFilterBtn");
+        const resetFilterBtn = document.getElementById("resetFilterBtn");
+        const filterOptions = document.getElementById("dateFilterOptions");
+        const currentFilterInfo = document.getElementById("currentFilterInfo");
+
+        // Set initial values based on server data
+        if (dateFilter.start_date) {
+          startDateInput.value = dateFilter.start_date;
+        }
+        if (dateFilter.end_date) {
+          endDateInput.value = dateFilter.end_date;
+        }
+        showAllCheckbox.checked = dateFilter.show_all;
+
+        // Update filter info text
+        updateFilterInfoText();
+
+        // Toggle filter options visibility
+        toggleFilterBtn.addEventListener("click", () => {
+          const isHidden = filterOptions.classList.contains("hidden");
+          filterOptions.classList.toggle("hidden");
+          toggleFilterBtn.querySelector("span").textContent = isHidden
+            ? "הסתר אפשרויות"
+            : "הצג אפשרויות";
+          toggleFilterBtn.querySelector("i").className = isHidden
+            ? "ri-filter-off-line mr-1"
+            : "ri-filter-3-line mr-1";
+        });
+
+        // Show/hide date inputs based on "show all" checkbox
+        showAllCheckbox.addEventListener("change", () => {
+          const dateInputs = document.querySelectorAll(
+            "#dateFilterOptions input[type='date']"
+          );
+          dateInputs.forEach((input) => {
+            input.disabled = showAllCheckbox.checked;
+          });
+        });
+
+        // Apply filter button
+        applyFilterBtn.addEventListener("click", () => {
+          applyDateFilter();
+        });
+
+        // Reset filter button
+        resetFilterBtn.addEventListener("click", () => {
+          resetDateFilter();
+        });
+
+        // Initially disable date inputs if "show all" is checked
+        if (showAllCheckbox.checked) {
+          const dateInputs = document.querySelectorAll(
+            "#dateFilterOptions input[type='date']"
+          );
+          dateInputs.forEach((input) => {
+            input.disabled = true;
+          });
+        }
+      }
+
+      function updateFilterInfoText() {
+        const currentFilterInfo = document.getElementById("currentFilterInfo");
+
+        if (dateFilter.show_all) {
+          currentFilterInfo.textContent = "מציג את כל המשימות";
+        } else if (dateFilter.start_date && dateFilter.end_date) {
+          const startDate = new Date(dateFilter.start_date);
+          const endDate = new Date(dateFilter.end_date);
+
+          const formatDate = (date) => {
+            return date.toLocaleDateString("he-IL", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            });
+          };
+
+          currentFilterInfo.textContent = `מציג משימות מ-${formatDate(
+            startDate
+          )} עד ${formatDate(endDate)}`;
+        } else {
+          currentFilterInfo.textContent =
+            "מציג משימות מהחודש הקודם, החודש הנוכחי והחודש הבא";
+        }
+      }
+
+      function applyDateFilter() {
+        const startDateInput = document.getElementById("startDateFilter");
+        const endDateInput = document.getElementById("endDateFilter");
+        const showAllCheckbox = document.getElementById("showAllTasks");
+
+        let url = new URL(window.location.href);
+
+        // Clear existing query parameters
+        url.search = "";
+
+        if (showAllCheckbox.checked) {
+          url.searchParams.set("show_all", "true");
+        } else {
+          if (startDateInput.value) {
+            url.searchParams.set("start_date", startDateInput.value);
+          }
+          if (endDateInput.value) {
+            url.searchParams.set("end_date", endDateInput.value);
+          }
+        }
+
+        // Navigate to the URL with the new filters
+        window.location.href = url.toString();
+      }
+
+      function resetDateFilter() {
+        // Navigate to the page without any filter parameters
+        window.location.href = window.location.pathname;
+      }
+
+      function renderChildren() {
+        const childrenList = document.getElementById("childrenList");
+        childrenList.innerHTML = children
+          .map(
+            (child) => `
+            <label class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" ${
+                child.selected ? "checked" : ""
+              } onchange="toggleChild(${child.id})">
+              <span>${child.name}</span>
+            </label>
+          `
+          )
+          .join("");
+        updateSelectedChildrenDisplay();
+      }
+
+      function toggleChildSelect() {
+        const dropdown = document.getElementById("childSelectDropdown");
+        dropdown.classList.toggle("hidden");
+      }
+
+      function toggleChild(childId) {
+        const child = children.find((c) => c.id === childId);
+        child.selected = !child.selected;
+        updateSelectAllCheckbox();
+        updateSelectedChildrenDisplay();
+      }
+
+      function toggleAllChildren() {
+        const selectAll = document.getElementById("selectAllChildren");
+        children.forEach((child) => (child.selected = selectAll.checked));
+        renderChildren();
+      }
+
+      function updateSelectAllCheckbox() {
+        const selectAll = document.getElementById("selectAllChildren");
+        selectAll.checked = children.every((child) => child.selected);
+        selectAll.indeterminate =
+          children.some((child) => child.selected) &&
+          !children.every((child) => child.selected);
+      }
+
+      function updateSelectedChildrenDisplay() {
+        const selectedChildren = document.getElementById("selectedChildren");
+        const selected = children.filter((child) => child.selected);
+        if (selected.length === 0) {
+          selectedChildren.textContent = "בחר ילד";
+        } else if (selected.length === children.length) {
+          selectedChildren.textContent = "כל הילדים";
+        } else {
+          selectedChildren.textContent = selected
+            .map((child) => child.name)
+            .join(", ");
+        }
+      }
+
+      function renderTasks() {
+        renderActiveTasksList();
+        renderPendingTasksList();
+        renderCompletedTasksList();
+      }
+
+      function renderActiveTasksList() {
+        const taskList = document.getElementById("activeTaskList");
+        if (!allTasks.active || allTasks.active.length === 0) {
+          taskList.innerHTML =
+            '<div class="text-center py-8 text-gray-500">אין משימות פעילות</div>';
+          return;
+        }
+
+        taskList.innerHTML = allTasks.active
+          .map((task) => {
+            // Generate HTML for all children assigned to this task
+            const childrenHTML = task.children
+              .map(
+                (child) =>
+                  `<span class="text-xs bg-gray-100 px-2 py-1 rounded mr-1 mb-1">${child.name}</span>`
+              )
+              .join("");
+
+            return `
+              <div class="task-card bg-white p-4 rounded-lg shadow relative">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-bold">${task.name}</h3>
+                    <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                    <div class="text-xs text-gray-500 mt-1">מוקצה ל-${task.children.length} ילדים</div>
+                    <div class="flex flex-wrap gap-1 mt-2">
+                      ${childrenHTML}
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm">${task.points}</span>
+                    <i class="ri-star-fill text-primary"></i>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center mt-3">
+                  <span class="text-sm text-gray-500">${task.dueDate}</span>
+                  <span class="text-sm text-blue-500">פעילה</span>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderPendingTasksList() {
+        const taskList = document.getElementById("pendingTaskList");
+        if (!allTasks.pending || allTasks.pending.length === 0) {
+          taskList.innerHTML =
+            '<div class="text-center py-8 text-gray-500">אין משימות בהמתנה לאישור</div>';
+          return;
+        }
+
+        taskList.innerHTML = allTasks.pending
+          .map((task) => {
+            // Handle both check-in and check-out images
+            let evidenceHTML = "";
+            const hasCheckinImg = task.checkin_img;
+            const hasCheckoutImg = task.checkout_img;
+
+            if (hasCheckinImg || hasCheckoutImg) {
+              evidenceHTML = `<div class="mt-3 flex flex-wrap gap-2">`;
+
+              if (hasCheckinImg) {
+                evidenceHTML += `
+                  <div class="relative w-24 h-24 overflow-hidden rounded cursor-pointer" 
+                       onclick="openImageModal('${task.checkin_img}', 'תמונת צ׳ק-אין')">
+                    <img src="${task.checkin_img}" loading="lazy" 
+                         class="w-full h-full object-cover rounded hover:opacity-90 transition-opacity" 
+                         alt="תמונת צ׳ק-אין">
+                    <div class="absolute bottom-0 right-0 left-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2 text-center">
+                      צ׳ק-אין
+                    </div>
+                  </div>`;
+              }
+
+              if (hasCheckoutImg) {
+                evidenceHTML += `
+                  <div class="relative w-24 h-24 overflow-hidden rounded cursor-pointer" 
+                       onclick="openImageModal('${task.checkout_img}', 'תמונת צ׳ק-אאוט')">
+                    <img src="${task.checkout_img}" loading="lazy" 
+                         class="w-full h-full object-cover rounded hover:opacity-90 transition-opacity" 
+                         alt="תמונת צ׳ק-אאוט">
+                    <div class="absolute bottom-0 right-0 left-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2 text-center">
+                      צ׳ק-אאוט
+                    </div>
+                  </div>`;
+              }
+
+              evidenceHTML += `</div>`;
+            }
+
+            return `
+            <div class="task-card bg-white p-4 rounded-lg shadow relative">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold">${task.name}</h3>
+                  <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${task.childName}</span>
+                  </div>
+                  ${evidenceHTML}
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">${task.points}</span>
+                  <i class="ri-star-fill text-primary"></i>
+                </div>
+              </div>
+              <div class="flex justify-between items-center mt-3">
+                <span class="text-sm text-gray-500">${task.dueDate}</span>
+              </div>
+              <div class="mt-3 flex justify-end">
+                <button 
+                  class="bg-primary text-sm py-1 px-3 rounded-full" 
+                  onclick="showApprovalModal(${task.completionId}, '${task.name}', '${task.childName}', ${task.points})"
+                >
+                  אשר משימה
+                </button>
+              </div>
+            </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderCompletedTasksList() {
+        const taskList = document.getElementById("completedTaskList");
+        if (!allTasks.completed || allTasks.completed.length === 0) {
+          taskList.innerHTML =
+            '<div class="text-center py-8 text-gray-500">אין משימות שהושלמו</div>';
+          return;
+        }
+
+        taskList.innerHTML = allTasks.completed
+          .map(
+            (task) => `
+            <div class="task-card bg-white p-4 rounded-lg shadow relative">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold">${task.name}</h3>
+                  <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${
+                      task.childName
+                    }</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">${task.points}</span>
+                  <i class="ri-star-fill text-primary"></i>
+                </div>
+              </div>
+              <div class="flex justify-between items-center mt-3">
+                <span class="text-sm text-gray-500">הושלם: ${
+                  task.completedDate || "N/A"
+                }</span>
+                <span class="text-sm text-green-500">הושלם</span>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      function switchTab(tabName) {
+        currentTab = tabName;
+        // Update active button
+        document.getElementById("activeTabBtn").classList.remove("bg-primary");
+        document.getElementById("pendingTabBtn").classList.remove("bg-primary");
+        document
+          .getElementById("completedTabBtn")
+          .classList.remove("bg-primary");
+        document.getElementById(`${tabName}TabBtn`).classList.add("bg-primary");
+
+        // Show/hide task lists
+        document.getElementById("activeTaskList").classList.add("hidden");
+        document.getElementById("pendingTaskList").classList.add("hidden");
+        document.getElementById("completedTaskList").classList.add("hidden");
+        document
+          .getElementById(`${tabName}TaskList`)
+          .classList.remove("hidden");
+
+        // Show/hide add task button based on tab
+        if (tabName === "active") {
+          document.getElementById("addTaskBtn").classList.remove("hidden");
+        } else {
+          document.getElementById("addTaskBtn").classList.add("hidden");
+        }
+      }
+
+      function showModal() {
+        document.getElementById("taskModal").classList.add("show");
+      }
+
+      function closeModal() {
+        document.getElementById("taskModal").classList.remove("show");
+        document.getElementById("taskForm").reset();
+        children.forEach((child) => (child.selected = false));
+        renderChildren();
+      }
+
+      function showApprovalModal(completionId, taskName, childName, points) {
+        const modal = document.getElementById("approvalModal");
+        const detailsContainer = document.getElementById("approvalTaskDetails");
+        const confirmBtn = document.getElementById("confirmApprovalBtn");
+
+        detailsContainer.innerHTML = `
+          <div>
+            <strong>משימה:</strong> ${taskName}
+          </div>
+          <div>
+            <strong>ילד:</strong> ${childName}
+          </div>
+          <div>
+            <strong>נקודות:</strong> ${points}
+          </div>
+        `;
+
+        confirmBtn.setAttribute("data-completion-id", completionId);
+        modal.classList.add("show");
+      }
+
+      function closeApprovalModal() {
+        document.getElementById("approvalModal").classList.remove("show");
+      }
+
+      function showToast(message, isError = false) {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toastMessage");
+
+        toast.classList.remove("bg-green-100", "bg-red-100");
+        toast.classList.add(isError ? "bg-red-100" : "bg-green-100");
+
+        toastMessage.textContent = message;
+        toast.classList.remove("opacity-0");
+        toast.classList.add("opacity-100");
+
+        setTimeout(() => {
+          toast.classList.remove("opacity-100");
+          toast.classList.add("opacity-0");
+        }, 3000);
+      }
+
+      document
+        .getElementById("addTaskBtn")
+        .addEventListener("click", showModal);
+
+      document
+        .getElementById("taskForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const selectedChildIds = children
+            .filter((child) => child.selected)
+            .map((child) => child.id);
+
+          if (selectedChildIds.length === 0) {
+            showToast("נא לבחור לפחות ילד אחד", true);
+            return;
+          }
+
+          const taskData = {
+            name: formData.get("name"),
+            description: formData.get("description"),
+            points: parseInt(formData.get("points"), 10),
+            dueDate: formData.get("dueDate"),
+            selectedChildren: selectedChildIds,
+          };
+
+          try {
+            const response = await fetch("/parent/tasks/create/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById("csrfToken").value,
+              },
+              body: JSON.stringify(taskData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              // Add the new task to our active tasks list
+              if (!allTasks.active) allTasks.active = [];
+
+              // Create a list of child objects for the new task
+              const childrenList = selectedChildIds.map((childId) => {
+                const childObj = children.find((c) => c.id === childId);
+                return {
+                  id: childId,
+                  name: childObj ? childObj.name : "Unknown",
+                };
+              });
+
+              // Add the new task with all selected children
+              allTasks.active.unshift({
+                id: result.task.id,
+                name: result.task.name,
+                description: result.task.description,
+                points: result.task.points,
+                dueDate: result.task.dueDate,
+                status: "active",
+                assignedTo: selectedChildIds,
+                assignmentIds: result.task.assignmentIds || [],
+                children: childrenList,
+              });
+
+              // Update the UI
+              renderTasks();
+              closeModal();
+              e.target.reset();
+
+              // Update available teencoins
+              document.getElementById("availableTeencoins").textContent =
+                result.updatedTeencoins;
+
+              showToast(result.message);
+            } else {
+              showToast(result.message, true);
+            }
+          } catch (error) {
+            console.error("Error creating task:", error);
+            showToast("אירעה שגיאה ביצירת המשימה", true);
+          }
+        });
+
+      document
+        .getElementById("confirmApprovalBtn")
+        .addEventListener("click", async () => {
+          const completionId = document
+            .getElementById("confirmApprovalBtn")
+            .getAttribute("data-completion-id");
+
+          try {
+            const response = await fetch("/parent/tasks/approve/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById("csrfToken").value,
+              },
+              body: JSON.stringify({ completionId }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              // Move task from pending to completed
+              const taskIndex = allTasks.pending.findIndex(
+                (task) => task.completionId == completionId
+              );
+
+              if (taskIndex !== -1) {
+                const task = allTasks.pending[taskIndex];
+                task.status = "completed";
+                task.completedDate = new Date().toISOString().split("T")[0]; // Today's date
+
+                if (!allTasks.completed) allTasks.completed = [];
+                allTasks.completed.unshift(task);
+                allTasks.pending.splice(taskIndex, 1);
+
+                renderTasks();
+                closeApprovalModal();
+                showToast(result.message);
+              }
+            } else {
+              showToast(result.message, true);
+            }
+          } catch (error) {
+            console.error("Error approving task:", error);
+            showToast("אירעה שגיאה באישור המשימה", true);
+          }
+        });
+
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        const dropdown = document.getElementById("childSelectDropdown");
+        const button = document.getElementById("childSelectBtn");
+        if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+          dropdown.classList.add("hidden");
+        }
+      });
+
+      // Initialize the page
+      renderChildren();
+      renderTasks();
+      initializeDateFilter();
+
+      // Add responsive styling for better phone experience -
+      // Limit filter height on smaller screens
+      function addResponsiveStyles() {
+        const style = document.createElement("style");
+        style.textContent = `
+          @media (max-width: 480px) {
+            #dateFilterOptions {
+              max-height: 90vh;
+            }
+            .task-card {
+              position: relative;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      addResponsiveStyles();
+
+      // Image Modal Functions
+      function openImageModal(imageUrl, title) {
+        // Create modal if it doesn't exist
+        let imageModal = document.getElementById("imageViewerModal");
+        if (!imageModal) {
+          imageModal = document.createElement("div");
+          imageModal.id = "imageViewerModal";
+          imageModal.className =
+            "fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 opacity-0 transition-opacity duration-300";
+          imageModal.innerHTML = `
+            <div class="relative w-full h-full flex flex-col items-center justify-center p-4">
+              <button id="closeImageModal" class="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center z-10">
+                <i class="ri-close-line text-xl"></i>
+              </button>
+              <h3 id="imageModalTitle" class="text-white text-xl mb-4"></h3>
+              <div class="w-full h-full max-w-3xl max-h-[70vh] flex items-center justify-center">
+                <img id="modalImage" src="" alt="תמונה מוגדלת" class="max-w-full max-h-full object-contain">
+              </div>
+            </div>
+          `;
+          document.body.appendChild(imageModal);
+
+          // Add event listener to close button
+          document
+            .getElementById("closeImageModal")
+            .addEventListener("click", closeImageModal);
+
+          // Close when clicking outside the image
+          imageModal.addEventListener("click", function (e) {
+            if (e.target === imageModal) {
+              closeImageModal();
+            }
+          });
+        }
+
+        // Set image and title
+        document.getElementById("modalImage").src = imageUrl;
+        document.getElementById("imageModalTitle").textContent = title;
+
+        // Show modal
+        imageModal.style.display = "flex";
+        setTimeout(() => {
+          imageModal.classList.add("opacity-100");
+        }, 10);
+
+        // Prevent body scrolling
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeImageModal() {
+        const imageModal = document.getElementById("imageViewerModal");
+        if (imageModal) {
+          imageModal.classList.remove("opacity-100");
+          setTimeout(() => {
+            imageModal.style.display = "none";
+          }, 300);
+        }
+
+        // Restore body scrolling
+        document.body.style.overflow = "";
+      }
+    </script>
+  </body>
+</html>

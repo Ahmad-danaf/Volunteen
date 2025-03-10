@@ -2,7 +2,7 @@ import json
 from django.shortcuts import get_object_or_404
 from shopApp.models import Reward, Redemption, RedemptionRequest, Shop
 from childApp.models import Child
-from teenApp.utils import NotificationManager
+from teenApp.utils.NotificationManager import NotificationManager
 from childApp.utils.TeenCoinManager import TeenCoinManager  
 from Volunteen.constants import MAX_REWARDS_PER_DAY, REDEMPTION_REQUEST_EXPIRATION_MINUTES
 from django.utils.timezone import now, localdate

@@ -11,10 +11,7 @@ class Task(models.Model):
     img = models.ImageField(verbose_name="Image", upload_to='media/images/', null=True, blank=True, default='defaults/no-image.png')
     assigned_children = models.ManyToManyField('childApp.Child', related_name='assigned_tasks', verbose_name='Assigned Children', blank=True)
     assigned_mentors = models.ManyToManyField('mentorApp.Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
-    total_bonus_points = models.IntegerField(default=0, verbose_name='Total Bonus Points', help_text='Total bonus points assigned to this task')
     completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
-    admin_max_points = models.IntegerField(default=0, verbose_name='Max Bonus Points', help_text='Max bonus points assigned to this task')
-    checkin_checkout_type = models.BooleanField(null=True, blank=True, default=False, verbose_name='Checkin Checkout Type', help_text='Checkin Checkout Type')
 
     def __str__(self):
         return self.title

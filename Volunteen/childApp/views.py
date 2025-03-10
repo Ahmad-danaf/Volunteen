@@ -59,13 +59,13 @@ def child_home(request):
         for task in new_tasks:
             ChildTaskManager.mark_task_as_viewed(child, task)
 
-    def calculate_progress(child):
+    def calculate_progress(child,points):
         points_needed_for_next_level = POINTS_PER_LEVEL
-        return (child.points % points_needed_for_next_level) / points_needed_for_next_level * POINTS_PER_LEVEL
+        return (points % points_needed_for_next_level) / points_needed_for_next_level * POINTS_PER_LEVEL
     
-    progress_to_next_level = calculate_progress(child)
-
     active_points = TeenCoinManager.get_total_active_teencoins(child)
+    progress_to_next_level = calculate_progress(child,active_points)
+
     LeaderboardUtils.get_current_streak(child)
     return render(request, 'child_home.html', {
         'child': child,
@@ -256,7 +256,7 @@ def rewards_view(request):
                             
     context = {
         'shops': shops_with_images,
-        'child_points': child.points,
+        'child_points': TeenCoinManager.get_total_active_teencoins(child),
         'child_city': child_city,
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list, 

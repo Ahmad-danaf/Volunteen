@@ -12,13 +12,14 @@ from teenApp.use_cases.assign_bonus_points import AssignBonusPoints
 from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
 from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
 from teenApp.interface_adapters.forms import DateRangeForm
-from teenApp.utils import NotificationManager
+from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum,IntegerField, F
 from datetime import timedelta
 from django.db import transaction
+from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 
 @login_required
 def mentor_home(request):
@@ -81,34 +82,7 @@ def mentor_children_details(request):
 
     return render(request, 'mentor_children_details.html', {'children': children})
 
-@login_required
-def mentor_completed_tasks_view(request):
-    mentor = get_object_or_404(Mentor, user=request.user)
-    form = DateRangeForm(request.GET or None)
-    task_data = []
 
-    if form.is_valid():
-        start_date = form.cleaned_data['start_date']
-        end_date = form.cleaned_data['end_date']
-    else:
-        start_date = None
-        end_date = None
-
-    tasks = Task.objects.filter(assigned_mentors=mentor, completed=True)
-    if start_date and end_date:
-        tasks = tasks.filter(deadline__range=(start_date, end_date))
-
-        for task in tasks:
-            completions = TaskCompletion.objects.filter(task=task)
-            task_info = {
-                'task': task,
-                'form': TaskImageForm(instance=task),
-                'completed_by': [completion.child for completion in completions],
-                'completed_count': completions.count(),
-            }
-            task_data.append(task_info)
-
-    return render(request, 'mentor_completed_tasks_view.html', {'task_data': task_data, 'form': form})
 
 assign_bonus_points = AssignBonusPoints(
     child_repository=ChildRepository(),
@@ -116,99 +90,51 @@ assign_bonus_points = AssignBonusPoints(
     mentor_repository=MentorRepository()
 )
 
-@login_required
-def assign_bonus(request):
-    mentor = get_object_or_404(Mentor, user=request.user)
-    
-    if request.method == 'POST':
-        form = BonusPointsForm(mentor, request.POST)
-        if form.is_valid():
-            task = form.cleaned_data['task']
-            child = form.cleaned_data['child']
-            bonus_points = form.cleaned_data['bonus_points']
-            
-            if bonus_points > 10:
-                return render(request, 'assign_bonus.html', {'form': form, 'error': 'Maximum of 10 bonus points per assignment is allowed.'})
-            
-            try:
-                assign_bonus_points.execute(task.id, child.id, mentor.id, bonus_points)
-                TaskCompletion.objects.filter(task=task, child=child).update(bonus_points=bonus_points)
-                return redirect('mentorApp:mentor_home')
-            except ValueError as e:
-                return render(request, 'assign_bonus.html', {'form': form, 'error': str(e)})
-    else:
-        form = BonusPointsForm(mentor)
-    
-    return render(request, 'assign_bonus.html', {'form': form})
 
-def load_children(request):
-    task_id = request.GET.get('task_id')
-    
-    # Filter children based on TaskCompletion for the given task
-    completed_children = Child.objects.filter(
-        taskcompletion__task_id=task_id  # Join with TaskCompletion model to get children who have completed the task
-    ).order_by('user__username')
-
-    # Return the list of children with their IDs and usernames
-    return JsonResponse(list(completed_children.values('id', 'user__username')), safe=False)
 
 @login_required
 def add_task(request, task_id=None, duplicate=False):
     mentor = get_object_or_404(Mentor, user=request.user)
-    task = None
+    task_data = {}
 
+    # Handle task duplication
     if task_id:
         original_task = get_object_or_404(Task, id=task_id)
         if duplicate:
-            task = Task(
-                title=f"{original_task.title} (העתק)",
-                description=original_task.description,
-                points=original_task.points,
-                deadline=original_task.deadline,
-                additional_details=original_task.additional_details,
-                img=original_task.img,
-            )
+            task_data = {
+                "title": f"{original_task.title} (העתק)",
+                "description": original_task.description,
+                "points": original_task.points,
+                "deadline": original_task.deadline,
+                "additional_details": original_task.additional_details,
+                "img": original_task.img,
+            }
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST, instance=task if not duplicate else None)
-        
+        taskForm = TaskForm(mentor=mentor, data=request.POST)
+
         if taskForm.is_valid():
-            new_task = taskForm.save(commit=False)
+            # Extract task fields and assigned children
+            task_data.update(taskForm.cleaned_data)
             assigned_children = taskForm.cleaned_data['assigned_children']
-            total_cost = new_task.points * assigned_children.count()
+            children_ids = list(assigned_children.values_list("id", flat=True))
 
-            # טרנזאקציה כדי למנוע מצבים של חצי עדכון
-            with transaction.atomic():
-                mentor.refresh_from_db()
-                if mentor.available_teencoins < total_cost:
-                    messages.error(request, "אין לך מספיק Teencoins לשיוך המשימה.")
-                else:
-                    if 'checkin_checkout_type' in taskForm.cleaned_data:
-                        new_task.checkin_checkout_type = bool(int(taskForm.cleaned_data['checkin_checkout_type']))
-                    new_task.save()
-                    new_task.assigned_mentors.add(mentor)
-                    new_task.assigned_children.set(assigned_children)  # שיוך הילדים למשימה
-                    taskForm.save_m2m()  # שמירת קשרים בטופס
+            try:
+                # Create the task with mentor assignment and children
+                new_task = MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
 
-                    # יצירת `TaskAssignment` לכל ילד שמשויך למשימה
-                    TaskAssignment.objects.bulk_create([
-                        TaskAssignment(task=new_task, child=child) for child in assigned_children
-                    ])
+                messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
+                return redirect('mentorApp:mentor_home')
 
-                    # הורדת ה-Teencoins מהמנטור
-                    mentor.available_teencoins -= total_cost
-                    mentor.save()
-
-                    messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
-                    return redirect('mentorApp:mentor_home')
+            except ValueError as e:
+                messages.error(request, str(e))
 
     else:
-        taskForm = TaskForm(mentor=mentor, instance=task)
+        taskForm = TaskForm(mentor=mentor, initial=task_data)
 
     return render(request, 'mentor_add_task.html', {
         'form': taskForm,
         'children': mentor.children.all(),
-        'task': task,
         'is_duplicate': duplicate,
         'available_teencoins': mentor.available_teencoins
     })
@@ -248,11 +174,6 @@ def edit_task(request, task_id):
      
      return render(request, 'edit_task.html', {'form': form, 'task': task, 'available_teencoins': mentor.available_teencoins})
 
-@login_required
-def mentor_active_list(request):
-    mentor = Mentor.objects.get(user=request.user)
-    tasks = Task.objects.filter(assigned_mentors=mentor)
-    return render(request, 'list_tasks.html', {'tasks': tasks})
 
 @login_required
 def mentor_task_list(request):

@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 
 class Parent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='User')
+    available_teencoins = models.IntegerField(default=0, verbose_name='Available TeenCoins')
     
     def __str__(self):
         return self.user.username
