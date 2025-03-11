@@ -185,9 +185,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 Q_CLUSTER = {
     'name': 'VolunteenCluster',
     'workers': 4,  # number of workers
-    'timeout': 120,  # timeout for tasks
-    'retry': 180,  # retry failed tasks after 3 minutes
-    'bulk': 5,  # process 5 tasks at a time
+    'recycle': 500,  # Restart each worker after processing 300 tasks
+    'timeout': 60,  # timeout for tasks
+    'retry': 100,  # retry failed tasks after x s
+    'bulk': 5,  # process x tasks at a time
+    'poll': 0.8,  # Workers check queue every 0.3s (balance between speed & CPU usage)
     'orm': 'default',  # use django orm as the broker (default)
     "sync": False,
 }
