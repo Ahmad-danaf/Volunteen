@@ -48,7 +48,7 @@
     <h1>צ'ק-אין כבר בוצע</h1>
     <p>כבר ביצעת צ'ק-אין למשימה "<strong>{{ task.title }}</strong>".</p>
     <p>האם ברצונך להעלות תמונה חדשה?</p>
-    <a href="{% url 'childApp:check_in' task.id %}?replace_image=true" class="btn btn-primary">כן, העלה תמונה חדשה</a>
+    <a href="{% url 'childApp:check_in' task.id %}?replace_image=true&special_permissions={{ special_permissions|yesno:'true,false' }}" class="btn btn-primary">כן, העלה תמונה חדשה</a>
     <a href="{% url 'childApp:task_check_in_out' %}" class="btn btn-secondary">חזרה לרשימת המשימות</a>
     </body>
 </body>

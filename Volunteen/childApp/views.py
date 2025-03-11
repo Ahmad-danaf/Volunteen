@@ -24,7 +24,7 @@ from django.utils.timezone import localdate
 from .forms import RedemptionRatingForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS
+from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
@@ -423,20 +423,26 @@ def task_check_in_out(request):
 def check_in(request, task_id):
     """Allow a child to check in to a task."""
     child = request.user.child
+    special_permissions = False
+    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN:
+        special_permissions = True
     task = get_object_or_404(Task, id=task_id)
     replace_image = request.GET.get('replace_image') == 'true'
-
+    
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
-        return render(request, 'check_in_exists.html', {'task': task, 'child': child})
+        return render(request, 'check_in_exists.html', {'task': task, 'child': child, 'special_permissions': special_permissions})
 
-    return render(request, 'check_in.html', {'task': task, 'child': child})
+    return render(request, 'check_in.html', {'task': task, 'child': child, 'special_permissions': special_permissions})
 
 @login_required
 def check_out(request, task_id):
     """Allow a child to check out from a task only if they checked in first."""
     child = request.user.child
+    special_permissions = False
+    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN:
+        special_permissions = True
     task = get_object_or_404(Task, id=task_id)
 
     # Ensure the task was checked in before allowing check-out
@@ -444,7 +450,7 @@ def check_out(request, task_id):
     if not task_completion or not task_completion.checkin_img:
         return render(request, 'check_in_warning.html')
 
-    return render(request, 'check_out.html', {'task': task, 'child': child})
+    return render(request, 'check_out.html', {'task': task, 'child': child, 'special_permissions': special_permissions})
 
 @login_required
 def no_check_in(request):

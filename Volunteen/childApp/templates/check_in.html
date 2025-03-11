@@ -70,8 +70,13 @@
     </div>
     <button class="btn-back" onclick="window.location.href='{% url "childApp:task_check_in_out" %}'">חזרה למשימות</button>
 
+    {% if special_permissions %}
+    <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">בחר תמונה</button>
+    {% else %}
     <input type="file" id="cameraInput" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
     <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">צלם תמונה</button>
+    {% endif %}
 
     <div id="preview-container" class="hidden">
         <img id="preview" src="" alt="תצוגה מקדימה">
