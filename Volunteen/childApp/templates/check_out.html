@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="he">
   <head>
@@ -51,13 +52,7 @@
     </style>
   </head>
   <body>
-    <!-- הודעות (אם יש) -->
-    <div class="messages">
-      {% if messages %} {% for message in messages %}
-      <div class="alert {{ message.tags }}">{{ message }}</div>
-      {% endfor %} {% endif %}
-    </div>
-
+   
     <h1>צ'ק-אאוט למשימה</h1>
 
     <div class="task-info">
@@ -66,35 +61,38 @@
       <p>תאריך יעד: {{ task.deadline }}</p>
     </div>
 
-    {% if special_permissions %}
-    <input
-      type="file"
-      id="cameraInput"
-      accept="image/*"
-      class="hidden"
-      onchange="previewImage(event)"
-    />
-    <button
-      class="btn-camera"
-      onclick="document.getElementById('cameraInput').click()"
-    >
-      בחר תמונה
-    </button>
-    {% else %}
-    <input
-      type="file"
-      id="cameraInput"
-      accept="image/*"
-      capture="camera"
-      class="hidden"
-      onchange="previewImage(event)"
-    />
-    <button
-      class="btn-camera"
-      onclick="document.getElementById('cameraInput').click()"
-    >
-      צלם תמונה
-    </button>
+    <!-- Only show the camera/file input if NOT using the default image -->
+    {% if not use_default_image %}
+      {% if special_permissions %}
+        <input
+          type="file"
+          id="cameraInput"
+          accept="image/*"
+          class="hidden"
+          onchange="previewImage(event)"
+        />
+        <button
+          class="btn-camera"
+          onclick="document.getElementById('cameraInput').click()"
+        >
+          בחר תמונה
+        </button>
+      {% else %}
+        <input
+          type="file"
+          id="cameraInput"
+          accept="image/*"
+          capture="camera"
+          class="hidden"
+          onchange="previewImage(event)"
+        />
+        <button
+          class="btn-camera"
+          onclick="document.getElementById('cameraInput').click()"
+        >
+          צלם תמונה
+        </button>
+      {% endif %}
     {% endif %}
 
     <div id="preview-container" class="hidden">
@@ -111,9 +109,9 @@
 
     <script>
       /**
-       * @param {string} imageSrc
-       * @param {string} text
-       * @param {function} callback -
+       * @param {string} imageSrc - The image (base64 URL or static path)
+       * @param {string} text - The overlay text (child name, timestamp)
+       * @param {function} callback - Callback receiving the final dataURL
        */
       function generateImageWithText(imageSrc, text, callback) {
         const img = new Image();
@@ -123,13 +121,16 @@
           canvas.height = img.height;
           const ctx = canvas.getContext("2d");
 
+          // Draw the original image
           ctx.drawImage(img, 0, 0);
 
+          // Draw a semi-transparent rectangle for the text overlay
           const rectHeight = 200;
           const rectY = canvas.height - rectHeight;
           ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
           ctx.fillRect(0, rectY, canvas.width, rectHeight);
 
+          // Add text
           ctx.fillStyle = "white";
           ctx.font = "bold 75px Arial";
           ctx.textBaseline = "middle";
@@ -161,22 +162,14 @@
           const childName = "{{ child.user.username }}";
           const overlayText = `${childName}, ${formattedDate}`;
 
-          // יוצרים תמונה מעודכנת (כולל הכיתוב בפס השחור)
-          generateImageWithText(
-            e.target.result,
-            overlayText,
-            function (finalDataURL) {
-              const preview = document.getElementById("preview");
-              preview.src = finalDataURL;
+          // Create an image with the overlay
+          generateImageWithText(e.target.result, overlayText, function (finalDataURL) {
+            const preview = document.getElementById("preview");
+            preview.src = finalDataURL;
 
-              document
-                .getElementById("preview-container")
-                .classList.remove("hidden");
-              document
-                .getElementById("checkOutButton")
-                .classList.remove("hidden");
-            }
-          );
+            document.getElementById("preview-container").classList.remove("hidden");
+            document.getElementById("checkOutButton").classList.remove("hidden");
+          });
         };
         reader.readAsDataURL(file);
       }
@@ -228,6 +221,28 @@
             checkOutButton.innerText = "אישור צ'ק-אאוט"; // Restore original text
           });
       }
+
+     // If the use_default_image flag is true, automatically generate the default image with overlay.
+     {% if use_default_image %}
+     document.addEventListener('DOMContentLoaded', function() {
+         const defaultImageSrc = "{% static 'images/defaults/default_check_out_pic.png' %}";
+         const now = new Date();
+         const day = now.getDate();
+         const month = now.getMonth() + 1;
+         const hours = now.getHours();
+         const minutes = now.getMinutes();
+         const formattedDate = `${day}/${month} ${hours}:${minutes}`;
+         const childName = "{{ child.user.username }}";
+         const overlayText = `${childName}, ${formattedDate}`;
+
+         generateImageWithText(defaultImageSrc, overlayText, function(finalDataURL) {
+             const preview = document.getElementById('preview');
+             preview.src = finalDataURL;
+             document.getElementById('preview-container').classList.remove('hidden');
+             document.getElementById('checkOutButton').classList.remove('hidden');
+         });
+     });
+     {% endif %}
     </script>
   </body>
 </html>

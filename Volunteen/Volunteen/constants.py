@@ -26,7 +26,8 @@ MAX_REWARDS_PER_DAY = 2 # the maximum number of rewards that the child can buy i
 REDEMPTION_REQUEST_EXPIRATION_MINUTES = 20 # the number of minutes after which a redemption request expires
 POINTS_PER_LEVEL = 100 # the number of points needed to reach the next level
 
-SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN={"מחמד_חלילי", "נור_גוראב","الطفل_إبراهيم"}  # the children who have special permissions to upload images in the check in/out page
+CHILDREN_REQUIRE_DEFAULT_IMAGE = {"מחמד_חלילי","الطفل_إبراهيم"}  # the children who have special permissions to upload images in the check in/out page
+SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN={"נור_גוראב"}  # the children who have special permissions to upload images in the check in/out page
 
 LEVELS = {
     1: "מתחיל",

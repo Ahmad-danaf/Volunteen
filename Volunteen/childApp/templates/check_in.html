@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="he">
 <head>
@@ -70,12 +71,14 @@
     </div>
     <button class="btn-back" onclick="window.location.href='{% url "childApp:task_check_in_out" %}'">חזרה למשימות</button>
 
-    {% if special_permissions %}
-    <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="previewImage(event)">
-    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">בחר תמונה</button>
-    {% else %}
-    <input type="file" id="cameraInput" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
-    <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">צלם תמונה</button>
+    {% if not use_default_image %}
+        {% if special_permissions %}
+            <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+            <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">בחר תמונה</button>
+        {% else %}
+            <input type="file" id="cameraInput" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
+            <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">צלם תמונה</button>
+        {% endif %}
     {% endif %}
 
     <div id="preview-container" class="hidden">
@@ -122,7 +125,7 @@
             img.src = imageSrc;
         }
 
-       
+
         function previewImage(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -149,56 +152,77 @@
             };
             reader.readAsDataURL(file);
         }
-
-      
+        
+        
         function submitCheckIn() {
-    const preview = document.getElementById('preview');
-    const dataURL = preview.src; 
+            const preview = document.getElementById('preview');
+            const dataURL = preview.src; 
 
-    if (!dataURL || dataURL.trim() === "") {
-        alert("אנא בחר תמונה לפני ביצוע צ'ק-אין.");
-        return;
-    }
-
-    const checkInButton = document.getElementById('checkInButton');
-    checkInButton.disabled = true;  // Disable button
-    checkInButton.innerText = "שולח..."; // Indicate progress
-
-    fetch(dataURL)
-        .then(res => res.blob())
-        .then(blob => {
-            const formData = new FormData();
-            const taskId = "{{ task.id }}";
-
-            formData.append('image', blob, 'checkin_image.jpg');
-            formData.append('task_id', taskId);
-
-            return fetch("{% url 'childApp:submit_check_in' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: formData
-            });
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("צ'ק-אין נשמר בהצלחה!");
-                window.location.href = "{% url 'childApp:child_home' %}";
-            } else {
-                throw new Error(data.error || "שגיאה בלתי צפויה.");
+            if (!dataURL || dataURL.trim() === "") {
+                alert("אנא בחר תמונה לפני ביצוע צ'ק-אין.");
+                return;
             }
-        })
-        .catch(error => {
-            alert(error.message);
-        })
-        .finally(() => {
-            checkInButton.disabled = false;  // Re-enable button
-            checkInButton.innerText = "אישור צ'ק-אין";  // Restore original text
-        });
-}
 
+            const checkInButton = document.getElementById('checkInButton');
+            checkInButton.disabled = true;  // Disable button
+            checkInButton.innerText = "שולח..."; // Indicate progress
+
+            fetch(dataURL)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    const taskId = "{{ task.id }}";
+
+                    formData.append('image', blob, 'checkin_image.jpg');
+                    formData.append('task_id', taskId);
+
+                    return fetch("{% url 'childApp:submit_check_in' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: formData
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("צ'ק-אין נשמר בהצלחה!");
+                        window.location.href = "{% url 'childApp:child_home' %}";
+                    } else {
+                        throw new Error(data.error || "שגיאה בלתי צפויה.");
+                    }
+                })
+                .catch(error => {
+                    alert(error.message);
+                })
+                .finally(() => {
+                    checkInButton.disabled = false;  // Re-enable button
+                    checkInButton.innerText = "אישור צ'ק-אין";  // Restore original text
+                });
+        }
+
+        // If the use_default_image flag is true, automatically generate the default image with overlay.
+        {% if use_default_image %}
+        document.addEventListener('DOMContentLoaded', function() {
+            const defaultImageSrc = "{% static 'images/defaults/default_check_in_pic.png' %}";
+            const now = new Date();
+            const day = now.getDate();
+            const month = now.getMonth() + 1;
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const formattedDate = `${day}/${month} ${hours}:${minutes}`;
+            const childName = "{{ child.user.username }}";
+            const overlayText = `${childName}, ${formattedDate}`;
+
+            generateImageWithText(defaultImageSrc, overlayText, function(finalDataURL) {
+                const preview = document.getElementById('preview');
+                preview.src = finalDataURL;
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('checkInButton').classList.remove('hidden');
+            });
+        });
+        {% endif %}
     </script>
 </body>
 </html>
