@@ -8,8 +8,7 @@ from django.db.models import Prefetch
 from django.http import JsonResponse
 from mentorApp.models import Mentor
 from teenApp.entities.task import Task
-from teenApp.interface_adapters.repositories import ChildRepository, TaskRepository, MentorRepository
-from mentorApp.forms import  TaskImageForm, BonusPointsForm,TaskForm
+from mentorApp.forms import TaskForm
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
@@ -19,6 +18,9 @@ from django.db.models import Sum,IntegerField, F
 from datetime import timedelta
 from django.db import transaction
 from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
+from mentorApp.utils.MentorUtils import MentorUtils
+from django.core.paginator import Paginator
+from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 
 @login_required
 def mentor_home(request):
@@ -88,7 +90,7 @@ def mentor_children_details(request):
 
 
 @login_required
-def add_task(request, task_id=None, duplicate=False):
+def add_task(request, task_id=None, duplicate=False, template=False):
     mentor = get_object_or_404(Mentor, user=request.user)
     task_data = {}
 
@@ -100,19 +102,24 @@ def add_task(request, task_id=None, duplicate=False):
                 "title": f"{original_task.title} (העתק)",
                 "description": original_task.description,
                 "points": original_task.points,
-                "deadline": original_task.deadline,
+                "deadline": None,
                 "additional_details": original_task.additional_details,
                 "img": original_task.img,
             }
 
     if request.method == 'POST':
-        taskForm = TaskForm(mentor=mentor, data=request.POST, files=request.FILES)
-
+        taskForm = TaskForm(
+            mentor=mentor,
+            data=request.POST,
+            files=request.FILES,
+            is_duplicate=duplicate,
+            is_template=template
+        )
 
         if taskForm.is_valid():
             # Extract task fields and assigned children
             task_data.update(taskForm.cleaned_data)
-            assigned_children = taskForm.cleaned_data['assigned_children']
+            assigned_children = taskForm.cleaned_data.get('assigned_children', [])
             children_ids = list(assigned_children.values_list("id", flat=True))
 
             try:
@@ -126,8 +133,12 @@ def add_task(request, task_id=None, duplicate=False):
                 messages.error(request, str(e))
 
     else:
-        taskForm = TaskForm(mentor=mentor, initial=task_data)
-
+        taskForm = TaskForm(
+            mentor=mentor,
+            initial=task_data,
+            is_duplicate=duplicate,
+            is_template=template
+        )
     return render(request, 'mentor_add_task.html', {
         'form': taskForm,
         'children': mentor.children.all(),
@@ -209,20 +220,7 @@ def assign_task(request, task_id):
                     task.assigned_children.add(child)
                     TaskAssignment.objects.create(task=task, child=child, is_new=True)
 
-                    if child.user.email:
-                        NotificationManager.sent_mail(
-                            f'Dear {child.user.first_name}, a new task "{task.title}" has been assigned to you. Please check and complete it by {task.deadline}.',
-                            child.user.email
-                        )
-
-                    if child.user.phone:
-                        phone_str = str(child.user.phone)
-                        msg = (
-                            f"🎉💥 טינג טינג! {child.user.username}, קיבלת משימה לוהטת שמחכה רק לך!! 💥🎉\n"
-                            f"זה הזמן להרוויח {task.points} TeenCoins!!! 🔥 ולהתקדם לעבר היעד שלך!\n"
-                            "כנס עכשיו ותגלה מה המשימה הסודית שלך >> https://www.volunteen.site/"
-                        )
-                        NotificationManager.sent_whatsapp(msg, phone_str)
+                    
 
                 except Child.DoesNotExist:
                     print(f"Child with ID {child_id} does not exist.")
@@ -265,7 +263,7 @@ def assign_points(request, task_id):
     # Prepare data for children with completion status
     children_with_status = []
     for child in children:
-        completed = TaskCompletion.objects.filter(task=task, child=child).exists()
+        completed = TaskCompletion.objects.filter(task=task, child=child, status='approved').exists()
         children_with_status.append({'child': child, 'completed': completed})
         
 
@@ -355,3 +353,95 @@ def review_task(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'בקשה לא חוקית.'})
+
+
+
+@login_required
+def template_list(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    search_query = request.GET.get('search', '')
+    template_tasks = MentorTaskUtils.get_template_tasks(mentor, search_query)
+    
+    # Paginate the results (5 per page as an example)
+    paginator = Paginator(template_tasks, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+    }
+    return render(request, 'mentor_template_list.html', context)
+    
+    
+@login_required
+def remove_from_templates(request, task_id):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    task = get_object_or_404(Task, id=task_id, is_template=True, assigned_mentors=mentor)
+    
+    task.is_template = False
+    task.save()
+    messages.success(request, f"'{task.title}' was removed from templates.")
+    return redirect('mentorApp:template_list')
+
+
+@login_required
+def bonus_child_selection(request):
+    """
+    Page for mentor to select a child to whom they want to give a bonus.
+    Provides a search box for filtering children by username or name.
+    """
+    mentor = get_object_or_404(Mentor, user=request.user)
+    search_query = request.GET.get('search', '')
+
+    children = MentorUtils.get_children_for_mentor(mentor, search_query)
+
+    context = {
+        'children': children,
+        'search_query': search_query
+    }
+    return render(request, 'bonus_child_selection.html', context)
+
+
+@login_required
+def child_bonus_detail(request, child_id):
+    """
+    Lists the completed tasks for this child that are assigned to the current mentor
+    and have not expired. Mentor can give bonuses here.
+    """
+    mentor = get_object_or_404(Mentor, user=request.user)
+    child = get_object_or_404(Child, id=child_id)
+
+    active_completions = MentorTaskUtils.get_active_completions_for_mentor_child(mentor, child)
+
+    context = {
+        'child': child,
+        'active_completions': active_completions,
+        'available_teencoins': mentor.available_teencoins,
+        'teencoins_expiration_months': TEEN_COINS_EXPIRATION_MONTHS
+    }
+    return render(request, 'child_bonus_detail.html', context)
+
+
+@login_required
+def assign_bonus(request, task_completion_id):
+    """
+    POST-only view that awards a bonus to a specific TaskCompletion.
+    The bonus points come from the 'bonus_points' field in the form.
+    If the mentor doesn't have enough coins, we show an error.
+    """
+    if request.method == 'POST':
+        mentor = get_object_or_404(Mentor, user=request.user)
+        bonus_points = int(request.POST.get('bonus_points', '0'))
+
+        try:
+            updated_tc = MentorTaskUtils.assign_bonus_to_task_completion(mentor, task_completion_id, bonus_points)
+            messages.success(request, f"נוספו {bonus_points} נקודות בונוס עבור {updated_tc.task.title}!")
+        except ValueError as e:
+            messages.error(request, str(e))
+
+        # Redirect back to the detail page for the child's completions
+        return redirect('mentorApp:child_bonus_detail', child_id=updated_tc.child.id)
+    else:
+        messages.error(request, "גישה לא מורשית. ניתן לשלוח בונוס רק באמצעות POST.")
+        return redirect('mentorApp:bonus_child_selection')

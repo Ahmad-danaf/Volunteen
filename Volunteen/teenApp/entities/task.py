@@ -12,6 +12,7 @@ class Task(models.Model):
     assigned_children = models.ManyToManyField('childApp.Child', related_name='assigned_tasks', verbose_name='Assigned Children', blank=True)
     assigned_mentors = models.ManyToManyField('mentorApp.Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
     completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
+    is_template=models.BooleanField(default=False, verbose_name='Template', help_text='Mark as a template for future duplication')
 
     def __str__(self):
         return self.title

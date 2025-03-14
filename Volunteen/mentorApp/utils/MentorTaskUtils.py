@@ -6,6 +6,9 @@ from mentorApp.models import Mentor
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import Q
+from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
+from dateutil.relativedelta import relativedelta
 
 class MentorTaskUtils(TaskManagerUtils):
 
@@ -228,3 +231,36 @@ class MentorTaskUtils(TaskManagerUtils):
             mentor.save()
         
         return new_task
+    
+    
+    @staticmethod
+    def get_template_tasks(mentor, search_query=''):
+        """
+        Returns a queryset of tasks that are marked as templates
+        and are assigned to the given mentor. Optionally filters by search_query.
+        """
+        queryset = Task.objects.filter(is_template=True, assigned_mentors=mentor)
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | Q(description__icontains=search_query)
+            )
+        return queryset
+    
+    @staticmethod
+    def get_active_completions_for_mentor_child(mentor, child):
+        """
+        Returns a list of approved TaskCompletion objects for this child
+        that were assigned by the given mentor and have NOT yet expired.
+        """
+        now = timezone.now()
+        completions = TaskCompletion.objects.filter(
+            child=child,
+            task__assigned_mentors=mentor,
+            status='approved'
+        )
+        active_completions = []
+        for tc in completions:
+            expiry_date = tc.completion_date + relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
+            if expiry_date > now:
+                active_completions.append(tc)
+        return active_completions

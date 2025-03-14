@@ -60,13 +60,17 @@
         טינקאוינס זמינים: {{ mentor.available_teencoins }}
     </div>
     <div class="section" dir="rtl">
-        <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn">הוספת משימה</a>
+        <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn"><i class="fas fa-plus"></i> הוספת משימה</a>
+        <a href="{% url 'mentorApp:template_list' %}" class="btn mentor-btn"><i class="fas fa-copy"></i> משימות לשכפול</a>
         <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn mentor-btn"><i class="fas fa-tasks"></i>רשימת משימות</a>
         <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn mentor-btn">
             <i class="fas fa-images"></i> אישור משימות
         </a>        
         <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
-        <!-- <a href="{% url 'mentorApp:send_whatsapp_message' %}" class="btn mentor-btn"><i class="fas fa-paper-plane"></i> שליחת הודעה לילדים</a> -->
+        <a href="{% url 'mentorApp:bonus_child_selection' %}" class="btn mentor-btn">
+            <i class="fas fa-gift"></i> מתן נקודות בונוס
+        </a>
+        
     </div>
 
     <!-- <div class="section" dir="rtl">

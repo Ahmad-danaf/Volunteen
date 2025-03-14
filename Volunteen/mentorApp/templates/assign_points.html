@@ -20,7 +20,6 @@
                         <input type="checkbox" id="select-all"> בחר הכל
                     </th>
                     <th>שם משתמש</th>
-                    <th>טינקואינס נוכחיים</th>
                     <th>האם הושלם</th>
                 </tr>
             </thead>
@@ -34,9 +33,6 @@
                         <label class="form-check-label" for="child-{{ entry.child.id }}">
                             {{ entry.child.user.username }}
                         </label>
-                    </td>
-                    <td>
-                        {{ entry.child.points }} טינקואינס
                     </td>
                     <td>
                         {% if entry.completed %}

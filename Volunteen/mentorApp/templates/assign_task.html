@@ -30,7 +30,6 @@
                         <input type="checkbox" id="select-all" /> בחר הכל
                     </th>
                     <th>שם משתמש</th>
-                    <th>TeenCoins נוכחיים</th>
                 </tr>
             </thead>
             <tbody id="childrenTable">
@@ -43,9 +42,6 @@
                         <label class="form-check-label" for="child-{{ child.id }}">
                             {{ child.user.username }}
                         </label>
-                    </td>
-                    <td>
-                        {{ child.points }} נקודות
                     </td>
                 </tr>
                 {% endfor %}

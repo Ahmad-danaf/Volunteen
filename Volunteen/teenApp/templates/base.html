@@ -7,9 +7,10 @@
 
     <!-- Include Bootstrap CSS from a CDN -->
     <link rel="stylesheet" type="text/css" href="https://bootswatch.com/5/lux/bootstrap.min.css">
-    
+    {% block extra_head %}{% endblock %}
     <!-- Include custom styles -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    {% block extra_css %}{% endblock %}
 <!-- Favicon for most browsers -->
 <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 

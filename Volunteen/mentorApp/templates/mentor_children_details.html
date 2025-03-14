@@ -4,29 +4,42 @@
 
 {% block extra_css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_children_details.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <h1>פרטי הילדים</h1>
+    
+    <!-- Child Search Section - Optimized for Mobile -->
+    <div class="child-search-container">
+        <div class="search-wrapper">
+            <i class="fas fa-search child-search-icon"></i>
+            <input type="text" id="childSearch" placeholder="חיפוש..." onkeyup="searchChildren()" autocomplete="off">
+            <button id="clearSearch" class="clear-search hidden" onclick="clearChildSearch()" aria-label="נקה חיפוש">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="searchResultsInfo" class="search-results-info hidden">
+            <span id="resultsCount">0</span> תוצאות
+        </div>
+    </div>
+    
     <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
                     <th>שם הילד</th>
-                    <th>טלפון</th>
-                    <th>טינקוינס בארנק</th>
                     <th>טינקוינס שנצברו</th> 
                     <th>משימות שהושלמו</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="childrenTableBody">
                 {% for child in children %}
-                    <tr>
-                        <td>{{ child.user.username }}</td>
-                        <td>{{ child.user.phone }}</td> 
-                        <td>{{ child.points }}</td>
-                        <td>{{ child.task_total_points }}</td>
+                    <tr class="child-row">
+                        <td class="child-name">{{ child.user.username }}</td>
+                        <td><span class="coin-count"><i class="fas fa-coins"></i> {{ child.task_total_points }}</span></td>
                         <td>
                             <button class="view-tasks-btn" 
                                     data-child-name="{{ child.user.username }}"
@@ -40,26 +53,48 @@
                                         {% endfor %}
                                     ]'
                                     onclick="openTasksPopup(this)">
-                                הצג משימות
+                                <i class="fas fa-tasks"></i> הצג משימות
                             </button>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>            
         </table>
+        <div id="noChildrenMessage" class="no-results-message hidden">
+            לא נמצאו ילדים התואמים את החיפוש
+        </div>
     </div>
-    <a href="{% url 'mentorApp:mentor_home' %}" class="button">חזרה לעמוד הבית</a>
+    <a href="{% url 'mentorApp:mentor_home' %}" class="button"><i class="fas fa-home"></i> חזרה לעמוד הבית</a>
 </div>
-<div id="tasksPopup" class="popup hidden">
+
+<!-- Improved Modal Popup -->
+<div id="modalOverlay" class="modal-overlay"></div>
+<div id="tasksPopup" class="popup">
     <div class="popup-content">
-        <span class="close" onclick="closeTasksPopup()">&times;</span>
-        <h2 id="popupTitle">משימות שהושלמו</h2>
-        <label for="sortTasks">מיין לפי תאריך:</label>
-        <select id="sortTasks" onchange="sortTasksByDate()">
-            <option value="asc">מהישן לחדש</option>
-            <option value="desc">מהחדש לישן</option>
-        </select>
-        <ul id="tasksList"></ul>
+        <div class="popup-header">
+            <h2 id="popupTitle">משימות שהושלמו</h2>
+            <span class="close" onclick="closeTasksPopup()"><i class="fas fa-times"></i></span>
+        </div>
+        
+        <div class="popup-toolbar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="taskSearch" placeholder="חיפוש משימות..." onkeyup="searchTasks()" autocomplete="off">
+            </div>
+            
+            <div class="sort-container">
+                <label for="sortTasks"><i class="fas fa-sort"></i> מיין לפי תאריך:</label>
+                <select id="sortTasks" onchange="sortTasksByDate()">
+                    <option value="desc">מהחדש לישן</option>
+                    <option value="asc">מהישן לחדש</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="tasks-container">
+            <div id="noTasksMessage" class="hidden">לא נמצאו משימות מתאימות</div>
+            <div id="tasksList" class="tasks-grid"></div>
+        </div>
     </div>
 </div>
 
@@ -68,6 +103,87 @@
 {% block extra_js %}
 <script src="{% static 'js/mentor_children_details.js' %}"></script>
 <script>
+// Set viewport height for mobile 
+function setMobileViewportHeight() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Call on page load and resize
+window.addEventListener('load', setMobileViewportHeight);
+window.addEventListener('resize', setMobileViewportHeight);
+
+// Search children by username
+function searchChildren() {
+    const searchTerm = document.getElementById("childSearch").value.toLowerCase();
+    const childRows = document.querySelectorAll(".child-row");
+    const clearButton = document.getElementById("clearSearch");
+    const resultsInfo = document.getElementById("searchResultsInfo");
+    const noResultsMessage = document.getElementById("noChildrenMessage");
+    
+    let visibleCount = 0;
+    
+    // Show/hide clear button based on search term
+    if (searchTerm.length > 0) {
+        clearButton.classList.remove("hidden");
+        resultsInfo.classList.remove("hidden");
+    } else {
+        clearButton.classList.add("hidden");
+        resultsInfo.classList.add("hidden");
+    }
+    
+    // Filter the rows
+    childRows.forEach(row => {
+        const childName = row.querySelector(".child-name").textContent.toLowerCase();
+        
+        if (childName.includes(searchTerm)) {
+            row.style.display = "";
+            visibleCount++;
+            
+            // Highlight matching text if there's a search term
+            if (searchTerm.length > 0) {
+                highlightText(row.querySelector(".child-name"), searchTerm);
+            } else {
+                // Reset to original text if search is cleared
+                row.querySelector(".child-name").innerHTML = row.querySelector(".child-name").textContent;
+            }
+        } else {
+            row.style.display = "none";
+        }
+    });
+    
+    // Update results count
+    document.getElementById("resultsCount").textContent = visibleCount;
+    
+    // Show no results message if needed
+    if (visibleCount === 0 && searchTerm.length > 0) {
+        noResultsMessage.classList.remove("hidden");
+    } else {
+        noResultsMessage.classList.add("hidden");
+    }
+}
+
+// Highlight matching text in search results
+function highlightText(element, searchTerm) {
+    const text = element.textContent;
+    const lowerText = text.toLowerCase();
+    const index = lowerText.indexOf(searchTerm.toLowerCase());
+    
+    if (index >= 0) {
+        const beforeMatch = text.substring(0, index);
+        const match = text.substring(index, index + searchTerm.length);
+        const afterMatch = text.substring(index + searchTerm.length);
+        element.innerHTML = `${beforeMatch}<span class="highlight">${match}</span>${afterMatch}`;
+    }
+}
+
+// Clear search field and reset display
+function clearChildSearch() {
+    document.getElementById("childSearch").value = "";
+    searchChildren();
+    document.getElementById("childSearch").focus();
+}
+
 function openTasksPopup(button) {
     let tasksData = JSON.parse(button.getAttribute("data-tasks"));
     let childName = button.getAttribute("data-child-name");
@@ -76,21 +192,64 @@ function openTasksPopup(button) {
     tasksList.innerHTML = "";
 
     if (tasksData.length === 0) {
-        tasksList.innerHTML = "<li>אין משימות שהושלמו</li>";
+        document.getElementById("noTasksMessage").classList.remove("hidden");
+        document.getElementById("tasksList").classList.add("hidden");
     } else {
+        document.getElementById("noTasksMessage").classList.add("hidden");
+        document.getElementById("tasksList").classList.remove("hidden");
+        
         tasksData.forEach(task => {
-            let li = document.createElement("li");
-            li.textContent = `${task.title} - הושלם בתאריך: ${task.completion_date} - TeenCoins: ${task.points} + בונוס: ${task.bonus_points}`;
-            tasksList.appendChild(li);
+            let taskCard = document.createElement("div");
+            taskCard.className = "task-card";
+            
+            // Create task title
+            let taskTitle = document.createElement("h3");
+            taskTitle.className = "task-title";
+            taskTitle.textContent = task.title;
+            
+            // Create completion date with icon
+            let completionDate = document.createElement("div");
+            completionDate.className = "task-date";
+            completionDate.innerHTML = `<i class="far fa-calendar-check"></i> ${task.completion_date}`;
+            
+            // Create points info with icons
+            let pointsInfo = document.createElement("div");
+            pointsInfo.className = "task-points";
+            pointsInfo.innerHTML = `
+                <div><i class="fas fa-coins"></i> נקודות: ${task.points}</div>
+                <div><i class="fas fa-award"></i> בונוס: ${task.bonus_points}</div>
+            `;
+            
+            // Append all elements to the task card
+            taskCard.appendChild(taskTitle);
+            taskCard.appendChild(completionDate);
+            taskCard.appendChild(pointsInfo);
+            
+            // Add task card to the grid
+            tasksList.appendChild(taskCard);
         });
     }
 
     document.getElementById("popupTitle").textContent = `משימות שהושלמו עבור ${childName}`;
-    document.getElementById("tasksPopup").classList.remove("hidden");
+    document.getElementById("modalOverlay").style.display = "block";
+    document.getElementById("tasksPopup").style.display = "block";
+    
+    // Reset search field
+    document.getElementById("taskSearch").value = "";
+    
+    // Focus on search input after a small delay to ensure the popup is fully displayed
+    setTimeout(() => {
+        try {
+            document.getElementById("taskSearch").focus();
+        } catch(e) {
+            console.log("Could not focus on search field");
+        }
+    }, 300);
 }
 
 function closeTasksPopup() {
-    document.getElementById("tasksPopup").classList.add("hidden");
+    document.getElementById("modalOverlay").style.display = "none";
+    document.getElementById("tasksPopup").style.display = "none";
 }
 
 function sortTasksByDate() {
@@ -99,13 +258,65 @@ function sortTasksByDate() {
     let sortOrder = document.getElementById("sortTasks").value;
 
     tasks.sort((a, b) => {
-        let dateA = new Date(a.textContent.split(" הושלם בתאריך: ")[1].split(" - ")[0]);
-        let dateB = new Date(b.textContent.split(" הושלם בתאריך: ")[1].split(" - ")[0]);
+        let dateA = new Date(a.querySelector(".task-date").textContent.trim().substring(a.querySelector(".task-date").textContent.trim().indexOf(" ") + 1));
+        let dateB = new Date(b.querySelector(".task-date").textContent.trim().substring(b.querySelector(".task-date").textContent.trim().indexOf(" ") + 1));
         return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
     tasksList.innerHTML = "";
     tasks.forEach(task => tasksList.appendChild(task));
+    
+    // Re-apply any active search filter
+    searchTasks();
 }
+
+function searchTasks() {
+    const searchTerm = document.getElementById("taskSearch").value.toLowerCase();
+    const taskCards = document.querySelectorAll(".task-card");
+    let visibleCount = 0;
+    
+    taskCards.forEach(card => {
+        const title = card.querySelector(".task-title").textContent.toLowerCase();
+        const date = card.querySelector(".task-date").textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || date.includes(searchTerm)) {
+            card.style.display = "block";
+            visibleCount++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+    
+    // Show/hide the "no tasks" message
+    if (visibleCount === 0 && searchTerm.length > 0) {
+        document.getElementById("noTasksMessage").classList.remove("hidden");
+    } else {
+        document.getElementById("noTasksMessage").classList.add("hidden");
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById("modalOverlay").addEventListener("click", closeTasksPopup);
+
+// Prevent propagation for the popup content
+document.querySelector(".popup-content").addEventListener("click", function(e) {
+    e.stopPropagation();
+});
+
+// Prevent zooming on inputs for mobile
+document.addEventListener('touchstart', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        e.preventDefault();
+        e.target.focus();
+    }
+}, { passive: false });
+
+// Focus on search field when page loads
+window.addEventListener('DOMContentLoaded', function() {
+    // Only auto-focus on larger screens to avoid keyboard popping up on mobile
+    if (window.innerWidth >= 768) {
+        document.getElementById('childSearch').focus();
+    }
+});
 </script>
 {% endblock %}

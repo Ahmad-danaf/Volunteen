@@ -45,6 +45,12 @@
     .points {
         width: 100px;
     }
+    .deadline-buttons {
+        margin-top: 10px;
+    }
+    .deadline-buttons button {
+        margin-right: 10px;
+    }
 </style>
 
 <div class="container mt-5 task-form-container" dir="rtl">
@@ -94,6 +100,10 @@
         <div class="mb-3">
             <label for="deadline" class="form-label">תאריך יעד</label>
             <input type="date" id="deadline" name="deadline" class="form-control" value="{{ form.deadline.value|date:'Y-m-d' }}" required>
+            <div class="deadline-buttons">
+                <button type="button" id="todayButton" class="btn btn-secondary">היום</button>
+                <button type="button" id="tomorrowButton" class="btn btn-secondary">מחר</button>
+            </div>
         </div>
         
         <div class="mb-3">
@@ -104,13 +114,17 @@
             {% endif %}
         </div>
 
-
         <div class="mb-3">
             <label for="additional_details" class="form-label">פרטים נוספים</label>
             <textarea id="additional_details" name="additional_details" class="form-control" rows="3">{{ form.additional_details.value|default_if_none:'' }}</textarea>
         </div>
-       
         
+        <!-- New template feature checkbox -->
+        <div class="mb-3">
+            <input type="checkbox" id="is_template" name="is_template" {% if form.is_template.value %}checked{% endif %}>
+            <label for="is_template" class="form-label">שמור כמשימה לשכפול בעתיד</label>
+        </div>
+       
         <button type="submit" class="btn-submit w-100">הוסף משימה</button>
     </form>
 </div>
@@ -121,51 +135,91 @@
         var today = new Date().toISOString().split('T')[0];
         deadlineInput.setAttribute('min', today);
         
+        // Deadline buttons event listeners
+        var todayButton = document.getElementById('todayButton');
+        var tomorrowButton = document.getElementById('tomorrowButton');
         
-
-        // check all childs
-        var checkAll = document.getElementById('checkAll');
-        var childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
-        var pointsInput = document.getElementById('points');
-        var availableTeencoins = {{ available_teencoins }};
-
-        pointsInput.addEventListener('input', function() {
-            var taskPoints = parseInt(pointsInput.value, 10) || 0;
-            var maxChildren = Math.floor(availableTeencoins / taskPoints);
-            
-            childCheckboxes.forEach(function(checkbox, index) {
-                checkbox.disabled = index >= maxChildren;
-                checkbox.checked = false;
-            });
-            checkAll.disabled = maxChildren === 0;
+        todayButton.addEventListener('click', function() {
+            deadlineInput.value = today;
         });
-        checkAll.addEventListener('change', function() {
-            var taskPoints = parseInt(pointsInput.value, 10) || 0;
-            var maxChildren = Math.floor(availableTeencoins / taskPoints);
-            
-            childCheckboxes.forEach(function(checkbox, index) {
-                if (index < maxChildren) {
-                    checkbox.checked = checkAll.checked;
-                }
-            });
+        
+        tomorrowButton.addEventListener('click', function() {
+            var tomorrowDate = new Date();
+            tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+            var tomorrow = tomorrowDate.toISOString().split('T')[0];
+            deadlineInput.value = tomorrow;
         });
 
-        function updateTeencoins() {
-            var points = parseInt(pointsInput.value) || 0;
-            var assignedCount = Array.from(childCheckboxes).filter(cb => cb.checked).length;
-            var remainingTeencoins = availableTeencoins - (assignedCount * points);
-            availableTeencoinsLabel.textContent = ` - ${Math.max(remainingTeencoins, 0)}`;
-        }
-
-        pointsInput.addEventListener('input', updateAssignmentLimit);
-        childCheckboxes.forEach(cb => cb.addEventListener('change', updateTeencoins));
-        checkAll.addEventListener('change', function() {
-            childCheckboxes.forEach(cb => {
-                if (!cb.disabled) cb.checked = checkAll.checked;
-            });
-            updateTeencoins();
-        });
-    });
-
+         // check all childs
+         var checkAll = document.getElementById('checkAll');
+         var childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
+         var pointsInput = document.getElementById('points');
+         var availableTeencoins = {{ available_teencoins }};
+ 
+         function updateAssignmentLimit() {
+             var taskPoints = parseInt(pointsInput.value, 10) || 0;
+             var maxChildren = Math.floor(availableTeencoins / taskPoints);
+             
+             if (taskPoints > availableTeencoins) {
+                 childCheckboxes.forEach(cb => {
+                     cb.disabled = true;
+                     cb.checked = false;
+                 });
+                 checkAll.disabled = true;
+                 checkAll.checked = false;
+             } else {
+                 childCheckboxes.forEach(cb => {
+                     cb.disabled = false;
+                     cb.checked = false;
+                 });
+                 checkAll.disabled = maxChildren === 0 || taskPoints > availableTeencoins / 2;
+                 checkAll.checked = false;
+             }
+         }
+ 
+         function updateTeencoins() {
+             var taskPoints = parseInt(pointsInput.value, 10) || 0;
+             var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
+             var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
+             
+             // Case 1: Points exceed available teencoins → Disable all
+             if (taskPoints > availableTeencoins) {
+                 childCheckboxes.forEach(cb => {
+                     cb.disabled = true;
+                     cb.checked = false;
+                 });
+                 checkAll.disabled = true;
+                 return;
+             }
+ 
+             // Case 2: Disable "Check All" if points are more than half of available teencoins
+             // Case 3: Disable "Check All" if selecting all children would exceed available teencoins
+             var canAssignAll = (taskPoints * childCheckboxes.length) <= availableTeencoins;
+             checkAll.disabled = !canAssignAll || taskPoints > availableTeencoins / 2;
+ 
+             // Case 4 & 5: A child is selected, manage remaining teencoins
+             childCheckboxes.forEach(cb => {
+                 if (!cb.checked) {
+                     cb.disabled = remainingTeencoins < taskPoints; // Disable if not enough teencoins for another child
+                 }
+             });
+ 
+             // Case 6: If no child is selected, enable checkboxes based on available teencoins
+             if (selectedChildren.length === 0) {
+                 childCheckboxes.forEach(cb => {
+                     cb.disabled = taskPoints > availableTeencoins;
+                 });
+             }
+         }
+ 
+         pointsInput.addEventListener('input', updateAssignmentLimit);
+         childCheckboxes.forEach(cb => cb.addEventListener('change', updateTeencoins));
+         checkAll.addEventListener('change', function() {
+             childCheckboxes.forEach(cb => {
+                 if (!cb.disabled) cb.checked = checkAll.checked;
+             });
+             updateTeencoins();
+         });
+     });
 </script>
 {% endblock %}

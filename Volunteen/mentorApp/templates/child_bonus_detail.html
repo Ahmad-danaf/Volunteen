@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<style>
+  body {
+    direction: rtl;
+    text-align: right;
+  }
+  .header-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ff6600;
+    margin-bottom: 1rem;
+  }
+  .teencoins-balance {
+    font-size: 1.2rem;
+    color: #3498db;
+    font-weight: bold;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  .card {
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-weight: bold;
+  }
+  .expires-soon {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+  .expires-medium {
+    color: #f39c12;
+    font-weight: bold;
+  }
+  .expires-later {
+    color: #27ae60;
+    font-weight: bold;
+  }
+  .bonus-input {
+    max-width: 100px;
+  }
+  .bonus-button {
+    white-space: nowrap;
+  }
+  /* Dynamic search input styling */
+  #taskSearch {
+    max-width: 300px;
+  }
+  @media (max-width: 768px) {
+    .header-title {
+      font-size: 1.5rem;
+    }
+    .teencoins-balance {
+      font-size: 1rem;
+    }
+    .bonus-input {
+      max-width: 80px;
+    }
+    .bonus-button {
+      font-size: 0.9rem;
+      padding: 0.3rem 0.6rem;
+    }
+  }
+</style>
+{% endblock %}
+{% block title %}הענקת בונוס למשימות - {{ child.user.first_name }}{% endblock %}
+{% block content %}
+<div class="container mt-4 mb-5" dir="rtl">
+  <!-- Feedback Messages Section -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="סגור"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="text-center">
+    <h1 class="header-title">הענקת בונוס למשימות - {{ child.user.first_name }} {{ child.user.last_name }}</h1>
+    <div class="teencoins-balance">
+      <i class="fas fa-coins"></i> יתרת TeenCoins: {{ available_teencoins }}
+    </div>
+  </div>
+
+  <!-- Dynamic Search Box -->
+  <div class="mb-4 text-center">
+    <input type="text" id="taskSearch" class="form-control mx-auto" placeholder="חפש לפי שם משימה...">
+  </div>
+
+  {% if active_completions %}
+  <div class="row">
+    {% for completion in active_completions %}
+    <div class="col-12 col-md-6 col-lg-4 mb-4 task-item" data-title="{{ completion.task.title|lower }}">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ completion.task.title }}</h5>
+          <p class="card-text mb-1">
+            <strong>נקודות:</strong> {{ completion.task.points }} 
+            {% if completion.bonus_points %}
+              <span class="text-success">( + {{ completion.bonus_points }} בונוס )</span>
+            {% else %}
+              <span class="text-muted">(אין בונוס)</span>
+            {% endif %}
+          </p>
+          <p class="card-text mb-1">
+            <strong>סך נקודות:</strong> {{ completion.task.points|add:completion.bonus_points }}
+          </p>
+          <p class="card-text mb-1">
+            <strong>תאריך השלמה:</strong> {{ completion.completion_date|date:"d/m/Y" }}
+          </p>
+          <p class="card-text mb-3">
+            <strong>פג תוקף בעוד:</strong>
+            <span class="expiration-days" data-completion-date="{{ completion.completion_date|date:'Y-m-d' }}"></span>
+          </p>
+          <form method="post" action="{% url 'mentorApp:assign_bonus' completion.id %}" class="d-flex align-items-center">
+            {% csrf_token %}
+            <input type="number" name="bonus_points" class="form-control bonus-input me-2" min="1" value="1" required>
+            <button type="submit" class="btn btn-success bonus-button">
+              <i class="fas fa-award ms-1"></i> הענק בונוס
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="alert alert-info text-center">
+      אין משימות פעילות להענקת בונוס.
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // Dynamic search filtering
+  document.getElementById('taskSearch').addEventListener('input', function() {
+    let searchTerm = this.value.toLowerCase();
+    let tasks = document.querySelectorAll('.task-item');
+    tasks.forEach(function(task) {
+      let title = task.getAttribute('data-title');
+      task.style.display = title.includes(searchTerm) ? '' : 'none';
+    });
+  });
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Get the expiration months from the view (e.g., 3)
+    const expirationMonths = {{ teencoins_expiration_months }};
+    const now = new Date();
+    
+    document.querySelectorAll('.expiration-days').forEach(function(el) {
+      // Retrieve the completion date from the data attribute
+      let compDateStr = el.getAttribute('data-completion-date');
+      let compDate = new Date(compDateStr);
+      
+      // Create a copy and add expirationMonths to the month
+      let expDate = new Date(compDate);
+      expDate.setMonth(expDate.getMonth() + expirationMonths);
+      
+      // Calculate the difference in days between expiration and now
+      let diffTime = expDate - now;
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Update the span text with the number of days
+      el.innerText = diffDays + " ימים";
+      
+      // Apply color-coding based on urgency:
+      if (diffDays < 7) {
+        el.classList.add('expires-soon');
+      } else if (diffDays < 14) {
+        el.classList.add('expires-medium');
+      } else {
+        el.classList.add('expires-later');
+      }
+    });
+  });
+</script>
+{% endblock %}

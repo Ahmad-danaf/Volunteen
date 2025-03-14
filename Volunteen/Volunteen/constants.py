@@ -22,6 +22,7 @@ SHOP_CATEGORIES=[
     ('BOOKS', 'ספרים'),
     ('OTHER', 'אחר'),
 ]
+TEEN_COINS_EXPIRATION_MONTHS = 3 # the number of months after which a teen coin expires
 MAX_REWARDS_PER_DAY = 2 # the maximum number of rewards that the child can buy in one day
 REDEMPTION_REQUEST_EXPIRATION_MINUTES = 20 # the number of minutes after which a redemption request expires
 POINTS_PER_LEVEL = 100 # the number of points needed to reach the next level

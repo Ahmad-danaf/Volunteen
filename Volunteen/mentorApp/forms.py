@@ -12,7 +12,10 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'points', 'deadline', 'img', 'additional_details', 'assigned_children']
+        fields = [
+            'title', 'description', 'points', 'deadline', 
+            'img', 'additional_details', 'assigned_children', 'is_template'
+        ]       
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
@@ -20,13 +23,26 @@ class TaskForm(forms.ModelForm):
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
+            'is_template': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
-        self.mentor = kwargs.pop('mentor', None)
-        super(TaskForm, self).__init__(*args, **kwargs)
-        if self.mentor:
-            self.fields['assigned_children'].queryset = self.mentor.children.all()
+            # Accept extra flags to control duplication and template creation behavior
+            self.mentor = kwargs.pop('mentor', None)
+            self.is_duplicate = kwargs.pop('is_duplicate', False)
+            # is_template flag is now just used to mark the task, not to modify field behavior
+            self.is_template = kwargs.pop('is_template', False)
+            super(TaskForm, self).__init__(*args, **kwargs)
+
+            if self.mentor:
+                self.fields['assigned_children'].queryset = self.mentor.children.all()
+
+            # When duplicating a task, allow editing key fields and reset the deadline.
+            if self.is_duplicate:
+                for field in ['title', 'description', 'points']:
+                    self.fields[field].widget.attrs.pop('readonly', None)
+                # Reset the deadline so the mentor must pick a new one
+                self.initial['deadline'] = None
 
 class TaskImageForm(forms.ModelForm):
     class Meta:

@@ -1,9 +1,9 @@
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from teenApp.entities.TaskCompletion import TaskCompletion
-
+from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 class TeenCoinManager:
-    EXPIRATION_DELTA = relativedelta(months=3)
+    EXPIRATION_DELTA = relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
 
     @staticmethod
     def get_active_task_completions(child):

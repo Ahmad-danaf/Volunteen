@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5" dir="rtl">
+    <h2 class="mb-4" style="color: #ff6600;">הענקת בונוס – בחר ילד</h2>
+
+    <!-- Search Box -->
+    <form method="GET" class="row g-2 mb-4 align-items-center">
+        <div class="col-8">
+            <input 
+                type="text" 
+                name="search" 
+                value="{{ search_query }}" 
+                placeholder="חפש ילד..." 
+                class="form-control"
+            />
+        </div>
+        <div class="col-4">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search"></i> חפש
+            </button>
+        </div>
+    </form>
+
+    <!-- Child Cards -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for child in children %}
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ child.user.username }}</h5>
+                    <!-- You can also display child's first_name, age, or other details -->
+                    <p class="card-text">
+                        <!-- Example detail: child birthdate or parent's contact, etc. -->
+                    </p>
+                    <a href="{% url 'mentorApp:child_bonus_detail' child.id %}" class="btn btn-warning">
+                        הענק בונוס
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col">
+            <p>לא נמצאו ילדים תואמים.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
