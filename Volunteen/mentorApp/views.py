@@ -64,23 +64,7 @@ def mentor_home(request):
 @login_required
 def mentor_children_details(request):
     mentor = get_object_or_404(Mentor, user=request.user)
-
-    # Prefetch task completions for each child to avoid N+1 queries
-    children = mentor.children.prefetch_related(
-        Prefetch(
-        'taskcompletion_set', 
-        queryset=TaskCompletion.objects.filter(status='approved').select_related('task').order_by('-completion_date')
-    )
-    ).order_by('-points')
-
-    # Calculate total points from tasks and bonuses for each child
-    for child in children:
-        # Sum points from completed tasks and bonus points
-        task_points = TaskCompletion.objects.filter(child=child).aggregate(
-            total_task_points=Sum(F('task__points') + F('bonus_points'), output_field=IntegerField())
-        )
-        child.task_total_points = task_points['total_task_points'] or 0  # Fallback to 0 if no points
-
+    children = MentorTaskUtils.get_children_performance_for_mentor(mentor)
     return render(request, 'mentor_children_details.html', {'children': children})
 
 

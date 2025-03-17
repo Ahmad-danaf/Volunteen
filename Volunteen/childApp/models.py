@@ -25,6 +25,7 @@ class Child(models.Model):
     medals = models.ManyToManyField(Medal, blank=True, verbose_name='Medals')
     streak_count = models.IntegerField(default=0, verbose_name="Streak Count")
     last_streak_date = models.DateField(null=True, blank=True, verbose_name="Last Streak Date")
+    last_level_awarded = models.IntegerField(default=1, verbose_name="Last Level Awarded")
     city = models.CharField(
         max_length=3,
         choices=AVAILABLE_CITIES,

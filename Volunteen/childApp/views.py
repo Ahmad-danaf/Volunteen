@@ -30,7 +30,10 @@ from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
+from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from childApp.utils.check_in_out_utils import process_check_in, process_check_out
+from childApp.utils.child_level_management import calculate_total_points
+
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
@@ -40,6 +43,11 @@ def child_landing(request):
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
+    if child.level > child.last_level_awarded:
+        TaskManagerUtils.auto_approve_increase_level_for_child(child)
+        child.last_level_awarded = child.level
+        child.save()
+    total_points = calculate_total_points(child)
     current_day = datetime.now().weekday()
     current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
     greetings = {
@@ -64,7 +72,7 @@ def child_home(request):
         return (points % points_needed_for_next_level) / points_needed_for_next_level * POINTS_PER_LEVEL
     
     active_points = TeenCoinManager.get_total_active_teencoins(child)
-    progress_to_next_level = calculate_progress(child,active_points)
+    progress_to_next_level = calculate_progress(child,total_points)
 
     LeaderboardUtils.get_current_streak(child)
     return render(request, 'child_home.html', {

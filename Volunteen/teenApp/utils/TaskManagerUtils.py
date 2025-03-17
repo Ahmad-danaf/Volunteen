@@ -3,6 +3,7 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import Task
 from childApp.models import Child
 from parentApp.models import Parent
+from Volunteen.constants import DEFAULT_INCREASE_LEVEL_TASK
 
 class TaskManagerUtils:
     @staticmethod
@@ -68,4 +69,43 @@ class TaskManagerUtils:
         task_completion.status = 'rejected'
         task_completion.mentor_feedback = feedback
         task_completion.save()
+        return task_completion
+    
+    @staticmethod
+    def get_or_create_increase_level_task():
+        """
+        Retrieves or creates the default 'increase level' task.
+        """
+        
+        task, created = Task.objects.get_or_create(
+            title=DEFAULT_INCREASE_LEVEL_TASK['title'],
+            description=DEFAULT_INCREASE_LEVEL_TASK['description'],
+            points=DEFAULT_INCREASE_LEVEL_TASK['points'],
+            img=DEFAULT_INCREASE_LEVEL_TASK['img'],
+            deadline=DEFAULT_INCREASE_LEVEL_TASK['deadline'],
+        )
+        return task
+
+    @staticmethod
+    def auto_approve_increase_level_for_child(child):
+        """
+        Automatically assigns and approves the default 'increase level' task for the child.
+        Awards teencoins as per the task's configuration.
+        """
+        # Retrieve the default task.
+        task = TaskManagerUtils.get_or_create_increase_level_task()
+        
+        # Create a task completion record for the child.
+        task_completion, created = TaskCompletion.objects.get_or_create(
+            task=task,
+            child=child,
+        )
+        if created:
+            TaskManagerUtils.assign_task(user=None, task=task, child=child)
+            
+        if task_completion.status != 'approved':
+            # We pass None as user since no mentor/parent approving (system action)
+            approved_completion = TaskManagerUtils.approve_task_completion(user=None, task_completion=task_completion)
+            return approved_completion
+            
         return task_completion

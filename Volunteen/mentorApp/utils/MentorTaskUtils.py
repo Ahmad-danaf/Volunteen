@@ -6,7 +6,7 @@ from mentorApp.models import Mentor
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from django.utils import timezone
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum, F, IntegerField, Prefetch
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
 
@@ -264,3 +264,31 @@ class MentorTaskUtils(TaskManagerUtils):
             if expiry_date > now:
                 active_completions.append(tc)
         return active_completions
+    
+    @staticmethod
+    def get_children_performance_for_mentor(mentor):
+        """
+        Retrieves children assigned to the mentor, prefetching approved task completions 
+        for tasks assigned by the mentor and aggregates total points (task points + bonus points).
+        """
+        # Prefetch only task completions for tasks assigned by this mentor
+        children = mentor.children.prefetch_related(
+            Prefetch(
+                'taskcompletion_set',
+                queryset=TaskCompletion.objects.filter(
+                    status='approved',
+                    task__assigned_mentors=mentor
+                ).select_related('task').order_by('-completion_date')
+            )
+        ).order_by('-points')
+
+        # Aggregate points for each child based on tasks assigned by this mentor
+        for child in children:
+            total = TaskCompletion.objects.filter(
+                child=child,
+                task__assigned_mentors=mentor
+            ).aggregate(
+                total_points=Sum(F('task__points') + F('bonus_points'), output_field=IntegerField())
+            )
+            child.task_total_points = total['total_points'] or 0
+        return children
