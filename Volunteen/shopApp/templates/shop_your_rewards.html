@@ -1,0 +1,122 @@
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}פרסים{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/shop_home.css' %}">
+{% endblock %}
+{% block content %}
+<style>
+    body {
+        text-align: right;
+    }
+    header {
+        background-image: radial-gradient(circle, orange, transparent 20%, orangered);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-color: orange;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+    }
+</style>
+<div class="section mt-4">
+    <h3>הפרסים שלך</h3>
+    <button id="toggle-all-btn" class="btn btn-success mb-3" onclick="toggleAllRewards()">הצג/הסתר את כל הפרסים</button>
+    <div id="rewards-list">
+        {% for reward in shop.rewards.all %}
+        <div class="reward-item mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>{{ reward.title }}</h4>
+                    <p>{{ reward.description }}</p>
+                    <p>נקודות דרושות: {{ reward.points_required }}</p>
+                </div>
+                <button class="btn btn-sm {% if reward.is_visible %}btn-danger{% else %}btn-success{% endif %}"
+                        onclick="toggleRewardVisibility({{ reward.id }}, this)">
+                    {% if reward.is_visible %}
+                        הסתר פרס
+                    {% else %}
+                        הצג פרס
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+updateToggleAllButton();
+function toggleAllRewards() {
+    let buttons = document.querySelectorAll("#rewards-list button");
+    let shouldShow = [...buttons].some(btn => btn.classList.contains("btn-success"));
+    let toggleAllBtn = document.getElementById("toggle-all-btn");
+    
+    if (shouldShow) {
+        toggleAllBtn.classList.remove("btn-success");
+        toggleAllBtn.classList.add("btn-danger");
+        toggleAllBtn.textContent = "הסתר את כל הפרסים";
+    } else {
+        toggleAllBtn.classList.remove("btn-danger");
+        toggleAllBtn.classList.add("btn-success");
+        toggleAllBtn.textContent = "הצג את כל הפרסים";
+    }
+    
+    buttons.forEach(button => {
+        let rewardId = button.getAttribute("onclick").match(/\d+/)[0];
+        if ((shouldShow && button.classList.contains("btn-success")) || (!shouldShow && button.classList.contains("btn-danger"))) {
+            toggleRewardVisibility(rewardId, button);
+        }
+    });
+}
+
+function updateToggleAllButton() {
+    let buttons = document.querySelectorAll("#rewards-list button");
+    let allHidden = [...buttons].every(btn => btn.classList.contains("btn-danger"));
+    let allVisible = [...buttons].every(btn => btn.classList.contains("btn-success"));
+    let toggleAllBtn = document.getElementById("toggle-all-btn");
+
+    if (allVisible) {
+        toggleAllBtn.classList.remove("btn-danger");
+        toggleAllBtn.classList.add("btn-success");
+        toggleAllBtn.textContent = "הצג את כל הפרסים";
+    } else if (allHidden) {
+        toggleAllBtn.classList.remove("btn-success");
+        toggleAllBtn.classList.add("btn-danger");
+        toggleAllBtn.textContent = "הסתר את כל הפרסים";
+    } else {
+        toggleAllBtn.classList.remove("btn-success", "btn-danger");
+        toggleAllBtn.classList.add("btn-secondary");
+        toggleAllBtn.textContent = "הצג/הסתר את כל הפרסים";
+    }
+}
+
+function toggleRewardVisibility(rewardId, button) {
+    $.ajax({
+        url: "{% url 'shopApp:toggle_reward_visibility' 0 %}".replace('0', rewardId),
+        type: "POST",
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                if (response.is_visible) {
+                    $(button).removeClass('btn-success').addClass('btn-danger');
+                    $(button).text('הסתר פרס');
+                } else {
+                    $(button).removeClass('btn-danger').addClass('btn-success');
+                    $(button).text('הצג פרס');
+                }
+                updateToggleAllButton();
+            }
+        },
+        error: function() {
+            alert('שגיאה בניסיון לשנות את הנראות של הפרס.');
+        }
+    });
+}
+</script>
+{% endblock %}
