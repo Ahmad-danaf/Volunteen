@@ -6,6 +6,7 @@ app_name='shopApp'
 urlpatterns = [
     path('shop_home/', views.shop_home, name='shop_home'),  # Shop home page
     path('shop_redemption_history/', views.shop_redemption_history, name='shop_redemption_history'),
+    path('shop_rewards/', views.shop_rewards, name='shop_rewards'),
     path('toggle-reward-visibility/<int:reward_id>/', views.toggle_reward_visibility, name='toggle_reward_visibility'),
     path('opening-hours/', views.opening_hours_view, name='opening_hours'),
     path("pending-redemption-requests/", views.pending_redemption_requests, name="pending_redemption_requests"),

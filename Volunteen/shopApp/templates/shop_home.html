@@ -90,35 +90,12 @@ header {
                 <i class="fas fa-history"></i> הצגת היסטוריית מימושים
             </a>
         </div>
-    </div>
-    <div class="section mt-4">
-        <h3>הפירסים שלך</h3>
-        <div id="rewards-list">
-            {% for reward in shop.rewards.all %}
-            <div class="reward-item mb-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4>{{ reward.title }}</h4>
-                        <p>{{ reward.description }}</p>
-                        <p>נקודות דרושות: {{ reward.points_required }}</p>
-                    </div>
-                    <button class="btn btn-sm {% if reward.is_visible %}btn-danger{% else %}btn-success{% endif %}"
-                            onclick="toggleRewardVisibility({{ reward.id }}, this)">
-                        {% if reward.is_visible %}
-                            הסתר פרס
-                        {% else %}
-                            הצג פרס
-                        {% endif %}
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
+        <div class="section mt-4">
+            <h3>הפרסים שלך</h3>
+            <a href="{% url 'shopApp:shop_rewards' %}" class="btn btn-primary btn-block">הצגת הפרסים</a>
         </div>
-    </div>
-    
+    </div>    
 {% endblock %}
-
-
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
