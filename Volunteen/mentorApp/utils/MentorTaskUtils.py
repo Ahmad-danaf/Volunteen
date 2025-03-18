@@ -286,7 +286,8 @@ class MentorTaskUtils(TaskManagerUtils):
         for child in children:
             total = TaskCompletion.objects.filter(
                 child=child,
-                task__assigned_mentors=mentor
+                task__assigned_mentors=mentor,
+                status='approved',
             ).aggregate(
                 total_points=Sum(F('task__points') + F('bonus_points'), output_field=IntegerField())
             )

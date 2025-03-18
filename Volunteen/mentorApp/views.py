@@ -105,7 +105,8 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             task_data.update(taskForm.cleaned_data)
             assigned_children = taskForm.cleaned_data.get('assigned_children', [])
             children_ids = list(assigned_children.values_list("id", flat=True))
-
+            if duplicate and not taskForm.cleaned_data.get('img'):
+                task_data['img'] = original_task.img
             try:
                 # Create the task with mentor assignment and children
                 new_task = MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
