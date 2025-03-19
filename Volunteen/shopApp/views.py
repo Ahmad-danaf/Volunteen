@@ -63,7 +63,7 @@ def shop_redemption_history(request):
 @login_required
 def shop_rewards(request):
     shop = request.user.shop
-    rewards = Reward.objects.filter(shop=shop)
+    rewards = ShopManager.get_all_shop_rewards(shop.id)
     context = {
         'shop': shop,
         'rewards': rewards,
