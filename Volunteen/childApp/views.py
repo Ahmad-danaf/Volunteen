@@ -105,7 +105,6 @@ def donate_coins(request):
             category = form.cleaned_data['category']
             amount = form.cleaned_data['amount']
             note = form.cleaned_data['note']
-            
             # Validate that the child has enough coins
             if amount > available_teencoins:
                 form.add_error('amount', f"אין לך מספיק טינקוינס. יש לך רק {available_teencoins} טינקוינס זמינים.")
@@ -138,6 +137,7 @@ def donate_coins(request):
         return render(request, 'donate_coins.html', {
             'form': form, 
             'available_teencoins': available_teencoins,
+            'categories': categories,
             'error': True
         })
     

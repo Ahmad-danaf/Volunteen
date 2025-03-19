@@ -1,6 +1,9 @@
-{% extends "child_base.html" %} {% load static %} {% block title %}תרומת
-טינקוינס{% endblock %} {% block extra_css %}
+{% extends "child_base.html" %}
+{% load static %}
+{% block title %}תרומת טינקוינס{% endblock %}
+{% block extra_css %}
 <style>
+  /* Orange theme and general styles */
   .donation-container {
     max-width: 100%;
     padding: 20px;
@@ -8,11 +11,12 @@
     background-color: #fff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     margin: 20px auto;
+    animation: fadeInUp 0.8s ease-out forwards;
   }
 
   .donation-title {
     text-align: center;
-    color: #4a2c82;
+    color: #e67e22; /* Orange */
     margin-bottom: 25px;
     font-size: 1.8rem;
   }
@@ -56,7 +60,7 @@
   .donation-amount {
     font-size: 1.2rem;
     font-weight: bold;
-    color: #4a2c82;
+    color: #e67e22;
   }
 
   .balance-info {
@@ -70,11 +74,11 @@
 
   .balance-amount {
     font-weight: bold;
-    color: #4a2c82;
+    color: #e67e22;
   }
 
   .submit-button {
-    background-color: #4a2c82;
+    background-color: #e67e22;
     color: white;
     padding: 15px;
     border: none;
@@ -86,77 +90,212 @@
   }
 
   .submit-button:hover {
-    background-color: #371f60;
+    background-color: #d35400;
   }
 
   .error-message {
     color: #e74c3c;
     margin-top: 5px;
     font-size: 0.9rem;
+    animation: fadeIn 0.5s ease;
   }
 
-  /* Mobile optimizations */
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Quran Verse & Toggle Styles */
+  .saying-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #555;
+  }
+
+  .verse-toggle {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .verse-toggle:hover {
+    background-color: #d35400;
+  }
+
+  .verse-reference {
+    font-size: 0.9em;
+    color: #888;
+    margin-left: 5px;
+  }
+
+  /* Category Selection Styles */
+  .category-selection {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .category-selection h3 {
+    font-size: 1.2rem;
+    color: #e67e22;
+    margin-bottom: 10px;
+  }
+
+  .category-options {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .category-item {
+    border: 2px solid transparent;
+    padding: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    text-align: center;
+  }
+
+  .category-item img {
+    width: 100px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .category-item.selected {
+    border-color: #e67e22;
+  }
+
+  /* Mobile Optimizations */
   @media (max-width: 768px) {
     .donation-container {
       padding: 15px;
       margin: 10px;
     }
-
     .donation-title {
       font-size: 1.5rem;
     }
-
     .form-control {
       padding: 12px;
     }
   }
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+{% block content %}
 <div class="donation-container">
   <h1 class="donation-title">תרום טינקוינס</h1>
   <p class="donation-subtitle">תרום את הטינקוינס שלך ועזור לקהילה</p>
-
+  
+  <div class="saying-container">
+    <p id="verse-text">
+      فَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ <span class="verse-reference">(99:7)</span>
+    </p>
+    <button class="verse-toggle" id="toggle-verse">עברית</button>
+  </div>
+  
   <div class="balance-info">
     יש לך
-    <span class="balance-amount">{{ available_teencoins }}</span> טינקוינס
-    זמינים לתרומה
+    <span class="balance-amount">{{ available_teencoins }}</span> טינקוינס זמינים לתרומה
   </div>
-
+  
+  <!-- Category Selection Section (Now inside the form) -->
   <form method="post" class="donation-form">
     {% csrf_token %}
-
-    <div class="form-group">
-      <label for="{{ form.category.id_for_label }}"
-        >{{ form.category.label }}</label
-      >
-      {{ form.category }} {% if form.category.errors %}
-      <div class="error-message">{{ form.category.errors }}</div>
-      {% endif %}
+    
+    <div class="category-selection">
+      <h3>בחר קטגוריה לתרומה</h3>
+      <div class="category-options">
+        {% for category in categories %}
+          <div class="category-item" data-category-id="{{ category.id }}">
+            <img src="{{ category.img.url }}" alt="{{ category.name }}">
+            <p>{{ category.name }}</p>
+          </div>
+        {% endfor %}
+      </div>
+      <!-- Hidden input to store the chosen category id -->
+      <input type="hidden" name="category" id="selected-category" value="">
     </div>
-
+    
     <div class="form-group">
-      <label for="{{ form.amount.id_for_label }}"
-        >{{ form.amount.label }}</label
-      >
+      <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
       {{ form.amount }} {% if form.amount.errors %}
       <div class="error-message">{{ form.amount.errors }}</div>
       {% endif %}
     </div>
-
+    
     <div class="form-group">
       <label for="{{ form.note.id_for_label }}">{{ form.note.label }}</label>
       {{ form.note }} {% if form.note.errors %}
       <div class="error-message">{{ form.note.errors }}</div>
       {% endif %}
     </div>
-
+    
     {% if form.non_field_errors %}
     <div class="error-message">
       {% for error in form.non_field_errors %} {{ error }} {% endfor %}
     </div>
     {% endif %}
-
+    
     <button type="submit" class="submit-button">תרום עכשיו</button>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Quran Verse Toggle Code
+    const verseText = document.getElementById("verse-text");
+    const texts = {
+      arabic: 'فَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ <span class="verse-reference">(99:7)</span>',
+      hebrew: 'הן, מי שיעשה חסד כמשקל גרגר, יחזהו <span class="verse-reference">(99:7)</span>'
+    };
+    
+    const toggleButton = document.getElementById("toggle-verse");
+    
+    toggleButton.addEventListener("click", function () {
+      if (verseText.innerHTML.includes("فَمَنْ")) {
+        verseText.innerHTML = texts.hebrew;
+        toggleButton.textContent = "عربي";
+      } else {
+        verseText.innerHTML = texts.arabic;
+        toggleButton.textContent = "עברית";
+      }
+    });
+    
+    // Category Selection Code
+    const categoryItems = document.querySelectorAll(".category-item");
+    const selectedCategoryInput = document.getElementById("selected-category");
+    
+    categoryItems.forEach(function(item) {
+      item.addEventListener("click", function() {
+        // Remove 'selected' class from all items
+        categoryItems.forEach(el => el.classList.remove("selected"));
+        // Add 'selected' class to clicked item
+        item.classList.add("selected");
+        // Set hidden input value to the selected category's id
+        selectedCategoryInput.value = item.getAttribute("data-category-id");
+      });
+    });
+  });
+</script>
 {% endblock %}
