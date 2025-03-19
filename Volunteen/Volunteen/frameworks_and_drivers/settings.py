@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'childApp',
     'shopApp',
     'mentorApp',
+    'managementApp',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

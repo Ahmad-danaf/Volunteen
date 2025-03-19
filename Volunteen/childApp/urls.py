@@ -13,6 +13,7 @@ urlpatterns = [
     path('points-leaderboard/', child_views.points_leaderboard, name='points_leaderboard'),
     path('save_phone_number/', child_views.save_phone_number, name='save_phone_number'),
     path('rate/<int:redemption_id>/', child_views.rate_redemption_view, name='rate_redemption'),
+    path('donate-coins/', child_views.donate_coins, name='donate_coins'),  # New path for donations
 
     path('landing/', child_views.child_landing, name='child_landing'), 
 

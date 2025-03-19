@@ -1,0 +1,162 @@
+{% extends "child_base.html" %} {% load static %} {% block title %}תרומת
+טינקוינס{% endblock %} {% block extra_css %}
+<style>
+  .donation-container {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+  }
+
+  .donation-title {
+    text-align: center;
+    color: #4a2c82;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+  }
+
+  .donation-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+  }
+
+  .donation-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 1.1rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1.1rem;
+  }
+
+  .donation-category {
+    background-color: #f7f7f7;
+  }
+
+  .donation-amount {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #4a2c82;
+  }
+
+  .balance-info {
+    padding: 15px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+  }
+
+  .balance-amount {
+    font-weight: bold;
+    color: #4a2c82;
+  }
+
+  .submit-button {
+    background-color: #4a2c82;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+  }
+
+  .submit-button:hover {
+    background-color: #371f60;
+  }
+
+  .error-message {
+    color: #e74c3c;
+    margin-top: 5px;
+    font-size: 0.9rem;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .donation-container {
+      padding: 15px;
+      margin: 10px;
+    }
+
+    .donation-title {
+      font-size: 1.5rem;
+    }
+
+    .form-control {
+      padding: 12px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="donation-container">
+  <h1 class="donation-title">תרום טינקוינס</h1>
+  <p class="donation-subtitle">תרום את הטינקוינס שלך ועזור לקהילה</p>
+
+  <div class="balance-info">
+    יש לך
+    <span class="balance-amount">{{ available_teencoins }}</span> טינקוינס
+    זמינים לתרומה
+  </div>
+
+  <form method="post" class="donation-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="{{ form.category.id_for_label }}"
+        >{{ form.category.label }}</label
+      >
+      {{ form.category }} {% if form.category.errors %}
+      <div class="error-message">{{ form.category.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.amount.id_for_label }}"
+        >{{ form.amount.label }}</label
+      >
+      {{ form.amount }} {% if form.amount.errors %}
+      <div class="error-message">{{ form.amount.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.note.id_for_label }}">{{ form.note.label }}</label>
+      {{ form.note }} {% if form.note.errors %}
+      <div class="error-message">{{ form.note.errors }}</div>
+      {% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="error-message">
+      {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+    </div>
+    {% endif %}
+
+    <button type="submit" class="submit-button">תרום עכשיו</button>
+  </form>
+</div>
+{% endblock %}

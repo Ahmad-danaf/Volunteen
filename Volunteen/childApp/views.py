@@ -21,7 +21,7 @@ from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
 from teenApp.entities.TaskCompletion import TaskCompletion
 from django.utils.timezone import localdate
-from .forms import RedemptionRatingForm
+from .forms import RedemptionRatingForm,DonationForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,CHILDREN_REQUIRE_DEFAULT_IMAGE
@@ -33,6 +33,7 @@ from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from childApp.utils.check_in_out_utils import process_check_in, process_check_out
 from childApp.utils.child_level_management import calculate_total_points
+from managementApp.models import DonationCategory, DonationTransaction
 
 
 def child_landing(request):
@@ -85,6 +86,74 @@ def child_home(request):
         'level': child.level,
         'progress_percent': progress_to_next_level,
     })
+    
+@login_required
+def donate_coins(request):
+    """
+    View for donating TeenCoins to various categories.
+    GET: Displays the donation form with available categories
+    POST: Processes the donation if valid
+    """
+    child = request.user.child
+    available_teencoins = TeenCoinManager.get_total_active_teencoins(child)
+    
+    # Process donation form submission
+    if request.method == 'POST':
+        form = DonationForm(request.POST)
+        
+        if form.is_valid():
+            category = form.cleaned_data['category']
+            amount = form.cleaned_data['amount']
+            note = form.cleaned_data['note']
+            
+            # Validate that the child has enough coins
+            if amount > available_teencoins:
+                form.add_error('amount', f"אין לך מספיק טינקוינס. יש לך רק {available_teencoins} טינקוינס זמינים.")
+            else:
+                try:
+                    # Redeem the coins using TeenCoinManager
+                    redeemed_records = TeenCoinManager.redeem_teencoins(child, amount)
+                    
+                    # Create a donation transaction record
+                    donation = DonationTransaction.objects.create(
+                        child=child,
+                        category=category,
+                        amount=amount,
+                        note=note
+                    )
+                    
+                    # Redirect to success page with animation
+                    return render(request, 'donation_success.html', {
+                        'donation': donation,
+                        'category': category.name,
+                        'amount': amount
+                    })
+                    
+                except ValueError as e:
+                    # Handle insufficient coins error (though we already checked above)
+                    form.add_error(None, f"שגיאה בתרומה")
+                    print(e)
+        
+        
+        return render(request, 'donate_coins.html', {
+            'form': form, 
+            'available_teencoins': available_teencoins,
+            'error': True
+        })
+    
+    # GET request - display the donation form
+    else:
+        form = DonationForm()
+        
+        # Get active donation categories
+        categories = DonationCategory.objects.filter(is_active=True)
+        
+        return render(request, 'donate_coins.html', {
+            'form': form,
+            'categories': categories,
+            'available_teencoins': available_teencoins,
+        })
+
 
 @login_required
 def update_streak(request):

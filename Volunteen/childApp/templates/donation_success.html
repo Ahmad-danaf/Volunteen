@@ -1,0 +1,224 @@
+{% extends "child_base.html" %} {% load static %} {% block title %}תרומה הושלמה
+בהצלחה{% endblock %} {% block extra_css %}
+<style>
+  .success-container {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    text-align: center;
+  }
+
+  .success-title {
+    color: #4a2c82;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+  }
+
+  .success-message {
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  .donation-details {
+    background-color: #f0f8ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .donation-amount {
+    font-weight: bold;
+    color: #4a2c82;
+    font-size: 1.4rem;
+  }
+
+  .donation-category {
+    color: #4a2c82;
+    font-weight: bold;
+  }
+
+  .back-button {
+    background-color: #4a2c82;
+    color: white;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .back-button:hover {
+    background-color: #371f60;
+  }
+
+  /* Animation Container */
+  .animation-container {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    position: relative;
+  }
+
+  /* Box Animation */
+  .gift-box {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: openBox 3s forwards;
+  }
+
+  .box-lid {
+    width: 100%;
+    height: 30px;
+    background-color: #e74c3c;
+    position: absolute;
+    top: 0;
+    transform-origin: center top;
+    border-radius: 5px 5px 0 0;
+  }
+
+  .box-container {
+    width: 100%;
+    height: 100px;
+    background-color: #e74c3c;
+    position: absolute;
+    top: 30px;
+    border-radius: 0 0 5px 5px;
+  }
+
+  .box-ribbon {
+    position: absolute;
+    width: 30px;
+    height: 130px;
+    background-color: #9b59b6;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  .box-ribbon-horizontal {
+    position: absolute;
+    width: 100%;
+    height: 30px;
+    background-color: #9b59b6;
+    top: 50px;
+    z-index: 2;
+  }
+
+  .donation-heart {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e74c3c;
+    font-size: 3em;
+    opacity: 0;
+    animation: floatHeart 2s 1.5s forwards;
+  }
+
+  @keyframes openBox {
+    0% {
+      transform: scale(1);
+    }
+    20% {
+      transform: scale(1.05);
+    }
+    40% {
+      transform: scale(1);
+    }
+    60% {
+      transform: scale(1.03);
+    }
+    80% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes floatHeart {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(0) scale(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-30px) scale(1.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-60px) scale(1);
+    }
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .success-container {
+      padding: 15px;
+      margin: 10px;
+    }
+
+    .success-title {
+      font-size: 1.5rem;
+    }
+
+    .animation-container {
+      width: 150px;
+      height: 150px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="success-container">
+  <h1 class="success-title">כל הכבוד!</h1>
+
+  <div class="animation-container">
+    <div class="gift-box">
+      <div class="box-ribbon"></div>
+      <div class="box-ribbon-horizontal"></div>
+      <div class="box-lid"></div>
+      <div class="box-container"></div>
+      <div class="donation-heart">❤️</div>
+    </div>
+  </div>
+
+  <p class="success-message">
+    תרומתך התקבלה בהצלחה!<br />
+    בזכותך העולם הופך למקום טוב יותר.
+  </p>
+
+  <div class="donation-details">
+    תרמת <span class="donation-amount">{{ amount }}</span> טינקוינס<br />
+    לקטגוריה: <span class="donation-category">{{ category }}</span>
+  </div>
+
+  <a href="{% url 'childApp:child_home' %}" class="back-button"
+    >חזרה לדף הבית</a
+  >
+</div>
+
+<script>
+  // Add additional animation logic if needed
+  document.addEventListener("DOMContentLoaded", function () {
+    const boxLid = document.querySelector(".box-lid");
+
+    // Open the box lid after a delay
+    setTimeout(() => {
+      boxLid.style.transform = "rotateX(-110deg)";
+      boxLid.style.transition = "transform 1s ease-in-out";
+    }, 1000);
+  });
+</script>
+{% endblock %}
