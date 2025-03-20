@@ -227,14 +227,14 @@
       <h3>בחר קטגוריה לתרומה</h3>
       <div class="category-options">
         {% for category in categories %}
-          <div class="category-item" data-category-id="{{ category.id }}">
+          <div class="category-item {% if forloop.first %}selected{% endif %}" data-category-id="{{ category.id }}">
             <img src="{{ category.img.url }}" alt="{{ category.name }}">
             <p>{{ category.name }}</p>
           </div>
         {% endfor %}
       </div>
-      <!-- Hidden input to store the chosen category id -->
-      <input type="hidden" name="category" id="selected-category" value="">
+      <!-- Hidden input: set default value to first category -->
+      <input type="hidden" name="category" id="selected-category" value="{% if categories %}{{ categories.0.id }}{% endif %}">
     </div>
     
     <div class="form-group">
@@ -283,19 +283,18 @@
     });
     
     // Category Selection Code
-    const categoryItems = document.querySelectorAll(".category-item");
-    const selectedCategoryInput = document.getElementById("selected-category");
-    
-    categoryItems.forEach(function(item) {
-      item.addEventListener("click", function() {
-        // Remove 'selected' class from all items
-        categoryItems.forEach(el => el.classList.remove("selected"));
-        // Add 'selected' class to clicked item
-        item.classList.add("selected");
-        // Set hidden input value to the selected category's id
-        selectedCategoryInput.value = item.getAttribute("data-category-id");
-      });
+  const categoryItems = document.querySelectorAll(".category-item");
+  const selectedCategoryInput = document.getElementById("selected-category");
+  
+  categoryItems.forEach(function(item) {
+    item.addEventListener("click", function() {
+      // Remove 'selected' class from all
+      categoryItems.forEach(el => el.classList.remove("selected"));
+      // Add selected class to clicked
+      item.classList.add("selected");
+      selectedCategoryInput.value = item.getAttribute("data-category-id");
     });
+  });
   });
 </script>
 {% endblock %}
