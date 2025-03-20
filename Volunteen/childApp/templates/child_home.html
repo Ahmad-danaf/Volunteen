@@ -119,21 +119,27 @@
         <i class="fas fa-trophy"></i>
         <span>קיר התהילה</span>
     </a>
+    <a href="{% url 'childApp:top_streaks' %}" class="nav-button" style="background-color: #f44336;">
+        <i class="fas fa-fire"></i>
+        <span>שיאני רצף</span>
+    </a>
+    <a href="{% url 'childApp:donation_leaderboard' %}" class="nav-button" style="background-color: #2196F3;">
+        <i class="fas fa-donate"></i>
+        <span>קיר התרומות</span>
+    </a>
+    
     <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-map-marker-alt"></i>
         <span>צ'ק אין/אאוט</span>
     </a>
-    <a href="{% url 'childApp:top_streaks' %}" class="nav-button" style="background-color: #f44336;">
-        <i class="fas fa-fire"></i>
-        <span>שיאני רצף </span>
-    </a>
+   
     <a
     href="{% url 'childApp:donate_coins' %}"
     class="nav-button"
     style="background-color: #8bc34a"
   >
     <i class="fas fa-hand-holding-heart"></i>
-    <span>תרום טינקוינס</span>
+    <span>סדקה</span>
   </a>
     <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>

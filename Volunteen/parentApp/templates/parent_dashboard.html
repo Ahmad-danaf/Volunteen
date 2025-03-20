@@ -52,7 +52,7 @@
         </div>
       </div>
       
-      <!-- 2. Tasks parent Summary Card -->
+      <!--  Tasks parent Summary Card -->
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:parent_tasks' %}'">
           <div class="card-body">
@@ -65,7 +65,7 @@
         </div>
       </div>
       
-      <!-- 2. Redemption (Teen Coins Used) Card -->
+      <!--  Redemption (Teen Coins Used) Card -->
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:redeemtion_dashboard' selected_child.id %}'">
           <div class="card-body">
@@ -77,7 +77,7 @@
         </div>
       </div>
       
-      <!-- 3. Points / Leaderboard Card -->
+      <!--  Points / Leaderboard Card -->
       <div class="col-md-4 mb-3">
         <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:all_children_leaderboard' %}'">
           <div class="card-body">
@@ -88,8 +88,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Donation Leaderboard Card -->
+      <div class="col-md-4 mb-3">
+        <div class="card shadow-sm" onclick="location.href='{% url 'childApp:donation_leaderboard' %}'">
+          <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-donate"></i> תרומות</h5>
+            <p class="card-text">
+              לוח מובילים של התרומות מכל הילדים
+            </p>
+          </div>
+        </div>
+      </div>
+
       
-      <!-- 4. All Redemptions Available Card -->
+      <!--  All Redemptions Available Card -->
       <div class="col-md-6 mb-3">
         <div class="card shadow-sm" onclick="location.href='{% url 'parentApp:all_rewards' selected_child.id %}'">
           <div class="card-body">
@@ -101,7 +114,7 @@
         </div>
       </div>
       
-      <!-- 5. Join Our WhatsUp Group Card -->
+      <!--  Join Our WhatsUp Group Card -->
       <div class="col-md-6 mb-3">
         <div class="card shadow-sm" onclick="location.href='https://chat.whatsapp.com/COZhP1UymYaEg81onZXxLZ'">
           <div class="card-body">

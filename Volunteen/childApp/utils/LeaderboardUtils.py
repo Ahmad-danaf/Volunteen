@@ -19,18 +19,19 @@ class LeaderboardUtils:
             start_datetime = timezone.make_aware(start_datetime)
         if timezone.is_naive(end_datetime):
             end_datetime = timezone.make_aware(end_datetime)
-        return start_date, end_date
+        return start_datetime, end_datetime
     
     
     @staticmethod
-    def get_donations_leaderboard(start_date=None, end_date=None, limit=None):
+    def get_donations_leaderboard(start_date=None, end_date=None, limit=None, city="ALL"):
         """
-        Returns a queryset (or list) of top donors based on DonationTransaction amounts.
+        Returns a queryset of top donors based on DonationTransaction amounts.
         
         If start_date and end_date are provided, the leaderboard is calculated over that date range.
         Otherwise, it defaults to using the current month (from the 1st day until now).
         
-        Each entry contains the child's id, username, and total donated amount.
+        Each entry contains the child's id, username, city, and total donated amount.
+        If a city is provided (other than "ALL"), the leaderboard is filtered by that city.
         """
         now = timezone.now()
         if not start_date or not end_date:
@@ -41,10 +42,13 @@ class LeaderboardUtils:
         start_datetime, end_datetime = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
         
         qs = (DonationTransaction.objects
-              .filter(date_donated__range=(start_datetime, end_datetime))
-              .values('child__id', 'child__user__username')
-              .annotate(total_donated=Sum('amount'))
-              .order_by('-total_donated'))
+          .filter(date_donated__range=(start_datetime, end_datetime))
+          .values('child__id', 'child__user__username', 'child__city')
+          .annotate(total_donated=Sum('amount'))
+          .order_by('-total_donated'))
+    
+        if city and city != "ALL":
+            qs = qs.filter(child__city=city)
         
         if limit:
             qs = qs[:limit]

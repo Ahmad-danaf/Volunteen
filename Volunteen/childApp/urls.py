@@ -28,6 +28,8 @@ urlpatterns = [
     path('top-streaks/', child_views.top_streaks, name='top_streaks'),
     path("pending-requests/", child_views.child_not_approved_requests, name="child_not_approved_requests"),
 
+    path('donation-leaderboard/', child_views.donation_leaderboard, name='donation_leaderboard'),
+
     path('shop/<int:shop_id>/rewards/', child_views.shop_rewards_view, name='shop_rewards'),
     path('submit_redemption_request/', child_views.submit_redemption_request, name='submit_redemption_request'),
     path('cancel_request/', child_views.cancel_request, name='cancel_request'),

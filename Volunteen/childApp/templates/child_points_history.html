@@ -115,6 +115,9 @@
     .red {
       border-left: 6px solid #f44336;
     }
+    .blue {
+      border-left: 6px solid #2196F3;
+    }
     /* Responsive Adjustments */
     @media (max-width: 480px) {
       .transaction-card {
@@ -143,11 +146,12 @@
     <div class="toggle-buttons">
       <button id="toggleTasks" class="toggle-btn active">נקודות שהרווחת</button>
       <button id="toggleRedemptions" class="toggle-btn">נקודות שמומשו</button>
+      <button id="toggleDonations" class="toggle-btn">תרומות</button>
     </div>
 
     <!-- Earned Points Section -->
     <section id="tasksSection">
-      <h2 style="color: #4caf50;"><i class="fas fa-check-circle"></i>נקודות שהושגו</h2>
+      <h2 style="color: #4caf50;"><i class="fas fa-check-circle"></i> נקודות שהושגו</h2>
       <div class="transaction-list">
         {% for comp in task_completions %}
           <div class="transaction-card green">
@@ -194,21 +198,56 @@
         {% endfor %}
       </div>
     </section>
+
+    <!-- Donation Transactions Section -->
+    <section id="donationsSection" style="display: none;">
+      <h2 style="color: #2196F3;"><i class="fas fa-hand-holding-heart"></i> תרומות</h2>
+      <div class="transaction-list">
+        {% for donation in donations %}
+          <div class="transaction-card blue">
+            <div class="transaction-icon">
+              <i class="fas fa-donate" style="color: #2196F3;"></i>
+            </div>
+            <div class="transaction-details">
+              <div class="transaction-title">תרומה ל-{{ donation.category.name }}</div>
+              <div class="transaction-meta">
+                תאריך: {{ donation.date_donated|date:"d/m/Y" }}<br>
+                כמות: {{ donation.amount }}{% if donation.note %} ({{ donation.note }}){% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p>לא בוצעו תרומות עדיין.</p>
+        {% endfor %}
+      </div>
+    </section>
   </div>
 
   <script>
-    // Toggle functionality between earned points and redeemed points
+    // Toggle functionality among earned points, redeemed points, and donation transactions
     document.getElementById('toggleTasks').addEventListener('click', function() {
       document.getElementById('tasksSection').style.display = 'block';
       document.getElementById('redemptionsSection').style.display = 'none';
+      document.getElementById('donationsSection').style.display = 'none';
       this.classList.add('active');
       document.getElementById('toggleRedemptions').classList.remove('active');
+      document.getElementById('toggleDonations').classList.remove('active');
     });
     document.getElementById('toggleRedemptions').addEventListener('click', function() {
       document.getElementById('tasksSection').style.display = 'none';
       document.getElementById('redemptionsSection').style.display = 'block';
+      document.getElementById('donationsSection').style.display = 'none';
       this.classList.add('active');
       document.getElementById('toggleTasks').classList.remove('active');
+      document.getElementById('toggleDonations').classList.remove('active');
+    });
+    document.getElementById('toggleDonations').addEventListener('click', function() {
+      document.getElementById('tasksSection').style.display = 'none';
+      document.getElementById('redemptionsSection').style.display = 'none';
+      document.getElementById('donationsSection').style.display = 'block';
+      this.classList.add('active');
+      document.getElementById('toggleTasks').classList.remove('active');
+      document.getElementById('toggleRedemptions').classList.remove('active');
     });
   </script>
 {% endblock %}

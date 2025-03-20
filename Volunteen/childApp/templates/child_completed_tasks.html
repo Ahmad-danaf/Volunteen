@@ -2,34 +2,64 @@
 {% load static %}
 {% block title %}משימות מושלמות{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
 {% block content %}
-    <h1>משימות מושלמות</h1>
-    <form method="get">
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">סנן</button>
-    </form>
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #007bff; color: white;">
-                <th style="padding: 8px; text-align: right;">שם המשימה</th>
-                <th style="padding: 8px; text-align: right;">טינקוינס</th>
-                <th style="padding: 8px; text-align: right;">תאריך השלמה</th>
-                <th style="padding: 8px; text-align: right;">מנטור</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks_with_bonus %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px; text-align: right;">{{ task.title }}</td>
-                    <td style="padding: 8px; text-align: right;">{{ task.points }}</td>
-                    <td style="padding: 8px; text-align: right;">{{ task.completion_date|date:"F d, Y" }}</td>
-                    <td style="padding: 8px; text-align: right;">{{ task.mentor }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4" style="padding: 8px; text-align: center;">אין משימות שהושלמו.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+<div class="container mx-auto p-4">
+  <h1 class="text-xl sm:text-2xl font-bold mb-4 text-center">משימות מושלמות</h1>
+  
+  <form method="get" class="mb-4 flex flex-col sm:flex-row items-center gap-2">
+    <div class="w-full sm:w-auto flex-1">
+      {{ form.as_p }}
+    </div>
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+      סנן
+    </button>
+  </form>
+  
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full bg-white border border-gray-200 text-sm">
+      <thead class="bg-blue-600 text-white">
+        <tr>
+          <!-- Shorten the headers to save space on phone screens -->
+          <th class="px-2 py-2 text-right whitespace-nowrap">משימה</th>
+          <th class="px-2 py-2 text-right whitespace-nowrap">טינקוינס</th>
+          <th class="px-2 py-2 text-right whitespace-nowrap">תאריך</th>
+          <th class="px-2 py-2 text-right whitespace-nowrap">הוקצה ע"י</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        {% for task in tasks_with_bonus %}
+          <tr class="border-b border-gray-200 hover:bg-gray-100">
+            <!-- Decrease padding to make columns narrower -->
+            <td class="px-2 py-2 text-right break-words">
+              {{ task.title }}
+            </td>
+            <td class="px-2 py-2 text-right">
+              {{ task.points }}
+            </td>
+            <td class="px-2 py-2 text-right whitespace-nowrap">
+              {{ task.completion_date|date:"d/m/Y" }}
+            </td>
+            <td class="px-2 py-2 text-right">
+              {% if task.mentor %}
+                {{ task.mentor }}
+              {% else %}
+                {{ parent_username }}
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="px-2 py-4 text-center text-gray-500">
+              אין משימות שהושלמו.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
+</div>
 {% endblock %}

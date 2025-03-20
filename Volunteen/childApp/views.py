@@ -246,12 +246,12 @@ def child_completed_tasks(request):
             'title': task_completion.task.title,
             'points': task_completion.task.points,
             'completion_date': task_completion.completion_date,
-            'mentor': ", ".join(mentor.user.username for mentor in task_completion.task.assigned_mentors.all())
+            'mentor': ", ".join(mentor.user.username for mentor in task_completion.task.assigned_mentors.all()),
         }
-        for task_completion in task_completions
+        for task_completion in task_completions.order_by('-completion_date')
     ]
     
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form})
+    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':child.parent.user.username})
 
 @login_required
 def child_active_list(request):
@@ -268,19 +268,25 @@ def child_active_list(request):
 
 @login_required
 def child_points_history(request):
-    """Retrieve and display the child's point history including completed tasks and redemptions."""
-    # Get the child's instance via the one-to-one relation with User
+    """
+    Retrieve and display the child's point history including completed tasks, redemptions, 
+    and donation transactions.
+    """
     child = request.user.child
 
     task_completions = TeenCoinManager.get_expiration_schedule(child)
 
     # Retrieve the redemption history for the child, most recent first.
     redemptions = Redemption.objects.filter(child=child).order_by('-date_redeemed')
+    
+    # Retrieve donation transactions for the child, most recent first 
+    donations = DonationTransaction.objects.filter(child=child).order_by('-date_donated')
 
     # Pass both lists to the template.
     context = {
         'task_completions': task_completions,  # Earned coins (green transactions)
         'redemptions': redemptions,            # Redeemed coins (red transactions)
+        'donations': donations,              # Donated coins (blue transactions)
         "active_points": TeenCoinManager.get_total_active_teencoins(child)
     }
     return render(request, 'child_points_history.html', context)
@@ -602,4 +608,31 @@ def child_not_approved_requests(request):
     child = request.user.child  
     pending_requests = ChildRedemptionManager.get_not_approved_requests(child)
     return render(request, "child_not_approved_requests.html", {"requests": pending_requests})
+
+
+@login_required 
+def donation_leaderboard(request):
+    """
+    Displays a leaderboard of children based on their donation amounts.
+    By default, shows current month's donations, but allows filtering by date range and city.
+    """
+    form = DateRangeCityForm(request.GET or None)
+    
+    if form.is_valid():
+        city = form.cleaned_data.get('city', "ALL")
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+        
+        donations = LeaderboardUtils.get_donations_leaderboard(
+            start_date=start_date,
+            end_date=end_date,
+            city=city
+        )
+    else:
+        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL")
+    
+    return render(request, 'donation_leaderboard.html', {
+        'donations': donations,
+        'form': form,
+    })
    
