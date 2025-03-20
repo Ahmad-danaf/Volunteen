@@ -125,6 +125,7 @@ def donate_coins(request):
                     return render(request, 'donation_success.html', {
                         'donation': donation,
                         'category': category.name,
+                        'category_description': category.description,
                         'amount': amount
                     })
                     
