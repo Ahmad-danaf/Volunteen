@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Dashboard - Donation Manager{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Main content container to avoid overlap with bottom nav */
+    .main-content {
+      padding-bottom: 80px; /* extra space for the bottom navigation */
+    }
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 1000;
+    }
+    .bottom-nav a {
+      text-decoration: none;
+      color: #FF9800;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    /* Optional Dark Mode */
+    .dark-mode .bottom-nav {
+      background: #1e1e1e;
+    }
+    .dark-mode .bottom-nav a {
+      color: #FFC107;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Main Content -->
+  <div class="main-content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Sticky Bottom Navigation -->
+  <nav class="bottom-nav fade-in">
+    <a href="{% url 'managementApp:donation_manager_dashboard' %}">בית</a>
+    <a href="{% url 'managementApp:donation_summary_by_category' %}">הקטגוריות</a>
+    <a href="#">היסטוריית תרומות</a>
+    <a href="#">הגדרות</a>
+  </nav>
+
+  {% block extra_js %}{% endblock %}
+  <!-- FontAwesome for Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

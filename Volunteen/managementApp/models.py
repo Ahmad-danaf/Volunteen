@@ -29,3 +29,12 @@ class DonationSpending(models.Model):
 
     def __str__(self):
         return f"Spent {self.amount_spent} in {self.category.name}"
+    
+    
+class SpendingAllocation(models.Model):
+    spending = models.ForeignKey(DonationSpending, on_delete=models.CASCADE)
+    transaction = models.ForeignKey(DonationTransaction, on_delete=models.CASCADE)
+    amount_used = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.amount_used} spent from {self.transaction}"

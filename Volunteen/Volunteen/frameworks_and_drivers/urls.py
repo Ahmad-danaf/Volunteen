@@ -27,6 +27,9 @@ urlpatterns = [
     path('parent/', include('parentApp.urls')),
     
     path('institution/', include('institutionApp.urls')),  
+    
+    # Management app
+    path('management/', include('managementApp.urls')),
 
     # Captcha
     path('captcha/', include(captcha_urls)),

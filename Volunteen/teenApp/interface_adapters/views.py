@@ -19,20 +19,27 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def home_redirect(request):
-    user_groups = list(request.user.groups.values_list('name', flat=True))  
+    user = request.user
+    # If the user is a superuser, redirect to admin dashboard.
+    if user.is_superuser:
+        return redirect('admin:index')
+    
+    user_groups = list(user.groups.values_list('name', flat=True))
+    
     if 'Children' in user_groups:
         return redirect('childApp:child_home')
     elif 'Mentors' in user_groups:
-        return redirect('mentorApp:mentor_home') 
+        return redirect('mentorApp:mentor_home')
     elif 'Shops' in user_groups:
         return redirect('shopApp:shop_home')
     elif 'Parents' in user_groups:
         return redirect('parentApp:parent_home')
     elif 'Institutions' in user_groups:
-        return redirect('institutionApp:institution_home')  # בדיקה אם המשתמש במוסד
+        return redirect('institutionApp:institution_home')
+    elif 'DonationManager' in user_groups:
+        return redirect('managementApp:donation_manager_dashboard')
     else:
         return redirect('admin:index')
-
 
 def default_home(request):
     return HttpResponse("Home")

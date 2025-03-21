@@ -1,0 +1,140 @@
+{% extends 'donation/donation_base.html' %}
+
+{% block title %}סיכום התרומות לפי קטגוריה{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section class="summary-grid fade-in">
+    {% for summary in category_summaries %}
+    <div class="summary-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s">
+      <div class="card-image">
+        {% if summary.category.img %}
+        <img src="{{ summary.category.img.url }}" alt="{{ summary.category.name }}">
+        {% else %}
+        <img src="/static/images/default-category.png" alt="{{ summary.category.name }}">
+        {% endif %}
+      </div>
+      <div class="card-content">
+        <h2>{{ summary.category.name }}</h2>
+        {% if summary.category.description %}
+        <p>{{ summary.category.description }}</p>
+        {% endif %}
+        <div class="stats">
+          <div class="stat">
+            <span class="label">נתרמו</span>
+            <span class="value">{{ summary.total_donated }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">הוצאו</span>
+            <span class="value">{{ summary.total_spent }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">יתרה</span>
+            <span class="value">{{ summary.leftover }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .container {
+    padding: 20px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 600px) {
+    .summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 900px) {
+    .summary-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .summary-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  .card-image img {
+    width: 100%;
+    display: block;
+  }
+  .card-content {
+    padding: 15px;
+  }
+  .card-content h2 {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+  }
+  .card-content p {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+  }
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+  }
+  .stat {
+    flex: 1;
+  }
+  .stat .label {
+    display: block;
+    font-size: 0.8em;
+    color: #999;
+  }
+  .stat .value {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #FF9800;
+  }
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Additional JavaScript can be added here if interactivity is needed.
+  document.addEventListener('DOMContentLoaded', function() {
+    // For example, you might want to attach click handlers for card details.
+    const cards = document.querySelectorAll('.summary-card');
+    cards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Placeholder for further action (e.g., open a detailed modal)
+        // window.location.href = card.getAttribute('data-url');
+      });
+    });
+  });
+</script>
+{% endblock %}

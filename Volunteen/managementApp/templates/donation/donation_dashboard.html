@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Donation Manager</title>
+  <!-- Google Fonts for Hebrew -->
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Global Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: #fff;
+      color: #333;
+      line-height: 1.6;
+    }
+    /* Header Section */
+    .header {
+      padding: 20px;
+      background: linear-gradient(135deg, #FF9800, #FFC107);
+      color: #fff;
+      text-align: center;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+    .header h1 { font-size: 1.5em; margin-bottom: 10px; }
+    .header .date { font-size: 0.9em; }
+    /* Stats Badges */
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .badge {
+      background: #fff;
+      color: #FF9800;
+      padding: 10px 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      flex: 1;
+      margin: 0 5px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .badge:hover { transform: scale(1.05); }
+    .badge h2 { font-size: 1.2em; margin-bottom: 5px; }
+    .badge p { font-size: 0.8em; }
+    /* Main Action Cards Grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+    }
+    .card i { font-size: 2em; color: #FF9800; margin-bottom: 10px; }
+    .card p { font-size: 0.9em; margin-top: 5px; }
+    /* Monthly Donation Chart Section */
+    .chart-section {
+      padding: 20px;
+    }
+    .chart-container {
+      background: #fff;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative;
+      height: 200px;
+    }
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      background: #FF9800;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .fab:hover { background: #e68900; }
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+    .bottom-nav a {
+      text-decoration: none;
+      color: #FF9800;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    .slide-up {
+      animation: slideUp 0.5s ease-out forwards;
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+    /* Responsive Adjustments */
+    @media (max-width: 600px) {
+      .stats { flex-direction: column; }
+      .badge { margin: 5px 0; }
+    }
+    /* Optional Dark Mode */
+    .dark-mode {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    .dark-mode .header { background: #333; }
+    .dark-mode .badge { background: #1e1e1e; color: #FFC107; }
+    .dark-mode .card, .dark-mode .chart-container, .dark-mode .bottom-nav {
+      background: #1e1e1e;
+    }
+    .dark-mode .bottom-nav a { color: #FFC107; }
+  </style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header class="header fade-in">
+    <h1>ברוך הבא, מנהל התרומות!</h1>
+    <div class="date" id="currentDate">{{ current_date }}</div>
+    <div class="stats">
+      <div class="badge slide-up" style="animation-delay: 0.2s">
+        <h2 id="donatedCount" data-target="{{ total_donated }}">0</h2>
+        <p>TeenCoins שנתרמו</p>
+      </div>
+      <div class="badge slide-up" style="animation-delay: 0.4s">
+        <h2 id="spentCount" data-target="{{ total_spent }}">0</h2>
+        <p>TeenCoins שהוצאו</p>
+      </div>
+      <div class="badge slide-up" style="animation-delay: 0.6s">
+        <h2 id="balanceCount" data-target="{{ balance }}">0</h2>
+        <p>יתרה נותרה</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Action Cards Grid -->
+  <section class="card-grid fade-in">
+    <div class="card slide-up" style="animation-delay: 0.2s" onclick="window.location.href='{% url 'managementApp:donation_summary_by_category' %}'">
+        <i class="fas fa-chart-bar"></i>
+        <p>סיכום התרומות לפי קטגוריה</p>
+      </div>
+      
+    <div class="card slide-up" style="animation-delay: 0.3s">
+      <i class="fas fa-plus-circle"></i>
+      <p>הוספת הוצאה חדשה</p>
+    </div>
+    <div class="card slide-up" style="animation-delay: 0.4s">
+      <i class="fas fa-history"></i>
+      <p>צפייה בתרומות אחרונות</p>
+    </div>
+    <div class="card slide-up" style="animation-delay: 0.5s">
+      <i class="fas fa-download"></i>
+      <p>דו"ח תרומות להורדה</p>
+    </div>
+    <div class="card slide-up" style="animation-delay: 0.6s">
+      <i class="fas fa-trophy"></i>
+      <p>לוח תורמים מובילים</p>
+    </div>
+    <div class="card slide-up" style="animation-delay: 0.7s">
+      <i class="fas fa-money-check-alt"></i>
+      <p>הוצאות שבוצעו לאחרונה</p>
+    </div>
+  </section>
+
+  <!-- Monthly Donation Chart Section -->
+  <section class="chart-section fade-in">
+    <div class="chart-container slide-up">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Floating Action Button -->
+  <div class="fab fade-in" id="fab">+</div>
+
+  <!-- Sticky Bottom Navigation -->
+  <nav class="bottom-nav fade-in">
+    <a href="{% url 'managementApp:donation_manager_dashboard' %}">בית</a>
+    <a href="{% url 'managementApp:donation_summary_by_category' %}">הקטגוריות</a>
+    <a href="#">היסטוריית תרומות</a>
+    <a href="#">הגדרות</a>
+  </nav>
+
+  <!-- Optional Dark Mode Toggle -->
+  <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+    <button id="darkModeToggle" style="padding: 10px 15px; border: none; border-radius: 5px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer;">
+      מצב כהה
+    </button>
+  </div>
+
+  <!-- FontAwesome for Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- JavaScript for Interactions -->
+  <script>
+    // Count-up animation using data-target attribute
+    function animateValue(id) {
+      const obj = document.getElementById(id);
+      const target = parseInt(obj.getAttribute('data-target'));
+      let current = 0;
+      const stepTime = Math.max(Math.floor(1500 / target), 50);
+      const timer = setInterval(() => {
+        current++;
+        obj.textContent = current;
+        if (current >= target) clearInterval(timer);
+      }, stepTime);
+    }
+    animateValue("donatedCount");
+    animateValue("spentCount");
+    animateValue("balanceCount");
+
+    // Parse monthly data passed from the view
+    const monthlyDonations = JSON.parse('{{ monthly_donations|escapejs }}');
+    const monthlySpendings = JSON.parse('{{ monthly_spendings|escapejs }}');
+
+    // Initialize Chart.js bar chart
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'],
+        datasets: [
+          {
+            label: 'תרומות',
+            data: monthlyDonations,
+            backgroundColor: 'rgba(255,152,0,0.7)'
+          },
+          {
+            label: 'הוצאות',
+            data: monthlySpendings,
+            backgroundColor: 'rgba(255,87,34,0.7)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Floating Action Button handler
+    document.getElementById('fab').addEventListener('click', () => {
+      alert('הוסף רשומה חדשה להוצאה/תרומה!');
+    });
+
+    // Dark Mode Toggle
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+  </script>
+</body>
+</html>
