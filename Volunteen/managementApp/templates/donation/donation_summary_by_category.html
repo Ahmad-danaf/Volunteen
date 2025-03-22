@@ -1,23 +1,29 @@
-{% extends 'donation/donation_base.html' %}
-
-{% block title %}סיכום התרומות לפי קטגוריה{% endblock %}
-
-{% block content %}
+{% extends 'donation/donation_base.html' %} {% block title %}סיכום התרומות לפי
+קטגוריה{% endblock %} {% block content %}
 <div class="container">
   <section class="summary-grid fade-in">
     {% for summary in category_summaries %}
-    <div class="summary-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s">
+    <div
+      class="summary-card slide-up card-delay-{{ forloop.counter }}"
+      data-url="{% url 'managementApp:category_donors' summary.category.id %}"
+    >
       <div class="card-image">
         {% if summary.category.img %}
-        <img src="{{ summary.category.img.url }}" alt="{{ summary.category.name }}">
+        <img
+          src="{{ summary.category.img.url }}"
+          alt="{{ summary.category.name }}"
+        />
         {% else %}
-        <img src="/static/images/default-category.png" alt="{{ summary.category.name }}">
+        <img
+          src="/static/images/default-category.png"
+          alt="{{ summary.category.name }}"
+        />
         {% endif %}
       </div>
       <div class="card-content">
         <h2>{{ summary.category.name }}</h2>
         {% if summary.category.description %}
-        <p>{{ summary.category.description }}</p>
+        <p class="description">{{ summary.category.description }}</p>
         {% endif %}
         <div class="stats">
           <div class="stat">
@@ -33,14 +39,17 @@
             <span class="value">{{ summary.leftover }}</span>
           </div>
         </div>
+        <div class="view-donors">
+          <i class="fas fa-users"></i>
+          <span>צפייה בתורמים</span>
+          <i class="fas fa-chevron-left"></i>
+        </div>
       </div>
     </div>
     {% endfor %}
   </section>
 </div>
-{% endblock %}
-
-{% block extra_css %}
+{% endblock %} {% block extra_css %}
 <style>
   .container {
     padding: 20px;
@@ -66,14 +75,33 @@
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    position: relative;
   }
   .summary-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
+  .summary-card:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 152, 0, 0);
+    transition: background 0.3s;
+    pointer-events: none;
+    border-radius: 15px;
+  }
+  .summary-card:hover:after {
+    background: rgba(255, 152, 0, 0.05);
+  }
   .card-image img {
     width: 100%;
     display: block;
+    height: 160px;
+    object-fit: cover;
   }
   .card-content {
     padding: 15px;
@@ -81,16 +109,27 @@
   .card-content h2 {
     font-size: 1.2em;
     margin-bottom: 5px;
+    color: #333;
   }
-  .card-content p {
+  .card-content .description {
     font-size: 0.9em;
     color: #666;
     margin-bottom: 15px;
+    line-height: 1.4;
+    max-height: 2.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
   .stats {
     display: flex;
     justify-content: space-between;
     text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
   }
   .stat {
     flex: 1;
@@ -103,7 +142,27 @@
   .stat .value {
     font-size: 1.1em;
     font-weight: 600;
-    color: #FF9800;
+    color: #ff9800;
+  }
+  .view-donors {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff9800;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 8px;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .summary-card:hover .view-donors {
+    background: rgba(255, 152, 0, 0.2);
+    transform: translateY(-2px);
+  }
+  .view-donors i {
+    margin: 0 5px;
   }
   /* Animation Classes */
   .fade-in {
@@ -112,29 +171,120 @@
   .slide-up {
     animation: slideUp 0.5s ease forwards;
   }
+  /* Animation delays for cards */
+  .card-delay-1 {
+    animation-delay: 0.1s;
+  }
+  .card-delay-2 {
+    animation-delay: 0.2s;
+  }
+  .card-delay-3 {
+    animation-delay: 0.3s;
+  }
+  .card-delay-4 {
+    animation-delay: 0.4s;
+  }
+  .card-delay-5 {
+    animation-delay: 0.5s;
+  }
+  .card-delay-6 {
+    animation-delay: 0.6s;
+  }
+  .card-delay-7 {
+    animation-delay: 0.7s;
+  }
+  .card-delay-8 {
+    animation-delay: 0.8s;
+  }
+  .card-delay-9 {
+    animation-delay: 0.9s;
+  }
+  .card-delay-10 {
+    animation-delay: 1s;
+  }
+
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script>
-  // Additional JavaScript can be added here if interactivity is needed.
-  document.addEventListener('DOMContentLoaded', function() {
-    // For example, you might want to attach click handlers for card details.
-    const cards = document.querySelectorAll('.summary-card');
-    cards.forEach(card => {
-      card.addEventListener('click', function() {
-        // Placeholder for further action (e.g., open a detailed modal)
-        // window.location.href = card.getAttribute('data-url');
+  document.addEventListener("DOMContentLoaded", function () {
+    // Add ripple effect for cards
+    const cards = document.querySelectorAll(".summary-card");
+
+    cards.forEach((card) => {
+      // Add click handler to navigate to the category donors page
+      card.addEventListener("click", function () {
+        const url = this.getAttribute("data-url");
+        if (url) {
+          window.location.href = url;
+        }
+      });
+
+      card.addEventListener("mousedown", function (e) {
+        // Create ripple element
+        const ripple = document.createElement("div");
+        ripple.classList.add("ripple");
+
+        // Position ripple where clicked
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ripple.style.left = x + "px";
+        ripple.style.top = y + "px";
+
+        // Add to card
+        card.appendChild(ripple);
+
+        // Remove after animation
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
       });
     });
+
+    // Add CSS for ripple
+    const style = document.createElement("style");
+    style.textContent = `
+      .summary-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .ripple {
+        position: absolute;
+        background: rgba(255, 152, 0, 0.4);
+        border-radius: 50%;
+        width: 10px; 
+        height: 10px;
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+      @keyframes ripple {
+        to {
+          transform: scale(30);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   });
 </script>
 {% endblock %}

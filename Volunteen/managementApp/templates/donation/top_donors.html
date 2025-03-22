@@ -1,0 +1,574 @@
+{% extends 'donation/donation_base.html' %} {% block title %}לוח תורמים
+מובילים{% endblock %} {% block content %}
+<div class="container fade-in">
+  <div class="page-header slide-up">
+    <div class="header-icon">
+      <i class="fas fa-trophy"></i>
+    </div>
+    <h1>תורמים מובילים</h1>
+    <p>המשתמשים שתרמו הכי הרבה TeenCoins</p>
+  </div>
+
+  <div class="leaderboard-container slide-up" style="animation-delay: 0.2s">
+    {% if top_donors %}
+    <div class="top-three">
+      {% for donor in top_donors|slice:":3" %} {% if forloop.counter == 1 %}
+      <div class="podium-item gold" data-place="1">
+        <div class="medal">
+          <i class="fas fa-medal"></i>
+        </div>
+        <div class="avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="username">{{ donor.child__user__username }}</div>
+        <div class="score">
+          {{ donor.total_donated }} <span>TeenCoins</span>
+        </div>
+        <div class="donations-count">{{ donor.donation_count }} תרומות</div>
+      </div>
+      {% elif forloop.counter == 2 %}
+      <div class="podium-item silver" data-place="2">
+        <div class="medal">
+          <i class="fas fa-medal"></i>
+        </div>
+        <div class="avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="username">{{ donor.child__user__username }}</div>
+        <div class="score">
+          {{ donor.total_donated }} <span>TeenCoins</span>
+        </div>
+        <div class="donations-count">{{ donor.donation_count }} תרומות</div>
+      </div>
+      {% elif forloop.counter == 3 %}
+      <div class="podium-item bronze" data-place="3">
+        <div class="medal">
+          <i class="fas fa-medal"></i>
+        </div>
+        <div class="avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="username">{{ donor.child__user__username }}</div>
+        <div class="score">
+          {{ donor.total_donated }} <span>TeenCoins</span>
+        </div>
+        <div class="donations-count">{{ donor.donation_count }} תרומות</div>
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+
+    <div class="leaderboard-list">
+      {% for donor in top_donors|slice:"3:" %}
+      <div
+        class="leaderboard-item slide-up"
+        style="animation-delay: {{ forloop.counter|add:3|add:'0.1'|floatformat:1 }}s"
+      >
+        <div class="rank">{{ forloop.counter|add:3 }}</div>
+        <div class="donor-info">
+          <div class="avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="details">
+            <div class="username">{{ donor.child__user__username }}</div>
+            <div class="donations-count">{{ donor.donation_count }} תרומות</div>
+          </div>
+        </div>
+        <div class="score">
+          <span class="amount">{{ donor.total_donated }}</span>
+          <span class="currency">TeenCoins</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-trophy"></i>
+      <p>אין תורמים להצגה</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="stats-card slide-up" style="animation-delay: 0.4s">
+    <h2>סטטיסטיקת תרומות</h2>
+    <div class="stats-items">
+      <div class="stat-item">
+        <div class="stat-value">
+          {{ top_donors.0.total_donated|default:"0" }}
+        </div>
+        <div class="stat-label">הסכום הגבוה ביותר</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">{{ top_donors.count }}</div>
+        <div class="stat-label">מספר תורמים</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">
+          {{ top_donors.0.donation_count|default:"0" }}
+        </div>
+        <div class="stat-label">מספר תרומות מוביל</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+  .container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-icon {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 15px rgba(255, 152, 0, 0.3);
+  }
+
+  .header-icon i {
+    font-size: 2rem;
+  }
+
+  .page-header h1 {
+    color: #ff9800;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+  }
+
+  .page-header p {
+    color: #777;
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-container {
+    margin-bottom: 30px;
+  }
+
+  .top-three {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 40px;
+    height: 280px;
+    padding: 0 10px;
+  }
+
+  .podium-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s;
+    cursor: pointer;
+  }
+
+  .podium-item:hover {
+    transform: translateY(-10px);
+  }
+
+  .podium-item::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 100px;
+    border-radius: 10px 10px 0 0;
+    z-index: -1;
+  }
+
+  .gold {
+    height: 100%;
+    z-index: 3;
+  }
+
+  .gold::before {
+    background: linear-gradient(180deg, #ffd700, #ffc107);
+    height: 180px;
+  }
+
+  .silver {
+    height: 85%;
+    z-index: 2;
+  }
+
+  .silver::before {
+    background: linear-gradient(180deg, #c0c0c0, #e0e0e0);
+    height: 140px;
+  }
+
+  .bronze {
+    height: 70%;
+    z-index: 1;
+  }
+
+  .bronze::before {
+    background: linear-gradient(180deg, #cd7f32, #d2691e);
+    height: 100px;
+  }
+
+  .medal {
+    position: absolute;
+    top: -10px;
+    background: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+
+  .gold .medal i {
+    color: #ffd700;
+  }
+
+  .silver .medal i {
+    color: #c0c0c0;
+  }
+
+  .bronze .medal i {
+    color: #cd7f32;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+  }
+
+  .avatar i {
+    font-size: 1.5rem;
+    color: #555;
+  }
+
+  .username {
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-align: center;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .score {
+    font-weight: 700;
+    color: #ff9800;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+
+  .score span {
+    font-size: 0.7rem;
+    opacity: 0.8;
+  }
+
+  .donations-count {
+    font-size: 0.7rem;
+    color: #777;
+  }
+
+  .leaderboard-list {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    transition: transform 0.3s, background-color 0.3s;
+  }
+
+  .leaderboard-item:last-child {
+    border-bottom: none;
+  }
+
+  .leaderboard-item:hover {
+    background-color: rgba(255, 152, 0, 0.05);
+    transform: translateX(-5px);
+  }
+
+  .rank {
+    font-weight: 700;
+    color: #999;
+    font-size: 1.2rem;
+    width: 40px;
+    text-align: center;
+  }
+
+  .donor-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  .donor-info .avatar {
+    width: 40px;
+    height: 40px;
+    margin: 0 10px 0 15px;
+  }
+
+  .donor-info .avatar i {
+    font-size: 1rem;
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .details .username {
+    margin-bottom: 3px;
+    text-align: right;
+  }
+
+  .details .donations-count {
+    font-size: 0.75rem;
+  }
+
+  .leaderboard-item .score {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .leaderboard-item .amount {
+    font-size: 1.2rem;
+  }
+
+  .leaderboard-item .currency {
+    font-size: 0.7rem;
+  }
+
+  .empty-state {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    color: #999;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+  }
+
+  .stats-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  .stats-card h2 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .stats-items {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ff9800;
+    margin-bottom: 5px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: #777;
+    text-align: center;
+  }
+
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .top-three {
+      height: 220px;
+    }
+
+    .podium-item::before {
+      width: 80px;
+    }
+
+    .gold::before {
+      height: 150px;
+    }
+
+    .silver::before {
+      height: 120px;
+    }
+
+    .bronze::before {
+      height: 90px;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+    }
+
+    .medal {
+      width: 30px;
+      height: 30px;
+    }
+
+    .username {
+      max-width: 80px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Add confetti effect to the podium items
+    const podiumItems = document.querySelectorAll(".podium-item");
+
+    podiumItems.forEach((item) => {
+      item.addEventListener("click", function () {
+        // Simple bounce animation on click
+        item.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          item.style.transform = "";
+        }, 200);
+      });
+    });
+
+    // Make leaderboard swipeable on mobile
+    const leaderboardList = document.querySelector(".leaderboard-list");
+    let isScrolling = false;
+    let startX, startY, startTime;
+    const threshold = 50; // Minimum distance for swipe
+    const restraint = 100; // Maximum vertical distance allowed
+    const swipeTime = 300; // Maximum time allowed for swipe
+
+    if (leaderboardList) {
+      leaderboardList.addEventListener(
+        "touchstart",
+        function (e) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          startTime = new Date().getTime();
+          isScrolling = false;
+        },
+        false
+      );
+
+      leaderboardList.addEventListener(
+        "touchmove",
+        function (e) {
+          if (!startX || !startY) return;
+
+          // Calculate swipe direction
+          const diffX = e.touches[0].clientX - startX;
+          const diffY = e.touches[0].clientY - startY;
+
+          // If horizontal swipe is significant
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            isScrolling = true;
+          }
+        },
+        false
+      );
+
+      leaderboardList.addEventListener(
+        "touchend",
+        function (e) {
+          if (!isScrolling) return;
+
+          const endX = e.changedTouches[0].clientX;
+          const endY = e.changedTouches[0].clientY;
+          const diffX = endX - startX;
+          const diffY = endY - startY;
+          const elapsedTime = new Date().getTime() - startTime;
+
+          if (elapsedTime <= swipeTime) {
+            if (Math.abs(diffX) >= threshold && Math.abs(diffY) <= restraint) {
+              // Add a subtle animation to indicate swipe direction
+              leaderboardList.style.transition = "transform 0.3s ease";
+              leaderboardList.style.transform = `translateX(${
+                diffX > 0 ? "10px" : "-10px"
+              })`;
+
+              setTimeout(() => {
+                leaderboardList.style.transform = "";
+              }, 300);
+            }
+          }
+
+          startX = null;
+          startY = null;
+          isScrolling = false;
+        },
+        false
+      );
+    }
+  });
+</script>
+{% endblock %}

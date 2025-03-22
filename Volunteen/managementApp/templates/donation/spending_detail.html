@@ -1,0 +1,188 @@
+{% extends 'donation/donation_base.html' %}
+{% block title %}פרטי הוצאה{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+  <div class="detail-card slide-up">
+    <header class="detail-header">
+      <h1>פרטי הוצאה</h1>
+    </header>
+    <section class="spending-summary">
+      <div class="summary-item">
+        <span class="label">קטגוריה:</span>
+        <span class="value">{{ details.category }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">סכום שהוצא:</span>
+        <span class="value">{{ details.amount_spent }} TeenCoins</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">תאריך:</span>
+        <span class="value">{{ details.date_spent|date:"d/m/Y H:i" }}</span>
+      </div>
+      {% if details.note %}
+      <div class="summary-item">
+        <span class="label">הערה:</span>
+        <p class="value">{{ details.note }}</p>
+      </div>
+      {% endif %}
+    </section>
+    <section class="allocations-section">
+      <h2>תרומות בשימוש</h2>
+      <div class="allocations-list">
+        {% for alloc in details.allocations %}
+        <div class="allocation-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+          <div class="allocation-header">
+            <h3>{{ alloc.child_username }}</h3>
+          </div>
+          <div class="allocation-details">
+            <div class="detail-row">
+              <span class="label">תרומה:</span>
+              <span class="value">{{ alloc.donation_amount }} TeenCoins</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">ניצל:</span>
+              <span class="value">{{ alloc.amount_used }} TeenCoins</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">תאריך תרומה:</span>
+              <span class="value">{{ alloc.donation_date|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% if alloc.donation_note %}
+            <div class="detail-row">
+              <span class="label">הערה:</span>
+              <span class="value">{{ alloc.donation_note }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <p class="no-allocations">אין תרומות לשימוש בהוצאה זו.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-color: #FF9800;
+    --secondary-color: #FFC107;
+    --background-color: #fff;
+    --text-color: #333;
+    --border-color: #eee;
+  }
+  .container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .detail-card {
+    background: var(--background-color);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .detail-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .detail-header h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+  }
+  .spending-summary {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 0;
+    margin-bottom: 20px;
+  }
+  .summary-item {
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .summary-item .label {
+    float: right;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  .summary-item .value {
+    float: left;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  .allocations-section {
+    margin-top: 20px;
+  }
+  .allocations-section h2 {
+    font-size: 1.4rem;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .allocations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .allocation-card {
+    background: #fafafa;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .allocation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .allocation-header h3 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+  }
+  .allocation-details .detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .allocation-details .label {
+    font-size: 0.9rem;
+    color: #777;
+  }
+  .allocation-details .value {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    font-weight: 600;
+  }
+  .no-allocations {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+  }
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+</script>
+{% endblock %}

@@ -1,0 +1,637 @@
+{% extends 'donation/donation_base.html' %} {% block title %}תורמים לקטגוריה: {{
+category.name }}{% endblock %} {% block content %}
+<div class="container fade-in">
+  <div class="category-header slide-up">
+    <a
+      href="{% url 'managementApp:donation_summary_by_category' %}"
+      class="back-btn"
+    >
+      <i class="fas fa-arrow-right"></i>
+      <span>חזרה לכל הקטגוריות</span>
+    </a>
+
+    <div class="category-details">
+      <div class="category-image">
+        {% if category.img %}
+        <img src="{{ category.img.url }}" alt="{{ category.name }}" />
+        {% else %}
+        <img
+          src="/static/images/default-category.png"
+          alt="{{ category.name }}"
+        />
+        {% endif %}
+      </div>
+
+      <div class="category-info">
+        <h1>{{ category.name }}</h1>
+        {% if category.description %}
+        <p class="description">{{ category.description }}</p>
+        {% endif %}
+
+        <div class="category-stats">
+          <div class="total-donated">
+            <span class="value">{{ total_donated }}</span>
+            <span class="label">TeenCoins סה"כ</span>
+          </div>
+
+          <div class="donor-count">
+            <span class="value">{{ donor_stats|length }}</span>
+            <span class="label">תורמים</span>
+          </div>
+
+          <div class="donation-count">
+            <span class="value">{{ donations|length }}</span>
+            <span class="label">תרומות</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Donors Section -->
+  <div class="donors-section slide-up" style="animation-delay: 0.2s">
+    <h2>
+      <i class="fas fa-trophy"></i>
+      <span>התורמים המובילים</span>
+    </h2>
+
+    <div class="donor-cards">
+      {% for donor in donor_stats|slice:":5" %}
+      <div class="donor-card card-delay-{{ forloop.counter }}">
+        <div class="donor-rank">{{ forloop.counter }}</div>
+        <div class="donor-content">
+          <div class="donor-name">
+            <i class="fas fa-user-circle"></i>
+            <h3>{{ donor.child__user__username }}</h3>
+          </div>
+
+          <div class="donor-data">
+            <div class="donation-total">
+              <span class="value">{{ donor.donor_total }}</span>
+              <span class="label">TeenCoins</span>
+            </div>
+
+            <div class="donation-count">
+              <span class="value">{{ donor.donation_count }}</span>
+              <span class="label">תרומות</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <i class="fas fa-users-slash"></i>
+        <p>אין תורמים להצגה</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Donations Section -->
+  <div class="donations-section slide-up" style="animation-delay: 0.3s">
+    <h2>
+      <i class="fas fa-history"></i>
+      <span>תרומות אחרונות</span>
+    </h2>
+
+    <div class="donation-list">
+      {% for donation in donations|slice:":10" %}
+      <div class="donation-card card-delay-{{ forloop.counter }}">
+        <div class="donation-amount">
+          <span class="amount">{{ donation.amount }}</span>
+          <span class="currency">TeenCoins</span>
+        </div>
+
+        <div class="donation-details">
+          <div class="donor-info">
+            <i class="fas fa-user-circle"></i>
+            <h3>{{ donation.child.user.username }}</h3>
+          </div>
+
+          <div class="donation-time">
+            <i class="fas fa-calendar-alt"></i>
+            <time>{{ donation.date_donated|date:"d/m/Y H:i" }}</time>
+          </div>
+
+          {% if donation.note %}
+          <div class="donation-note">
+            <i class="fas fa-comment"></i>
+            <p>{{ donation.note }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>אין תרומות להצגה</p>
+      </div>
+      {% endfor %} {% if donations.count > 10 %}
+      <div class="view-more">
+        <p>מוצגות 10 תרומות אחרונות מתוך {{ donations.count }} תרומות</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+  /* Container */
+  .container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Back Button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .back-btn:hover {
+    background: rgba(255, 152, 0, 0.2);
+    transform: translateX(3px);
+  }
+
+  .back-btn i {
+    margin-left: 8px;
+  }
+
+  /* Category Header */
+  .category-header {
+    margin-bottom: 30px;
+  }
+
+  .category-details {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .category-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-left: 20px;
+    flex-shrink: 0;
+    background: rgba(255, 152, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .category-info {
+    flex: 1;
+  }
+
+  .category-info h1 {
+    color: #333;
+    font-size: 1.6rem;
+    margin-bottom: 5px;
+    margin-top: 0;
+  }
+
+  .category-info .description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+  }
+
+  .category-stats {
+    display: flex;
+    gap: 20px;
+  }
+
+  .category-stats > div {
+    text-align: center;
+  }
+
+  .category-stats .value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ff9800;
+  }
+
+  .category-stats .label {
+    font-size: 0.8rem;
+    color: #999;
+  }
+
+  .total-donated .value {
+    font-size: 1.5rem;
+  }
+
+  /* Section Headers */
+  .donors-section,
+  .donations-section {
+    margin-bottom: 30px;
+  }
+
+  .donors-section h2,
+  .donations-section h2 {
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .donors-section h2 i,
+  .donations-section h2 i {
+    color: #ff9800;
+    margin-left: 10px;
+    font-size: 1.2rem;
+  }
+
+  /* Donor Cards */
+  .donor-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+
+  .donor-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    transition: transform 0.3s;
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .donor-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .donor-rank {
+    width: 32px;
+    height: 32px;
+    background: #ff9800;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-left: 15px;
+    flex-shrink: 0;
+  }
+
+  .donor-card:nth-child(1) .donor-rank {
+    background: #ffd700; /* gold */
+  }
+
+  .donor-card:nth-child(2) .donor-rank {
+    background: #c0c0c0; /* silver */
+  }
+
+  .donor-card:nth-child(3) .donor-rank {
+    background: #cd7f32; /* bronze */
+  }
+
+  .donor-content {
+    flex: 1;
+  }
+
+  .donor-name {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .donor-name i {
+    color: #555;
+    margin-left: 8px;
+  }
+
+  .donor-name h3 {
+    font-size: 1rem;
+    margin: 0;
+    color: #333;
+  }
+
+  .donor-data {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .donor-data > div {
+    text-align: center;
+    flex: 1;
+  }
+
+  .donor-data .value {
+    display: block;
+    font-weight: 600;
+    color: #ff9800;
+    font-size: 1.1rem;
+  }
+
+  .donor-data .label {
+    font-size: 0.75rem;
+    color: #999;
+  }
+
+  /* Donation List */
+  .donation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .donation-card {
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .donation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .donation-amount {
+    background: linear-gradient(135deg, #ff9800, #ffc107);
+    color: white;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 80px;
+    font-weight: 600;
+  }
+
+  .amount {
+    font-size: 1.3rem;
+  }
+
+  .currency {
+    font-size: 0.7rem;
+    opacity: 0.8;
+  }
+
+  .donation-details {
+    padding: 15px;
+    flex: 1;
+  }
+
+  .donor-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .donor-info i {
+    color: #555;
+    margin-left: 8px;
+    font-size: 1.2rem;
+  }
+
+  .donor-info h3 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .donation-time {
+    display: flex;
+    align-items: center;
+    color: #777;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+  }
+
+  .donation-time i {
+    margin-left: 5px;
+  }
+
+  .donation-note {
+    display: flex;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  .donation-note i {
+    color: #999;
+    margin-left: 8px;
+    margin-top: 3px;
+  }
+
+  .donation-note p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #555;
+    flex: 1;
+  }
+
+  .view-more {
+    text-align: center;
+    padding: 10px;
+    color: #777;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  /* Empty States */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    color: #999;
+    text-align: center;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.3;
+  }
+
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  /* Animation delays for cards */
+  .card-delay-1 {
+    animation-delay: 0.1s;
+  }
+  .card-delay-2 {
+    animation-delay: 0.2s;
+  }
+  .card-delay-3 {
+    animation-delay: 0.3s;
+  }
+  .card-delay-4 {
+    animation-delay: 0.4s;
+  }
+  .card-delay-5 {
+    animation-delay: 0.5s;
+  }
+  .card-delay-6 {
+    animation-delay: 0.6s;
+  }
+  .card-delay-7 {
+    animation-delay: 0.7s;
+  }
+  .card-delay-8 {
+    animation-delay: 0.8s;
+  }
+  .card-delay-9 {
+    animation-delay: 0.9s;
+  }
+  .card-delay-10 {
+    animation-delay: 1s;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 600px) {
+    .category-details {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .category-image {
+      margin: 0 auto 15px;
+    }
+
+    .category-stats {
+      justify-content: center;
+    }
+
+    .donor-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .donation-card {
+      flex-direction: column;
+    }
+
+    .donation-amount {
+      padding: 10px;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+</style>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Add touch-swipe effect for donation cards on mobile
+    const cards = document.querySelectorAll(".donation-card");
+
+    let startX, startY;
+    const threshold = 50; // Minimum distance to be considered a swipe
+
+    cards.forEach((card) => {
+      card.addEventListener(
+        "touchstart",
+        function (e) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        },
+        false
+      );
+
+      card.addEventListener(
+        "touchmove",
+        function (e) {
+          if (!startX || !startY) return;
+
+          const diffX = e.touches[0].clientX - startX;
+          const diffY = e.touches[0].clientY - startY;
+
+          // If horizontal swipe is greater than vertical
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            e.preventDefault(); // Prevent page scrolling
+
+            // Add swipe effect
+            card.style.transform = `translateX(${diffX / 3}px)`;
+            card.style.opacity = 1 - Math.min(0.5, Math.abs(diffX) / 300);
+          }
+        },
+        false
+      );
+
+      card.addEventListener(
+        "touchend",
+        function (e) {
+          card.style.transform = "";
+          card.style.opacity = "";
+
+          startX = null;
+          startY = null;
+        },
+        false
+      );
+    });
+  });
+</script>
+{% endblock %}

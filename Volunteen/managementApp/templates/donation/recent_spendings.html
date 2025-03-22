@@ -1,0 +1,169 @@
+{% extends 'donation/donation_base.html' %}
+{% block title %}הוצאות אחרונות{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+  <div class="all-spendings-btn-container slide-up" style="animation-delay: 1s;">
+    <a href="{% url 'managementApp:all_spendings' %}" class="all-spendings-btn">הצג את כל ההוצאות</a>
+  </div>
+  <header class="page-header slide-up">
+    <h1>הוצאות אחרונות</h1>
+    <p>צפה ב-15 ההוצאות האחרונות שלך</p>
+  </header>
+  
+  <section class="spending-grid">
+    {% for spending in spendings %}
+    <a href="{% url 'managementApp:spending_detail' spending.id %}" 
+       class="spending-card slide-up" 
+       style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+      <div class="card-content">
+        <h2 class="spending-title">{{ spending.category.name }}</h2>
+        <p class="spending-amount">הוצאו: <span>{{ spending.amount_spent }}</span> TeenCoins</p>
+        <p class="spending-date">{{ spending.date_spent|date:"d/m/Y H:i" }}</p>
+        {% if spending.note %}
+        <p class="spending-note">{{ spending.note|truncatewords:10 }}</p>
+        {% endif %}
+      </div>
+      <div class="card-icon">
+        <i class="fas fa-arrow-left"></i>
+      </div>
+    </a>
+    {% endfor %}
+  </section>
+  
+ 
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-color: #FF9800;
+    --secondary-color: #FFC107;
+    --background-color: #fff;
+    --text-color: #333;
+  }
+  
+  .container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .page-header h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+  }
+  .page-header p {
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+  .spending-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  @media (min-width: 480px) {
+    .spending-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .spending-card {
+    display: flex;
+    flex-direction: row-reverse;
+    background: var(--background-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: var(--text-color);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .spending-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  .card-content {
+    padding: 15px;
+    flex: 1;
+  }
+  .spending-title {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+  }
+  .spending-amount {
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  .spending-amount span {
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+  .spending-date {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 5px;
+  }
+  .spending-note {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  .card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    background: var(--primary-color);
+    color: #fff;
+  }
+  .card-icon i {
+    font-size: 1.2rem;
+    transform: rotate(180deg);
+  }
+  .all-spendings-btn-container {
+    text-align: center;
+    margin-top: 25px;
+  }
+  .all-spendings-btn {
+    display: inline-block;
+    background: var(--primary-color);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: background 0.3s, transform 0.3s;
+  }
+  .all-spendings-btn:hover {
+    background: var(--secondary-color);
+    transform: translateY(-3px);
+  }
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+</script>
+{% endblock %}

@@ -60,6 +60,7 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       text-align: center;
       transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
     }
     .card:hover {
       transform: translateY(-5px);
@@ -174,23 +175,23 @@
         <p>סיכום התרומות לפי קטגוריה</p>
       </div>
       
-    <div class="card slide-up" style="animation-delay: 0.3s">
+    <div class="card slide-up" style="animation-delay: 0.3s" onclick="window.location.href='{% url 'managementApp:add_spending' %}'">
       <i class="fas fa-plus-circle"></i>
       <p>הוספת הוצאה חדשה</p>
     </div>
-    <div class="card slide-up" style="animation-delay: 0.4s">
+    <div class="card slide-up" style="animation-delay: 0.4s" onclick="window.location.href='{% url 'managementApp:recent_donations' %}'">
       <i class="fas fa-history"></i>
       <p>צפייה בתרומות אחרונות</p>
     </div>
-    <div class="card slide-up" style="animation-delay: 0.5s">
+    <div class="card slide-up" style="animation-delay: 0.5s" onclick="window.location.href='{% url 'managementApp:download_report' %}'">
       <i class="fas fa-download"></i>
       <p>דו"ח תרומות להורדה</p>
     </div>
-    <div class="card slide-up" style="animation-delay: 0.6s">
+    <div class="card slide-up" style="animation-delay: 0.6s" onclick="window.location.href='{% url 'managementApp:top_donors' %}'">
       <i class="fas fa-trophy"></i>
       <p>לוח תורמים מובילים</p>
     </div>
-    <div class="card slide-up" style="animation-delay: 0.7s">
+    <div class="card slide-up" style="animation-delay: 0.7s" onclick="window.location.href='{% url 'managementApp:recent_spendings' %}'">
       <i class="fas fa-money-check-alt"></i>
       <p>הוצאות שבוצעו לאחרונה</p>
     </div>
@@ -210,8 +211,8 @@
   <nav class="bottom-nav fade-in">
     <a href="{% url 'managementApp:donation_manager_dashboard' %}">בית</a>
     <a href="{% url 'managementApp:donation_summary_by_category' %}">הקטגוריות</a>
-    <a href="#">היסטוריית תרומות</a>
-    <a href="#">הגדרות</a>
+    <a href="{% url 'managementApp:recent_donations' %}">היסטוריית תרומות</a>
+    <a href="{% url 'managementApp:add_spending' %}">הוסף הוצאה</a>
   </nav>
 
   <!-- Optional Dark Mode Toggle -->
@@ -275,7 +276,7 @@
 
     // Floating Action Button handler
     document.getElementById('fab').addEventListener('click', () => {
-      alert('הוסף רשומה חדשה להוצאה/תרומה!');
+      window.location.href = '{% url 'managementApp:add_spending' %}';
     });
 
     // Dark Mode Toggle

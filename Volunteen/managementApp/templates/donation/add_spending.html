@@ -1,0 +1,457 @@
+{% extends 'donation/donation_base.html' %}
+{% block title %}הוספת הוצאה חדשה{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+  <div class="form-card slide-up">
+    <h1 class="form-title">הוספת הוצאה חדשה</h1>
+
+    {% if error_message %}
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error_message }}</p>
+    </div>
+    {% endif %}
+    {% if success_message %}
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      <p>{{ success_message }}</p>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'managementApp:add_spending' %}" class="spending-form">
+      {% csrf_token %}
+
+      <div class="balance-info" id="balanceInfo">
+        <p>
+          יתרה זמינה בקטגוריה:
+          <span id="availableBalance" class="amount-highlight">{{ default_leftover }}</span>
+          <span class="currency-large">TeenCoins</span>
+        </p>
+      </div>
+
+      <!-- Category Selection -->
+      <div class="form-group category-selection">
+        <label for="category">בחר קטגוריה:</label>
+        <div class="category-grid">
+          {% for category in categories %}
+          <div
+            class="category-card {% if category.id == default_category_id %}selected{% endif %}"
+            data-category-id="{{ category.id }}"
+            data-balance="{{ category.leftover }}"
+          >
+            <input
+              type="radio"
+              id="cat{{ category.id }}"
+              name="category"
+              value="{{ category.id }}"
+              required
+              class="category-radio"
+              {% if category.id == default_category_id %}checked{% endif %}
+            />
+            <label for="cat{{ category.id }}" class="category-card-content">
+              <div class="category-image">
+                {% if category.img %}
+                <img src="{{ category.img.url }}" alt="{{ category.name }}">
+                {% else %}
+                <i class="fas fa-box"></i>
+                {% endif %}
+              </div>
+              <div class="category-details">
+                <h3>{{ category.name }}</h3>
+                <p class="category-balance">
+                  יתרה:
+                  <span class="balance-value">{{ category.leftover }}</span> TeenCoins
+                </p>
+              </div>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Amount Input -->
+      <div class="form-group">
+        <label for="amount">סכום להוצאה:</label>
+        <div class="input-wrapper">
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            min="1"
+            required
+            placeholder="הזן סכום"
+          />
+          <span class="currency">TeenCoins</span>
+        </div>
+      </div>
+
+      <!-- Note Input -->
+      <div class="form-group">
+        <label for="note">הערה (אופציונלי):</label>
+        <textarea
+          name="note"
+          id="note"
+          rows="3"
+          placeholder="הוסף הערה לגבי ההוצאה"
+        ></textarea>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn">
+        <span>רשום הוצאה</span>
+        <i class="fas fa-check-circle"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Category Balances -->
+  <div class="category-balance-section slide-up" style="animation-delay: 0.2s">
+    <h2>יתרות לפי קטגוריות</h2>
+    <div class="balance-cards">
+      {% for item in category_leftovers %}
+      <div class="balance-card">
+        <div class="category-icon">
+          {% if item.category.img %}
+          <img src="{{ item.category.img.url }}" alt="{{ item.category.name }}">
+          {% else %}
+          <i class="fas fa-box"></i>
+          {% endif %}
+        </div>
+        <div class="category-info">
+          <h3>{{ item.category.name }}</h3>
+          <p class="balance">{{ item.leftover }} TeenCoins</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .form-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+  }
+  .form-title {
+    color: #ff9800;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  /* Alerts */
+  .alert {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .alert i {
+    margin-left: 10px;
+    font-size: 1.2rem;
+  }
+  .alert-error {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+  }
+  .alert-success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+  }
+  /* Form Groups */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .category-selection {
+    margin-bottom: 40px; /* extra space to avoid overlap with next field */
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+  }
+  .form-select,
+  input[type="number"],
+  textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .form-select:focus,
+  input[type="number"]:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #ff9800;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+  }
+  .input-wrapper {
+    position: relative;
+  }
+  .currency {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+  }
+  .balance-info {
+    background: rgba(255, 152, 0, 0.1);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #ff9800;
+  }
+  .amount-highlight {
+    font-size: 1.5rem;
+    color: #ff9800;
+  }
+  .currency-large {
+    font-size: 1.1rem;
+  }
+  /* Submit Button */
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ff9800, #ffc107);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+  }
+  .submit-btn i {
+    margin-right: 8px;
+  }
+  /* Category Grid Selection */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+  }
+  .category-card {
+    position: relative;
+    cursor: pointer;
+  }
+  .category-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .category-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+    height: 100%;
+    min-height: 150px; /* ensures enough vertical space for content */
+  }
+  .category-radio:checked + .category-card-content {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+    transform: translateY(-5px);
+  }
+  .category-image {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .category-image img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+  .category-image i {
+    font-size: 1.5rem;
+    color: #ff9800;
+  }
+  .category-details {
+    text-align: center;
+  }
+  .category-details h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  .category-balance {
+    font-size: 0.85rem;
+    color: #777;
+  }
+  .balance-value {
+    color: #ff9800;
+    font-weight: 600;
+  }
+  .category-balance-section {
+    margin-top: 30px;
+  }
+  .category-balance-section h2 {
+    color: #555;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .balance-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+  }
+  .balance-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s;
+  }
+  .balance-card:hover {
+    transform: translateY(-5px);
+  }
+  .category-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .category-icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+  .category-icon i {
+    font-size: 1.3rem;
+    color: #ff9800;
+  }
+  .category-info {
+    text-align: center;
+  }
+  .category-info h3 {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+  .balance {
+    color: #ff9800;
+    font-weight: 600;
+  }
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Responsive adjustments */
+  @media (max-width: 500px) {
+    .category-grid {
+      grid-template-columns: 1fr 1fr; /* 2 columns on smaller screens */
+    }
+    .balance-cards {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const categoryCards = document.querySelectorAll(".category-card");
+    const amountInput = document.getElementById("amount");
+    const balanceInfo = document.getElementById("balanceInfo");
+    const availableBalance = document.getElementById("availableBalance");
+
+    // Set default available balance if not already set
+    if (!availableBalance.textContent || availableBalance.textContent === "0") {
+      availableBalance.textContent = "{{ default_leftover }}";
+    }
+
+    // Update available balance when category changes
+    categoryCards.forEach((card) => {
+      const radio = card.querySelector(".category-radio");
+      card.addEventListener("click", function () {
+        radio.checked = true;
+        const balance = card.getAttribute("data-balance") || "0";
+        availableBalance.textContent = balance;
+
+        // Visualize selection
+        categoryCards.forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+
+        // Ensure the balance info is visible
+        balanceInfo.style.display = "block";
+
+        // Trigger custom event to validate amount
+        radio.dispatchEvent(new Event("change"));
+      });
+
+      radio.addEventListener("change", function () {
+        const balance = card.getAttribute("data-balance") || "0";
+        availableBalance.textContent = balance;
+      });
+    });
+
+    // Validate amount does not exceed leftover
+    amountInput.addEventListener("input", function () {
+      const amount = parseInt(amountInput.value) || 0;
+      const maxBalance = parseInt(availableBalance.textContent) || 0;
+
+      if (amount > maxBalance) {
+        amountInput.setCustomValidity(
+          `הסכום שהזנת (${amount}) גדול מהיתרה הזמינה (${maxBalance}).`
+        );
+      } else {
+        amountInput.setCustomValidity("");
+      }
+    });
+  });
+</script>
+{% endblock %}

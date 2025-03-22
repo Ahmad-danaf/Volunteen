@@ -1,0 +1,360 @@
+{% extends 'donation/donation_base.html' %} {% block title %}דו"ח תרומות
+להורדה{% endblock %} {% block content %}
+<div class="container fade-in">
+  <div class="report-card slide-up">
+    <div class="card-header">
+      <i class="fas fa-download"></i>
+      <h1>הורדת דו"ח תרומות</h1>
+    </div>
+
+    <div class="card-body">
+      <p class="description">
+        בחר טווח תאריכים להורדת דו"ח תרומות מפורט בפורמט CSV.
+        <br />הדו"ח יכלול את כל התרומות שנרשמו במערכת בטווח התאריכים שנבחר.
+      </p>
+
+      <form
+        method="post"
+        action="{% url 'managementApp:download_report' %}"
+        class="report-form"
+      >
+        {% csrf_token %}
+
+        <div class="date-fields">
+          <div class="form-group">
+            <label for="start_date">מתאריך:</label>
+            <input
+              type="date"
+              id="start_date"
+              name="start_date"
+              class="date-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="end_date">עד תאריך:</label>
+            <input
+              type="date"
+              id="end_date"
+              name="end_date"
+              class="date-input"
+              value="{{ today_date }}"
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="download-btn">
+          <i class="fas fa-file-download"></i>
+          <span>הורד דו"ח תרומות</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="info-section slide-up" style="animation-delay: 0.3s">
+    <div class="info-card">
+      <div class="info-icon">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="info-content">
+        <h3>מה כולל הדו"ח?</h3>
+        <ul>
+          <li>פרטי התרומה (מזהה, סכום, תאריך)</li>
+          <li>שם המשתמש של התורם</li>
+          <li>קטגוריית התרומה</li>
+          <li>הערות שנרשמו לתרומה</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon">
+        <i class="fas fa-lightbulb"></i>
+      </div>
+      <div class="info-content">
+        <h3>טיפ להורדת דו"ח</h3>
+        <p>
+          אם לא תבחר תאריך התחלה, הדו"ח יכלול את כל התרומות מתחילת הפעילות. אם
+          לא תבחר תאריך סיום, הדו"ח יכלול את כל התרומות עד היום.
+        </p>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-icon">
+        <i class="fas fa-file-csv"></i>
+      </div>
+      <div class="info-content">
+        <h3>פורמט הדו"ח</h3>
+        <p>
+          הדו"ח מיוצא בפורמט CSV שניתן לפתוח בתוכנות גיליון אלקטרוני כגון Excel,
+          Google Sheets או LibreOffice Calc.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+  .container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .report-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #ff9800, #ffc107);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .card-header i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  .card-header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .card-body {
+    padding: 25px;
+  }
+
+  .description {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.6;
+  }
+
+  .report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .date-fields {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .date-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+
+  .date-input:focus {
+    outline: none;
+    border-color: #ff9800;
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+  }
+
+  .download-btn {
+    background: linear-gradient(135deg, #4caf50, #8bc34a);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-top: 10px;
+  }
+
+  .download-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+  }
+
+  .download-btn:active {
+    transform: translateY(0);
+  }
+
+  .info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .info-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    transition: transform 0.3s;
+  }
+
+  .info-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .info-icon {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .info-content {
+    flex: 1;
+  }
+
+  .info-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  .info-content p,
+  .info-content ul {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .info-content ul {
+    padding-right: 20px;
+  }
+
+  .info-content li {
+    margin-bottom: 5px;
+  }
+
+  /* Animation Classes */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.5s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .date-fields {
+      flex-direction: column;
+    }
+
+    .info-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .info-content ul {
+      text-align: right;
+    }
+  }
+</style>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const startDateInput = document.getElementById("start_date");
+    const endDateInput = document.getElementById("end_date");
+
+    // Set maximum date to today for both inputs
+    const today = new Date().toISOString().split("T")[0];
+    startDateInput.max = today;
+    endDateInput.max = today;
+
+    // Validate that end date is not before start date
+    startDateInput.addEventListener("change", function () {
+      if (
+        startDateInput.value &&
+        endDateInput.value &&
+        startDateInput.value > endDateInput.value
+      ) {
+        endDateInput.value = startDateInput.value;
+      }
+    });
+
+    endDateInput.addEventListener("change", function () {
+      if (
+        startDateInput.value &&
+        endDateInput.value &&
+        endDateInput.value < startDateInput.value
+      ) {
+        startDateInput.value = endDateInput.value;
+      }
+    });
+
+    // Add animation to download button
+    const downloadBtn = document.querySelector(".download-btn");
+
+    downloadBtn.addEventListener("mousedown", function () {
+      downloadBtn.style.transform = "scale(0.95)";
+    });
+
+    downloadBtn.addEventListener("mouseup", function () {
+      downloadBtn.style.transform = "";
+    });
+
+    downloadBtn.addEventListener("mouseleave", function () {
+      downloadBtn.style.transform = "";
+    });
+  });
+</script>
+{% endblock %}
