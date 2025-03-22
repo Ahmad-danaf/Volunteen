@@ -218,7 +218,7 @@
   <!-- Optional Dark Mode Toggle -->
   <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
     <button id="darkModeToggle" style="padding: 10px 15px; border: none; border-radius: 5px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer;">
-      מצב כהה
+      מצב לילה
     </button>
   </div>
 
@@ -233,7 +233,7 @@
       const obj = document.getElementById(id);
       const target = parseInt(obj.getAttribute('data-target'));
       let current = 0;
-      const stepTime = Math.max(Math.floor(1500 / target), 10);
+      const stepTime = Math.max(Math.floor(1500 / target), 2);
       const timer = setInterval(() => {
         current++;
         obj.textContent = current;
