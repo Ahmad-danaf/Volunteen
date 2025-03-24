@@ -60,6 +60,16 @@ def shop_redemption_history(request):
     }
     return render(request, 'shop_redemption_history.html', context)
 
+@login_required
+def shop_rewards(request):
+    shop = request.user.shop
+    rewards = ShopManager.get_all_shop_rewards(shop.id)
+    context = {
+        'shop': shop,
+        'rewards': rewards,
+    }
+    return render(request, 'shop_your_rewards.html', context)
+
 
 @login_required
 def shop_redemptions_view(request):
@@ -74,7 +84,7 @@ def shop_redemptions_view(request):
     return render(request, 'shop_redemptions.html', context)
 
 @require_POST
-def toggle_reward_visibility(request, reward_id):
+def toggle_reward_visibility(request, reward_id): # if the reward is visible, make it invisible and vice versa
     reward = get_object_or_404(Reward, id=reward_id)
     
     if request.user == reward.shop.user:  # Ensure the user is the shop owner
