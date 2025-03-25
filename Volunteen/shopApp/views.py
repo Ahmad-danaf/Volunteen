@@ -18,6 +18,7 @@ from django.contrib import messages
 from .utils.shop_manager import ShopManager
 from collections import defaultdict
 from Volunteen.constants import REDEMPTION_REQUEST_EXPIRATION_MINUTES
+from .utils.ShopDonationUtils import ShopDonationUtils
 
 def shop_landing(request):
     return render(request, 'shop_landing.html')
@@ -26,15 +27,15 @@ def shop_landing(request):
 @login_required
 def shop_home(request):
     shop = Shop.objects.get(user=request.user)
-    start_of_month = now().replace(day=1)
-    redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-    points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
-    points_left_to_redeem = max(0, shop.max_points - points_used_this_month)
+    points_used_this_month = ShopManager.get_points_used_this_month(shop)
+    points_left_to_redeem = ShopManager.get_remaining_points_this_month(shop)
+    points_donated_this_month = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
 
     context = {
         'shop': shop,
         'points_used_this_month': points_used_this_month,
         'points_left_to_redeem': points_left_to_redeem,
+        'points_donated_this_month': points_donated_this_month,
     }
     return render(request, 'shop_home.html', context)
 
@@ -52,11 +53,13 @@ def shop_redemption_history(request):
     )
 
     last_redemptions = redemptions[:10]  # Get the last 10 redemptions
+    recent_donations = ShopDonationUtils.get_all_spendings_for_shop(shop,limit=10)
 
     context = {
         'shop': shop,
         'monthly_redemptions': monthly_redemptions,
         'recent_redemptions': last_redemptions,
+        'recent_donations': recent_donations,
     }
     return render(request, 'shop_redemption_history.html', context)
 
@@ -329,3 +332,24 @@ def approve_all_pending_requests(request):
         return JsonResponse(result)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
+@login_required
+def shop_donations_details(request):
+    # Get the shop associated with the logged-in user
+    shop = get_object_or_404(Shop, id=request.user.shop.id)
+    
+    remaining_points = ShopManager.get_remaining_points_this_month(shop)
+    total_spent = ShopDonationUtils.get_total_donation_spending_for_shop(shop)
+    spending_by_category = ShopDonationUtils.get_donation_spending_by_category(shop)
+    monthly_spent = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
+    all_spendings = ShopDonationUtils.get_all_spendings_for_shop(shop)
+    
+    context = {
+        'shop': shop,
+        'remaining_points': remaining_points,
+        'total_spent': total_spent,
+        'spending_by_category': spending_by_category,
+        'monthly_spent': monthly_spent,
+        'all_spendings': all_spendings,
+    }
+    return render(request, 'shop_donations_details.html', context)

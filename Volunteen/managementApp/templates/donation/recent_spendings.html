@@ -18,10 +18,26 @@
        style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
       <div class="card-content">
         <h2 class="spending-title">{{ spending.category.name }}</h2>
-        <p class="spending-amount">הוצאו: <span>{{ spending.amount_spent }}</span> TeenCoins</p>
+        <p class="spending-amount">
+          הוצאו: <span>{{ spending.amount_spent }}</span> TeenCoins
+        </p>
         <p class="spending-date">{{ spending.date_spent|date:"d/m/Y H:i" }}</p>
         {% if spending.note %}
         <p class="spending-note">{{ spending.note|truncatewords:10 }}</p>
+        {% endif %}
+        
+        {% if spending.shop %}
+        <div class="shop-info">
+          <span class="shop-label">חנות:</span>
+          <div class="shop-thumbnail">
+            {% if spending.shop.img %}
+            <img src="{{ spending.shop.img.url }}" alt="{{ spending.shop.name }}">
+            {% else %}
+            <i class="fas fa-store"></i>
+            {% endif %}
+          </div>
+          <span class="shop-name">{{ spending.shop.name }}</span>
+        </div>
         {% endif %}
       </div>
       <div class="card-icon">
@@ -30,8 +46,6 @@
     </a>
     {% endfor %}
   </section>
-  
- 
 </div>
 {% endblock %}
 
@@ -43,7 +57,6 @@
     --background-color: #fff;
     --text-color: #333;
   }
-  
   .container {
     padding: 20px;
     max-width: 600px;
@@ -113,6 +126,37 @@
     font-size: 0.9rem;
     color: #555;
   }
+  .shop-info {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(255,152,0,0.05);
+    border-radius: 8px;
+  }
+  .shop-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 5px;
+    color: var(--text-color);
+  }
+  .shop-thumbnail {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 5px;
+  }
+  .shop-thumbnail img, .shop-thumbnail i {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shop-name {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
   .card-icon {
     display: flex;
     align-items: center;
@@ -144,7 +188,6 @@
     background: var(--secondary-color);
     transform: translateY(-3px);
   }
-  /* Animation Classes */
   .fade-in {
     animation: fadeIn 0.5s ease forwards;
   }
@@ -164,6 +207,40 @@
 
 {% block extra_js %}
 <script>
+  document.addEventListener("DOMContentLoaded", function(){
+    const categoryCards = document.querySelectorAll(".category-card");
+    const amountInput = document.getElementById("amount");
+    const balanceInfo = document.getElementById("balanceInfo");
+    const availableBalance = document.getElementById("availableBalance");
 
+    if (!availableBalance.textContent || availableBalance.textContent === "0") {
+      availableBalance.textContent = "{{ default_leftover }}";
+    }
+    categoryCards.forEach((card) => {
+      const radio = card.querySelector(".category-radio");
+      card.addEventListener("click", function () {
+        radio.checked = true;
+        const balance = card.getAttribute("data-balance") || "0";
+        availableBalance.textContent = balance;
+        categoryCards.forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+        balanceInfo.style.display = "block";
+        radio.dispatchEvent(new Event("change"));
+      });
+      radio.addEventListener("change", function () {
+        const balance = card.getAttribute("data-balance") || "0";
+        availableBalance.textContent = balance;
+      });
+    });
+    amountInput.addEventListener("input", function () {
+      const amount = parseInt(amountInput.value) || 0;
+      const maxBalance = parseInt(availableBalance.textContent) || 0;
+      if (amount > maxBalance) {
+        amountInput.setCustomValidity(`הסכום שהזנת (${amount}) גדול מהיתרה הקטגורית (${maxBalance}).`);
+      } else {
+        amountInput.setCustomValidity("");
+      }
+    });
+  });
 </script>
 {% endblock %}

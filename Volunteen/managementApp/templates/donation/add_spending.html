@@ -30,25 +30,20 @@
         </p>
       </div>
 
-      <!-- Category Selection -->
       <div class="form-group category-selection">
         <label for="category">בחר קטגוריה:</label>
         <div class="category-grid">
           {% for category in categories %}
-          <div
-            class="category-card {% if category.id == default_category_id %}selected{% endif %}"
-            data-category-id="{{ category.id }}"
-            data-balance="{{ category.leftover }}"
-          >
-            <input
-              type="radio"
-              id="cat{{ category.id }}"
-              name="category"
-              value="{{ category.id }}"
-              required
-              class="category-radio"
-              {% if category.id == default_category_id %}checked{% endif %}
-            />
+          <div class="category-card {% if category.id == default_category_id %}selected{% endif %}"
+               data-category-id="{{ category.id }}"
+               data-balance="{{ category.leftover }}">
+            <input type="radio"
+                   id="cat{{ category.id }}"
+                   name="category"
+                   value="{{ category.id }}"
+                   required
+                   class="category-radio"
+                   {% if category.id == default_category_id %}checked{% endif %}>
             <label for="cat{{ category.id }}" class="category-card-content">
               <div class="category-image">
                 {% if category.img %}
@@ -60,8 +55,7 @@
               <div class="category-details">
                 <h3>{{ category.name }}</h3>
                 <p class="category-balance">
-                  יתרה:
-                  <span class="balance-value">{{ category.leftover }}</span> TeenCoins
+                  יתרה: <span class="balance-value">{{ category.leftover }}</span> TeenCoins
                 </p>
               </div>
             </label>
@@ -70,134 +64,154 @@
         </div>
       </div>
 
-      <!-- Amount Input -->
+      <div class="form-group">
+        <label for="shop">בחר חנות:</label>
+        <select name="shop" id="shop" class="form-select" required>
+          <option value="">בחר חנות...</option>
+          {% for shop in shops %}
+            <option value="{{ shop.id }}" data-remaining="{{ shop.remaining_points }}">
+              {{ shop.name }} - יתרה: {{ shop.remaining_points }} TeenCoins
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="amount">סכום להוצאה:</label>
         <div class="input-wrapper">
-          <input
-            type="number"
-            name="amount"
-            id="amount"
-            min="1"
-            required
-            placeholder="הזן סכום"
-          />
+          <input type="number"
+                 name="amount"
+                 id="amount"
+                 min="1"
+                 required
+                 placeholder="הזן סכום">
           <span class="currency">TeenCoins</span>
         </div>
       </div>
 
-      <!-- Note Input -->
       <div class="form-group">
         <label for="note">הערה (אופציונלי):</label>
-        <textarea
-          name="note"
-          id="note"
-          rows="3"
-          placeholder="הוסף הערה לגבי ההוצאה"
-        ></textarea>
+        <textarea name="note"
+                  id="note"
+                  rows="3"
+                  placeholder="הוסף הערה לגבי ההוצאה"></textarea>
       </div>
 
-      <!-- Submit -->
       <button type="submit" class="submit-btn">
         <span>רשום הוצאה</span>
         <i class="fas fa-check-circle"></i>
       </button>
     </form>
   </div>
-
-  <!-- Category Balances -->
-  <div class="category-balance-section slide-up" style="animation-delay: 0.2s">
-    <h2>יתרות לפי קטגוריות</h2>
-    <div class="balance-cards">
-      {% for item in category_leftovers %}
-      <div class="balance-card">
-        <div class="category-icon">
-          {% if item.category.img %}
-          <img src="{{ item.category.img.url }}" alt="{{ item.category.name }}">
-          {% else %}
-          <i class="fas fa-box"></i>
-          {% endif %}
-        </div>
-        <div class="category-info">
-          <h3>{{ item.category.name }}</h3>
-          <p class="balance">{{ item.leftover }} TeenCoins</p>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
+  :root {
+    --primary-color: #FF9800;       
+    --secondary-color: #FFC107;     
+    --bg-color: #F7F7F7;            
+    --text-color: #333;             
+    --border-color: #E0E0E0;
+    --neumorphic-light: #ffffff;    
+    --neumorphic-dark: #d1d9e6;     
+    --font-family: 'Assistant', 'Rubik', sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: var(--font-family);
+    background: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    direction: rtl;
+  }
+  header {
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  header h1 {
+    font-size: 1.8rem;
+    animation: kinetic 3s infinite alternate;
+  }
+  @keyframes kinetic {
+    from { letter-spacing: 0.5px; }
+    to { letter-spacing: 2px; }
+  }
   .container {
     padding: 20px;
-    max-width: 800px;
+    max-width: 414px;
     margin: 0 auto;
   }
   .form-card {
-    background: #fff;
+    background: var(--neumorphic-light);
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 9px 9px 16px var(--neumorphic-dark), -9px -9px 16px var(--neumorphic-light);
     margin-bottom: 30px;
+    position: relative;
   }
   .form-title {
-    color: #ff9800;
     font-size: 1.5rem;
+    color: var(--primary-color);
     margin-bottom: 20px;
     text-align: center;
   }
-  /* Alerts */
   .alert {
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
+    font-size: 0.9rem;
   }
   .alert i {
     margin-left: 10px;
     font-size: 1.2rem;
   }
   .alert-error {
-    background: rgba(244, 67, 54, 0.1);
+    background: rgba(244,67,54,0.1);
     color: #f44336;
   }
   .alert-success {
-    background: rgba(76, 175, 80, 0.1);
+    background: rgba(76,175,80,0.1);
     color: #4caf50;
   }
-  /* Form Groups */
-  .form-group {
+  .spending-form .form-group {
     margin-bottom: 20px;
   }
-  .category-selection {
-    margin-bottom: 40px; /* extra space to avoid overlap with next field */
-  }
-  label {
+  .spending-form label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #555;
+    color: var(--text-color);
   }
-  .form-select,
-  input[type="number"],
-  textarea {
+  .spending-form input[type="number"],
+  .spending-form textarea,
+  .spending-form select {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 10px;
     font-size: 1rem;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
-  .form-select:focus,
-  input[type="number"]:focus,
-  textarea:focus {
+  .spending-form input[type="number"]:focus,
+  .spending-form textarea:focus,
+  .spending-form select:focus {
     outline: none;
-    border-color: #ff9800;
-    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255,152,0,0.2);
   }
   .input-wrapper {
     position: relative;
@@ -207,29 +221,28 @@
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: #888;
+    color: var(--text-color);
+    font-size: 0.9rem;
   }
   .balance-info {
-    background: rgba(255, 152, 0, 0.1);
+    background: rgba(255,152,0,0.1);
     padding: 12px;
     border-radius: 10px;
-    margin-bottom: 20px;
     text-align: center;
+    margin-bottom: 20px;
     font-weight: 600;
-    color: #ff9800;
+    color: var(--primary-color);
   }
   .amount-highlight {
     font-size: 1.5rem;
-    color: #ff9800;
   }
   .currency-large {
     font-size: 1.1rem;
   }
-  /* Submit Button */
   .submit-btn {
     width: 100%;
-    background: linear-gradient(135deg, #ff9800, #ffc107);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
     border: none;
     padding: 14px;
     border-radius: 12px;
@@ -243,21 +256,25 @@
   }
   .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 6px 12px rgba(255,152,0,0.3);
   }
   .submit-btn i {
     margin-right: 8px;
   }
-  /* Category Grid Selection */
   .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 15px;
     margin-top: 10px;
   }
   .category-card {
     position: relative;
     cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .category-card.selected {
+    transform: translateY(-5px);
+    box-shadow: 0 0 0 3px rgba(255,152,0,0.2);
   }
   .category-radio {
     position: absolute;
@@ -266,27 +283,22 @@
     height: 0;
   }
   .category-card-content {
+    background: var(--neumorphic-light);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s;
+    min-height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: #fff;
-    border: 2px solid #eee;
-    border-radius: 12px;
-    padding: 15px;
-    transition: all 0.3s;
-    cursor: pointer;
-    height: 100%;
-    min-height: 150px; /* ensures enough vertical space for content */
-  }
-  .category-radio:checked + .category-card-content {
-    border-color: #ff9800;
-    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
-    transform: translateY(-5px);
+    justify-content: center;
   }
   .category-image {
     width: 60px;
     height: 60px;
-    background: rgba(255, 152, 0, 0.1);
+    background: rgba(255,152,0,0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -300,10 +312,7 @@
   }
   .category-image i {
     font-size: 1.5rem;
-    color: #ff9800;
-  }
-  .category-details {
-    text-align: center;
+    color: var(--primary-color);
   }
   .category-details h3 {
     font-size: 1rem;
@@ -314,28 +323,28 @@
     color: #777;
   }
   .balance-value {
-    color: #ff9800;
+    color: var(--primary-color);
     font-weight: 600;
   }
   .category-balance-section {
     margin-top: 30px;
   }
   .category-balance-section h2 {
-    color: #555;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
     text-align: center;
+    font-size: 1.3rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
   }
   .balance-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 15px;
   }
   .balance-card {
-    background: #fff;
+    background: var(--neumorphic-light);
     border-radius: 15px;
     padding: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 8px 8px 16px var(--neumorphic-dark), -8px -8px 16px var(--neumorphic-light);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -347,7 +356,7 @@
   .category-icon {
     width: 50px;
     height: 50px;
-    background: rgba(255, 152, 0, 0.1);
+    background: rgba(255,152,0,0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -361,41 +370,163 @@
   }
   .category-icon i {
     font-size: 1.3rem;
-    color: #ff9800;
-  }
-  .category-info {
-    text-align: center;
+    color: var(--primary-color);
   }
   .category-info h3 {
     font-size: 0.9rem;
     margin-bottom: 5px;
   }
   .balance {
-    color: #ff9800;
+    color: var(--primary-color);
     font-weight: 600;
   }
-  /* Animation Classes */
+  /* Shops Near You Section */
+  .shops-section {
+    margin-top: 30px;
+  }
+  .shops-section h2 {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
+  }
+  .shops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+  }
+  .shop-card {
+    background: var(--neumorphic-light);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 8px 8px 16px var(--neumorphic-dark), -8px -8px 16px var(--neumorphic-light);
+    text-align: center;
+    transition: transform 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .shop-card:hover {
+    transform: translateY(-5px);
+  }
+  .shop-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,152,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px auto;
+  }
+  .shop-icon img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+  .shop-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+  }
+  .shop-info {
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+  .progress-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+  }
+  .progress-circle svg {
+    transform: rotate(-90deg);
+  }
+  .progress-circle circle {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+  }
+  .progress-bg {
+    stroke: var(--border-color);
+  }
+  .progress-bar {
+    stroke: var(--primary-color);
+    transition: stroke-dashoffset 0.5s ease;
+  }
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  .distance-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--secondary-color);
+    color: #fff;
+    padding: 3px 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  .quick-donate-fab {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .quick-donate-fab:hover {
+    transform: translateX(-50%) scale(1.05);
+  }
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    background-color: rgba(255,255,255,0.7);
+  }
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
   .fade-in {
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeIn 0.3s ease forwards;
   }
   .slide-up {
-    animation: slideUp 0.5s ease forwards;
+    animation: slideUp 0.3s ease forwards;
   }
   @keyframes fadeIn {
     from { opacity: 0; }
-    to   { opacity: 1; }
+    to { opacity: 1; }
   }
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
-  /* Responsive adjustments */
   @media (max-width: 500px) {
-    .category-grid {
-      grid-template-columns: 1fr 1fr; /* 2 columns on smaller screens */
-    }
-    .balance-cards {
-      grid-template-columns: 1fr 1fr;
+    .category-grid, .shops-grid, .balance-cards {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 </style>
@@ -408,50 +539,67 @@
     const amountInput = document.getElementById("amount");
     const balanceInfo = document.getElementById("balanceInfo");
     const availableBalance = document.getElementById("availableBalance");
+    const shopSelect = document.getElementById("shop");
 
-    // Set default available balance if not already set
+
     if (!availableBalance.textContent || availableBalance.textContent === "0") {
       availableBalance.textContent = "{{ default_leftover }}";
     }
+    let selectedShopRemaining = 0;
 
-    // Update available balance when category changes
+    shopSelect.addEventListener("change", function() {
+      const selectedOption = shopSelect.options[shopSelect.selectedIndex];
+      selectedShopRemaining = parseInt(selectedOption.getAttribute("data-remaining")) || 0;
+    });
+
+    shopSelect.dispatchEvent(new Event("change"));
+
+
     categoryCards.forEach((card) => {
       const radio = card.querySelector(".category-radio");
       card.addEventListener("click", function () {
         radio.checked = true;
         const balance = card.getAttribute("data-balance") || "0";
         availableBalance.textContent = balance;
-
-        // Visualize selection
         categoryCards.forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
-
-        // Ensure the balance info is visible
         balanceInfo.style.display = "block";
-
-        // Trigger custom event to validate amount
         radio.dispatchEvent(new Event("change"));
       });
-
       radio.addEventListener("change", function () {
         const balance = card.getAttribute("data-balance") || "0";
         availableBalance.textContent = balance;
       });
     });
-
-    // Validate amount does not exceed leftover
     amountInput.addEventListener("input", function () {
       const amount = parseInt(amountInput.value) || 0;
-      const maxBalance = parseInt(availableBalance.textContent) || 0;
-
-      if (amount > maxBalance) {
-        amountInput.setCustomValidity(
-          `הסכום שהזנת (${amount}) גדול מהיתרה הזמינה (${maxBalance}).`
-        );
-      } else {
-        amountInput.setCustomValidity("");
+      const categoryBalance = parseInt(availableBalance.textContent) || 0;
+      let errorMsg = "";
+      if (amount > categoryBalance) {
+        errorMsg = `הסכום שהזנת (${amount}) גדול מהיתרה הקטגורית (${categoryBalance}).`;
+      } else if (amount > selectedShopRemaining) {
+        errorMsg = `הסכום שהזנת (${amount}) גדול מהיתרת הנקודות בחנות (${selectedShopRemaining}).`;
       }
+      amountInput.setCustomValidity(errorMsg);
     });
+
+    
+    const quickDonateFab = document.querySelector(".quick-donate-fab");
+    if (quickDonateFab) {
+      quickDonateFab.addEventListener("click", function (e) {
+        const ripple = document.createElement("span");
+        ripple.classList.add("ripple");
+        quickDonateFab.appendChild(ripple);
+        const maxDim = Math.max(quickDonateFab.clientWidth, quickDonateFab.clientHeight);
+        ripple.style.width = ripple.style.height = maxDim + "px";
+        const rect = quickDonateFab.getBoundingClientRect();
+        ripple.style.left = e.clientX - rect.left - maxDim / 2 + "px";
+        ripple.style.top = e.clientY - rect.top - maxDim / 2 + "px";
+        ripple.addEventListener("animationend", () => {
+          ripple.remove();
+        });
+      });
+    }
   });
 </script>
 {% endblock %}

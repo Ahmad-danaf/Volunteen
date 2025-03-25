@@ -1,0 +1,245 @@
+{% extends 'donation/donation_base.html' %}
+{% block title %}פרטי חנות{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+  <div class="detail-card slide-up">
+    <header class="detail-header">
+      <h1>פרטי חנות</h1>
+    </header>
+    <section class="shop-summary">
+      <div class="shop-info">
+        <div class="shop-image">
+          {% if shop.img %}
+            <img src="{{ shop.img.url }}" alt="{{ shop.name }}">
+          {% else %}
+            <i class="fas fa-store"></i>
+          {% endif %}
+        </div>
+        <div class="shop-details">
+          <h2 class="shop-name">{{ shop.name }}</h2>
+          <p class="shop-remaining">יתרה: <span>{{ remaining_points }}</span> TeenCoins</p>
+          <p class="shop-total">סה"כ הוצאות: <span>{{ total_spent }}</span> TeenCoins</p>
+          <p class="shop-monthly">הוצאות החודש: <span>{{ monthly_spent }}</span> TeenCoins</p>
+        </div>
+      </div>
+    </section>
+    <section class="spending-by-category">
+      <h2>הוצאות לפי קטגוריה</h2>
+      <div class="category-cards">
+        {% for cat, amount in spending_by_category.items %}
+          <div class="category-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+            <h3 class="category-name">{{ cat }}</h3>
+            <p class="category-amount">הוצאה: <span>{{ amount }}</span> TeenCoins</p>
+          </div>
+        {% empty %}
+          <p class="no-data">אין נתונים להצגה</p>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="spendings-history">
+        <h2>היסטוריית הוצאות</h2>
+        <div class="spendings-list">
+          {% for spending in all_spendings %}
+            <div class="spending-record slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+              <p>תאריך: {{ spending.date_spent|date:"d/m/Y H:i" }}</p>
+              <p>קטגוריה: {{ spending.category }}</p>
+              <p>סכום: {{ spending.amount_spent }} TeenCoins</p>
+              {% if spending.note %}
+              <p>הערה: {{ spending.note }}</p>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p>אין הוצאות להצגה</p>
+          {% endfor %}
+        </div>
+      </section>
+      
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-color: #FF9800;
+    --secondary-color: #FFC107;
+    --background-color: #fff;
+    --text-color: #333;
+    --border-color: #eee;
+  }
+  .container {
+    padding: 20px;
+    max-width: 414px;
+    margin: 0 auto;
+  }
+  .detail-card {
+    background: var(--background-color);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+  .detail-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .detail-header h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+  }
+  .shop-summary {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 0;
+    margin-bottom: 20px;
+  }
+  .shop-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .shop-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255,152,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .shop-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shop-image i {
+    font-size: 2rem;
+    color: var(--primary-color);
+  }
+  .shop-details {
+    text-align: center;
+  }
+  .shop-name {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  .shop-remaining,
+  .shop-total,
+  .shop-monthly {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+    color: var(--text-color);
+  }
+  .shop-remaining span,
+  .shop-total span,
+  .shop-monthly span {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  .spending-by-category {
+    margin-top: 20px;
+  }
+  .spending-by-category h2 {
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
+  }
+  .category-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .category-card {
+    background: #fafafa;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .category-name {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+  .category-amount {
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+  .category-amount span {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  .no-data {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+  }
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.3s ease forwards;
+  }
+  .spendings-history {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+  }
+  
+  .spendings-history h2 {
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--text-color);
+    margin-bottom: 15px;
+  }
+  
+  .spendings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .spending-record {
+    background: #fafafa;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .spending-record:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .spending-record p {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+  
+  .spending-record p:last-child {
+    margin-bottom: 0;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
+{% endblock %}

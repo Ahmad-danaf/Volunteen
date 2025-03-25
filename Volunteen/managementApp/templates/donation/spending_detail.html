@@ -26,6 +26,19 @@
         <p class="value">{{ details.note }}</p>
       </div>
       {% endif %}
+      {% if details.shop %}
+      <div class="summary-item shop-details">
+        <span class="label">חנות:</span>
+        <span class="value">
+          {% if details.shop.img %}
+            <img src="{{ details.shop.img }}" alt="{{ details.shop.name }}">
+          {% else %}
+            <i class="fas fa-store"></i>
+          {% endif %}
+          {{ details.shop.name }}
+        </span>
+      </div>
+      {% endif %}
     </section>
     <section class="allocations-section">
       <h2>תרומות בשימוש</h2>
@@ -82,7 +95,7 @@
   .detail-card {
     background: var(--background-color);
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     padding: 20px;
     animation: fadeIn 0.5s ease forwards;
   }
@@ -113,6 +126,23 @@
     float: left;
     color: var(--primary-color);
     font-weight: 600;
+  }
+  .shop-details {
+    clear: both;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+  }
+  .shop-details .value {
+    display: flex;
+    align-items: center;
+  }
+  .shop-details img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 8px;
   }
   .allocations-section {
     margin-top: 20px;
@@ -163,7 +193,6 @@
     color: #777;
     font-style: italic;
   }
-  /* Animations */
   .fade-in {
     animation: fadeIn 0.5s ease forwards;
   }
@@ -181,8 +210,3 @@
 </style>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-
-</script>
-{% endblock %}

@@ -1,57 +1,38 @@
-{% extends 'shop_base.html' %} {% load static %} {% block title %}בית עסק - דף
-ראשי{% endblock %} {% block extra_head %}
+{% extends 'shop_base.html' %}
+{% load static %}
+{% block title %}בית עסק - דף ראשי{% endblock %}
+{% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
-{% endblock extra_head %} {% block content %}
+{% endblock extra_head %}
+{% block content %}
 <div class="container" dir="rtl">
-  <!-- Shop Dashboard Header -->
   <header class="bg-white py-8 mb-8 shadow-md relative" dir="rtl">
     <div class="container mx-auto px-4 text-center">
-      <!-- Large Welcome Text -->
-      <h2 class="text-2xl font-bold text-gray-800">
-        ברוך הבא, {{ shop.name }}
-      </h2>
-  
-      <!-- Ratings Grid (ensure top alignment with items-start) -->
+      <h2 class="text-2xl font-bold text-gray-800">ברוך הבא, {{ shop.name }}</h2>
       <div class="shop-ratings grid grid-cols-2 gap-4 mt-6 items-start justify-items-center">
-        <!-- Rating Card: Service -->
         <div class="rating-card p-4 rounded-xl shadow-md bg-blue-50 w-40">
           <span class="rating-label block text-gray-700">דירוג שירות</span>
-          <!-- Single-row stars -->
           <div class="stars mt-2 inline-block whitespace-nowrap text-xl text-yellow-400">
             {% include 'stars.html' with rating=shop.average_service_rating %}
           </div>
-          <span class="rating-value block text-gray-600 mt-1">
-            {{ shop.average_service_rating|default:"טרם דורג" }}
-          </span>
+          <span class="rating-value block text-gray-600 mt-1">{{ shop.average_service_rating|default:"טרם דורג" }}</span>
         </div>
-  
-        <!-- Rating Card: Rewards -->
         <div class="rating-card p-4 rounded-xl shadow-md bg-blue-50 w-40">
           <span class="rating-label block text-gray-700">דירוג פרסים</span>
-          <!-- Single-row stars -->
           <div class="stars mt-2 inline-block whitespace-nowrap text-xl text-yellow-400">
             {% include 'stars.html' with rating=shop.average_reward_rating %}
           </div>
-          <span class="rating-value block text-gray-600 mt-1">
-            {{ shop.average_reward_rating|default:"טרם דורג" }}
-          </span>
+          <span class="rating-value block text-gray-600 mt-1">{{ shop.average_reward_rating|default:"טרם דורג" }}</span>
         </div>
       </div>
     </div>
   </header>
   
-  
-  
-
   <!-- Last 10 Redemptions Section -->
   <section class="mb-6">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-xl font-bold">10 פדיונים אחרונים</h3>
-      <!-- "See All" Button -->
-      <a
-        href="{% url 'shopApp:shop_redemptions' %}"
-        class="btn bg-blue-600 text-white rounded-full py-2 px-4 hover:bg-blue-700 transition-colors"
-      >
+      <a href="{% url 'shopApp:shop_redemptions' %}" class="btn bg-blue-600 text-white rounded-full py-2 px-4 hover:bg-blue-700 transition-colors">
         ראה את כל הפדיונים
       </a>
     </div>
@@ -65,26 +46,56 @@
           </tr>
         </thead>
         <tbody>
-          {% if recent_redemptions %} {% for redemption in recent_redemptions %}
-          <tr
-            class="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-          >
-            <td class="p-2 text-center">
-              {{ redemption.date_redeemed|date:"d/m/Y" }}
-            </td>
-            <td class="p-2 text-center font-bold">
-              {{ redemption.child.user.username }}
-            </td>
-            <td class="p-2 text-center text-red-600 font-semibold">
-              {{ redemption.points_used }}
-            </td>
+          {% if recent_redemptions %}
+            {% for redemption in recent_redemptions %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+              <td class="p-2 text-center">{{ redemption.date_redeemed|date:"d/m/Y" }}</td>
+              <td class="p-2 text-center font-bold">{{ redemption.child.user.username }}</td>
+              <td class="p-2 text-center text-red-600 font-semibold">{{ redemption.points_used }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="3" class="p-4 text-center text-gray-600">אין פדיונים אחרונים להציג</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Recent Donations Section -->
+  <section class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xl font-bold">10 תרומות אחרונות</h3>
+      <a href="{% url 'shopApp:shop_donations_details' %}" class="btn bg-green-600 text-white rounded-full py-2 px-4 hover:bg-green-700 transition-colors">
+        ראה את כל התרומות
+      </a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="donation-table w-full border-collapse">
+        <thead>
+          <tr class="bg-green-600 text-white">
+            <th class="p-2 text-center">תאריך תרומה</th>
+            <th class="p-2 text-center">קטגוריה</th>
+            <th class="p-2 text-center">סכום</th>
+            <th class="p-2 text-center">הערה</th>
           </tr>
-          {% endfor %} {% else %}
-          <tr>
-            <td colspan="3" class="p-4 text-center text-gray-600">
-              אין פדיונים אחרונים להציג
-            </td>
-          </tr>
+        </thead>
+        <tbody>
+          {% if recent_donations %}
+            {% for donation in recent_donations %}
+            <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+              <td class="p-2 text-center">{{ donation.date_spent|date:"d/m/Y H:i" }}</td>
+              <td class="p-2 text-center font-bold">{{ donation.category }}</td>
+              <td class="p-2 text-center text-blue-600 font-semibold">{{ donation.amount_spent }}</td>
+              <td class="p-2 text-center">{{ donation.note|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="4" class="p-4 text-center text-gray-600">אין תרומות אחרונות להצגה</td>
+            </tr>
           {% endif %}
         </tbody>
       </table>
@@ -121,9 +132,10 @@
     {% endif %}
   </section>
 </div>
-{% endblock %} {% block extra_css %}
+{% endblock %}
+
+{% block extra_css %}
 <style>
-  /* Button Styling */
   .btn {
     display: inline-block;
     margin: 0.5rem 0;
@@ -139,10 +151,9 @@
   .btn:hover {
     background-color: #45a049;
   }
-
-  /* Table Styling */
   .redemption-table,
-  .redemption-summary-table {
+  .redemption-summary-table,
+  .donation-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
@@ -150,25 +161,24 @@
   .redemption-table th,
   .redemption-table td,
   .redemption-summary-table th,
-  .redemption-summary-table td {
+  .redemption-summary-table td,
+  .donation-table th,
+  .donation-table td {
     border: 1px solid #ddd;
     padding: 0.75rem;
     text-align: center;
   }
   .redemption-table th,
-  .redemption-summary-table th {
+  .redemption-summary-table th,
+  .donation-table th {
     background-color: #4caf50;
     color: white;
   }
-
-  /* Chart Container */
   .chart-container {
     width: 100%;
     max-width: 600px;
     height: 300px;
   }
-
-  /* Responsive adjustments for mobile */
   @media (max-width: 600px) {
     .chart-container {
       height: 250px;
@@ -178,16 +188,18 @@
       font-size: 0.9rem;
     }
     .redemption-table,
-    .redemption-summary-table {
+    .redemption-summary-table,
+    .donation-table {
       font-size: 0.85rem;
     }
   }
 </style>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Chart.js for Monthly Redemptions Summary
     var ctx = document.getElementById('redemptionChart').getContext('2d');
     var chartData = {
       labels: [{% for redemption in monthly_redemptions %}"{{ redemption.month|date:'F Y' }}"{% if not forloop.last %}, {% endif %}{% endfor %}],

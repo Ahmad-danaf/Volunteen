@@ -1,0 +1,153 @@
+{% extends 'donation/donation_base.html' %}
+{% block title %}סיכום חנויות{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+  <header class="page-header slide-up">
+    <h1>סיכום חנויות</h1>
+    <p>צפה בנתוני החנויות: יתרת נקודות ותכולת הוצאות התרומות</p>
+  </header>
+
+  <section class="shops-grid">
+    {% for shop in shops %}
+    <div class="shop-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+      <div class="shop-icon">
+        {% if shop.img %}
+          <img src="{{ shop.img.url }}" alt="{{ shop.name }}">
+        {% else %}
+          <i class="fas fa-store"></i>
+        {% endif %}
+      </div>
+      <div class="shop-info">
+        <h3 class="shop-name">{{ shop.name }}</h3>
+        <p class="shop-remaining">יתרה: <span>{{ shop.remaining_points }}</span> TeenCoins</p>
+        <p class="shop-total">סה"כ הוצאות: <span>{{ shop.total_spent }}</span> TeenCoins</p>
+        <a href="{% url 'managementApp:shop_detail' shop.id %}" class="shop-detail-link">צפה בפרטים</a>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-color: #FF9800;
+    --secondary-color: #FFC107;
+    --background-color: #fff;
+    --text-color: #333;
+    --border-color: #eee;
+  }
+  .container {
+    padding: 20px;
+    max-width: 414px;
+    margin: 0 auto;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .page-header h1 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+  }
+  .page-header p {
+    font-size: 1rem;
+    color: var(--text-color);
+  }
+  .shops-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  @media (min-width: 360px) {
+    .shops-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .shop-card {
+    background: var(--background-color);
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 9px 9px 16px rgba(0,0,0,0.1), -9px -9px 16px #fff;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+  .shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  }
+  .shop-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,152,0,0.1);
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .shop-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shop-icon i {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+  }
+  .shop-info {
+    color: var(--text-color);
+  }
+  .shop-name {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  .shop-remaining,
+  .shop-total {
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+  }
+  .shop-remaining span,
+  .shop-total span {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  .shop-detail-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: var(--primary-color);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    transition: background 0.3s;
+  }
+  .shop-detail-link:hover {
+    background: var(--secondary-color);
+  }
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  .slide-up {
+    animation: slideUp 0.3s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+

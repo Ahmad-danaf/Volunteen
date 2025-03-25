@@ -1,6 +1,6 @@
 from django.db import models
 from childApp.models import Child
-
+from shopApp.models import Shop
 class DonationCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -23,6 +23,7 @@ class DonationTransaction(models.Model):
     
 class DonationSpending(models.Model):
     category = models.ForeignKey(DonationCategory, on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True, blank=True)
     amount_spent = models.PositiveIntegerField()
     date_spent = models.DateTimeField(auto_now_add=True)
     note = models.TextField(blank=True, null=True)

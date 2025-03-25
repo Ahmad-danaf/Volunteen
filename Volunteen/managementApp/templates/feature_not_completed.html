@@ -1,0 +1,208 @@
+{% extends 'donation/donation_base.html' %}
+
+{% block title %}الميزة غير مكتملة{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feature-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 85vh;
+        padding: 1.5rem;
+        text-align: center;
+        color: #333;
+    }
+
+    .illustration {
+        width: 70%;
+        max-width: 300px;
+        margin-bottom: 2rem;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .feature-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #ff9800;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .feature-message {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.8s 0.2s ease forwards;
+    }
+
+    .back-button {
+        background: #ff9800;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.8s 0.4s ease forwards;
+    }
+
+    .back-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 20px rgba(255, 152, 0, 0.4);
+    }
+
+    .back-button:active {
+        transform: translateY(-1px);
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-15px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .shine {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .shine::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(30deg);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        0% {
+            transform: rotate(30deg) translateX(-100%);
+        }
+        20%, 100% {
+            transform: rotate(30deg) translateX(100%);
+        }
+    }
+
+    /* Dark mode support */
+    .dark-mode .feature-container {
+        color: #e4e4e4;
+        background-color: #1e1e1e;
+    }
+
+    .dark-mode .feature-title {
+        color: #ffc107;
+    }
+
+    .dark-mode .back-button {
+        background: #ffc107;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    }
+
+    .dark-mode .back-button:hover {
+        box-shadow: 0 7px 20px rgba(255, 193, 7, 0.4);
+    }
+
+    /* Animation for context message if present */
+    .context-message {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: rgba(255, 152, 0, 0.1);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.8s 0.6s ease forwards;
+    }
+
+    .dark-mode .context-message {
+        background: rgba(255, 193, 7, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="feature-container">
+    <img src="https://cdn.lordicon.com/lupuorrc.json" class="illustration" alt="Feature Coming Soon">
+    
+    <h1 class="feature-title">هذه الميزة قيد التطوير</h1>
+    
+    <p class="feature-message">
+        نعتذر عن أي تقصير قد بدر منا في التطبيق، فالكمال لله وحده، ونحن بشر نصيب أحيانًا ونخطئ أحيانًا أخرى، ونسعى دائمًا لتقديم الأفضل لكم. شكراً لتفهمكم ودعمكم المستمر.
+    </p>
+    
+    {% if message %}
+    <div class="context-message">
+        {{ message }}
+    </div>
+    {% endif %}
+    
+    <button onclick="window.history.back()" class="back-button shine">العودة</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load interactive animation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Replace static image with Lordicon animated icon if available
+        const script = document.createElement('script');
+        script.src = "https://cdn.lordicon.com/lordicon.js";
+        document.head.appendChild(script);
+        
+        script.onload = function() {
+            const illustration = document.querySelector('.illustration');
+            const lordIcon = document.createElement('lord-icon');
+            
+            lordIcon.setAttribute('src', 'https://cdn.lordicon.com/lupuorrc.json');
+            lordIcon.setAttribute('trigger', 'loop');
+            lordIcon.setAttribute('colors', 'primary:#ff9800,secondary:#ffc107');
+            lordIcon.setAttribute('style', 'width:250px;height:250px');
+            
+            illustration.parentNode.replaceChild(lordIcon, illustration);
+        };
+
+        // Check for dark mode
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        if (prefersDarkScheme.matches) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Add smooth scroll behavior
+        document.documentElement.style.scrollBehavior = 'smooth';
+    });
+</script>
+{% endblock %}

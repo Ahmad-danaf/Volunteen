@@ -15,5 +15,6 @@ urlpatterns = [
     path('approve-all-pending-requests/', views.approve_all_pending_requests, name='approve_all_pending_requests'),
     path('landing/', views.shop_landing, name='shop_landing'),
     path('shop_redemptions/', views.shop_redemptions_view, name='shop_redemptions'),
+    path('shop_donations_details/', views.shop_donations_details, name='shop_donations_details'),
 
 ]

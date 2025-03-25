@@ -13,6 +13,9 @@ from managementApp.models import DonationTransaction, DonationCategory, Donation
 from django.db.models import Sum, Count
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from shopApp.models import Shop
+from shopApp.utils.shop_manager import ShopManager
+from shopApp.utils.ShopDonationUtils import ShopDonationUtils
 
 @donation_manager_required
 def donation_manager_dashboard(request):
@@ -72,10 +75,16 @@ def add_spending(request):
     # Set default category: use the first active category if exists
     default_category_id = categories[0].id if categories else None
     default_leftover = categories[0].leftover if categories else 0
+    
+    # Get all shops and calculate remaining points for each shop using ShopManager
+    shops = Shop.objects.all()  
+    for shop in shops:
+        shop.remaining_points = ShopManager.get_remaining_points_this_month(shop)
 
     if request.method == 'POST':
         try:
             category_id = request.POST.get('category')
+            shop_id = request.POST.get('shop')
             amount = int(request.POST.get('amount', 0))
             note = request.POST.get('note', '')
 
@@ -84,15 +93,20 @@ def add_spending(request):
 
             # Get active category or return 404 if not found
             category = get_object_or_404(DonationCategory, id=category_id, is_active=True)
+            shop = get_object_or_404(Shop, id=shop_id) if shop_id else None
+            if shop is None:
+                raise ValueError("חנות לא נבחרה.")
 
             # Create the spending using the utility class
-            DonationSpendingUtils.spend_from_category(category, amount, note)
+            DonationSpendingUtils.spend_from_category(category, amount, note, shop)
             success_message = "ההוצאה נרשמה בהצלחה!"
 
         except ValueError as e:
             error_message = str(e)
         except DonationCategory.DoesNotExist:
             error_message = "הקטגוריה שנבחרה אינה קיימת."
+        except Shop.DoesNotExist:
+            error_message = "החנות שנבחרה אינה קיימת."
         except Exception as e:
             error_message = f"שגיאה לא צפויה: {str(e)}"
 
@@ -103,6 +117,7 @@ def add_spending(request):
         'error_message': error_message,
         'success_message': success_message,
         'category_leftovers': leftovers,  
+        'shops': shops,
     }
     return render(request, 'donation/add_spending.html', context)
 
@@ -249,3 +264,44 @@ def category_donors(request, category_id):
         return redirect('managementApp:donation_summary_by_category')
 
 
+@donation_manager_required
+def shop_summary(request):
+    """
+    Display all shops, their remaining points, and total donation spending.
+    """
+    shops = Shop.objects.all()
+    # Attach remaining points + total spent
+    for shop in shops:
+        shop.remaining_points = ShopManager.get_remaining_points_this_month(shop)
+        shop.total_spent = ShopDonationUtils.get_total_donation_spending_for_shop(shop)
+
+    context = {
+        'shops': shops,
+    }
+    return render(request, 'donation/shop_summary.html', context)
+
+
+@donation_manager_required
+def download_shop_report(request):
+    msg='download shop report'
+    return render(request, 'feature_not_completed.html', {'message': msg})
+
+@donation_manager_required
+def shop_detail(request, shop_id):
+    shop = get_object_or_404(Shop, id=shop_id)
+    
+    remaining_points = ShopManager.get_remaining_points_this_month(shop)
+    total_spent = ShopDonationUtils.get_total_donation_spending_for_shop(shop)
+    spending_by_category = ShopDonationUtils.get_donation_spending_by_category(shop)
+    monthly_spent = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
+    all_spendings = ShopDonationUtils.get_all_spendings_for_shop(shop)
+    
+    context = {
+        'shop': shop,
+        'remaining_points': remaining_points,
+        'total_spent': total_spent,
+        'spending_by_category': spending_by_category,
+        'monthly_spent': monthly_spent,
+        'all_spendings': all_spendings,
+    }
+    return render(request, 'donation/shop_detail.html', context)

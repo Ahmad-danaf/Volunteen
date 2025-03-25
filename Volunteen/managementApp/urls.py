@@ -14,4 +14,7 @@ urlpatterns = [
     path('spending/<int:spending_id>/', views.spending_detail, name='spending_detail'),
     path('all-spendings/', views.all_spendings, name='all_spendings'),
     path('category-donors/<int:category_id>/', views.category_donors, name='category_donors'),
+    path('shops/summary/', views.shop_summary, name='shop_summary'),
+    path('shops/report/', views.download_shop_report, name='download_shop_report'),
+    path('shop/<int:shop_id>/', views.shop_detail, name='shop_detail'),
 ]

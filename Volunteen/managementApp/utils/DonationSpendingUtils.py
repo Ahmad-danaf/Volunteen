@@ -6,12 +6,13 @@ from managementApp.models import (
     SpendingAllocation,
 )
 from django.db import transaction
-
+from shopApp.models import Shop
+from shopApp.utils.shop_manager import ShopManager
 
 class DonationSpendingUtils:
     @staticmethod
     @transaction.atomic
-    def spend_from_category(category: DonationCategory, amount: int, note: str = "") -> DonationSpending:
+    def spend_from_category(category: DonationCategory, amount: int, note: str = "", shop: Shop = None) -> DonationSpending:
         """
         Creates a new DonationSpending record for the given category and amount,
         then allocates that amount from the oldest unspent DonationTransactions (FIFO).
@@ -28,10 +29,15 @@ class DonationSpendingUtils:
                 f"Not enough donations in category '{category.name}'. "
                 f"Requested spending: {amount}, available: {leftover}."
             )
+        if shop:
+            if ShopManager.get_remaining_points_this_month(shop) < amount:
+                raise ValueError(f"Shop '{shop.name}' doesn't have enough points.")
+    
 
         # Create a DonationSpending record
         spending = DonationSpending.objects.create(
             category=category,
+            shop=shop,
             amount_spent=amount,
             note=note
         )
@@ -90,13 +96,13 @@ class DonationSpendingUtils:
     def get_spending_details(spending_id):
         """
         Returns a detailed dictionary for a given DonationSpending record, including:
-         - Spending details: category name, total amount spent, date, and note.
-         - A list of allocations showing:
-             * Donation transaction ID,
-             * Donor username,
-             * Donation amount,
-             * Amount used from that transaction,
-             * Donation date and note.
+        - Spending details: category name, total amount spent, date, note, and shop info.
+        - A list of allocations showing:
+            * Donation transaction ID,
+            * Donor username,
+            * Donation amount,
+            * Amount used from that transaction,
+            * Donation date and note.
         Returns None if the spending record does not exist.
         """
         try:
@@ -125,6 +131,14 @@ class DonationSpendingUtils:
             'note': spending.note,
             'allocations': allocations,
         }
+        if spending.shop:
+            details['shop'] = {
+                'name': spending.shop.name,
+                'img': spending.shop.img.url if spending.shop.img else None,
+            }
+        else:
+            details['shop'] = None
+
         return details
 
     @staticmethod

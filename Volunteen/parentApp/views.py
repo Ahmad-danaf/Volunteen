@@ -8,6 +8,7 @@ from django.utils import timezone
 from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 from childApp.utils.TeenCoinManager import TeenCoinManager
+from shopApp.utils.shop_manager import ShopManager
 from django.db.models import Prefetch, Sum
 from django.utils.timezone import now
 from django.templatetags.static import static
@@ -130,11 +131,9 @@ def all_rewards(request, child_id):
 
     shops_with_images = []
     for shop in shops:
-        start_of_month = now().replace(day=1)
-        redemptions_this_month = Redemption.objects.filter(shop=shop, date_redeemed__gte=start_of_month)
-        points_used_this_month = redemptions_this_month.aggregate(total_points=Sum('points_used'))['total_points'] or 0
+        points_used_this_month = ShopManager.get_points_used_this_month(shop)
         shop_image = shop.img.url if shop.img else static('images/logo.png')
-        points_left_to_spend = shop.max_points - points_used_this_month
+        points_left_to_spend = ShopManager.get_remaining_points_this_month(shop)
         rewards_with_images = [
             {
                 'title': reward.title,

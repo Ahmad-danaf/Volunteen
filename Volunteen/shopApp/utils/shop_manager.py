@@ -11,7 +11,7 @@ import random
 from django.utils import timezone
 from datetime import timedelta
 from collections import defaultdict
-
+from shopApp.utils.ShopDonationUtils import ShopDonationUtils
 class ShopManager:
     
     @staticmethod
@@ -31,6 +31,49 @@ class ShopManager:
         Returns a list of all visible rewards available at a shop.
         """
         return Reward.objects.filter(shop=shop_id, is_visible=True)
+    
+    @staticmethod
+    def get_points_used_this_month(shop: Shop) -> int:
+        """
+        Returns the total points used by the shop this month.
+        """
+        # Beginning of this month (zeroing out time for reliability)
+        start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # Sum all points used from Redemptions in the current month
+        points_used_this_month = Redemption.objects.filter(
+            shop=shop,
+            date_redeemed__gte=start_of_month
+        ).aggregate(total_points=Sum('points_used'))['total_points'] or 0
+
+        total_donation_spending_this_month = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
+        return points_used_this_month + total_donation_spending_this_month
+
+    @staticmethod
+    def get_remaining_points_this_month(shop: Shop) -> int:
+        """
+        Calculates how many points the shop has left for the current month.
+        This is done by:
+          - Setting start_of_month to day=1
+          - Summing all points used via Redemption since start_of_month
+          - Summing all points used via DonationSpending since start_of_month
+          - Including locked points
+          - Subtracting that sum from shop.max_points
+        """
+        # Beginning of this month (zeroing out time for reliability)
+        start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # Sum all points used from Redemptions in the current month
+        points_used_this_month = Redemption.objects.filter(
+            shop=shop,
+            date_redeemed__gte=start_of_month
+        ).aggregate(total_points=Sum('points_used'))['total_points'] or 0
+
+        locked_points_this_month = shop.locked_usage_this_month
+        total_donation_spending_this_month = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
+        # Remaining = max_points - used points
+        remaining_points = max(0, shop.max_points - points_used_this_month - locked_points_this_month - total_donation_spending_this_month)
+        return remaining_points
     
     @staticmethod
     def redeem_teencoins_for_rewards(child, shop, selected_rewards):
@@ -60,12 +103,7 @@ class ShopManager:
             return {"status": "error", "message": "הילד הגיע למגבלת הנקודות היומית של החנות."}
 
         # Enforce shop's monthly redemption limit
-        start_of_month = now().replace(day=1)
-        points_used_this_month = Redemption.objects.filter(
-            shop=shop, date_redeemed__gte=start_of_month
-        ).aggregate(total_points=Sum('points_used'))['total_points'] or 0
-
-        remaining_points = shop.max_points - points_used_this_month
+        remaining_points = ShopManager.get_remaining_points_this_month(shop)
         total_points_needed = sum(r['quantity'] * r['points'] for r in selected_rewards)
 
         if total_points_needed > remaining_points:
@@ -119,7 +157,6 @@ class ShopManager:
         """
         
         today = localdate()
-        start_of_month = now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
         # Include only pending requests created within the last REDEMPTION_REQUEST_EXPIRATION_MINUTES
         recent_pending_requests = RedemptionRequest.objects.filter(
@@ -147,13 +184,9 @@ class ShopManager:
             return {"status": "error", "message": "אין לך מספיק טינקואינס לביצוע הרכישה."}
 
         # Check shop’s available monthly limit (including locked points)
-        points_used_this_month = Redemption.objects.filter(
-            shop=shop, date_redeemed__gte=start_of_month
-        ).aggregate(total_points=Sum('points_used'))['total_points'] or 0
+        shop_remaining_points = ShopManager.get_remaining_points_this_month(shop)
 
-        locked_points_this_month = shop.locked_usage_this_month
-
-        if total_points_needed > (shop.max_points - (points_used_this_month + locked_points_this_month)):
+        if total_points_needed > shop_remaining_points:
             return {"status": "error", "message": "החנות עברה את מגבלת הנקודות החודשית."}
 
         return {"status": "success", "message": "הבקשה תקפה וניתן לבצע מימוש."}

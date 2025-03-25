@@ -196,6 +196,15 @@
       <i class="fas fa-money-check-alt"></i>
       <p>הוצאות שבוצעו לאחרונה</p>
     </div>
+    <div class="card slide-up" style="animation-delay: 0.8s" onclick="window.location.href='{% url 'managementApp:shop_summary' %}'">
+      <i class="fas fa-store"></i>
+      <p>סיכום חנויות</p>
+    </div>
+    
+    <div class="card slide-up" style="animation-delay: 0.9s" onclick="window.location.href='{% url 'managementApp:download_shop_report' %}'">
+      <i class="fas fa-file-download"></i>
+      <p>דו"ח חנויות</p>
+    </div>
   </section>
 
   <!-- Monthly Donation Chart Section -->
@@ -208,7 +217,6 @@
   <!-- Floating Action Button -->
   <div class="fab fade-in" id="fab">+</div>
 
-  <!-- Sticky Bottom Navigation -->
   <!-- Sticky Bottom Navigation -->
   <nav class="bottom-nav fade-in">
     <a href="{% url 'managementApp:donation_manager_dashboard' %}">
