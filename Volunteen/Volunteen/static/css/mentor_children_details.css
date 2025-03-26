@@ -593,3 +593,8 @@ table tr:last-of-type {
     font-size: 0.75em;
   }
 }
+
+input, select, textarea {
+  font-size: 16px;
+}
+

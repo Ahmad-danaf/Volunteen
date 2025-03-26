@@ -140,7 +140,7 @@ class MentorTaskUtils(TaskManagerUtils):
         ).select_related('task')
 
     @staticmethod
-    def count_approved_task_completions_for_mentor_and_child(mentor: Mentor, child: Child):
+    def count_approved_task_completions_for_child_from_mentor(mentor: Mentor, child: Child):
         """
         Count the number of approved TaskCompletion objects for a given child
         that were assigned by the given mentor.
@@ -151,7 +151,32 @@ class MentorTaskUtils(TaskManagerUtils):
             task__assigned_mentors=mentor  # Ensure the task was assigned by this mentor
         ).count()
         
+    @staticmethod
+    def get_active_tasks_for_child_from_mentor(mentor: Mentor, child: Child):
+        """
+        Returns active tasks assigned to a child by a specific mentor.
+        """
+        completed_task_ids = TaskCompletion.objects.filter(
+            child=child, status="approved",
+            task__assigned_mentors=mentor
+        ).values_list("task_id", flat=True)
+
+        return Task.objects.filter(
+            assignments__child=child,
+            assigned_mentors=mentor,
+            deadline__gte=timezone.now().date()
+        ).exclude(id__in=completed_task_ids).distinct()
         
+    @staticmethod
+    def count_total_assigned_tasks_for_child_from_mentor(mentor: Mentor, child: Child):   
+        """
+        Count the total number of tasks assigned to a given child by a given mentor.
+        """
+        return TaskAssignment.objects.filter(
+            child=child,
+            task__assigned_mentors=mentor,
+        ).count()
+    
     @staticmethod
     def get_mentor_active_tasks(mentor: Mentor, start_date=None, end_date=None):
         """
@@ -266,7 +291,7 @@ class MentorTaskUtils(TaskManagerUtils):
         return active_completions
     
     @staticmethod
-    def get_children_performance_for_mentor(mentor):
+    def get_children_with_completed_tasks_for_mentor(mentor):
         """
         Retrieves children assigned to the mentor, prefetching approved task completions 
         for tasks assigned by the mentor and aggregates total points (task points + bonus points).

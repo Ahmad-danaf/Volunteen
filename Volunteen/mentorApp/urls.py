@@ -22,4 +22,6 @@ urlpatterns = [
     path('bonus/', views.bonus_child_selection, name='bonus_child_selection'),
     path('bonus/<int:child_id>/', views.child_bonus_detail, name='child_bonus_detail'),
     path('bonus/assign/<int:task_completion_id>/', views.assign_bonus, name='assign_bonus'),
+    path('children_performance/', views.children_performance, name='children_performance'),
+
 ]

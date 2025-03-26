@@ -25,49 +25,27 @@ from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 @login_required
 def mentor_home(request):
     mentor = get_object_or_404(Mentor, user=request.user)
-    tasks = Task.objects.filter(assigned_mentors=mentor)
-
-    for task in tasks:
-        if task.is_overdue():
-            task.completed = True
-            task.save()
-
-    total_tasks = tasks.count()
-    completed_tasks = tasks.filter(completed=True).count()
-    open_tasks = total_tasks - completed_tasks
-    efficiency_rate = round((completed_tasks / total_tasks) * 100, 2) if total_tasks > 0 else 0
-
-    children = []
-    for child in mentor.children.all():
-        completed = TaskCompletion.objects.filter(child=child, task__in=tasks).count()
-        assigned_tasks_by_mentor = tasks.filter(assigned_children=child).count()
-        efficiency = round((completed / assigned_tasks_by_mentor) * 100, 2) if assigned_tasks_by_mentor > 0 else 0
-        efficiency = int(efficiency) if efficiency == int(efficiency) else efficiency
-        performance_color = "#d4edda" if efficiency >= 75 else "#f8d7da" if efficiency < 50 else "#fff3cd"
-        children.append({
-            'child': child,
-            'efficiency_rate': efficiency,
-            'performance_color': performance_color,
-        })
-
     context = {
         'mentor': mentor,
-        'total_tasks': total_tasks,
-        'open_tasks': open_tasks,
-        'completed_tasks': completed_tasks,
-        'efficiency_rate': efficiency_rate,
-        'children': children,
-        'tasks': tasks,
     }
     return render(request, 'mentor_home.html', context)
 
 @login_required
 def mentor_children_details(request):
     mentor = get_object_or_404(Mentor, user=request.user)
-    children = MentorTaskUtils.get_children_performance_for_mentor(mentor)
+    children = MentorTaskUtils.get_children_with_completed_tasks_for_mentor(mentor)
     return render(request, 'mentor_children_details.html', {'children': children})
 
 
+@login_required
+def children_performance(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    performance_data = MentorUtils.get_children_performance_data(mentor)
+    context = {
+        'mentor': mentor,
+        'performance_data': performance_data,
+    }
+    return render(request, 'mentor_children_performance.html', context)
 
 
 
@@ -110,6 +88,11 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             try:
                 # Create the task with mentor assignment and children
                 new_task = MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
+                if duplicate and original_task.img:
+                    if taskForm.cleaned_data.get('img')=='defaults/no-image.png':
+                        new_task.img = original_task.img
+                        new_task.save()
+
 
                 messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
                 return redirect('mentorApp:mentor_home')
@@ -203,7 +186,7 @@ def assign_task(request, task_id):
                 try:
                     child = get_object_or_404(Child, id=child_id)
                     task.assigned_children.add(child)
-                    TaskAssignment.objects.create(task=task, child=child, is_new=True)
+                    TaskAssignment.objects.get_or_create(task=task, child=child, is_new=True, assigned_by=mentor.user)
 
                     
 
@@ -236,12 +219,10 @@ def assign_points(request, task_id):
         for child_id in selected_children_ids:
             child = get_object_or_404(Child, id=child_id)
             task.mark_completed(child)
-            print(f"Task '{task.title}' marked as completed for child '{child.user.username}'.")
             
             completed_task = TaskCompletion.objects.get(task=task, child=child)
             completed_task.remaining_coins = completed_task.bonus_points + task.points
             completed_task.save()
-            print(f"Remaining coins for task '{task.title}' updated for child '{child.user.username}'.")
         messages.success(request, f"Points successfully assigned for task '{task.title}' to selected children.")
         return redirect('mentorApp:points_assigned_success', task_id=task.id)
 

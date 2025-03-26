@@ -70,74 +70,15 @@
         <a href="{% url 'mentorApp:bonus_child_selection' %}" class="btn mentor-btn">
             <i class="fas fa-gift"></i> מתן נקודות בונוס
         </a>
-        
+        <a href="{% url 'mentorApp:children_performance' %}" class="btn mentor-btn"><i class="fas fa-star"></i>ביצועי ילדים</a>
+
     </div>
 
-    <!-- <div class="section" dir="rtl">
-        <h3>סקירת משימות</h3>
-        <p>סה"כ משימות: {{ total_tasks }}</p>
-        <p class="tasks-open">משימות פתוחות: {{ open_tasks }}</p>
-        <p class="tasks-completed">משימות שהושלמו: {{ completed_tasks }}</p>
-        <p class="tasks-efficiency">שיעור יעילות: {{ efficiency_rate }}%</p>
-        <div class="chart-container">
-            <canvas id="tasksChart"></canvas>
-        </div>
-    </div> -->
+    
 
-    <div class="section">
-        <h3 dir="rtl">ביצועי הילדים</h3>
-        <table class="performance-table">
-            <thead>
-                <tr>
-                    <th>ילד</th>
-                    <th>יעילות</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in children %}
-                    <tr style="background-color: {{ item.performance_color }};">
-                        <td>{{ item.child.user.username }}</td>
-                        <td>{{ item.efficiency_rate }}%</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 {% endblock %}
 
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_home.css' %}">
 {% endblock %}
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var ctx = document.getElementById('tasksChart').getContext('2d');
-        var openTasks = {{ open_tasks }};
-        var completedTasks = {{ completed_tasks }};
-        var totalTasks = {{ total_tasks }};
 
-        var chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['משימות פתוחות', 'משימות שהושלמו'],
-                datasets: [{
-                    data: [openTasks, completedTasks],
-                    backgroundColor: ['#FF9800', '#007bff'],
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                legend: {
-                    position: 'bottom'
-                },
-                title: {
-                    display: true,
-                    text: 'סקירת משימות'
-                }
-            }
-        });
-    });
-</script>
-{% endblock %}

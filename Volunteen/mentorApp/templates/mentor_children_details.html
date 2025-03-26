@@ -181,7 +181,6 @@ function highlightText(element, searchTerm) {
 function clearChildSearch() {
     document.getElementById("childSearch").value = "";
     searchChildren();
-    document.getElementById("childSearch").focus();
 }
 
 function openTasksPopup(button) {
@@ -237,14 +236,9 @@ function openTasksPopup(button) {
     // Reset search field
     document.getElementById("taskSearch").value = "";
     
-    // Focus on search input after a small delay to ensure the popup is fully displayed
-    setTimeout(() => {
-        try {
-            document.getElementById("taskSearch").focus();
-        } catch(e) {
-            console.log("Could not focus on search field");
-        }
-    }, 300);
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
 }
 
 function closeTasksPopup() {
@@ -303,20 +297,5 @@ document.querySelector(".popup-content").addEventListener("click", function(e) {
     e.stopPropagation();
 });
 
-// Prevent zooming on inputs for mobile
-document.addEventListener('touchstart', function(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-        e.preventDefault();
-        e.target.focus();
-    }
-}, { passive: false });
-
-// Focus on search field when page loads
-window.addEventListener('DOMContentLoaded', function() {
-    // Only auto-focus on larger screens to avoid keyboard popping up on mobile
-    if (window.innerWidth >= 768) {
-        document.getElementById('childSearch').focus();
-    }
-});
 </script>
 {% endblock %}

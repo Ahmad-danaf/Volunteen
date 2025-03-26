@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      padding: 20px;
+      max-width: 100%;
+      margin: auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .search-box {
+      margin: 20px 0;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: box-shadow 0.3s ease;
+    }
+    .search-box input:focus {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    /* Button styling */
+    .btn.mentor-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      border-radius: 8px;
+      background: #007BFF;
+      color: #fff;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .btn.mentor-btn:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+    /* Performance table styles */
+    .performance-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      animation: fadeIn 1s ease;
+    }
+    .performance-table thead {
+      background-color: #007BFF;
+      color: #fff;
+    }
+    .performance-table th,
+    .performance-table td {
+      padding: 12px 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .performance-table tbody tr:nth-child(even) {
+      background-color: #e9f0f7;
+    }
+    /* Keyframes for fade-in animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Chart container styling */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      margin-bottom: 20px;
+      animation: fadeIn 1s ease;
+    }
+    /* Responsive design for mobile devices */
+    @media (max-width: 660px) {
+      h1 {
+        font-size: 22px;
+      }
+      .btn.mentor-btn {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      .performance-table th,
+      .performance-table td {
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+    }
+  </style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="header">
+    <h1>ביצועי הילדים</h1>
+  </div>
+  <div class="search-box">
+    <input type="text" id="childSearch" placeholder="חפש לפי שם ילד..." onkeyup="filterTable()">
+    <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn">
+      <i class="fas fa-child"></i> הצג פרטי הילדים
+    </a>
+  </div>
+ 
+  <!-- Performance Data Table -->
+  <table class="performance-table" id="performanceTable">
+    <thead>
+      <tr>
+        <th>שם הילד</th>
+        <th>משימות מאושרות</th>
+        <th>משימות מוקצות</th>
+        <th>משימות פעילות</th>
+        <th>משימות שלא הושלמו</th>
+        <th>יעילות (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for data in performance_data %}
+      <tr>
+        <td>{{ data.child_name }}</td>
+        <td>{{ data.approved_completions }}</td>
+        <td>{{ data.total_assigned_tasks }}</td>
+        <td>{{ data.active_tasks_count }}</td>
+        <td>{{ data.missing_tasks }}</td>
+        <td>{{ data.efficiency_percent }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Chart Section -->
+  <div class="chart-container">
+    <canvas id="performanceChart"></canvas>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+  <!-- Include Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Dynamic search filter for the performance table
+    function filterTable() {
+      var input = document.getElementById("childSearch");
+      var filter = input.value.toUpperCase();
+      var table = document.getElementById("performanceTable");
+      var tr = table.getElementsByTagName("tr");
+      for (var i = 1; i < tr.length; i++) {
+        var td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          var txtValue = td.textContent || td.innerText;
+          tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
+      }
+    }
+
+    // Prepare data for the chart using performance_data from the backend
+    var performanceData = {
+      labels: [{% for data in performance_data %}'{{ data.child_name }}',{% endfor %}],
+      datasets: [{
+        label: 'יעילות (%)',
+        data: [{% for data in performance_data %}{{ data.efficiency_percent }},{% endfor %}],
+        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+        borderColor: 'rgba(0, 123, 255, 1)',
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    };
+
+    // Render the chart with animations
+    var ctx = document.getElementById('performanceChart').getContext('2d');
+    var performanceChart = new Chart(ctx, {
+      type: 'line',
+      data: performanceData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 1500,
+          easing: 'easeOutQuart'
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) { return value + '%'; }
+            }
+          }
+        }
+      }
+    });
+  </script>
+{% endblock %}
