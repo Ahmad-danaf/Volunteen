@@ -266,15 +266,15 @@ def send_whatsapp_message(request):
 def mentor_task_images(request):
     """
     Retrieves task completions assigned to the mentor that are in 'pending', 'checked_in', or 'checked_out' status
-    within the last 7 days.
+    within the last 3 days.
     """
     mentor = get_object_or_404(Mentor, user=request.user)
-    seven_days_ago = timezone.now() - timedelta(days=7)  
+    three_days_ago = timezone.now() - timedelta(days=3)  
 
     task_completions = TaskCompletion.objects.filter(
         task__assigned_mentors=mentor,
         status__in=['pending', 'checked_in', 'checked_out'],  
-        completion_date__gte=seven_days_ago
+        completion_date__gte=three_days_ago
     )
     return render(request, 'mentor_task_images.html', {'completions': task_completions})
 
