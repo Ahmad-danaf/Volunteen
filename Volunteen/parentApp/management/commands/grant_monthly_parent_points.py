@@ -11,7 +11,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         today = timezone.localtime().date()
-        print(today)
         self.stdout.write("#################### grant monthly teencoins ###############")
         # We only do the monthly top-up if it's the first day of the month,
         # but also check parent's last_monthly_topup to avoid re-adding multiple times
@@ -29,15 +28,20 @@ class Command(BaseCommand):
                 parent.last_monthly_topup.month != today.month or
                 parent.last_monthly_topup.year != today.year
             ):
+                children=parent.children.all()
+                num_children = children.count()
+                if num_children == 0:
+                    self.stdout.write(f"[SKIP] Parent '{parent.user.username}' has no children.")
+                    continue
                 old_balance = parent.available_teencoins
                 # Add PARENT_TOPUP_AMOUNT, respecting the max limit
-                new_balance = min(MAX_PARENT_COINS, old_balance + PARENT_TOPUP_AMOUNT)
+                new_balance = min(MAX_PARENT_COINS*num_children, old_balance + (PARENT_TOPUP_AMOUNT*num_children))
                 parent.available_teencoins = new_balance
                 parent.last_monthly_topup = today
                 parent.save()
                 count += 1
                 self.stdout.write(
-                    f"[OK] Parent '{parent.user.username}' top-up from {old_balance} to {new_balance}."
+                    f"[OK] Parent '{parent.user.username}' children number: {num_children}, top-up from {old_balance} to {new_balance}. "
                 )
 
         self.stdout.write(f"[DONE] Granted monthly teencoins to {count} parents.")
