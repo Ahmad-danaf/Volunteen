@@ -8,7 +8,7 @@
     <!-- Favicon for most browsers -->
   <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 
-  <!-- Apple Touch Icon (for Safari and iOS Home Screen) -->
+    <!-- Apple Touch Icon (for Safari and iOS Home Screen) -->
 <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon-iphone-60x60.png' %}">
 <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-touch-icon-ipad-76x76.png' %}">
 <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone-retina-120x120.png' %}">
@@ -93,9 +93,9 @@
       <a
         href="{% url 'parentApp:parent_tasks' %}"
         class="w-8 h-8 flex items-center justify-center"
-        >
+      >
         <i class="ri-refresh-line text-xl"></i>
-    </a>
+      </a>
 
     </nav>
 
@@ -188,6 +188,13 @@
         >
           הושלם
         </button>
+        <button
+          id="rejectedTabBtn"
+          class="flex-1 py-2 px-4 rounded-full text-sm font-medium"
+          onclick="switchTab('rejected')"
+        >
+          נדחה
+        </button>
       </div>
       <div id="activeTaskList" class="space-y-4 mb-24 task-list"></div>
       <div id="pendingTaskList" class="space-y-4 mb-24 task-list hidden"></div>
@@ -195,6 +202,7 @@
         id="completedTaskList"
         class="space-y-4 mb-24 task-list hidden"
       ></div>
+      <div id="rejectedTaskList" class="space-y-4 mb-24 task-list hidden"></div>
     </div>
     <button
       id="addTaskBtn"
@@ -325,6 +333,73 @@
           אשר משימה
         </button>
       </div>
+    </div>
+
+    <!-- Rejection Modal -->
+<div id="rejectModal" class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50 hidden">
+  <h3 class="text-lg font-bold mb-4">דחיית משימה</h3>
+  <p class="mb-4">האם אתה בטוח שברצונך לדחות את המשימה? ניתן לספק משוב (אופציונלי):</p>
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1">משוב:</label>
+    <textarea id="rejectFeedback" class="w-full p-2 border rounded !rounded-button" rows="3"></textarea>
+  </div>
+  <div class="flex gap-4 mt-6">
+    <button type="button" class="flex-1 py-2 px-4 border rounded !rounded-button" onclick="closeRejectModal()">ביטול</button>
+    <button id="confirmRejectBtn" type="button" class="flex-1 py-2 px-4 bg-red-500 rounded !rounded-button">דחה משימה</button>
+  </div>
+</div>
+
+
+    <!-- Edit Task Modal -->
+    <div
+      id="editTaskModal"
+      class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50 hidden"
+    >
+      <h3 class="text-lg font-bold mb-4">ערוך משימה</h3>
+      <form id="editTaskForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">שם המשימה</label>
+          <input
+            type="text"
+            name="title"
+            class="w-full p-2 border rounded !rounded-button"
+            required
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">תיאור</label>
+          <textarea
+            name="description"
+            class="w-full p-2 border rounded !rounded-button"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">תאריך יעד</label>
+          <input
+            type="date"
+            name="deadline"
+            class="w-full p-2 border rounded !rounded-button"
+            required
+          />
+        </div>
+        <div class="flex gap-4 mt-6">
+          <button
+            type="button"
+            class="flex-1 py-2 px-4 border rounded !rounded-button"
+            onclick="closeEditModal()"
+          >
+            ביטול
+          </button>
+          <button
+            type="submit"
+            class="flex-1 py-2 px-4 bg-primary rounded !rounded-button"
+          >
+            עדכן משימה
+          </button>
+        </div>
+      </form>
     </div>
 
     <!-- Toast notification -->
@@ -528,6 +603,7 @@
         renderActiveTasksList();
         renderPendingTasksList();
         renderCompletedTasksList();
+        renderRejectedTasksList();
       }
 
       function renderActiveTasksList() {
@@ -547,6 +623,19 @@
                   `<span class="text-xs bg-gray-100 px-2 py-1 rounded mr-1 mb-1">${child.name}</span>`
               )
               .join("");
+
+            // Add edit button only if task.isEditable is true.
+            const editButtonHTML = task.isEditable
+              ? `
+                <div class="flex justify-end mt-2">
+                  <button onclick='showEditModal(${JSON.stringify(
+                    task
+                  )})' class="bg-secondary text-sm py-1 px-3 rounded-full text-white">
+                    ערוך משימה
+                  </button>
+                </div>
+              `
+              : "";
 
             return `
               <div class="task-card bg-white p-4 rounded-lg shadow relative">
@@ -568,22 +657,86 @@
                   <span class="text-sm text-gray-500">${task.dueDate}</span>
                   <span class="text-sm text-blue-500">פעילה</span>
                 </div>
+                ${editButtonHTML}
               </div>
             `;
           })
           .join("");
       }
 
-      function renderPendingTasksList() {
-        const taskList = document.getElementById("pendingTaskList");
-        if (!allTasks.pending || allTasks.pending.length === 0) {
-          taskList.innerHTML =
-            '<div class="text-center py-8 text-gray-500">אין משימות בהמתנה לאישור</div>';
-          return;
-        }
+      function showEditModal(task) {
+        // Populate the edit form with current task data
+        document.querySelector('#editTaskForm input[name="title"]').value =
+          task.name;
+        document.querySelector(
+          '#editTaskForm textarea[name="description"]'
+        ).value = task.description;
+        document.querySelector('#editTaskForm input[name="deadline"]').value =
+          task.dueDate;
 
-        taskList.innerHTML = allTasks.pending
-          .map((task) => {
+        // Store task id on the form element (as a data attribute)
+        document
+          .getElementById("editTaskForm")
+          .setAttribute("data-task-id", task.id);
+
+        // Show the modal (remove hidden class, add show class if needed)
+        const modal = document.getElementById("editTaskModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("show");
+      }
+
+      function closeEditModal() {
+        const modal = document.getElementById("editTaskModal");
+        modal.classList.remove("show");
+        modal.classList.add("hidden");
+      }
+
+      // Handle the form submission for editing a task
+      document
+        .getElementById("editTaskForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const taskId = this.getAttribute("data-task-id");
+          const title = this.querySelector('input[name="title"]').value;
+          const description = this.querySelector(
+            'textarea[name="description"]'
+          ).value;
+          const deadline = this.querySelector('input[name="deadline"]').value;
+
+          try {
+            const response = await fetch(`/parent/tasks/edit/${taskId}/`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.getElementById("csrfToken").value,
+              },
+              body: JSON.stringify({ title, description, deadline }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              showToast(result.message);
+              closeEditModal();
+              window.location.reload();
+
+            } else {
+              showToast(result.message, true);
+            }
+          } catch (error) {
+            console.error("Error updating task:", error);
+            showToast("אירעה שגיאה בעדכון המשימה", true);
+          }
+        });
+
+        function renderPendingTasksList() {
+          const taskList = document.getElementById("pendingTaskList");
+          if (!allTasks.pending || allTasks.pending.length === 0) {
+            taskList.innerHTML =
+              '<div class="text-center py-8 text-gray-500">אין משימות בהמתנה לאישור</div>';
+            return;
+          }
+        
+          taskList.innerHTML = allTasks.pending
+            .map((task) => {
             // Handle both check-in and check-out images
             let evidenceHTML = "";
             const hasCheckinImg = task.checkin_img;
@@ -621,38 +774,45 @@
               evidenceHTML += `</div>`;
             }
 
-            return `
-            <div class="task-card bg-white p-4 rounded-lg shadow relative">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-bold">${task.name}</h3>
-                  <p class="text-sm text-gray-600 mt-1">${task.description}</p>
-                  <div class="flex flex-wrap gap-1 mt-2">
-                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${task.childName}</span>
-                  </div>
+              return `
+                <div class="task-card bg-white p-4 rounded-lg shadow relative">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold">${task.name}</h3>
+                      <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                      <div class="flex flex-wrap gap-1 mt-2">
+                        <span class="text-xs bg-gray-100 px-2 py-1 rounded">${task.childName}</span>
+                      </div>
                   ${evidenceHTML}
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm">${task.points}</span>
+                      <i class="ri-star-fill text-primary"></i>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center mt-3">
+                    <span class="text-sm text-gray-500">${task.dueDate}</span>
+                  </div>
+                  <div class="mt-3 flex justify-end">
+                    <button 
+                      class="bg-primary text-sm py-1 px-3 rounded-full" 
+                      onclick="showApprovalModal(${task.completionId}, '${task.name}', '${task.childName}', ${task.points})"
+                    >
+                      אשר משימה
+                    </button>
+                    <button 
+                      class="bg-red-500 text-sm py-1 px-3 rounded-full ml-2" 
+                      onclick="showRejectModal(${task.completionId}, '${task.name}', '${task.childName}', ${task.points})"
+                    >
+                      דחה משימה
+                    </button>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm">${task.points}</span>
-                  <i class="ri-star-fill text-primary"></i>
-                </div>
-              </div>
-              <div class="flex justify-between items-center mt-3">
-                <span class="text-sm text-gray-500">${task.dueDate}</span>
-              </div>
-              <div class="mt-3 flex justify-end">
-                <button 
-                  class="bg-primary text-sm py-1 px-3 rounded-full" 
-                  onclick="showApprovalModal(${task.completionId}, '${task.name}', '${task.childName}', ${task.points})"
-                >
-                  אשר משימה
-                </button>
-              </div>
-            </div>
-            `;
-          })
-          .join("");
-      }
+              `;
+            })
+            .join("");
+        }
+        
 
       function renderCompletedTasksList() {
         const taskList = document.getElementById("completedTaskList");
@@ -693,6 +853,45 @@
           .join("");
       }
 
+      function renderRejectedTasksList() {
+        const taskList = document.getElementById("rejectedTaskList");
+        if (!allTasks.rejected || allTasks.rejected.length === 0) {
+          taskList.innerHTML =
+            '<div class="text-center py-8 text-gray-500">אין משימות שנדחו</div>';
+          return;
+        }
+
+        taskList.innerHTML = allTasks.rejected
+          .map(
+            (task) => `
+            <div class="task-card bg-white p-4 rounded-lg shadow relative">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold">${task.name}</h3>
+                  <p class="text-sm text-gray-600 mt-1">${task.description}</p>
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${
+                      task.childName
+                    }</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">${task.points}</span>
+                  <i class="ri-star-fill text-primary"></i>
+                </div>
+              </div>
+              <div class="flex justify-between items-center mt-3">
+                <span class="text-sm text-gray-500">נדחה: ${
+                  task.rejectedDate || "N/A"
+                }</span>
+                <span class="text-sm text-red-500">נדחה</span>
+              </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
       function switchTab(tabName) {
         currentTab = tabName;
         // Update active button
@@ -701,12 +900,16 @@
         document
           .getElementById("completedTabBtn")
           .classList.remove("bg-primary");
+        document
+          .getElementById("rejectedTabBtn")
+          .classList.remove("bg-primary");
         document.getElementById(`${tabName}TabBtn`).classList.add("bg-primary");
 
         // Show/hide task lists
         document.getElementById("activeTaskList").classList.add("hidden");
         document.getElementById("pendingTaskList").classList.add("hidden");
         document.getElementById("completedTaskList").classList.add("hidden");
+        document.getElementById("rejectedTaskList").classList.add("hidden");
         document
           .getElementById(`${tabName}TaskList`)
           .classList.remove("hidden");
@@ -750,6 +953,53 @@
         confirmBtn.setAttribute("data-completion-id", completionId);
         modal.classList.add("show");
       }
+
+      // Function to show the rejection modal and store the completion ID.
+function showRejectModal(completionId, taskName, childName, points) {
+  // For now, we only store the completion ID.
+  document.getElementById('confirmRejectBtn').setAttribute('data-completion-id', completionId);
+  // Clear any previous feedback.
+  document.getElementById('rejectFeedback').value = "";
+  
+  const modal = document.getElementById('rejectModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('show');
+}
+
+// Function to close the rejection modal.
+function closeRejectModal() {
+  const modal = document.getElementById('rejectModal');
+  modal.classList.remove('show');
+  modal.classList.add('hidden');
+}
+
+// Event handler for the confirm rejection button.
+document.getElementById('confirmRejectBtn').addEventListener('click', async function () {
+  const completionId = this.getAttribute('data-completion-id');
+  const feedback = document.getElementById('rejectFeedback').value;
+  try {
+    const response = await fetch("{% url 'parentApp:reject_task_completion' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": document.getElementById("csrfToken").value,
+      },
+      body: JSON.stringify({ completionId, feedback })
+    });
+    const result = await response.json();
+    if (result.success) {
+      showToast(result.message);
+      closeRejectModal();
+      window.location.reload();
+    } else {
+      showToast(result.message, true);
+    }
+  } catch (error) {
+    console.error("Error rejecting task:", error);
+    showToast("אירעה שגיאה בדחיית המשימה", true);
+  }
+});
+
 
       function closeApprovalModal() {
         document.getElementById("approvalModal").classList.remove("show");

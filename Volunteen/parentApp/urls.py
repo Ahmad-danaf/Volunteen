@@ -14,4 +14,6 @@ urlpatterns = [
     path('tasks-page/', views.parent_tasks_view, name='parent_tasks'),
     path('tasks/create/', views.create_parent_task, name='create_parent_task'),
     path('tasks/approve/', views.approve_task_completion, name='approve_task_completion'),
+    path('tasks/reject/', views.reject_task_completion, name='reject_task_completion'),
+    path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
     ]

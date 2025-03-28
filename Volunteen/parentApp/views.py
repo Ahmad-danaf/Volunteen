@@ -19,7 +19,7 @@ from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.interface_adapters.forms import DateRangeCityForm
 from parentApp.utils.ParentTaskUtils import ParentTaskUtils
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -194,11 +194,12 @@ def all_children_points_leaderboard(request):
 def parent_tasks_view(request):
     """
     View for parent to manage tasks - both create new tasks and view/approve existing ones.
-    This view supports three tabs:
+    This view supports four tabs:
     1. Active tasks - Tasks assigned but not yet started
-    2. Pending review - Tasks in progress (pending, checked_in) 
+    2. Pending review - Tasks in progress (pending, checked_in)
     3. Completed tasks - Tasks that have been approved
-    
+    4. Rejected tasks - Tasks that have been rejected
+     
     By default, shows tasks within a 3-month window (past month, current month, next month).
     Can filter tasks by date range if specified in the request.
     """
@@ -251,10 +252,11 @@ def parent_tasks_view(request):
     if not show_all:
         assignments = assignments.filter(task__deadline__range=(start_date, end_date))
         
-    # Dictionaries to store tasks grouped by task ID
+    # Dictionaries to store tasks grouped by task ID or completion ID
     active_tasks_dict = {}
     pending_tasks_dict = {}
     completed_tasks_dict = {}
+    rejected_tasks_dict = {}  # New dictionary for rejected tasks
     
     # Process assignments and group them by task
     for assignment in assignments:
@@ -277,6 +279,7 @@ def parent_tasks_view(request):
                     "points": task.points,
                     "dueDate": task.deadline.strftime("%Y-%m-%d"),
                     "status": "active",
+                    "isEditable": task.deadline > today,
                     "assignedTo": [assignment.child.id],
                     "assignmentIds": [assignment.id],
                     "children": [{
@@ -298,7 +301,6 @@ def parent_tasks_view(request):
             
             if completion.status in ['pending', 'checked_in']:
                 # Task is in progress and pending review
-                # Each completion is handled separately since it represents a unique submission
                 pending_tasks_dict[completion.id] = {
                     "id": task.id,
                     "name": task.title,
@@ -306,6 +308,7 @@ def parent_tasks_view(request):
                     "points": task.points,
                     "dueDate": task.deadline.strftime("%Y-%m-%d"),
                     "status": completion.status,
+                    "isEditable": False,
                     "assignedTo": [assignment.child.id],
                     "assignmentId": assignment.id,
                     "completionId": completion.id,
@@ -323,6 +326,7 @@ def parent_tasks_view(request):
                     "points": task.points,
                     "dueDate": task.deadline.strftime("%Y-%m-%d"),
                     "status": "completed",
+                    "isEditable": False,
                     "assignedTo": [assignment.child.id],
                     "assignmentId": assignment.id,
                     "completionId": completion.id,
@@ -330,17 +334,36 @@ def parent_tasks_view(request):
                     "childId": completion.child.id,
                     "completedDate": completion.completion_date.strftime("%Y-%m-%d") if completion.completion_date else None
                 }
+            elif completion.status == 'rejected':
+                # Task is rejected - add it to the rejected tasks dictionary
+                rejected_tasks_dict[completion.id] = {
+                    "id": task.id,
+                    "name": task.title,
+                    "description": task.description,
+                    "points": task.points,
+                    "dueDate": task.deadline.strftime("%Y-%m-%d"),
+                    "status": "rejected",
+                    "isEditable": False,
+                    "assignedTo": [assignment.child.id],
+                    "assignmentId": assignment.id,
+                    "completionId": completion.id,
+                    "childName": completion.child.user.username,
+                    "childId": completion.child.id,
+                    "rejectedDate": completion.completion_date.strftime("%Y-%m-%d") if completion.completion_date else None
+                }
     
     # Convert dictionaries to lists for the frontend
     active_tasks = list(active_tasks_dict.values())
     pending_tasks = list(pending_tasks_dict.values())
     completed_tasks = list(completed_tasks_dict.values())
+    rejected_tasks = list(rejected_tasks_dict.values())
     
     # Combine all task lists into a structure for the frontend
     all_tasks = {
         "active": active_tasks,
         "pending": pending_tasks,
-        "completed": completed_tasks
+        "completed": completed_tasks,
+        "rejected": rejected_tasks
     }
     
     context = {
@@ -433,6 +456,66 @@ def create_parent_task(request):
         return JsonResponse({"success": False, "message": "פורמט JSON לא תקין."}, status=400)
     except Exception as e:
         return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)
+    
+    
+@login_required
+def edit_task(request, task_id):
+    # Ensure the user is a parent.
+    try:
+        parent = request.user.parent
+    except Parent.DoesNotExist:
+        return HttpResponseForbidden("Only parents can access this view.")
+    
+    # Verify that the task belongs to this user (using TaskAssignment as a proxy)
+    assignment = TaskAssignment.objects.filter(task__id=task_id, assigned_by=request.user).first()
+    if not assignment:
+        return HttpResponseNotFound("Task not found or you do not have permission to edit it.")
+    
+    task = assignment.task
+    today = datetime.today().date()
+    
+    # Only allow editing if the task's deadline has not passed.
+    if task.deadline < today:
+        return JsonResponse({"success": False, "message": "לא ניתן לערוך משימה שתאריך היעד שלה עבר."})
+    
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "JSON not valid."})
+        
+        # Use current values if no new value is provided (partial update).
+        new_title = data.get("title", task.title)
+        new_description = data.get("description", task.description)
+        
+        # Process deadline if provided; otherwise, use the current deadline.
+        if "deadline" in data:
+            deadline_str = data.get("deadline")
+            try:
+                new_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+            except ValueError:
+                return JsonResponse({"success": False, "message": "פורמט תאריך יעד לא תקין. יש להשתמש ב-YYYY-MM-DD."})
+            if new_deadline < today:
+                return JsonResponse({"success": False, "message": "תאריך יעד לא יכול להיות בעבר."})
+        else:
+            new_deadline = task.deadline
+        
+        # Update the task with the new values.
+        task.title = new_title
+        task.description = new_description
+        task.deadline = new_deadline
+        task.save()
+        
+        return JsonResponse({"success": True, "message": "המשימה עודכנה בהצלחה."})
+    else:
+        # Return the current task details.
+        task_data = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "deadline": task.deadline.strftime("%Y-%m-%d"),
+        }
+        return JsonResponse({"success": True, "task": task_data})
 
 @login_required
 def approve_task_completion(request):
@@ -482,4 +565,51 @@ def approve_task_completion(request):
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "message": "פורמט JSON לא תקין."}, status=400)
     except Exception as e:
+        return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)
+    
+@login_required
+def reject_task_completion(request):
+    """
+    Handles the rejection of a task completion by a parent.
+    Expects a JSON payload with:
+        - completionId: The ID of the TaskCompletion to reject
+    """
+    if request.method != "POST":
+        return HttpResponseBadRequest("Invalid request method.")
+    
+    try:
+        parent = request.user.parent
+    except Parent.DoesNotExist: 
+        return HttpResponseForbidden("Only parents can reject task completions.")
+    
+    try:
+        data = json.loads(request.body)
+        completion_id = data.get('completionId')
+        feedback = data.get('feedback', '')
+        
+        if not completion_id:
+            return JsonResponse({"success": False, "message": "מזהה השלמת משימה חסר."}, status=400)
+        
+        try:
+            task_completion = TaskCompletion.objects.get(id=completion_id)
+            
+            # Verify that this completion is for a child of this parent
+            if task_completion.child.parent != parent:
+                return JsonResponse({"success": False, "message": "אין לך הרשאה לדחות משימה זו."}, status=403)
+            
+            # Reject the task completion using your utility method
+            ParentTaskUtils.reject_task_completion(request.user, task_completion, feedback)
+            
+            return JsonResponse({
+                "success": True,
+                "message": "המשימה נדחתה בהצלחה!",
+                "updatedCompletionStatus": "rejected",
+            })
+        except TaskCompletion.DoesNotExist:
+            return JsonResponse({"success": False, "message": "השלמת המשימה לא נמצאה."}, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "JSON not valid."}, status=400)
+    except Exception as e:
+        # Log exception if needed
         return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)
