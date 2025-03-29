@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}בחירת ילדים לבונוס{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Container styling for mobile-first responsiveness */
+.container {
+    padding: 1rem;
+    margin: 0 auto;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header styling */
+.header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Search bar styling */
+.search-container {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+.search-input:focus {
+    border-color: #007bff;
+}
+
+.child-card {
+    background: linear-gradient(135deg, #ffffff, #f7f7f7);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeInUp 0.5s ease-out;
+}
+.child-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Checkbox container styling */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+/* Checkbox styling */
+.child-checkbox {
+    margin-left: 1rem;
+    transform: scale(1.2);
+}
+
+/* Label styling for child card info */
+.child-info {
+    font-size: 1rem;
+    color: #333;
+}
+
+/* "Select All" container styling */
+.select-all-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.select-all-container input[type="checkbox"] {
+    margin-left: 0.5rem;
+    transform: scale(1.2);
+}
+
+/* Bonus input field styling */
+.bonus-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* Submit button styling */
+.button {
+    width: 100%;
+    background: #28a745;
+    color: #fff;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.button:hover {
+    background: #218838;
+}
+
+/* FadeIn animation for smooth appearance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RTL adjustments for Hebrew */
+body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Media queries for optimal display on phones */
+@media (max-width: 480px) {
+    .child-card {
+        padding: 0.75rem;
+    }
+    .search-input, .bonus-input, .button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page header -->
+    
+    <div class="header">
+        <h1>בחירת ילדים לקבלת בונוס</h1>
+        <p><strong>המשימה "{{ task.title }}" העניקה {{ task.points }} נקודות</strong></p>
+        <div class="teencoins-balance">
+            <i class="fas fa-coins"></i> יתרת TeenCoins: {{ available_teencoins }}
+          </div>
+    </div>
+
+    <!-- Form for bonus assignment -->
+    <form method="POST" action="{% url 'mentorApp:assign_bonus_multi' task.id %}" id="bonusForm">
+        {% csrf_token %}
+        <!-- Bonus points input field -->
+        <input type="number" name="bonus_points" class="bonus-input" placeholder="הכנס נקודות בונוס" required />
+
+         <!-- "Select All" option -->
+         <div class="select-all-container">
+            <label for="selectAll">בחר הכל</label>
+            <input type="checkbox" id="selectAll" />
+        </div>
+
+         <!-- Search bar for dynamic filtering -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="חפש ילד לפי שם או שם משתמש..." />
+        </div>
+
+        <!-- List of approved task completions as cards -->
+        <div id="childrenList">
+            {% for completion in approved_completions %}
+            <div class="child-card" data-child-name="{{ completion.child.user.username }}">
+                <div class="child-info">
+                    <strong>{{ completion.child.user.username }}</strong><br/>
+                    <small>תאריך תפוגה: {{ completion.expiry_date|date:"d/m/Y" }}</small><br/>
+                    <small>תאריך שלמה: {{ completion.completion_date|date:"d/m/Y" }}</small>
+                    <small>נקודות בונוס: {{ completion.bonus_points }}</small>
+                </div>
+                <!-- Checkbox for selecting this completion -->
+                <div class="checkbox-container">
+                    <input type="checkbox" name="completion_ids" value="{{ completion.id }}" class="child-checkbox" />
+                    <label>בחר</label>
+                </div>
+            </div>
+            {% empty %}
+            <p>לא נמצאו ילדים המתאימים לקבלת בונוס</p>
+            {% endfor %}
+        </div>
+
+        <!-- Submit button to assign bonus -->
+        <button type="submit" class="button">אשר בונוס</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dynamic search functionality: filters child cards based on input
+document.getElementById('searchInput').addEventListener('input', function() {
+    var filter = this.value.toLowerCase();
+    var childrenCards = document.querySelectorAll('#childrenList .child-card');
+    childrenCards.forEach(function(card) {
+        var name = card.getAttribute('data-child-name').toLowerCase();
+        // If the child name includes the search text, display the card; otherwise hide it
+        if (name.includes(filter)) {
+            card.style.display = 'flex';
+            card.style.animation = 'fadeInUp 0.5s ease-out';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// "Select All" functionality: toggles all checkboxes on or off
+document.getElementById('selectAll').addEventListener('change', function(event) {
+    var checkboxes = document.querySelectorAll('#childrenList .child-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = event.target.checked;
+    });
+});
+
+// Form validation: ensure at least one child is selected before submission
+document.getElementById('bonusForm').addEventListener('submit', function(event) {
+    var checkboxes = document.querySelectorAll('#childrenList .child-checkbox');
+    var atLeastOneChecked = Array.from(checkboxes).some(function(checkbox) {
+        return checkbox.checked;
+    });
+    if (!atLeastOneChecked) {
+        event.preventDefault();
+        alert('אנא בחר לפחות ילד אחד לקבלת בונוס.');
+    }
+});
+</script>
+{% endblock %}

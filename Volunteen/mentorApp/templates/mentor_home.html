@@ -37,7 +37,6 @@
     color: white;
 }
 
-/* הצבעים נשארים כמו קודם */
 .pink-btn { background-color: #e91e63; }
 .blue-btn { background-color: #2196f3; }
 .green-btn { background-color: #4caf50; }
@@ -46,12 +45,60 @@
 .yellow-btn { background-color: #ffc107; }
 .red-btn { background-color: #f44336; }
 
-/* התאמה למסכים קטנים */
 @media only screen and (max-width: 428px) {
     .btn {
-        font-size: 14px; /* הקטנת טקסט */
-        padding: 12px; /* התאמת ריווח פנימי */
+        font-size: 14px;
+        padding: 12px; 
     }
+}
+
+.alert {
+    margin-top: 10px;
+    width: 90%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 5px;
+    padding: 15px;
+    position: relative;
+    text-align: right;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+    background-color: #4caf50;
+    color: white;
+    border: solid 2px #388e3c;
+}
+
+.alert-danger {
+    background-color: #f44336;
+    color: white;
+    border: solid 2px #d32f2f;
+}
+
+.alert-warning {
+    background-color: #ff9800;
+    color: white;
+    border: solid 2px #f57c00;
+}
+
+.alert-info {
+    background-color: #2196f3;
+    color: white;
+    border: solid 2px #1976d2;
+}
+
+.btn-close {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
 }
 
 </style>
@@ -59,6 +106,14 @@
     <div>
         טינקאוינס זמינים: {{ mentor.available_teencoins }}
     </div>
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="סגור"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
     <div class="section" dir="rtl">
         <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn"><i class="fas fa-plus"></i> הוספת משימה</a>
         <a href="{% url 'mentorApp:template_list' %}" class="btn mentor-btn"><i class="fas fa-copy"></i> משימות לשכפול</a>
@@ -67,14 +122,14 @@
             <i class="fas fa-images"></i> אישור משימות
         </a>        
         <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
-        <a href="{% url 'mentorApp:bonus_child_selection' %}" class="btn mentor-btn">
+        <a href="{% url 'mentorApp:bonus_task_selection' %}" class="btn mentor-btn">
             <i class="fas fa-gift"></i> מתן נקודות בונוס
         </a>
         <a href="{% url 'mentorApp:children_performance' %}" class="btn mentor-btn"><i class="fas fa-star"></i>ביצועי ילדים</a>
 
     </div>
 
-    
+
 
 {% endblock %}
 

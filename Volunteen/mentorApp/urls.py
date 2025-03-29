@@ -19,9 +19,9 @@ urlpatterns = [
     path('review_task/', views.review_task, name='review_task'),
     path('templates/', views.template_list, name='template_list'),
     path('templates/remove/<int:task_id>/', views.remove_from_templates, name='remove_from_templates'),
-    path('bonus/', views.bonus_child_selection, name='bonus_child_selection'),
-    path('bonus/<int:child_id>/', views.child_bonus_detail, name='child_bonus_detail'),
-    path('bonus/assign/<int:task_completion_id>/', views.assign_bonus, name='assign_bonus'),
+    path('bonus/', views.bonus_task_selection, name='bonus_task_selection'),
+    path('bonus/<int:task_id>/', views.bonus_children_selection, name='bonus_children_selection'),
+    path('bonus/assign/<int:task_id>/', views.assign_bonus_multi, name='assign_bonus_multi'),
     path('children_performance/', views.children_performance, name='children_performance'),
 
 ]

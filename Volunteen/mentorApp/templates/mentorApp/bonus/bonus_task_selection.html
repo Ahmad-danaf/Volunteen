@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}בחירת משימה לבונוס{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Container styling for mobile-first responsiveness */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    margin: 0 auto;
+}
+
+/* Search bar styling */
+.search-container {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+.search-input:focus {
+    border-color: #007bff;
+}
+
+.task-card {
+    background: linear-gradient(135deg, #ffffff, #f7f7f7);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    width: 100%;
+    max-width: 400px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover animation for a premium feel */
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation for card appearance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.task-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Task title styling */
+.task-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* Task detail styling */
+.task-card p {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Button styling */
+.button {
+    display: inline-block;
+    background: #007bff;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    margin-top: 1rem;
+    text-align: center;
+    width: 100%;
+}
+.button:hover {
+    background: #0056b3;
+}
+
+/* Ensure Hebrew RTL alignment */
+body {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Media queries for optimal phone screen display */
+@media (max-width: 480px) {
+    .task-card {
+        padding: 1rem;
+    }
+    .task-card h2 {
+        font-size: 1.3rem;
+    }
+    .button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page header in Hebrew -->
+    <h1>בחירת משימה לבונוס</h1>
+    <p>בחר את המשימה שבה תרצה להעניק בונוס לילדים</p>
+    
+    <!-- Search bar for dynamic filtering -->
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="חפש משימה לפי כותרת, תיאור או תאריך יעד..." />
+    </div>
+    
+    {% for task in tasks %}
+    <div class="task-card" data-title="{{ task.title }}" data-description="{{ task.description }}" data-deadline="{{ task.deadline|date:'d/m/Y' }}">
+        <h2>{{ task.title }}</h2>
+        <p>תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
+        <p>נקודות: {{ task.points }}</p>
+        <p>{{ task.description|truncatechars:100 }}</p>
+        <a href="{% url 'mentorApp:bonus_children_selection' task.id %}" class="button">בחר משימה</a>
+    </div>
+    {% empty %}
+    <p>לא קיימות משימות לבונוס</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dynamic search functionality: filters task cards based on input
+document.getElementById('searchInput').addEventListener('input', function() {
+    var filter = this.value.toLowerCase();
+    var taskCards = document.querySelectorAll('.task-card');
+    taskCards.forEach(function(card) {
+        // Retrieve data attributes for title, description, and deadline
+        var title = card.getAttribute('data-title').toLowerCase();
+        var description = card.getAttribute('data-description').toLowerCase();
+        var deadline = card.getAttribute('data-deadline').toLowerCase();
+        
+        // Combine the text for filtering
+        var combinedText = title + " " + description + " " + deadline;
+        
+        // Display the card if the combined text contains the search filter; otherwise, hide it
+        if (combinedText.includes(filter)) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeInUp 0.5s ease-out';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

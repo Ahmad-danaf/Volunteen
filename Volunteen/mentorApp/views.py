@@ -21,6 +21,7 @@ from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 from mentorApp.utils.MentorUtils import MentorUtils
 from django.core.paginator import Paginator
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
+from dateutil.relativedelta import relativedelta
 
 @login_required
 def mentor_home(request):
@@ -352,62 +353,64 @@ def remove_from_templates(request, task_id):
 
 
 @login_required
-def bonus_child_selection(request):
-    """
-    Page for mentor to select a child to whom they want to give a bonus.
-    Provides a search box for filtering children by username or name.
-    """
+def bonus_task_selection(request):
     mentor = get_object_or_404(Mentor, user=request.user)
-    search_query = request.GET.get('search', '')
-
-    children = MentorUtils.get_children_for_mentor(mentor, search_query)
-
-    context = {
-        'children': children,
-        'search_query': search_query
-    }
-    return render(request, 'bonus_child_selection.html', context)
+    today = timezone.now().date()
+    start_date = today - relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
+    end_date = today + relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
+    tasks = MentorTaskUtils.get_all_tasks_assigned_to_mentor(mentor, start_date, end_date)
+    return render(request, 'mentorApp/bonus/bonus_task_selection.html', {'tasks': tasks})
 
 
 @login_required
-def child_bonus_detail(request, child_id):
-    """
-    Lists the completed tasks for this child that are assigned to the current mentor
-    and have not expired. Mentor can give bonuses here.
-    """
+def bonus_children_selection(request, task_id):
     mentor = get_object_or_404(Mentor, user=request.user)
-    child = get_object_or_404(Child, id=child_id)
-
-    active_completions = MentorTaskUtils.get_active_completions_for_mentor_child(mentor, child)
-
+    task = get_object_or_404(Task, id=task_id)
+    
+    approved_completions = MentorTaskUtils.get_approved_completions_for_task(mentor, task)
+    for completion in approved_completions:
+        completion.expiry_date = completion.completion_date + relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
+    
     context = {
-        'child': child,
-        'active_completions': active_completions,
+        'task': task,
+        'approved_completions': approved_completions,
         'available_teencoins': mentor.available_teencoins,
-        'teencoins_expiration_months': TEEN_COINS_EXPIRATION_MONTHS
+        'teencoins_expiration_months': TEEN_COINS_EXPIRATION_MONTHS,
     }
-    return render(request, 'child_bonus_detail.html', context)
+    return render(request, 'mentorApp/bonus/bonus_children_selection.html', context)
 
 
 @login_required
-def assign_bonus(request, task_completion_id):
+def assign_bonus_multi(request, task_id):
     """
-    POST-only view that awards a bonus to a specific TaskCompletion.
-    The bonus points come from the 'bonus_points' field in the form.
-    If the mentor doesn't have enough coins, we show an error.
+    Processes bonus assignments for multiple task completions.
+    The mentor selects one or more completions and provides bonus points,
+    which are then assigned to each selected task completion.
     """
     if request.method == 'POST':
         mentor = get_object_or_404(Mentor, user=request.user)
+        task = get_object_or_404(Task, id=task_id)
         bonus_points = int(request.POST.get('bonus_points', '0'))
-
-        try:
-            updated_tc = MentorTaskUtils.assign_bonus_to_task_completion(mentor, task_completion_id, bonus_points)
-            messages.success(request, f"נוספו {bonus_points} נקודות בונוס עבור {updated_tc.task.title}!")
-        except ValueError as e:
-            messages.error(request, str(e))
-
-        # Redirect back to the detail page for the child's completions
-        return redirect('mentorApp:child_bonus_detail', child_id=updated_tc.child.id)
+        completion_ids = request.POST.getlist('completion_ids')
+        
+        success_count = 0
+        errors = []
+        for tc_id in completion_ids:
+            try:
+                # This utility method applies the bonus to a single task completion
+                updated_tc = MentorTaskUtils.assign_bonus_to_task_completion(mentor, tc_id, bonus_points)
+                success_count += 1
+            except ValueError as e:
+                errors.append(str(e))
+        
+        if success_count > 0:
+            messages.success(request, f"נוספו {bonus_points} נקודות בונוס ל-{success_count} השלמות עבור {task.title}!")
+        if errors:
+            messages.error(request, "Errors occurred: " + "; ".join(errors))
+        return redirect('mentorApp:mentor_home')
     else:
-        messages.error(request, "גישה לא מורשית. ניתן לשלוח בונוס רק באמצעות POST.")
-        return redirect('mentorApp:bonus_child_selection')
+        messages.error(request, "Unauthorized access. Bonus can only be assigned via POST.")
+        return redirect('mentorApp:mentor_home')
+
+
+

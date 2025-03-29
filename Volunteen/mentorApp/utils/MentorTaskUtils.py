@@ -60,9 +60,12 @@ class MentorTaskUtils(TaskManagerUtils):
     
     
     @staticmethod
-    def get_all_tasks_assigned_to_mentor(mentor: Mentor):
+    def get_all_tasks_assigned_to_mentor(mentor: Mentor, start_date=None, end_date=None):
         """Retrieve all tasks assigned to a specific mentor."""
-        return Task.objects.filter(assigned_mentors=mentor)
+        tasks = Task.objects.filter(assigned_mentors=mentor)
+        if start_date and end_date:
+            tasks = tasks.filter(deadline__range=(start_date, end_date))
+        return tasks
 
     @staticmethod
     def get_mentor_children_with_completed_tasks(mentor: Mentor):
@@ -123,6 +126,9 @@ class MentorTaskUtils(TaskManagerUtils):
         task_completion.bonus_points += bonus_points
         task_completion.remaining_coins += bonus_points
         task_completion.save()
+
+        # Award points to the child
+        task_completion.child.add_points(bonus_points)
 
         return task_completion
     
@@ -318,3 +324,18 @@ class MentorTaskUtils(TaskManagerUtils):
             )
             child.task_total_points = total['total_points'] or 0
         return children
+    
+    
+    @staticmethod
+    def get_approved_completions_for_task(mentor: Mentor, task: Task):
+        """
+        Retrieve all approved TaskCompletion objects for a given task.
+
+        This method first checks that the task is assigned to the mentor.
+        Then it returns all TaskCompletion instances for the task with status 'approved'.
+        """
+        # Ensure the task is assigned to the given mentor
+        if not task.assigned_mentors.filter(id=mentor.id).exists():
+            return TaskCompletion.objects.none()
+        
+        return TaskCompletion.objects.filter(task=task, status='approved')
