@@ -358,7 +358,7 @@ def bonus_task_selection(request):
     today = timezone.now().date()
     start_date = today - relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
     end_date = today + relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
-    tasks = MentorTaskUtils.get_all_tasks_assigned_to_mentor(mentor, start_date, end_date)
+    tasks = MentorTaskUtils.get_all_tasks_assigned_to_mentor(mentor, start_date, end_date).order_by('-deadline')
     return render(request, 'mentorApp/bonus/bonus_task_selection.html', {'tasks': tasks})
 
 
