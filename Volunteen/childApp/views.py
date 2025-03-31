@@ -34,16 +34,24 @@ from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from childApp.utils.check_in_out_utils import process_check_in, process_check_out
 from childApp.utils.child_level_management import calculate_total_points
 from managementApp.models import DonationCategory, DonationTransaction
-
+from childApp.decorators import child_subscription_required
+from parentApp.models import ChildSubscription
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
     return render(request, 'child_landing.html', {'top_children': top_children})
 
+@login_required
+def inactive_home(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    return render(request, 'childApp/inactive_home.html', {'child': child})
 
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
+    if child.subscription.status == ChildSubscription.Status.EXPIRED or child.subscription.status == ChildSubscription.Status.CANCELLED:
+        return redirect('childApp:inactive_home', child_id=child.id)
+    
     if child.level > child.last_level_awarded:
         TaskManagerUtils.auto_approve_increase_level_for_child(child)
         child.last_level_awarded = child.level
@@ -85,6 +93,7 @@ def child_home(request):
         'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level,
+        'can_show_expiration_warning': child.subscription.can_show_expiration_warning()
     })
     
 @login_required
@@ -156,7 +165,7 @@ def donate_coins(request):
         })
 
 
-@login_required
+@child_subscription_required
 def update_streak(request):
     """Update the child's daily streak progress if they haven't already checked in today."""
     if request.method != "POST":
@@ -179,12 +188,12 @@ def update_streak(request):
 
     return JsonResponse({"message": "🔥 כל הכבוד! שמרת על הרצף!", "streak": child.streak_count, "success": True})
 
-@login_required
+@child_subscription_required
 def top_streaks(request):
     top_children = Child.objects.order_by('-streak_count')
     return render(request, "streak_leaderboard.html", {"top_children": top_children})
 
-@login_required
+@child_subscription_required
 def child_redemption_history(request):
     child = Child.objects.get(user=request.user)
     form = DateRangeForm(request.GET or None)
@@ -203,7 +212,7 @@ def child_redemption_history(request):
 
     return render(request, 'child_redemption_history.html', {'redemptions': redemptions, 'form': form})
 
-@login_required
+@child_subscription_required
 def rate_redemption_view(request, redemption_id):
     redemption = get_object_or_404(Redemption, id=redemption_id, child=request.user.child)
 
@@ -226,7 +235,7 @@ def rate_redemption_view(request, redemption_id):
         'stars_range':range(1, 6)
     })
     
-@login_required
+@child_subscription_required
 def child_completed_tasks(request):
     """Retrieve and display all completed tasks for a child with optional date filtering."""
     
@@ -254,7 +263,7 @@ def child_completed_tasks(request):
     
     return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':child.parent.user.username})
 
-@login_required
+@child_subscription_required
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
@@ -267,7 +276,7 @@ def child_active_list(request):
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
 
 
-@login_required
+@child_subscription_required
 def child_points_history(request):
     """
     Retrieve and display the child's point history including completed tasks, redemptions, 
@@ -450,7 +459,7 @@ def cancel_request(request):
     return JsonResponse({"status": "ok"})
 
 
-@login_required
+@child_subscription_required
 def points_leaderboard(request):
     form = DateRangeCityForm(request.GET or None)
     if form.is_valid():
@@ -485,7 +494,7 @@ def save_phone_number(request):
     return json.JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 
-@login_required
+@child_subscription_required
 def task_check_in_out(request):
     """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
@@ -501,7 +510,7 @@ def task_check_in_out(request):
     
     return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})
 
-@login_required
+@child_subscription_required
 def check_in(request, task_id):
     """Allow a child to check in to a task."""
     child = request.user.child
@@ -521,7 +530,7 @@ def check_in(request, task_id):
 
     return render(request, 'check_in.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
 
-@login_required
+@child_subscription_required
 def check_out(request, task_id):
     """Allow a child to check out from a task only if they checked in first."""
     child = request.user.child
@@ -540,12 +549,12 @@ def check_out(request, task_id):
 
     return render(request, 'check_out.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
 
-@login_required
+@child_subscription_required
 def no_check_in(request):
     return render(request, 'check_in_warning.html')
 
 @csrf_exempt
-@login_required
+@child_subscription_required
 def submit_check_in(request):
     """Enqueue a background task to process a check-in image."""
     if request.method != 'POST':
@@ -567,7 +576,7 @@ def submit_check_in(request):
     return JsonResponse({'success': True, 'message': "צ'ק-אין נשלח לעיבוד ברקע."})
 
 @csrf_exempt
-@login_required
+@child_subscription_required
 def submit_check_out(request):
     """Enqueue a background task to process a check-out image."""
     if request.method != 'POST':
@@ -588,7 +597,7 @@ def submit_check_out(request):
 
     return JsonResponse({'success': True, 'message': "צ'ק-אאוט נשלח לעיבוד ברקע."})
 
-@login_required
+@child_subscription_required
 def mark_tasks_as_viewed(request):
     """Mark all new tasks as viewed for a child."""
     if request.method == "POST":
@@ -609,7 +618,7 @@ def child_not_approved_requests(request):
     return render(request, "child_not_approved_requests.html", {"requests": pending_requests})
 
 
-@login_required 
+@child_subscription_required
 def donation_leaderboard(request):
     """
     Displays a leaderboard of children based on their donation amounts.

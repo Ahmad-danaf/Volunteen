@@ -9,6 +9,18 @@
     <h1 class="welcome-message">ברוך הבא, {{ child.user.username }}!</h1>
     <p class="tagline">{{ greeting|safe }}</p>
 </div>
+{% if can_show_expiration_warning %}
+<div class="premium-warning">
+  <div class="warning-content">
+    <h2>המנוי שלך עומד לפוג!</h2>
+    <p>השאר עכשיו והמשך ליהנות מהטבות בלעדיות. הזמן מתחלף – אל תפספס!</p>
+    <a href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20" class="warning-cta">
+      להצטרף מחדש
+    </a>
+  </div>
+</div>
+{% endif %}
+
 
 <div class="avatar-streak-container">
     <div class="avatar">
@@ -715,5 +727,85 @@ body {
         opacity: 1;
     }
 }
+.premium-warning {
+    background: linear-gradient(135deg, #ff4081, #ff6a9a);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 10px;
+    position: relative;
+    animation: slideDown 1s ease-out forwards;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .warning-content {
+    color: #fff;
+    text-align: center;
+  }
+  
+  .warning-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite;
+  }
+  
+  .warning-content p {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+  }
+  
+  .warning-cta {
+    display: inline-block;
+    background-color: #ffffff;
+    color: #ff4081;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+  
+  .warning-cta:hover {
+    transform: scale(1.05);
+    background-color: #f9f9f9;
+  }
+  
+  /* Pulse animation for the header */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 480px) {
+    .premium-warning {
+      margin: 10px;
+      padding: 15px;
+    }
+    .warning-content h2 {
+      font-size: 1.5rem;
+    }
+    .warning-content p {
+      font-size: 1rem;
+    }
+    .warning-cta {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+  }
+  
 </style>
 {% endblock extra_scripts %}

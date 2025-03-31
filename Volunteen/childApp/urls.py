@@ -4,6 +4,7 @@ from childApp import views as child_views
 app_name='childApp'
 
 urlpatterns = [
+    path('inactive/<int:child_id>/', child_views.inactive_home, name='inactive_home'),
     path('home/', child_views.child_home, name='child_home'),  # Child home page
     path('redemption-history/', child_views.child_redemption_history, name='child_redemption_history'),
     path('completed-tasks/', child_views.child_completed_tasks, name='child_completed_tasks'),

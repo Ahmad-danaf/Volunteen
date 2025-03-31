@@ -24,9 +24,15 @@ import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+@login_required
+def inactive_home(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    return render(request, 'parentApp/inactive_home.html', {'child': child})
+
 def parent_landing(request):
     return render(request, 'parent_landing.html')
 
+@login_required
 def child_selection(request):
     """
     Render a page showing cards for each child.
