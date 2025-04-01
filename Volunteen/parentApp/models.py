@@ -69,7 +69,6 @@ class ChildSubscription(models.Model):
     end_date = models.DateField()
 
     canceled_at = models.DateTimeField(null=True, blank=True)
-    trial_end_date = models.DateField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -81,7 +80,7 @@ class ChildSubscription(models.Model):
         verbose_name_plural = "Child Subscriptions"
 
     def __str__(self):
-        return f"{self.child.identifier} ({self.status})"
+        return f"{self.child.user.username} ({self.status})"
 
     def is_active(self) -> bool:
         """
