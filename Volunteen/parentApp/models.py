@@ -87,10 +87,9 @@ class ChildSubscription(models.Model):
         Check if the subscription is currently active
         and not past its end_date.
         """
-        if self.status != self.STATUS_ACTIVE:
+        if self.status != ChildSubscription.Status.ACTIVE:
             return False
         return self.end_date >= timezone.now().date()
-
     def days_left(self) -> int:
         """
         How many days remain until end_date?
@@ -107,8 +106,8 @@ class ChildSubscription(models.Model):
         """
         Mark subscription as expired (for daily cron job when end_date passes).
         """
-        if self.status != self.STATUS_EXPIRED:
-            self.status = self.STATUS_EXPIRED
+        if self.status != ChildSubscription.Status.EXPIRED:
+            self.status = ChildSubscription.Status.EXPIRED
             self.save()
 
     def cancel(self) -> None:
@@ -116,7 +115,7 @@ class ChildSubscription(models.Model):
         Cancel the subscription prior to end_date.
         Typically used if the user manually cancels or requests a stop.
         """
-        if self.status == self.STATUS_ACTIVE:
-            self.status = self.STATUS_CANCELLED
+        if self.status == ChildSubscription.Status.ACTIVE:
+            self.status = ChildSubscription.Status.CANCELLED
             self.canceled_at = timezone.now()
             self.save()

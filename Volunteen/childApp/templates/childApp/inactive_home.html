@@ -131,11 +131,18 @@
     <div class="subheader">
       זה הזמן לחזור ולהצטרף למסע המדהים שלנו. כאן תפתח כישורים חדשים, תצמח ותעזור לבנות קהילה תומכת וחזקה. כל צעד קטן שלך משנה את העולם.
     </div>
+    <div class="subheader">
+      זה הזמן לחזור ולהצטרף למסע המדהים שלנו. כאן תפתח כישורים חדשים, תצמח ותעזור לבנות קהילה תומכת וחזקה. כל צעד קטן שלך משנה את העולם.
+    </div>
     <!-- Call-to-Action to Rejoin via WhatsApp -->
     <a class="cta-button" target="_blank" href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20">
       להצטרף עכשיו
     </a>
     <!-- Additional Navigation Buttons -->
+    <div class="user-teencoins">
+      <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
+      <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+    </div>
     <div class="nav-buttons">
       <a href="{% url 'childApp:reward' %}" class="nav-button" style="background-color: #ff4081;">
         <i class="fas fa-gift"></i>
@@ -149,6 +156,10 @@
         <i class="fas fa-hand-holding-heart"></i>
         <span>צדקה</span>
       </a>
+      <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>יציאה</span>
+    </a>
     </div>
   </div>
 </body>

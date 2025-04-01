@@ -44,11 +44,15 @@ def child_landing(request):
 @login_required
 def inactive_home(request, child_id):
     child = get_object_or_404(Child, id=child_id)
-    return render(request, 'childApp/inactive_home.html', {'child': child})
+    active_points = TeenCoinManager.get_total_active_teencoins(child)
+
+    return render(request, 'childApp/inactive_home.html', {'child': child,'active_points':active_points})
 
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
+    if not hasattr(child, 'subscription'):
+        return redirect('childApp:inactive_home', child_id=child.id)
     if child.subscription.status == ChildSubscription.Status.EXPIRED or child.subscription.status == ChildSubscription.Status.CANCELLED:
         return redirect('childApp:inactive_home', child_id=child.id)
     
