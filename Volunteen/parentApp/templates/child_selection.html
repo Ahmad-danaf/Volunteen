@@ -29,6 +29,9 @@
       margin-right: 0.5rem;
       color: orangered;
     }
+    .text-danger {
+      color: red;
+    }
   </style>
   {% endblock extra_css %}
   
@@ -64,6 +67,14 @@
                     מספר המשימות שהוקצו לילד: <strong>{{ child.assigned_tasks_count }}</strong><br>
                     מספר המשימות שהילד השלים: <strong>{{ child.completed_tasks_count }}</strong><br>
                     נקודות שמומשו: <strong>{{ child.teen_coins_used }}</strong>
+                    {% if child.can_show_expiration_warning %}
+                      <br>
+                      המנוי של הילד יגמר בתאריך: <strong class="text-danger">{{ child.subscription.end_date|date:"d/m/Y" }}</strong>
+                    {% endif %}
+                    {% if not child.is_subscription_active and child.subscription.end_date %}
+                      <br>
+                      המנוי של הילד נגמר בתאריך: <strong class="text-danger">{{ child.subscription.end_date|date:"d/m/Y" }}</strong>
+                    {% endif %}
                   </p>
                 </div>
               </div>

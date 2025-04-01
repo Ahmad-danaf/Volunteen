@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import Parent
+from .models import Parent,ChildSubscription
 from childApp.models import Child
 from teenApp.entities.task import Task
 from django.shortcuts import get_object_or_404
@@ -24,9 +24,15 @@ import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+@login_required
+def inactive_home(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    return render(request, 'parentApp/inactive_home.html', {'child': child})
+
 def parent_landing(request):
     return render(request, 'parent_landing.html')
 
+@login_required
 def child_selection(request):
     """
     Render a page showing cards for each child.
@@ -43,7 +49,12 @@ def child_selection(request):
         child.assigned_tasks_count = ChildTaskManager.get_assigned_tasks_count(child)
         child.completed_tasks_count = ChildTaskManager.get_completed_tasks_count(child)
         child.teen_coins_used = ChildRedemptionManager.get_teen_coins_used(child)
-        
+        if hasattr(child, 'subscription') and child.subscription:
+            child.can_show_expiration_warning = child.subscription.can_show_expiration_warning()
+            child.is_subscription_active = child.subscription.is_active()
+        else:
+            child.can_show_expiration_warning = False
+            child.is_subscription_active = False
 
     context = {
         'user_children': children,
@@ -613,3 +624,31 @@ def reject_task_completion(request):
     except Exception as e:
         # Log exception if needed
         return JsonResponse({"success": False, "message": f"שגיאה: {str(e)}"}, status=500)
+    
+    
+@login_required
+def donation_leaderboard(request):
+    """
+    Displays a leaderboard of children based on their donation amounts.
+    By default, shows current month's donations, but allows filtering by date range and city.
+    """
+    form = DateRangeCityForm(request.GET or None)
+    
+    if form.is_valid():
+        city = form.cleaned_data.get('city', "ALL")
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+        
+        donations = LeaderboardUtils.get_donations_leaderboard(
+            start_date=start_date,
+            end_date=end_date,
+            city=city
+        )
+    else:
+        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL")
+    
+    return render(request, 'parentApp/donation/donation_leaderboard.html', {
+        'donations': donations,
+        'form': form,
+    })
+   

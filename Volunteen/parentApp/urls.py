@@ -4,6 +4,7 @@ from . import views
 app_name = 'parentApp'
 
 urlpatterns = [
+    path('inactive/<int:child_id>/', views.inactive_home, name='inactive_home'),
     path('landing/', views.parent_landing, name='parent_landing'),
     path('choose-child/', views.child_selection, name='parent_home'),
     path('dashboard/<int:child_id>/', views.parent_dashboard, name='parent_dashboard'),
@@ -16,4 +17,5 @@ urlpatterns = [
     path('tasks/approve/', views.approve_task_completion, name='approve_task_completion'),
     path('tasks/reject/', views.reject_task_completion, name='reject_task_completion'),
     path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
+    path('donation-leaderboard/', views.donation_leaderboard, name='donation_leaderboard'),
     ]

@@ -8,6 +8,7 @@ class Command(BaseCommand):
         scheduled_tasks = [
             ("refund_overdue_tasks", "Refund overdue teencoins"),
             ("grant_monthly_parent_points", "Monthly parent top-up"),
+            ("check_subscriptions", "Check child subscriptions and expire overdue subscriptions"),
         ]
 
         self.stdout.write("========== START: Daily Scheduled Tasks ==========\n")

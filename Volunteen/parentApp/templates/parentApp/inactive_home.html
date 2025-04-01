@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>הורה יקר – ילדך והקהילה מחכים לך</title>
+  <!-- Modern Hebrew-friendly font -->
+  <link href="https://fonts.googleapis.com/css?family=Assistant:400,700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Assistant', sans-serif;
+      direction: rtl;
+      text-align: center;
+    }
+    /* Animated Gradient Background */
+    body {
+      background: linear-gradient(135deg, #09203f, #537895);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* Main container */
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 15px;
+      margin: 10px;
+      animation: fadeIn 2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .header {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      animation: slideIn 1s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .subheader {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      line-height: 1.4;
+    }
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .feature {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .cta {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 1.3rem;
+      color: #fff;
+      background: #ff4d4d;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+    .cta:hover {
+      transform: scale(1.05);
+      background: #ff6666;
+    }
+    /* Mobile Optimization */
+    @media (max-width: 480px) {
+      .header { font-size: 2rem; }
+      .subheader { font-size: 1rem; }
+      .cta { font-size: 1.1rem; padding: 12px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">הורה יקר, ילדך והקהילה מחכים לך!</div>
+    <div class="subheader">
+      הצטרף עכשיו והצע את הילד שלך למסע התפתחותי מעצים, שבו הוא יפתח את כישוריו, יהיה חלק מקהילה תומכת, ויצמח להצלחה אמיתית.
+    </div>
+    <div class="features">
+      <div class="feature">התפתחות אישית מתקדמת</div>
+      <div class="feature">קהילה תומכת ואכפתית</div>
+      <div class="feature">הזדמנויות לצמיחה והצלחה</div>
+    </div>
+    <a class="cta" target="_blank" href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20">
+      להצטרף עכשיו
+    </a>
+    <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>יציאה</span>
+  </a>
+  </div>
+</body>
+</html>
