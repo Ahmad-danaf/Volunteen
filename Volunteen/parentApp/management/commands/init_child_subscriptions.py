@@ -49,9 +49,9 @@ class Command(BaseCommand):
 
                     # Parse date
                     try:
-                        start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                        start_date = datetime.datetime.strptime(start_date_str, "%m/%d/%Y").date()
                         if end_date_str is not None:
-                            end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                            end_date = datetime.datetime.strptime(end_date_str, "%m/%d/%Y").date()
                         else:
                             end_date = None
                     except Exception as e:
