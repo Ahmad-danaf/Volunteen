@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     row_count += 1
-                    identifier = row.get('identifier').strip()
+                    identifier = int(row.get('identifier').strip())
                     username = row.get('username').strip()
                     payment_method = row.get('payment_method', '').strip().upper()
                     plan = row.get('plan', '').strip().upper()
