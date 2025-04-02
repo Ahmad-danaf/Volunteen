@@ -100,7 +100,7 @@ class ChildSubscription(models.Model):
         """
         Should we show the user a "Subscription expiring soon" banner?
         """
-        return self.is_active() and self.days_left() <= days_threshold
+        return not self.auto_renew and self.is_active() and self.days_left() <= days_threshold
 
     def expire(self) -> None:
         """

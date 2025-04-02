@@ -78,7 +78,8 @@ class ParentTaskUtils(TaskManagerUtils):
             assignments.append(assignment)
         
         # Deduct the task cost from the parent's available teencoins.
-        parent.available_teencoins -= points
+        total_cost = points * len(selected_children)
+        parent.available_teencoins -= max(0, total_cost)
         parent.save()
         
         return task, assignments
