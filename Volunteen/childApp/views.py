@@ -97,7 +97,8 @@ def child_home(request):
         'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level,
-        'can_show_expiration_warning': child.subscription.can_show_expiration_warning()
+        'can_show_expiration_warning': child.subscription.can_show_expiration_warning(),
+        'days_left_to_expire': max(child.subscription.days_left(),1)
     })
     
 @login_required

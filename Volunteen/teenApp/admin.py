@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
@@ -49,10 +49,17 @@ class MentorAdmin(admin.ModelAdmin):
     list_display = ('user',)
 
 
-    
+def assign_remaining_coins(modeladmin, request, queryset):
+    updated = 0
+    for completion in queryset:
+        if completion.task and completion.task.points is not None:
+            completion.remaining_coins = completion.task.points + completion.bonus_points
+            completion.save()
+            updated += 1
+    modeladmin.message_user(request, f"{updated} task completions updated with remaining coins.", messages.SUCCESS)    
 @admin.register(TaskCompletion)
 class TaskCompletionAdmin(admin.ModelAdmin):
     list_display = ('task', 'child', 'completion_date')
     search_fields = ('task__title', 'child__user__username')
     list_filter = ('completion_date',)
-admin.site.register(TaskAssignment)
+    actions = [assign_remaining_coins]
