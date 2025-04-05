@@ -134,7 +134,8 @@ class ShopManager:
                     "points_used": reward['quantity'] * reward['points'],
                     "quantity": reward['quantity'],
                     "points": reward['points']
-                })
+                }) 
+            shop.unlock_monthly_points(points_used)
 
             # Send notification if child has an email
             if child.user.email:
@@ -245,7 +246,7 @@ class ShopManager:
                 continue
             
             # Approve (deduct points, create redemptions)
-            approval_result = ShopManager.approve_redemption_requests(child, selected_requests)
+            approval_result = ShopManager.approve_redemption_requests(child, selected_requests, shop)
             if approval_result["status"] == "error":
                 results.append({
                     "child_id": child.id,
@@ -273,7 +274,7 @@ class ShopManager:
     
     
     @staticmethod
-    def approve_redemption_requests(child, selected_requests):
+    def approve_redemption_requests(child, selected_requests, shop=None):
         """
         Approves a set of redemption requests for a child.
         
@@ -292,7 +293,6 @@ class ShopManager:
             TeenCoinManager.redeem_teencoins(child, total_points_needed)
             points_used = 0
             redemptions = []
-            
             for item in selected_requests:
                 reward_obj = get_object_or_404(Reward, id=item['reward_id'])
                 current_points = item['quantity'] * item['points']
@@ -311,7 +311,8 @@ class ShopManager:
                     "quantity": item['quantity'],
                     "points": item['points']
                 })
-            
+            if shop:
+                shop.unlock_monthly_points(points_used)
             if child.user.email:
                 NotificationManager.sent_mail(
                     f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.',
@@ -335,6 +336,7 @@ class ShopManager:
         try:
             for req in redemption_requests:
                 req.status = 'rejected'
+                req.shop.unlock_monthly_points(req.locked_points)
                 req.save()
             return {"status": "success", "message": "הבקשות נדחו בהצלחה."}
         except Exception as e:

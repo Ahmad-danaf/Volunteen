@@ -62,7 +62,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
         original_task = get_object_or_404(Task, id=task_id)
         if duplicate:
             task_data = {
-                "title": f"{original_task.title} (העתק)",
+                "title": str(original_task.title),
                 "description": original_task.description,
                 "points": original_task.points,
                 "deadline": None,

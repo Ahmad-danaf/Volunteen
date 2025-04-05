@@ -14,7 +14,7 @@
     class="approve-all-container"
     style="text-align: center; margin-bottom: 1em"
   >
-    <button class="btn approve-btn" onclick="approveAllRequests()">
+    <button class="btn approve-btn" onclick="approveAllRequests(this)">
       אשר את כל הבקשות לכל הילדים
     </button>
   </div>
@@ -40,7 +40,7 @@
         />
         {% else %}
         <img
-          src="{% static 'logo.png' %}"
+          src="{% static 'images/logo.png' %}"
           alt="volunteen logo"
           class="child-avatar"
         />
@@ -85,13 +85,13 @@
           <div class="request-actions">
             <button
               class="btn approve-btn"
-              onclick="processRequest({{ req.id }}, 'approve')"
+              onclick="processRequest({{ req.id }}, 'approve', this)"
             >
               אישור
             </button>
             <button
               class="btn reject-btn"
-              onclick="processRequest({{ req.id }}, 'reject')"
+              onclick="processRequest({{ req.id }}, 'reject', this)"
             >
               דחייה
             </button>
@@ -107,13 +107,13 @@
       <div class="batch-actions">
         <button
           class="btn batch-approve-btn"
-          onclick="batchProcess({{ group.child.id }}, 'approve')"
+          onclick="batchProcess({{ group.child.id }}, 'approve', this)"
         >
           אשר הכל
         </button>
         <button
           class="btn batch-reject-btn"
-          onclick="batchProcess({{ group.child.id }}, 'reject')"
+          onclick="batchProcess({{ group.child.id }}, 'reject', this)"
         >
           דחה הכל
         </button>
@@ -142,7 +142,12 @@
   }
 
   // Individual request approval/rejection
-  function processRequest(reqId, action) {
+  function processRequest(reqId, action, buttonElement) {
+    // Disable the button and show loading state
+    buttonElement.disabled = true;
+    const originalText = buttonElement.textContent.trim();
+    buttonElement.innerHTML = `<span class="loading-spinner"></span> שולח בקשה...`;
+
     fetch("{% url 'shopApp:process_request' %}", {
       method: "POST",
       headers: {
@@ -158,21 +163,39 @@
           statusBadge.textContent = action === "approve" ? "אושר" : "נדחה";
           statusBadge.className =
             "status-badge " + (action === "approve" ? "approved" : "rejected");
+
+          // Keep button disabled but update text to show success
+          buttonElement.innerHTML = action === "approve" ? "אושר" : "נדחה";
         } else {
+          // Re-enable button on error
+          buttonElement.disabled = false;
+          buttonElement.textContent = originalText;
           alert("שגיאה ");
           console.log("שגיאה: " + data.message);
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        // Re-enable button on error
+        buttonElement.disabled = false;
+        buttonElement.textContent = originalText;
+        console.error("Error:", error);
+      });
   }
 
-  function batchProcess(childId, action) {
+  function batchProcess(childId, action, buttonElement) {
+    // Disable the button and show loading state
+    buttonElement.disabled = true;
+    const originalText = buttonElement.textContent.trim();
+    buttonElement.innerHTML = `<span class="loading-spinner"></span> שולח בקשה...`;
+
     // Select the child card using the data-child-id attribute
     const childCard = document.querySelector(
       `.child-card[data-child-id="${childId}"]`
     );
     if (!childCard) {
       alert("לא נמצאו בקשות עבור הילד הזה.");
+      buttonElement.disabled = false;
+      buttonElement.textContent = originalText;
       return;
     }
     // Gather all request IDs within this child's card. Each request item should have an id like "req-<id>"
@@ -193,13 +216,21 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "success") {
-          location.reload(); // Alternatively, update the UI dynamically
+          location.reload(); // Page will reload, no need to reset button
         } else {
+          // Re-enable button on error
+          buttonElement.disabled = false;
+          buttonElement.textContent = originalText;
           console.log("שגיאה: " + data.message);
           alert("שגיאה");
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        // Re-enable button on error
+        buttonElement.disabled = false;
+        buttonElement.textContent = originalText;
+        console.error("Error:", error);
+      });
   }
 
   // Basic search functionality
@@ -221,7 +252,12 @@
     });
 
   // Approve all requests for all children
-  function approveAllRequests() {
+  function approveAllRequests(buttonElement) {
+    // Disable the button and show loading state
+    buttonElement.disabled = true;
+    const originalText = buttonElement.textContent.trim();
+    buttonElement.innerHTML = `<span class="loading-spinner"></span> שולח בקשה...`;
+
     // Select all request items that are still pending
     const requestItems = document.querySelectorAll(".request-item");
     const requestIds = [];
@@ -236,6 +272,9 @@
 
     if (requestIds.length === 0) {
       alert("אין בקשות בהמתנה לאישור.");
+      // Re-enable button
+      buttonElement.disabled = false;
+      buttonElement.textContent = originalText;
       return;
     }
 
@@ -251,24 +290,30 @@
       .then((data) => {
         if (data.status === "success") {
           alert("כל הבקשות שאושרו בהצלחה!");
-          location.reload(); // Refresh the page to update the request statuses
+          location.reload(); // Page will reload, no need to reset button
         } else if (data.status === "partial_success") {
           alert(
             `חלק מהבקשות אושרו, אך היו בעיות עם חלקן: ${data.failed_children.join(
               ", "
             )}`
           );
-          location.reload();
+          location.reload(); // Page will reload, no need to reset button
         } else {
+          // Re-enable button on error
+          buttonElement.disabled = false;
+          buttonElement.textContent = originalText;
           alert(`שגיאה: ${data.message}`);
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        // Re-enable button on error
+        buttonElement.disabled = false;
+        buttonElement.textContent = originalText;
+        console.error("Error:", error);
+      });
   }
 </script>
-{% endblock %} 
-
-{% block extra_css %}
+{% endblock %} {% block extra_css %}
 <style>
   /* Global Container & RTL Setup */
   body {
@@ -447,16 +492,20 @@
     transition: background-color 0.3s;
     color: #fff;
   }
+  .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
   .approve-btn {
     background-color: #28a745;
   }
-  .approve-btn:hover {
+  .approve-btn:hover:not(:disabled) {
     background-color: #218838;
   }
   .reject-btn {
     background-color: #dc3545;
   }
-  .reject-btn:hover {
+  .reject-btn:hover:not(:disabled) {
     background-color: #c82333;
   }
   .batch-actions {
@@ -469,14 +518,31 @@
   .batch-approve-btn {
     background-color: #007bff;
   }
-  .batch-approve-btn:hover {
+  .batch-approve-btn:hover:not(:disabled) {
     background-color: #0056b3;
   }
   .batch-reject-btn {
     background-color: #6c757d;
   }
-  .batch-reject-btn:hover {
+  .batch-reject-btn:hover:not(:disabled) {
     background-color: #5a6268;
+  }
+
+  /* Loading Spinner */
+  .loading-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 5px;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   /* Responsive */
