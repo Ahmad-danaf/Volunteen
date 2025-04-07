@@ -3,6 +3,7 @@ from teenApp.entities.task import Task
 from childApp.models import Child
 from mentorApp.models import MentorGroup
 from django.utils.translation import gettext_lazy as _
+from mentorApp.utils.MentorUtils import MentorUtils
 
 class TaskForm(forms.ModelForm):
     assigned_children = forms.ModelMultipleChoiceField(
@@ -80,3 +81,11 @@ class MentorGroupForm(forms.ModelForm):
             'description': _('תיאור'),
             'color': _('צבע'),
         }
+
+    def __init__(self, *args, mentor=None, **kwargs):
+        """
+        Initialize form with filtered children based on mentor.
+        """
+        super().__init__(*args, **kwargs)
+        if mentor:
+            self.fields['children'].queryset = MentorUtils.get_children_for_mentor(mentor)

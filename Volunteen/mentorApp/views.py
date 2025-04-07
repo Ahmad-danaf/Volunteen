@@ -424,7 +424,7 @@ def mentor_group_list(request):
 def mentor_group_create(request):
     mentor = get_object_or_404(Mentor, user=request.user)
     if request.method == 'POST':
-        form = MentorGroupForm(request.POST)
+        form = MentorGroupForm(request.POST, mentor=mentor)
         if form.is_valid():
             group = form.save(commit=False)
             group.mentor = mentor
@@ -432,8 +432,9 @@ def mentor_group_create(request):
             form.save_m2m()
             return redirect('mentorApp:mentor_group_list')
     else:
-        form = MentorGroupForm()
+        form = MentorGroupForm(mentor=mentor)
     return render(request, 'mentorApp/groups/group_form.html', {'form': form})
+
 
 
 @login_required
@@ -442,12 +443,12 @@ def mentor_group_edit(request, group_id):
     group = get_object_or_404(MentorGroup, id=group_id, mentor=mentor)
 
     if request.method == 'POST':
-        form = MentorGroupForm(request.POST, instance=group)
+        form = MentorGroupForm(request.POST, instance=group, mentor=mentor)
         if form.is_valid():
             form.save()
             return redirect('mentorApp:mentor_group_list')
     else:
-        form = MentorGroupForm(instance=group)
+        form = MentorGroupForm(instance=group, mentor=mentor)
     return render(request, 'mentorApp/groups/group_form.html', {'form': form, 'group': group})
 
 
