@@ -76,3 +76,18 @@ class Mentor(models.Model):
         super().save(*args, **kwargs)
         mentors_group, created = Group.objects.get_or_create(name='Mentors')
         self.user.groups.add(mentors_group)
+
+
+
+class MentorGroup(models.Model):
+    name = models.CharField(max_length=100)
+    mentor = models.ForeignKey('mentorApp.Mentor', on_delete=models.CASCADE, related_name='groups')
+    children = models.ManyToManyField('childApp.Child', related_name='mentor_groups', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    color = models.CharField(max_length=20, blank=True, help_text="e.g. '#FF5733' or 'blue' for UI themes")
+    points = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} (Mentor: {self.mentor.user.username})"

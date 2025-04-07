@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_q',
     'captcha',
+    'widget_tweaks',
     
     # 2FA
     'django_otp',

@@ -1,6 +1,8 @@
 from django import forms
 from teenApp.entities.task import Task
 from childApp.models import Child
+from mentorApp.models import MentorGroup
+from django.utils.translation import gettext_lazy as _
 
 class TaskForm(forms.ModelForm):
     assigned_children = forms.ModelMultipleChoiceField(
@@ -59,3 +61,22 @@ class BonusPointsForm(forms.Form):
         if mentor:
             self.fields['task'].queryset = Task.objects.filter(assigned_mentors=mentor)
             self.fields['child'].queryset = Child.objects.filter(mentors=mentor)
+            
+            
+            
+class MentorGroupForm(forms.ModelForm):
+    class Meta:
+        model = MentorGroup
+        fields = ['name', 'children', 'description', 'color']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'שם הקבוצה'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'תיאור הקבוצה', 'rows': 3}),
+            'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+            'children': forms.SelectMultiple(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'name': _('שם הקבוצה'),
+            'children': _('ילדים בקבוצה'),
+            'description': _('תיאור'),
+            'color': _('צבע'),
+        }

@@ -1,0 +1,282 @@
+{% extends 'mentor_primary_base.html' %}
+{% block extra_css %}
+<style>
+
+/* Fade-in effect for extra child list items */
+.extra-child {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.extra-child.visible {
+  opacity: 1;
+}
+</style>
+
+{% endblock %}
+{% block content %}
+<!-- Mentor Groups List Page -->
+
+<div class="container my-4">
+  <!-- Page Title -->
+  <div class="text-center mb-4">
+    <h1 class="display-4 animate__animated animate__fadeInDown">ניהול קבוצות</h1>
+    <p class="lead">ניהול קבוצות על ידי המנטור</p>
+  </div>
+
+  <!-- Create New Group Button -->
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{% url 'mentorApp:mentor_group_create' %}" class="btn btn-success btn-lg animate__animated animate__fadeInUp">
+      ➕ צור קבוצה חדשה
+    </a>
+  </div>
+
+  <!-- Filters and Dynamic Search -->
+  <div class="row mb-4">
+    <div class="col-12 mb-2">
+      <!-- Dynamic Search Input -->
+      <input type="text" id="groupSearch" class="form-control" placeholder="חיפוש לפי שם קבוצה">
+    </div>
+    <div class="col-6">
+      <!-- Filter by Active/Inactive -->
+      <select id="filterActive" class="form-control">
+        <option value="all">הצג הכל</option>
+        <option value="active">פעילות בלבד</option>
+        <option value="inactive">לא פעילה בלבד</option>
+      </select>
+    </div>
+    <div class="col-6">
+      <!-- Sort Options -->
+      <select id="sortGroups" class="form-control">
+        <option value="name">מיין לפי שם</option>
+        <option value="created_at">מיין לפי תאריך יצירה</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Groups List -->
+  <div id="groupsContainer" class="row">
+    {% for group in groups %}
+    <div class="col-12 mb-3 group-card" 
+         data-group-id="{{ group.id }}"
+         data-name="{{ group.name }}" 
+         data-active="{{ group.is_active|yesno:'active,inactive' }}" 
+         data-created="{{ group.created_at }}">
+      <div class="card shadow-sm animate__animated animate__fadeInUp">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <!-- Group Name and Color Indicator -->
+            <div class="d-flex align-items-center">
+              <div class="color-indicator mr-2" 
+                   style="width: 20px; height: 20px; border-radius: 50%; background-color: {{ group.color }};">
+              </div>
+              <h5 class="card-title mb-0">{{ group.name }}</h5>
+            </div>
+            <!-- Group Points -->
+            <div class="badge badge-info p-2">
+              {{ group.points }} נקודות
+            </div>
+          </div>
+          <!-- Group Description -->
+          <p class="card-text mt-2">{{ group.description|default:"אין תיאור" }}</p>
+          <!-- Action Buttons -->
+          <div class="d-flex flex-wrap justify-content-end">
+            <!-- Edit Button -->
+            <a href="{% url 'mentorApp:mentor_group_edit' group.id %}" class="btn btn-primary btn-sm m-1">
+              ערוך
+            </a>
+            <!-- Change Color Button: toggles inline color picker -->
+            <button type="button" class="btn btn-secondary btn-sm m-1 change-color-btn" data-group-id="{{ group.id }}">
+              שנה צבע
+            </button>
+            <!-- Toggle Active Button (POST form) -->
+            <form action="{% url 'mentorApp:mentor_group_toggle_active' group.id %}" method="post" class="m-1">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning btn-sm">
+                {% if group.is_active %}
+                  השבת
+                {% else %}
+                  הפעל
+                {% endif %}
+              </button>
+            </form>
+            <!-- Delete Button (POST form) -->
+            <form action="{% url 'mentorApp:mentor_group_delete' group.id %}" method="post" class="m-1">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm" 
+                      onclick="return confirm('האם אתה בטוח שברצונך למחוק את הקבוצה?');">
+                מחק
+              </button>
+            </form>
+          </div>
+          <!-- Inline Color Picker (hidden by default) -->
+          <div class="color-picker-container mt-2" id="color-picker-{{ group.id }}" style="display: none;">
+            <input type="color" class="form-control form-control-color" value="{{ group.color }}" data-group-id="{{ group.id }}">
+            <small>בחר צבע חדש</small>
+            <div class="mt-2">
+              <button type="button" class="btn btn-success btn-sm save-color-btn" data-group-id="{{ group.id }}">
+                שמור
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm cancel-color-btn" data-group-id="{{ group.id }}">
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-muted text-right">
+          נוצר בתאריך: {{ group.created_at|date:"d/m/Y" }}
+        </div>
+        <!-- Children Details Section (Collapsed by default) -->
+{% if group.children.all|length > 0 %}
+<div class="children-details" id="children-details-{{ group.id }}">
+  <ul class="list-group">
+    <!-- Show first 2 children -->
+    {% for child in group.children.all|slice:":2" %}
+      <li class="list-group-item">{{ child.user.username }}</li>
+    {% endfor %}
+    {% if group.children.all|length > 2 %}
+      {% for child in group.children.all|slice:"2:" %}
+        <li class="list-group-item extra-child" style="display: none;">
+          {{ child.user.username }}
+        </li>
+      {% endfor %}
+    {% endif %}
+  </ul>
+  {% if group.children.all|length > 2 %}
+    <button class="btn btn-link toggle-children" data-group-id="{{ group.id }}">
+      הצג עוד
+    </button>
+  {% endif %}
+</div>
+{% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Inline CSS for a premium look and mobile-first design -->
+<style>
+  /* Card hover animation */
+  .group-card {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .group-card:hover {
+    transform: translateY(-5px);
+    opacity: 0.95;
+  }
+  /* Responsive adjustments for mobile screens */
+  @media (max-width: 576px) {
+    .card-title { font-size: 1.2rem; }
+    .btn { font-size: 0.8rem; }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Elements for search, filter, and sort
+    const searchInput = document.getElementById('groupSearch');
+    const filterSelect = document.getElementById('filterActive');
+    const sortSelect = document.getElementById('sortGroups');
+    const groupsContainer = document.getElementById('groupsContainer');
+    const groupCards = Array.from(document.getElementsByClassName('group-card'));
+
+    // Function to filter and sort group cards
+    function filterAndSortGroups() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filterValue = filterSelect.value;
+      const sortValue = sortSelect.value;
+
+      // Filter groups based on search term and active status
+      let filtered = groupCards.filter(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        const activeStatus = card.getAttribute('data-active');
+        const matchesSearch = name.includes(searchTerm);
+        const matchesFilter = (filterValue === 'all') || (filterValue === activeStatus);
+        return matchesSearch && matchesFilter;
+      });
+
+      // Sort groups by name or creation date
+      filtered.sort((a, b) => {
+        if (sortValue === 'name') {
+          return a.getAttribute('data-name').toLowerCase().localeCompare(b.getAttribute('data-name').toLowerCase());
+        } else if (sortValue === 'created_at') {
+          return new Date(b.getAttribute('data-created')) - new Date(a.getAttribute('data-created'));
+        }
+      });
+
+      // Clear container and append sorted/filtered cards
+      groupsContainer.innerHTML = '';
+      filtered.forEach(card => groupsContainer.appendChild(card));
+    }
+
+    // Event listeners for search, filter, and sort
+    searchInput.addEventListener('input', filterAndSortGroups);
+    filterSelect.addEventListener('change', filterAndSortGroups);
+    sortSelect.addEventListener('change', filterAndSortGroups);
+
+    // Handle color picker toggle with animation
+    const changeColorButtons = document.querySelectorAll('.change-color-btn');
+    changeColorButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const groupId = this.getAttribute('data-group-id');
+        const picker = document.getElementById('color-picker-' + groupId);
+        picker.style.display = 'block';
+        picker.classList.add('animate__animated', 'animate__fadeIn');
+      });
+    });
+
+    // Save new color (update UI; AJAX update can be added here)
+    const saveColorButtons = document.querySelectorAll('.save-color-btn');
+    saveColorButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const groupId = this.getAttribute('data-group-id');
+        const picker = document.getElementById('color-picker-' + groupId);
+        const colorInput = picker.querySelector('input[type="color"]');
+        // Update the color indicator in the card
+        const card = document.querySelector('.group-card[data-group-id="'+groupId+'"]');
+        const colorIndicator = card.querySelector('.color-indicator');
+        colorIndicator.style.backgroundColor = colorInput.value;
+        picker.style.display = 'none';
+      });
+    });
+
+    // Cancel color change
+    const cancelColorButtons = document.querySelectorAll('.cancel-color-btn');
+    cancelColorButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const groupId = this.getAttribute('data-group-id');
+        const picker = document.getElementById('color-picker-' + groupId);
+        picker.style.display = 'none';
+      });
+    });
+    // Handle toggling of children details
+const toggleButtons = document.querySelectorAll('.toggle-children');
+toggleButtons.forEach(btn => {
+  btn.addEventListener('click', function () {
+    const groupId = this.getAttribute('data-group-id');
+    const detailsDiv = document.getElementById('children-details-' + groupId);
+    
+    // Toggle the expanded state for the container
+    if (detailsDiv.classList.contains('expanded')) {
+      detailsDiv.classList.remove('expanded');
+      this.textContent = 'הצג עוד';
+      detailsDiv.querySelectorAll('.extra-child').forEach(child => {
+        child.classList.remove('visible');
+        setTimeout(() => child.style.display = 'none', 300);
+      });
+    } else {
+      detailsDiv.classList.add('expanded');
+      this.textContent = 'צמצם';
+      detailsDiv.querySelectorAll('.extra-child').forEach(child => {
+        child.style.display = 'list-item';
+        setTimeout(() => child.classList.add('visible'), 10);
+      });
+    }
+  });
+});
+
+  });
+</script>
+{% endblock %}

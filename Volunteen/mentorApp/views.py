@@ -6,9 +6,9 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.db.models import Prefetch
 from django.http import JsonResponse
-from mentorApp.models import Mentor
+from mentorApp.models import Mentor,MentorGroup
 from teenApp.entities.task import Task
-from mentorApp.forms import TaskForm
+from mentorApp.forms import TaskForm,MentorGroupForm
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
@@ -22,7 +22,7 @@ from mentorApp.utils.MentorUtils import MentorUtils
 from django.core.paginator import Paginator
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
-
+from django.views.decorators.http import require_POST
 @login_required
 def mentor_home(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -413,4 +413,59 @@ def assign_bonus_multi(request, task_id):
         return redirect('mentorApp:mentor_home')
 
 
+@login_required
+def mentor_group_list(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    groups = MentorGroup.objects.filter(mentor=mentor)
+    return render(request, 'mentorApp/groups/group_list.html', {'groups': groups})
 
+
+@login_required
+def mentor_group_create(request):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    if request.method == 'POST':
+        form = MentorGroupForm(request.POST)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.mentor = mentor
+            group.save()
+            form.save_m2m()
+            return redirect('mentorApp:mentor_group_list')
+    else:
+        form = MentorGroupForm()
+    return render(request, 'mentorApp/groups/group_form.html', {'form': form})
+
+
+@login_required
+def mentor_group_edit(request, group_id):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    group = get_object_or_404(MentorGroup, id=group_id, mentor=mentor)
+
+    if request.method == 'POST':
+        form = MentorGroupForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            return redirect('mentorApp:mentor_group_list')
+    else:
+        form = MentorGroupForm(instance=group)
+    return render(request, 'mentorApp/groups/group_form.html', {'form': form, 'group': group})
+
+
+@login_required
+@require_POST
+def mentor_group_toggle_active(request, group_id):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    group = get_object_or_404(MentorGroup, id=group_id, mentor=mentor)
+    group.is_active = not group.is_active
+    group.save()
+    return redirect('mentorApp:mentor_group_list')
+
+@login_required
+@require_POST
+def mentor_group_delete(request, group_id):
+    mentor = get_object_or_404(Mentor, user=request.user)
+    group = get_object_or_404(MentorGroup, id=group_id, mentor=mentor)
+    
+    group.delete()
+    messages.success(request, 'הקבוצה נמחקה בהצלחה.')
+    return redirect('mentorApp:mentor_group_list')

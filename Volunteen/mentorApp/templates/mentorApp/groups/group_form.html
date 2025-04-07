@@ -1,0 +1,123 @@
+{% extends 'mentor_primary_base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block content %}
+<!-- Group Form Page - Handles both Creation and Editing -->
+<div class="container my-4" style="direction: rtl;">
+  <div class="card shadow-lg animate__animated animate__fadeInDown" style="border-radius: 16px;">
+    <div class="card-body">
+      <!-- Title changes based on edit or create -->
+      <h1 class="card-title text-center display-5 mb-4">
+        {% if group %} עריכת קבוצה {% else %} יצירת קבוצה חדשה {% endif %}
+      </h1>
+
+      <!-- Group Form -->
+      <form id="groupForm" method="post" novalidate>
+        {% csrf_token %}
+        <!-- Group Name Field -->
+        <div class="form-group mb-3">
+          <label for="id_name" class="form-label">שם הקבוצה</label>
+          {{ form.name|add_class:"form-control form-control-lg" }}
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group mb-3">
+          <label for="id_description" class="form-label">תיאור</label>
+          {{ form.description|add_class:"form-control form-control-lg" }}
+        </div>
+
+        <!-- Children Multi-Select with Dynamic Search and Select All -->
+        <div class="form-group mb-3">
+          <label for="id_children" class="form-label">בחר ילדים</label>
+          <!-- Dynamic search and select all for children -->
+          <div class="input-group mb-2">
+            <input type="text" id="childSearch" class="form-control" placeholder="חיפוש ילד...">
+            <button type="button" id="selectAll" class="btn btn-outline-secondary">בחר הכל</button>
+          </div>
+          {{ form.children|add_class:"form-control form-control-lg" }}
+        </div>
+
+        <!-- Color Picker with Color Indicator -->
+        <div class="form-group mb-3">
+          <label for="id_color" class="form-label">צבע הקבוצה</label>
+          <div class="d-flex align-items-center">
+            <input type="color" id="id_color" name="color" class="form-control form-control-lg me-2"
+                   value="{{ form.color.value|default:'#000000' }}">
+            <span id="colorIndicator" class="badge" 
+                  style="width: 30px; height: 30px; border-radius: 50%; background-color: {{ form.color.value|default:'#000000' }}"></span>
+          </div>
+        </div>
+
+        <!-- Submit Button with Loading/Success Animation -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary btn-lg w-100">
+            {% if group %} עדכן קבוצה {% else %} צור קבוצה {% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-control-lg {
+    font-size: 1.2rem;
+    padding: 0.75rem 1rem;
+  }
+  /* Success animation on form submission */
+  .success-animation {
+    animation: pulse 1s ease-in-out;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Update color indicator when color input changes
+    const colorInput = document.getElementById('id_color');
+    const colorIndicator = document.getElementById('colorIndicator');
+    colorInput.addEventListener('input', function() {
+      colorIndicator.style.backgroundColor = this.value;
+    });
+
+    // Dynamic search for children in multi-select field
+    const childSearchInput = document.getElementById('childSearch');
+    const childrenSelect = document.getElementById('id_children');
+    childSearchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      for (let option of childrenSelect.options) {
+        // Show option if its text includes the search term
+        option.style.display = option.text.toLowerCase().includes(searchTerm) ? '' : 'none';
+      }
+    });
+
+    // Select All functionality for the children multi-select
+    const selectAllBtn = document.getElementById('selectAll');
+    selectAllBtn.addEventListener('click', function() {
+      for (let option of childrenSelect.options) {
+        option.selected = true;
+      }
+      childrenSelect.dispatchEvent(new Event('change'));
+    });
+
+    // Form submit loading and success animation
+    const groupForm = document.getElementById('groupForm');
+    groupForm.addEventListener('submit', function(e) {
+      // Optionally, show a loading state (e.g., disable form inputs, show spinner, etc.)
+      groupForm.classList.add('loading');
+      // Simulate success animation
+      setTimeout(() => {
+        groupForm.classList.add('success-animation');
+      }, 500);
+    });
+  });
+</script>
+{% endblock %}

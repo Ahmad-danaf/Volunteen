@@ -23,5 +23,9 @@ urlpatterns = [
     path('bonus/<int:task_id>/', views.bonus_children_selection, name='bonus_children_selection'),
     path('bonus/assign/<int:task_id>/', views.assign_bonus_multi, name='assign_bonus_multi'),
     path('children_performance/', views.children_performance, name='children_performance'),
-
+    path('groups/', views.mentor_group_list, name='mentor_group_list'),
+    path('groups/create/', views.mentor_group_create, name='mentor_group_create'),
+    path('groups/<int:group_id>/edit/', views.mentor_group_edit, name='mentor_group_edit'),
+    path('groups/<int:group_id>/toggle/', views.mentor_group_toggle_active, name='mentor_group_toggle_active'),
+    path('groups/<int:group_id>/delete/', views.mentor_group_delete, name='mentor_group_delete'), 
 ]
