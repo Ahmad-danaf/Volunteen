@@ -109,19 +109,6 @@
               </button>
             </form>
           </div>
-          <!-- Inline Color Picker (hidden by default) -->
-          <div class="color-picker-container mt-2" id="color-picker-{{ group.id }}" style="display: none;">
-            <input type="color" class="form-control form-control-color" value="{{ group.color }}" data-group-id="{{ group.id }}">
-            <small>בחר צבע חדש</small>
-            <div class="mt-2">
-              <button type="button" class="btn btn-success btn-sm save-color-btn" data-group-id="{{ group.id }}">
-                שמור
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm cancel-color-btn" data-group-id="{{ group.id }}">
-                ביטול
-              </button>
-            </div>
-          </div>
         </div>
         <div class="card-footer text-muted text-right">
           נוצר בתאריך: {{ group.created_at|date:"d/m/Y" }}
@@ -227,20 +214,7 @@
       });
     });
 
-    // Save new color (update UI; AJAX update can be added here)
-    const saveColorButtons = document.querySelectorAll('.save-color-btn');
-    saveColorButtons.forEach(btn => {
-      btn.addEventListener('click', function () {
-        const groupId = this.getAttribute('data-group-id');
-        const picker = document.getElementById('color-picker-' + groupId);
-        const colorInput = picker.querySelector('input[type="color"]');
-        // Update the color indicator in the card
-        const card = document.querySelector('.group-card[data-group-id="'+groupId+'"]');
-        const colorIndicator = card.querySelector('.color-indicator');
-        colorIndicator.style.backgroundColor = colorInput.value;
-        picker.style.display = 'none';
-      });
-    });
+    
 
     // Cancel color change
     const cancelColorButtons = document.querySelectorAll('.cancel-color-btn');

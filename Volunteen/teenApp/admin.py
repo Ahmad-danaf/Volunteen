@@ -48,6 +48,11 @@ class TaskAdmin(admin.ModelAdmin):
 class MentorAdmin(admin.ModelAdmin):
     list_display = ('user',)
 
+@admin.register(TaskAssignment)
+class TaskAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('task', 'child', 'assigned_by', 'is_new', 'assigned_at', 'refunded_at')
+    search_fields = ('task__title', 'child__user__username', 'assigned_by__username')
+    list_filter = ('is_new', 'assigned_at', 'refunded_at')
 
 def assign_remaining_coins(modeladmin, request, queryset):
     updated = 0
@@ -72,3 +77,5 @@ class TaskCompletionAdmin(admin.ModelAdmin):
     search_fields = ('task__title', 'child__user__username')
     list_filter = ('completion_date',)
     actions = [assign_remaining_coins, reset_remaining_coins]
+    
+    

@@ -5,7 +5,7 @@ from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
 from django.db.models import Prefetch
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from mentorApp.models import Mentor,MentorGroup
 from teenApp.entities.task import Task
 from mentorApp.forms import TaskForm,MentorGroupForm
@@ -19,10 +19,12 @@ from datetime import timedelta
 from django.db import transaction
 from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 from mentorApp.utils.MentorUtils import MentorUtils
+from mentorApp.utils.MentorGroupUtils import MentorGroupUtils
 from django.core.paginator import Paginator
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
 from django.views.decorators.http import require_POST
+
 @login_required
 def mentor_home(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -57,7 +59,9 @@ def add_task(request, task_id=None, duplicate=False, template=False):
     mentor = get_object_or_404(Mentor, user=request.user)
     task_data = {}
 
-    # Handle task duplication
+    # Fetch only active mentor groups
+    mentor_groups = MentorGroupUtils.get_groups_for_mentor(mentor, active_only=True)
+
     if task_id:
         original_task = get_object_or_404(Task, id=task_id)
         if duplicate:
@@ -86,18 +90,16 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             children_ids = list(assigned_children.values_list("id", flat=True))
             if duplicate and not taskForm.cleaned_data.get('img'):
                 task_data['img'] = original_task.img
+
             try:
-                # Create the task with mentor assignment and children
                 new_task = MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
                 if duplicate and original_task.img:
-                    if taskForm.cleaned_data.get('img')=='defaults/no-image.png':
+                    if taskForm.cleaned_data.get('img') == 'defaults/no-image.png':
                         new_task.img = original_task.img
                         new_task.save()
 
-
                 messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
                 return redirect('mentorApp:mentor_home')
-
             except ValueError as e:
                 messages.error(request, str(e))
 
@@ -108,11 +110,13 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             is_duplicate=duplicate,
             is_template=template
         )
+
     return render(request, 'mentor_add_task.html', {
         'form': taskForm,
         'children': mentor.children.all(),
         'is_duplicate': duplicate,
-        'available_teencoins': mentor.available_teencoins
+        'available_teencoins': mentor.available_teencoins,
+        'mentor_groups': mentor_groups,
     })
 
 @login_required

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ילד יקר – הזמן לחזור ולהצטרף!</title>
+  <title>חוויה עם חיוך – חזור עכשיו!</title>
   <!-- Google Font for modern Hebrew-friendly typography -->
   <link href="https://fonts.googleapis.com/css?family=Assistant:400,700&display=swap" rel="stylesheet">
   <!-- Font Awesome for icons -->
@@ -121,18 +121,15 @@
 <body>
   <div class="container">
     {% if not child %}
-    <div class="header">ילד יקר, אנחנו מחכים לך!</div>
+    <div class="header">היי גיבור, יש לנו הפתעה קטנה (וגם קצת מצחיקה) בשבילך!</div>
     {% else %}
     <div class="header rtl-text">
       <span class="username">{{ child.user.username }}</span>
-      <span class="message">היקר, אנחנו מחכים לך!</span>
-  </div>
+      <span class="message">המנוי שלך לקח חופשה – בוא נחזור לכיף!</span>
+    </div>
     {% endif %}
     <div class="subheader">
-      זה הזמן לחזור ולהצטרף למסע המדהים שלנו. כאן תפתח כישורים חדשים, תצמח ותעזור לבנות קהילה תומכת וחזקה. כל צעד קטן שלך משנה את העולם.
-    </div>
-    <div class="subheader">
-      זה הזמן לחזור ולהצטרף למסע המדהים שלנו. כאן תפתח כישורים חדשים, תצמח ותעזור לבנות קהילה תומכת וחזקה. כל צעד קטן שלך משנה את העולם.
+      המנוי שלך פג, כאילו הוא לקח הפסקה לבלות. חזור עכשיו ותתפנק במתנות, אתגרים וכיף שמשאיר חיוך!
     </div>
     <!-- Call-to-Action to Rejoin via WhatsApp -->
     <a class="cta-button" target="_blank" href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20">
@@ -159,7 +156,7 @@
       <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>
         <span>יציאה</span>
-    </a>
+      </a>
     </div>
   </div>
 </body>

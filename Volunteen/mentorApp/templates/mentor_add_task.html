@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'mentor_primary_base.html' %}
 {% load static %}
 {% block content %}
 <style>
@@ -23,6 +23,7 @@
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        transition: background-color 0.3s ease;
     }
     .btn-submit:hover {
         background-color: #e65c00;
@@ -50,6 +51,70 @@
     }
     .deadline-buttons button {
         margin-right: 10px;
+    }
+    /* Mentor Groups Section Styles */
+    .mentor-groups-container {
+        margin: 20px 0;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .mentor-groups-container h3 {
+        text-align: center;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+    .mentor-group {
+        border-left: 5px solid;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .mentor-group-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .mentor-group-header:hover {
+        background-color: #f0f0f0;
+    }
+    .mentor-group-header input.group-checkbox {
+        margin-right: 10px;
+    }
+    .mentor-group-header .toggle-icon {
+        margin-left: auto;
+        font-weight: bold;
+        transition: transform 0.3s ease;
+    }
+    .mentor-group-children {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out;
+    }
+    .mentor-group-children.open {
+        max-height: 500px; /* sufficiently high for child list */
+    }
+    .mentor-group-children ul {
+        list-style: none;
+        padding-left: 15px;
+        margin: 0;
+    }
+    .mentor-group-children li {
+        padding: 5px 0;
+        border-bottom: 1px solid #eaeaea;
+    }
+    @media screen and (max-width: 600px) {
+        .task-form-container {
+            padding: 10px;
+        }
+        .mentor-group-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>
 
@@ -87,6 +152,29 @@
             <input type="number" id="points" name="points" class="form-control points" value="{{ form.points.value|default_if_none:'' }}" required>
         </div>
         
+        <!-- Mentor Groups Multi-Select Section -->
+        <div class="mb-3 mentor-groups-container">
+            <h3>בחר קבוצות מנטורים</h3>
+            {% for group in mentor_groups %}
+            <div class="mentor-group" style="border-color: {{ group.color }};">
+                <div class="mentor-group-header" onclick="toggleGroup('{{ group.id }}')">
+                    <!-- Stop propagation so that clicking the checkbox does not trigger the toggle -->
+                    <input type="checkbox" class="group-checkbox" data-child-ids="{% for child in group.children.all %}{{ child.id }},{% endfor %}" onclick="event.stopPropagation(); toggleGroupCheckbox(this);">
+                    <span class="mentor-group-name">{{ group.name }}</span>
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div id="group-children-{{ group.id }}" class="mentor-group-children">
+                    <ul>
+                        {% for child in group.children.all %}
+                        <li>{{ child.user.username }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Existing Assignment Checkboxes -->
         <label class="form-label">הקצאה ל</label><br>
         <div class="mb-3 assign-container">
             <input type="checkbox" id="checkAll" name="checkAll" disabled>
@@ -119,7 +207,7 @@
             <textarea id="additional_details" name="additional_details" class="form-control" rows="3">{{ form.additional_details.value|default_if_none:'' }}</textarea>
         </div>
         
-        <!-- New template feature checkbox -->
+        <!-- New Template Feature -->
         <div class="mb-3">
             <input type="checkbox" id="is_template" name="is_template" {% if form.is_template.value %}checked{% endif %}>
             <label for="is_template" class="form-label">שמור כמשימה לשכפול בעתיד</label>
@@ -131,6 +219,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum deadline as today
         var deadlineInput = document.getElementById('deadline');
         var today = new Date().toISOString().split('T')[0];
         deadlineInput.setAttribute('min', today);
@@ -149,80 +238,177 @@
             var tomorrow = tomorrowDate.toISOString().split('T')[0];
             deadlineInput.value = tomorrow;
         });
-
-         // check all childs
-         var checkAll = document.getElementById('checkAll');
-         var childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
-         var pointsInput = document.getElementById('points');
-         var availableTeencoins = {{ available_teencoins }};
- 
-         function updateAssignmentLimit() {
-             var taskPoints = parseInt(pointsInput.value, 10) || 0;
-             var maxChildren = Math.floor(availableTeencoins / taskPoints);
-             
-             if (taskPoints > availableTeencoins) {
-                 childCheckboxes.forEach(cb => {
-                     cb.disabled = true;
-                     cb.checked = false;
-                 });
-                 checkAll.disabled = true;
-                 checkAll.checked = false;
-             } else {
-                 childCheckboxes.forEach(cb => {
-                     cb.disabled = false;
-                     cb.checked = false;
-                 });
-                 checkAll.disabled = maxChildren === 0 || taskPoints > availableTeencoins / 2;
-                 checkAll.checked = false;
-             }
-         }
- 
-         function updateTeencoins() {
-             var taskPoints = parseInt(pointsInput.value, 10) || 0;
-             var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
-             var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
-             
-             // Case 1: Points exceed available teencoins → Disable all
-             if (taskPoints > availableTeencoins) {
-                 childCheckboxes.forEach(cb => {
-                     cb.disabled = true;
-                     cb.checked = false;
-                 });
-                 checkAll.disabled = true;
-                 return;
-             }
- 
-             // Case 2: Disable "Check All" if points are more than half of available teencoins
-             // Case 3: Disable "Check All" if selecting all children would exceed available teencoins
-             var canAssignAll = (taskPoints * childCheckboxes.length) <= availableTeencoins;
-             checkAll.disabled = !canAssignAll || taskPoints > availableTeencoins / 2;
- 
-             // Case 4 & 5: A child is selected, manage remaining teencoins
-             childCheckboxes.forEach(cb => {
-                 if (!cb.checked) {
-                     cb.disabled = remainingTeencoins < taskPoints; // Disable if not enough teencoins for another child
-                 }
-             });
- 
-             // Case 6: If no child is selected, enable checkboxes based on available teencoins
-             if (selectedChildren.length === 0) {
-                 childCheckboxes.forEach(cb => {
-                     cb.disabled = taskPoints > availableTeencoins;
-                 });
-             }
-         }
- 
-         pointsInput.addEventListener('input', updateAssignmentLimit);
-         childCheckboxes.forEach(cb => cb.addEventListener('change', updateTeencoins));
-         checkAll.addEventListener('change', function() {
-             childCheckboxes.forEach(cb => {
-                 if (!cb.disabled) cb.checked = checkAll.checked;
-             });
-             updateTeencoins();
-         });
-
-         // Initialize the form correctly when duplicating a task
-         updateAssignmentLimit();
-     });
-</script>
+    
+        // Assignment checkboxes update logic (existing functionality)
+        var checkAll = document.getElementById('checkAll');
+        var childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
+        var pointsInput = document.getElementById('points');
+        var availableTeencoins = {{ available_teencoins }};
+     
+        function updateAssignmentLimit() {
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            
+            // If taskPoints is 0 or invalid, enable the child checkboxes so the mentor can fix it.
+            if (taskPoints <= 0) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    cb.checked = false;
+                });
+                checkAll.disabled = false;
+                checkAll.checked = false;
+                // Also update group checkboxes accordingly.
+                updateGroupCheckboxes();
+                return;
+            }
+            
+            var maxChildren = Math.floor(availableTeencoins / taskPoints);
+            
+            if (taskPoints > availableTeencoins) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+                checkAll.disabled = true;
+                checkAll.checked = false;
+            } else {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    cb.checked = false;
+                });
+                checkAll.disabled = (maxChildren === 0) || (taskPoints > availableTeencoins / 2);
+                checkAll.checked = false;
+            }
+            // After updating individual checkboxes, check group selection limits.
+            updateGroupCheckboxes();
+        }
+     
+        function updateTeencoins() {
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
+            var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
+            
+            if (taskPoints > availableTeencoins) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+                checkAll.disabled = true;
+                // Also update groups when coins run out.
+                updateGroupCheckboxes();
+                return;
+            }
+     
+            var canAssignAll = (taskPoints * childCheckboxes.length) <= availableTeencoins;
+            checkAll.disabled = !canAssignAll || (taskPoints > availableTeencoins / 2);
+     
+            childCheckboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.disabled = (remainingTeencoins < taskPoints);
+                }
+            });
+     
+            if (selectedChildren.length === 0) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = taskPoints > availableTeencoins;
+                });
+            }
+            // Also update groups when children selections change.
+            updateGroupCheckboxes();
+        }
+     
+        // Function to update the state of mentor group checkboxes based on cost
+        function updateGroupCheckboxes() {
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            // Get all group checkboxes by class name
+            var groupCheckboxes = document.querySelectorAll('.mentor-groups-container input.group-checkbox');
+            
+            groupCheckboxes.forEach(function(checkbox) {
+                // When no points are specified, disable the group selection as cost cannot be determined
+                if (taskPoints <= 0) {
+                    checkbox.disabled = true;
+                    checkbox.checked = false;
+                    return;
+                }
+                // Get the list of child IDs from data attribute, filter empty strings
+                var childrenData = checkbox.getAttribute('data-child-ids');
+                var childIds = childrenData.split(',')
+                    .map(function(id) { return id.trim(); })
+                    .filter(function(id) { return id !== ""; });
+                var groupChildrenCount = childIds.length;
+                // Calculate the total cost if this group were selected
+                var groupCost = taskPoints * groupChildrenCount;
+                
+                // Disable the group checkbox if the group cost exceeds available Teencoins,
+                // or if even selecting all children individually is not allowed.
+                if (groupCost > availableTeencoins) {
+                    checkbox.disabled = true;
+                    checkbox.checked = false;
+                } else {
+                    checkbox.disabled = false;
+                }
+            });
+        }
+     
+        pointsInput.addEventListener('input', updateAssignmentLimit);
+        childCheckboxes.forEach(cb => cb.addEventListener('change', updateTeencoins));
+        checkAll.addEventListener('change', function() {
+            childCheckboxes.forEach(cb => {
+                if (!cb.disabled) cb.checked = checkAll.checked;
+            });
+            updateTeencoins();
+        });
+        
+        // Initial call so that checkboxes reflect the state at page load
+        updateAssignmentLimit();
+        
+        // Re-enable checked assignment checkboxes on form submit (so they get sent)
+        document.querySelector('form').addEventListener('submit', function() {
+            childCheckboxes.forEach(function(cb) {
+                if (cb.checked) {
+                    cb.disabled = false;
+                }
+            });
+        });
+        
+        // Mentor Group expand/collapse logic
+        function toggleGroup(groupId) {
+            var groupChildren = document.getElementById('group-children-' + groupId);
+            var toggleIcon = groupChildren.previousElementSibling.querySelector('.toggle-icon');
+            if (groupChildren.classList.contains('open')) {
+                groupChildren.classList.remove('open');
+                toggleIcon.textContent = '+';
+            } else {
+                groupChildren.classList.add('open');
+                toggleIcon.textContent = '-';
+            }
+        }
+        
+        // Mentor Group checkbox: select/deselect all children in that group
+        function toggleGroupCheckbox(checkbox) {
+            var childrenData = checkbox.getAttribute('data-child-ids');
+            if (!childrenData) return;
+            var childIds = childrenData.split(',').map(function(id) {
+                return id.trim();
+            }).filter(function(id) {
+                return id !== "";
+            });
+            childIds.forEach(function(childId) {
+                var childCheckbox = document.getElementById('child' + childId);
+                // Only update if not disabled
+                if (childCheckbox && !childCheckbox.disabled) {
+                    childCheckbox.checked = checkbox.checked;
+                }
+            });
+            // After updating group children, recalc the individual Teencoins usage
+            updateTeencoins();
+        }
+        
+        // Attach the group functions to the global scope so that inline event handlers work.
+        window.toggleGroup = toggleGroup;
+        window.toggleGroupCheckbox = toggleGroupCheckbox;
+    
+    });
+    </script>
+    
+    
 {% endblock %}
