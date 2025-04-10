@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
 from django.utils.timezone import now
 from django.utils import timezone
-from teenApp.interface_adapters.forms import DateRangeForm,DateRangeCityForm
+from teenApp.interface_adapters.forms import DateRangeForm,DateRangeCityForm,CityDateRangeForm
 import json
 from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
@@ -466,23 +466,49 @@ def cancel_request(request):
 
 @child_subscription_required
 def points_leaderboard(request):
-    form = DateRangeCityForm(request.GET or None)
+    child = request.user.child
+    form = CityDateRangeForm(request.GET or None)
+
+    start_date, end_date, city = None, None, None
+
     if form.is_valid():
-        city = form.cleaned_data.get('city')  
-        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+        date_selection = form.cleaned_data['date_range_selection']
+        city = form.cleaned_data.get('city', None)
+
+        if date_selection == 'current_month':
+            today = timezone.now()
+            start_date = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end_date = timezone.now()
+        elif date_selection == 'last_month':
+            today = timezone.now()
+            first_of_this_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            last_month_end = first_of_this_month - timezone.timedelta(days=1)
+            last_month_start = last_month_end.replace(day=1)
+            start_date, end_date = last_month_start, last_month_end
+        elif date_selection == 'all_time':
+            start_date = timezone.make_aware(timezone.datetime(2025, 3, 1, 0, 0))
+            end_date = timezone.make_aware(datetime.now())
+        else:
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
-            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
-        else:
-            start_date = None
-            end_date = None
-    else:
-        city = None
-        start_date = None
-        end_date = None
+            if start_date and end_date:
+                start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
 
-    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
-    return render(request, 'points_leaderboard.html', {'children': children, 'form': form})
+    # Use the new utility method to get the custom leaderboard list.
+    children_list = LeaderboardUtils.get_custom_leaderboard(
+        child,
+        start_date=start_date,
+        end_date=end_date,
+        institution=child.institution,
+        city=city,
+        top_limit=10
+    )
+
+    return render(request, 'points_leaderboard.html', {
+        'children': children_list,
+        'form': form,
+    })
+
 
 @csrf_exempt
 def save_phone_number(request):

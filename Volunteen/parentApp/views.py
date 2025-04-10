@@ -181,7 +181,8 @@ def all_rewards(request, child_id):
 
 
 @login_required
-def all_children_points_leaderboard(request):
+def all_children_points_leaderboard(request,child_id):
+    selected_child  = get_object_or_404(Child, id=child_id)
     form = DateRangeCityForm(request.GET or None)
     if form.is_valid():
         city = form.cleaned_data.get('city')  
@@ -197,7 +198,12 @@ def all_children_points_leaderboard(request):
         start_date = None
         end_date = None
 
-    children = LeaderboardUtils.get_children_leaderboard(start_date, end_date, city)
+    children = LeaderboardUtils.get_children_leaderboard(
+    start_date=start_date,
+    end_date=end_date,
+    institution=selected_child.institution,
+    city=city
+)
     return render(request, 'all_children_points_leaderboard.html', {'children': children, 'form': form})
 
 

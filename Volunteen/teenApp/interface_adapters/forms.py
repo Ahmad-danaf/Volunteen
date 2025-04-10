@@ -61,3 +61,52 @@ class DateRangeCityForm(forms.Form):
         required=False,
         label='עיר'
     )
+    
+    
+class CityDateRangeForm(forms.Form):
+    DATE_RANGE_CHOICES = [
+        ('current_month', 'חודש נוכחי'),
+        ('last_month', 'חודש שעבר'),
+        ('all_time', 'כל הזמנים'),
+        ('custom', 'טווח מותאם'),
+    ]
+
+    date_range_selection = forms.ChoiceField(
+        choices=DATE_RANGE_CHOICES,
+        widget=forms.RadioSelect,  # or Select if preferred
+        required=True,
+        label='סנן לפי תאריך'
+    )
+
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="מתאריך"
+    )
+
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="עד תאריך"
+    )
+
+    city = forms.ChoiceField(
+        choices=[('ALL', 'כל הערים')] + AVAILABLE_CITIES,
+        required=False,
+        label='עיר'
+    )
+
+    def clean(self):
+        """
+        Validate that if date_range_selection = 'custom',
+        then both start_date and end_date are provided.
+        """
+        cleaned_data = super().clean()
+        date_selection = cleaned_data.get('date_range_selection')
+
+        if date_selection == 'custom':
+            if not cleaned_data.get('start_date') or not cleaned_data.get('end_date'):
+                self.add_error('start_date', 'חובה לציין תאריך התחלה וסיום.')
+                self.add_error('end_date', 'חובה לציין תאריך התחלה וסיום.')
+
+        return cleaned_data
