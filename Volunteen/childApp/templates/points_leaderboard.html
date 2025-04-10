@@ -40,7 +40,7 @@
   
   <!-- Leaderboard Cards (Top X + You) -->
   <div class="leaderboard-list">
-    {% for child in children %}
+    {% for child in top_children %}
       <div class="leaderboard-card {% if child.user_rank == 1 %}sparkle{% endif %} {% if child.is_current_user %}current-child-row{% endif %}">
         <!-- Rank and Trophy -->
         <div class="leaderboard-rank">
@@ -76,6 +76,47 @@
     {% empty %}
       <div class="no-results">לא נמצאו ילדים</div>
     {% endfor %}
+
+    {% if show_divider %}
+  <div class="leaderboard-divider"></div>
+{% endif %}
+
+{% for child in extra_children %}
+  <div class="leaderboard-card extra-child animate-extra-child {% if child.is_current_user %}current-child-row{% endif %}">
+    <!-- Rank and Trophy -->
+    <div class="leaderboard-rank">
+      {% if child.user_rank == 1 %}
+        🏆
+      {% elif child.user_rank == 2 %}
+        🥈
+      {% elif child.user_rank == 3 %}
+        🥉
+      {% endif %}
+      {{ child.user_rank }}
+    </div>
+    
+    <!-- Child Username -->
+    <div class="leaderboard-name">
+      {{ child.user.username }}
+      {% if child.is_current_user %}
+        <span class="you-label">(את/ה)</span>
+      {% endif %}
+    </div>
+    
+    <!-- Points Progress Bar -->
+    <div class="leaderboard-points-container">
+      <div class="leaderboard-progress-bar" style="width: {{ child.rank_progress|default:"0" }}%;">
+        {% if child.total_points is not None %}
+          {{ child.total_points }}
+        {% else %}
+          0
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+    
   </div>
 </div>
 
@@ -313,5 +354,42 @@
     padding: 1.2rem;
   }
 }
+/* Divider styling */
+.leaderboard-divider {
+  border-top: 2px dashed #888;
+  margin: 2rem 0;
+  animation: slideIn 1s ease-in-out;
+}
+
+/* Slide in animation for the divider */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Extra children fade in and slide up */
+.animate-extra-child {
+  animation: fadeInUp 0.8s ease both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Extra child specific styling to match top children
+Inherit the same styling from .leaderboard-card or add specific tweaks 
+.extra-child {
+}
+   */
+
+
+
 </style>
 {% endblock %}

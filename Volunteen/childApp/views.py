@@ -494,8 +494,7 @@ def points_leaderboard(request):
             if start_date and end_date:
                 start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
 
-    # Use the new utility method to get the custom leaderboard list.
-    children_list = LeaderboardUtils.get_custom_leaderboard(
+    leaderboard_data = LeaderboardUtils.get_custom_leaderboard(
         child,
         start_date=start_date,
         end_date=end_date,
@@ -503,9 +502,10 @@ def points_leaderboard(request):
         city=city,
         top_limit=10
     )
-
     return render(request, 'points_leaderboard.html', {
-        'children': children_list,
+        'top_children': leaderboard_data['top_children'],
+        'extra_children': leaderboard_data['extra_children'],
+        'show_divider': leaderboard_data['show_divider'],
         'form': form,
     })
 

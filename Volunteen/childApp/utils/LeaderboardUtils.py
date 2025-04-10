@@ -162,21 +162,19 @@ class LeaderboardUtils:
     @staticmethod
     def get_custom_leaderboard(child, start_date=None, end_date=None, institution=None, city=None, top_limit=10):
         """
-        Returns a list of Child objects for the leaderboard.
-        
-        - Gets the top `top_limit` children based on total_points.
-        - If the current child is not in the top list, it also fetches the "nearby" competitors.
-          (1 above and 1 below) so that the current child sees their true rank.
-        - Annotates each child with a user_rank and flags the current child with is_current_user.
+        Returns a dictionary with keys:
+        - 'top_children': list of top children (annotated with ranks)
+        - 'extra_children': list of extra children (including the current child plus one above/below)
+        - 'show_divider': boolean indicating if a visual divider is needed between the top list and extra list.
         """
-        # Get the overall queryset for children.
         children_qs = LeaderboardUtils.get_children_leaderboard(start_date, end_date, institution, city)
-        # Top X children list.
-        children_list = list(children_qs[:top_limit])
-        children_list = LeaderboardUtils._annotate_rank(children_list)
-        
+        top_children = list(children_qs[:top_limit])
+        top_children = LeaderboardUtils._annotate_rank(top_children)
+        extra_children = []
+        show_divider = False
+
         # If the current child is not in the top list.
-        if child not in children_list:
+        if child not in top_children:
             full_children_list = list(children_qs)
             child_rank = LeaderboardUtils._compute_rank_for_child(child, full_children_list)
             child_index = next((i for i, c in enumerate(full_children_list) if c == child), None)
@@ -186,18 +184,27 @@ class LeaderboardUtils:
                 nearby = full_children_list[
                     max(0, child_index - 1) : min(child_index + 2, len(full_children_list))
                 ]
-                for c in nearby:
+                # Assign the nearby list to extra_children so it isn't empty.
+                extra_children = nearby[:]
+                for c in extra_children:
                     c.user_rank = LeaderboardUtils._compute_rank_for_child(c, full_children_list)
                     if c == child:
                         c.is_current_user = True
-                children_list.extend(nearby)
+                            
+                # Determine if there's a gap between the top block and the extra block.
+                if extra_children and (extra_children[0].user_rank > top_limit + 1):
+                    show_divider = True    
         else:
             # If the child is already in the top list, mark them as current.
-            for c in children_list:
+            for c in top_children:
                 if c == child:
                     c.is_current_user = True
 
-        return children_list
+        return {
+            'top_children': top_children,
+            'extra_children': extra_children,
+            'show_divider': show_divider
+        }
     
     @staticmethod
     def update_child_streak(child: Child):
