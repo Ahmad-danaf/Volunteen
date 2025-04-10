@@ -309,9 +309,9 @@ def child_points_history(request):
 @login_required
 def rewards_view(request):
     # Prefetch related rewards for efficiency
-    shops = Shop.objects.prefetch_related(
-        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
-    ).all()
+    shops = Shop.objects.filter(is_active=True).prefetch_related(
+    Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
+    )
 
     child = request.user.child
     child_city = child.city if child.city else ''
@@ -366,7 +366,7 @@ def shop_rewards_view(request, shop_id):
     """
     ShopManager.expire_old_requests()
     child = get_object_or_404(Child, user=request.user)
-    shop = get_object_or_404(Shop, id=shop_id)
+    shop = get_object_or_404(Shop, id=shop_id, is_active=True)
 
     # Retrieve all visible rewards for this shop using the utility method
     rewards = ShopManager.get_all_visible_rewards(shop_id)

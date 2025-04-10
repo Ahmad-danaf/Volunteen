@@ -5,12 +5,20 @@ from .models import Shop, Reward, Redemption, OpeningHours, Category, Redemption
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
+@admin.action(description="Mark selected shops as active")
+def activate_shops(modeladmin, request, queryset):
+    queryset.update(is_active=True)
+
+@admin.action(description="Mark selected shops as inactive")
+def deactivate_shops(modeladmin, request, queryset):
+    queryset.update(is_active=False)
+
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'get_category_names')
-    list_filter = ('city', 'categories')
+    list_display = ('name', 'city', 'get_category_names', 'is_active')
+    list_filter = ('city', 'categories', 'is_active')
     search_fields = ('name',)
-
+    actions = [activate_shops, deactivate_shops]
 @admin.register(Reward)
 class RewardAdmin(admin.ModelAdmin):
     list_display = ('title', 'points_required', 'shop', 'is_visible')

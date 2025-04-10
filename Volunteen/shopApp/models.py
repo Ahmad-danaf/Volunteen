@@ -34,7 +34,7 @@ class Shop(models.Model):
     )
     categories = models.ManyToManyField(Category, related_name="shops", verbose_name="Categories")
     locked_usage_this_month = models.IntegerField(default=0, verbose_name='Locked Points This Month')
-
+    is_active = models.BooleanField(default=True,verbose_name='Is Active', help_text='Uncheck to hide this shop from children and parents')
   
     def __str__(self):
         return self.name

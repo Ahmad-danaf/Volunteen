@@ -130,9 +130,9 @@ def redeemtion_dashboard(request, child_id):
 @login_required
 def all_rewards(request, child_id):
     # Prefetch related rewards for efficiency
-    shops = Shop.objects.prefetch_related(
-        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
-    ).all()
+    shops = Shop.objects.filter(is_active=True).prefetch_related(
+    Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
+    )
 
     child = get_object_or_404(Child, id=child_id)
     child_city = child.city if child.city else ''
