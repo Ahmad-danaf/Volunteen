@@ -23,6 +23,7 @@ from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonRespo
 import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from django.views.decorators.http import require_POST
 
 @login_required
 def inactive_home(request, child_id):
@@ -216,7 +217,6 @@ def parent_tasks_view(request):
     2. Pending review - Tasks in progress (pending, checked_in)
     3. Completed tasks - Tasks that have been approved
     4. Rejected tasks - Tasks that have been rejected
-     
     By default, shows tasks within a 3-month window (past month, current month, next month).
     Can filter tasks by date range if specified in the request.
     """
@@ -233,9 +233,9 @@ def parent_tasks_view(request):
         "selected": False
     } for child in children]
     
-    # Get all tasks created by this parent
-    assignments = ParentTaskUtils.get_tasks_assigned_by_parent(parent)
-
+    # Get all tasks created by this parent and filter out any that have been refunded
+    assignments = ParentTaskUtils.get_tasks_assigned_by_parent(parent).filter(refunded_at__isnull=True)
+    
     # Setup default date filtering (past month, current month, next month)
     today = datetime.today().date()
     first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
@@ -273,7 +273,7 @@ def parent_tasks_view(request):
     active_tasks_dict = {}
     pending_tasks_dict = {}
     completed_tasks_dict = {}
-    rejected_tasks_dict = {}  # New dictionary for rejected tasks
+    rejected_tasks_dict = {}  
     
     # Process assignments and group them by task
     for assignment in assignments:
@@ -302,7 +302,8 @@ def parent_tasks_view(request):
                     "children": [{
                         "id": assignment.child.id,
                         "name": assignment.child.user.username
-                    }]
+                    }],
+                    "allowSoftDelete": True
                 }
             else:
                 # Add additional child to existing task
@@ -316,7 +317,7 @@ def parent_tasks_view(request):
             # Get the most recent task completion
             completion = task_completions.latest('completion_date')
             
-            if completion.status in ['pending', 'checked_in']:
+            if completion.status in ['pending', 'checked_in','checked_out']:
                 # Task is in progress and pending review
                 pending_tasks_dict[completion.id] = {
                     "id": task.id,
@@ -533,7 +534,42 @@ def edit_task(request, task_id):
             "deadline": task.deadline.strftime("%Y-%m-%d"),
         }
         return JsonResponse({"success": True, "task": task_data})
-
+    
+@login_required
+@require_POST
+def refund_task_assignment_view(request):
+    try:
+        parent=request.user.parent
+    except Parent.DoesNotExist:
+        return HttpResponseForbidden("Only parents can refund task assignments.")
+    try:
+        data=json.loads(request.body)
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON.")
+    assignment_id=data.get("assignment_id")
+    if not assignment_id:
+        return JsonResponse({"success": False, "message": "מזהה המשימה חסר.","error":"assignment_id is required"}, status=400)
+    
+    try:
+        assignment=TaskAssignment.objects.get(id=assignment_id,refunded_at__isnull=True)
+    except TaskAssignment.DoesNotExist:
+        return JsonResponse({"success": False, "message": "משימה לא נמצאה או כבר נדחתה.","error":"assignment not found or already refunded"}, status=404)
+    
+    if assignment.assigned_by != request.user:
+        return JsonResponse({"success": False, "message": "אין לך הרשאה להחזיר משימה זו.","error":"you do not have permission to refund this task"}, status=403)
+    try:
+        ParentTaskUtils.refund_task_assignment(assignment,parent)
+    except ValueError as e:
+        return JsonResponse({"success": False, "message": str(e),"error":str(e)}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e),"error":str(e)}, status=500)
+    
+    return JsonResponse({
+        "success": True,
+        "message": "Task refunded successfully for the selected child.",
+        "refunded_assignment_id": assignment.id
+    }) 
+    
 @login_required
 def approve_task_completion(request):
     """

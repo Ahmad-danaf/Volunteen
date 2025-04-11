@@ -28,9 +28,9 @@ class ChildTaskManager:
     def get_all_child_active_tasks(child):
         """
         Retrieve all Task objects assigned to a child that have not been completed.
-        Includes the `is_new` field from `TaskAssignment` and `status` from `TaskCompletion`.
+        Only include assignments that have not been refunded.
+        Includes the `is_new` field from TaskAssignment and the latest `status` from TaskCompletion.
         """
-
         # Retrieve only the task IDs that were completed
         completed_task_ids = TaskCompletion.objects.filter(
             child=child, status="approved"
@@ -43,7 +43,9 @@ class ChildTaskManager:
 
         # Retrieve active tasks with `is_new` from TaskAssignment and `status` from TaskCompletion
         return Task.objects.filter(
-            assignments__child=child, deadline__gte=timezone.now().date()
+            assignments__child=child,
+            assignments__refunded_at__isnull=True,
+            deadline__gte=timezone.now().date()
         ).exclude(id__in=completed_task_ids).annotate(
             is_new=F("assignments__is_new"),  # Fetching `is_new` field from TaskAssignment
             status=Subquery(latest_status_subquery)  # Fetching latest `status` from TaskCompletion
@@ -199,7 +201,12 @@ class ChildTaskManager:
         """
         Retrieve the list of new tasks assigned to the child.
         """
-        return TaskAssignment.objects.filter(child=child, is_new=True)
+        return TaskAssignment.objects.filter(
+            child=child,
+            is_new=True,
+            refunded_at__isnull=True,
+            task__deadline__gte=timezone.now().date()
+            )
     
     
     @staticmethod
@@ -208,10 +215,14 @@ class ChildTaskManager:
         Returns all tasks assigned to a child that are either:
         - Not in TaskCompletion at all.
         - In TaskCompletion but not approved or rejected.
-        Also includes the status from TaskCompletion (if exists).
+        Also includes the latest status from TaskCompletion (if exists).
+        Only tasks whose assignment has not been refunded are returned.
         """
         # Get tasks assigned to the child
-        assigned_task_ids = TaskAssignment.objects.filter(child=child).values_list('task_id', flat=True)
+        assigned_task_ids = TaskAssignment.objects.filter(
+            child=child,
+            refunded_at__isnull=True
+            ).values_list('task_id', flat=True)
 
         # Get tasks that are either approved or rejected
         excluded_task_ids = TaskCompletion.objects.filter(

@@ -409,6 +409,31 @@
     >
       <span id="toastMessage"></span>
     </div>
+    <!-- Refund (Soft Delete) Modal -->
+  <div
+  id="refundModal"
+  class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50 hidden"
+  >
+  <h3 class="text-lg font-bold mb-4">הסרת משימה</h3>
+  <p class="mb-4">בחר את הילד עבורו תרצה לבטל את המשימה ולהחזיר את הנקודות:</p>
+  <div id="refundChildrenList" class="mb-4"></div>
+  <div class="flex gap-4 mt-6">
+    <button
+      type="button"
+      class="flex-1 py-2 px-4 border rounded !rounded-button"
+      onclick="closeRefundModal()"
+    >
+      ביטול
+    </button>
+    <button
+      id="confirmRefundBtn"
+      type="button"
+      class="flex-1 py-2 px-4 bg-red-500 rounded !rounded-button"
+    >
+      אשר מחיקה
+    </button>
+  </div>
+  </div>
 
     <!-- CSRF Token for POST requests -->
     <input type="hidden" id="csrfToken" value="{{ csrf_token }}" />
@@ -419,6 +444,7 @@
       const allTasks = JSON.parse("{{ parent_tasks_json|escapejs }}");
       const dateFilter = JSON.parse("{{ date_filter_json|escapejs }}");
       let currentTab = "active";
+      let currentRefundTask = null;
 
       // Date filter initialization
       function initializeDateFilter() {
@@ -613,18 +639,18 @@
             '<div class="text-center py-8 text-gray-500">אין משימות פעילות</div>';
           return;
         }
-
+      
         taskList.innerHTML = allTasks.active
           .map((task) => {
-            // Generate HTML for all children assigned to this task
+            // Generate HTML for all children assigned to this task.
             const childrenHTML = task.children
               .map(
                 (child) =>
                   `<span class="text-xs bg-gray-100 px-2 py-1 rounded mr-1 mb-1">${child.name}</span>`
               )
               .join("");
-
-            // Add edit button only if task.isEditable is true.
+      
+            // Add edit button if task.isEditable is true.
             const editButtonHTML = task.isEditable
               ? `
                 <div class="flex justify-end mt-2">
@@ -636,7 +662,14 @@
                 </div>
               `
               : "";
-
+      
+            // Add delete icon if allowSoftDelete is true.
+            const deleteButtonHTML = task.allowSoftDelete
+              ? `<button onclick='showRefundModal(${JSON.stringify(task)})' class="bg-red-500 text-sm py-1 px-3 rounded-full text-white ml-2">
+                    <i class="ri-delete-bin-line"></i>
+                 </button>`
+              : "";
+      
             return `
               <div class="task-card bg-white p-4 rounded-lg shadow relative">
                 <div class="flex justify-between items-start">
@@ -651,6 +684,7 @@
                   <div class="flex items-center gap-2">
                     <span class="text-sm">${task.points}</span>
                     <i class="ri-star-fill text-primary"></i>
+                    ${deleteButtonHTML}
                   </div>
                 </div>
                 <div class="flex justify-between items-center mt-3">
@@ -663,6 +697,71 @@
           })
           .join("");
       }
+      function showRefundModal(task) {
+        // Store the current task for use in confirmation.
+        currentRefundTask = task;
+      
+        // Build a list of radio buttons for each child assignment.
+        const refundListContainer = document.getElementById("refundChildrenList");
+        refundListContainer.innerHTML = task.children
+          .map((child, index) => {
+            // Use a radio input; use task.assignmentIds[index] as the value.
+            return `
+              <label class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer">
+                <input type="radio" name="refundAssignment" value="${task.assignmentIds[index]}">
+                <span>${child.name}</span>
+              </label>
+            `;
+          })
+          .join("");
+      
+        // Show the refund modal.
+        const refundModal = document.getElementById("refundModal");
+        refundModal.classList.remove("hidden");
+        refundModal.classList.add("show");
+      }
+      
+      function closeRefundModal() {
+        const refundModal = document.getElementById("refundModal");
+        refundModal.classList.remove("show");
+        refundModal.classList.add("hidden");
+        // Clear the stored task.
+        currentRefundTask = null;
+      }
+      
+      // Set up event listener for the confirmation button.
+      document.getElementById("confirmRefundBtn").addEventListener("click", async function () {
+        // Get the selected assignment radio button.
+        const selectedRadio = document.querySelector('input[name="refundAssignment"]:checked');
+        if (!selectedRadio) {
+          alert("אנא בחר ילד למחיקת המשימה.");
+          return;
+        }
+        
+        const assignmentId = selectedRadio.value;
+        const csrfToken = document.getElementById("csrfToken").value;
+      
+        try {
+          const response = await fetch("{% url 'parentApp:refund_task_assignment_view' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({ assignment_id: assignmentId }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast(result.message);
+            window.location.reload();
+          } else {
+            showToast(result.error || result.message, true);
+          }
+        } catch (error) {
+          console.error("Error refunding assignment:", error);
+          showToast("אירעה שגיאה בעת החזרת המשימה", true);
+        }
+      });      
 
       function showEditModal(task) {
         // Populate the edit form with current task data

@@ -4,7 +4,7 @@ from teenApp.entities.task import Task
 from childApp.models import Child
 from parentApp.models import Parent
 from Volunteen.constants import DEFAULT_INCREASE_LEVEL_TASK
-
+from django.utils import timezone
 class TaskManagerUtils:
     @staticmethod
     def get_assigned_tasks(user):
@@ -109,3 +109,34 @@ class TaskManagerUtils:
             return approved_completion
             
         return task_completion
+    
+    @staticmethod
+    def refund_task_assignment(assignment, owner):
+        """
+        Refund a task assignment for the given owner (parent or mentor).
+        
+        Args:
+            assignment (TaskAssignment): The assignment to refund.
+            owner (Parent or Mentor): The owner who assigned the task.
+        
+        Raises:
+            ValueError: If the assignment has been refunded already or
+                        if the child has already started the task (i.e. TaskCompletion exists).
+                        
+        Returns:
+            TaskAssignment: The updated assignment.
+        """
+        if assignment.refunded_at is not None:
+            raise ValueError("Task assignment has already been refunded.")
+        
+        if TaskCompletion.objects.filter(task=assignment.task, child=assignment.child).exists():
+            raise ValueError("Task already started; refund not allowed.")
+        
+        assignment.refunded_at = timezone.now()
+        assignment.save()
+        
+        # Refund the task points to the owner
+        owner.available_teencoins += assignment.task.points
+        owner.save()
+        
+        return assignment
