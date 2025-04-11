@@ -194,7 +194,7 @@ class ChildTaskManager:
         """
         Retrieve the count of new tasks assigned to the child.
         """
-        return TaskAssignment.objects.filter(child=child, is_new=True).count()
+        return ChildTaskManager.get_new_assigned_tasks(child).count()
     
     @staticmethod
     def get_new_assigned_tasks(child):
