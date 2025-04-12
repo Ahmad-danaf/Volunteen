@@ -36,6 +36,25 @@ class TaskForm(forms.ModelForm):
             # is_template flag is now just used to mark the task, not to modify field behavior
             self.is_template = kwargs.pop('is_template', False)
             super(TaskForm, self).__init__(*args, **kwargs)
+            
+            # Hebrew help text overrides
+            self.fields['title'].help_text = 'הכנס את כותרת המשימה'
+            self.fields['description'].help_text = 'תאר את המשימה בקצרה'
+            self.fields['points'].help_text = 'מספר הנקודות שהמשימה שווה'
+            self.fields['deadline'].help_text = 'בחר את מועד הסיום של המשימה'
+            self.fields['img'].help_text = 'תמונה אופציונלית למשימה'
+            self.fields['additional_details'].help_text = 'פרטים נוספים שתרצה לציין'
+            self.fields['assigned_children'].help_text = 'בחר את הילדים שיקבלו את המשימה'
+            self.fields['is_template'].help_text = 'סמן אם ברצונך לשמור כתבנית לשימוש עתידי'
+            self.fields['title'].label = 'כותרת'
+            self.fields['description'].label = 'תיאור'
+            self.fields['points'].label = 'נקודות'
+            self.fields['deadline'].label = 'מועד סיום'
+            self.fields['img'].label = 'תמונה'
+            self.fields['additional_details'].label = 'פרטים נוספים'
+            self.fields['assigned_children'].label = 'הקצאת ילדים'
+            self.fields['is_template'].label = 'שמור כתבנית'
+
 
             if self.mentor:
                 self.fields['assigned_children'].queryset = self.mentor.children.all()

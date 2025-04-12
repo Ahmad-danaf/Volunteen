@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block title %}קיר התהילה{% endblock %}
-
 {% block content %}
 <div class="leaderboard-container">
   <!-- Page Heading -->
@@ -65,12 +64,14 @@
         <!-- Points Progress Bar -->
         <div class="leaderboard-points-container">
           <div class="leaderboard-progress-bar" style="width: {{ child.rank_progress|default:"0" }}%;">
+              &nbsp; </div>
+          <span class="leaderboard-points-value">
             {% if child.total_points is not None %}
               {{ child.total_points }}
             {% else %}
               0
             {% endif %}
-          </div>
+          </span>
         </div>
       </div>
     {% empty %}
@@ -106,12 +107,14 @@
     <!-- Points Progress Bar -->
     <div class="leaderboard-points-container">
       <div class="leaderboard-progress-bar" style="width: {{ child.rank_progress|default:"0" }}%;">
+          &nbsp; </div>
+      <span class="leaderboard-points-value">
         {% if child.total_points is not None %}
           {{ child.total_points }}
         {% else %}
           0
         {% endif %}
-      </div>
+      </span>
     </div>
   </div>
 {% endfor %}
@@ -187,209 +190,376 @@
 </script>
 
 <style>
-/* =======================================
-   1. Container & Basic Styles
-   ======================================= */
-.leaderboard-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-  direction: rtl; /* For Hebrew */
-  font-family: 'Alef', sans-serif;
-}
-.leaderboard-title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #333;
-  text-align: center;
+  
+:root {
+  --premium-blue: #0a7ea8; 
+  --premium-blue-dark: #005f80;
+  --premium-orange: #ff7f00; 
+  --premium-orange-light: #ffa54f;
+  --premium-gold: #ffd700;
+  --premium-silver: #c0c0c0;
+  --premium-bronze: #cd7f32;
+  --card-bg: #ffffff; 
+  --card-bg-subtle-gradient: linear-gradient(135deg, #f9fcff 0%, #f4f8fc 100%); /* Very subtle blueish tint gradient */
+  --text-primary: #1a2b3c; 
+  --text-secondary: #5a6b7c;
+  --shadow-color: rgba(10, 126, 168, 0.1);  
+  --highlight-bg: #e6f3ff; 
+  --border-light: #eef2f7; 
 }
 
-/* =======================================
-   2. Filter Form Styles
-   ======================================= */
+body {
+  background-color: #f0f4f8; 
+  margin: 0;
+  padding: 0;
+}
+
+.leaderboard-container {
+  max-width: 600px;
+  margin: 1rem auto; 
+  padding: 1rem;
+  direction: rtl; 
+  font-family: 'Alef', sans-serif; 
+}
+
+.leaderboard-title {
+  font-size: 2rem; 
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: -0.5px; 
+}
+
+
 .leaderboard-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1rem;
-}
-.filter-group {
-  flex: 1 1 100%;
-  display: flex;
-  flex-direction: column;
-}
-.filter-label {
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-  font-weight: bold;
-  color: #555;
-}
-.filter-group select,
-.filter-group input[type="date"] {
-  padding: 0.4rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-.filter-submit {
-  flex: 1 1 100%;
-  display: flex;
-  align-items: flex-end;
-}
-.btn-filter {
-  width: 100%;
-  padding: 0.6rem;
-  font-size: 1rem;
-  background-color: #007bff;
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  cursor: pointer;
-}
-.btn-filter:hover {
-  background-color: #0056b3;
+  margin-bottom: 2rem; 
+  background-color: #fff; 
+  padding: 1rem;
+  border-radius: 12px; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); 
 }
 
-/* =======================================
-   3. Leaderboard List & Cards
-   ======================================= */
+.filter-group {
+  flex: 1 1 100%; 
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; 
+}
+
+.filter-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-group select,
+.filter-group input[type="date"],
+.filter-group input[type="text"]  {
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px; 
+  background-color: #f8f9fa;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-group select:focus,
+.filter-group input[type="date"]:focus,
+.filter-group input[type="text"]:focus {
+    border-color: var(--premium-blue);
+    box-shadow: 0 0 0 2px rgba(10, 126, 168, 0.2);
+    outline: none;
+}
+
+
+.filter-group input[type="radio"] + label {
+    margin-left: 0.5rem; 
+    cursor: pointer;
+}
+
+#customDateFields {
+    display: none; 
+}
+
+.filter-submit {
+  flex: 1 1 100%; 
+  display: flex;
+  align-items: flex-end; 
+  margin-top: 0.5rem; 
+}
+
+.btn-filter {
+  width: 100%;
+  padding: 0.8rem 1rem; 
+  font-size: 1.1rem;
+  font-weight: 600;
+  background-color: var(--premium-blue);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-filter:hover {
+  background-color: var(--premium-blue-dark);
+}
+.btn-filter:active {
+    transform: scale(0.98); 
+}
+
+
 .leaderboard-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1rem; 
 }
+
 .leaderboard-card {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid #ddd;
+  background: var(--card-bg-subtle-gradient);
+  border-radius: 16px; 
+  padding: 1rem 1.2rem;
+  border: 1px solid transparent; 
   position: relative;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  transition: box-shadow 0.3s ease;
-}
-.leaderboard-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-}
-.leaderboard-rank {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 0.5rem;
-}
-.leaderboard-name {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-.you-label {
-  font-size: 0.9rem;
-  color: #e74c3c;
-  margin-right: 3px;
-}
-.leaderboard-points-container {
-  background-color: #e9ecef;
-  border-radius: 6px;
+  box-shadow: 0 4px 10px var(--shadow-color), 0 8px 25px rgba(10, 126, 168, 0.08); /* Softer, layered shadow */
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.3s ease;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center; 
+  gap: 0.3rem 1rem; 
   overflow: hidden;
-  height: 25px;
-  margin-top: 0.5rem;
-  position: relative;
 }
-.leaderboard-progress-bar {
-  height: 100%;
-  background-color: #4caf50;
-  color: #fff;
-  text-align: center;
-  line-height: 25px;
-  font-size: 0.9rem;
-  transition: width 0.5s ease;
+
+.leaderboard-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 6px 15px var(--shadow-color), 0 12px 35px rgba(10, 126, 168, 0.12);
 }
-.no-results {
+
+.leaderboard-rank {
+  grid-column: 1 / 2; 
+  grid-row: 1 / 3;    
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--premium-blue);
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  min-width: 45px; 
+  line-height: 1.2; 
   text-align: center;
-  background-color: #ffc107;
-  padding: 1rem;
-  border-radius: 5px;
+  padding-right: 0.5rem; 
+}
+
+.leaderboard-rank > *:not(span) { 
+    font-size: 1.8em; 
+    line-height: 1;
+    display: block; 
+    margin-bottom: 0.1rem; 
+}
+
+.leaderboard-name {
+  grid-column: 2 / 3; 
+  grid-row: 1 / 2;    
+  font-size: 1.1rem;
   font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0;
+  align-self: end; 
 }
 
-/* =======================================
-   4. Animations & Special Styles
-   ======================================= */
-.sparkle {
-  animation: sparkle 2s infinite ease-in-out;
+.you-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--premium-orange);
+  margin-right: 5px; 
+  display: inline-block;
+  vertical-align: middle;
 }
-@keyframes sparkle {
-  0% { box-shadow: 0 0 5px #f1c40f, 0 0 15px #f1c40f; }
-  50% { box-shadow: 0 0 10px #f1c40f, 0 0 30px #f39c12; }
-  100% { box-shadow: 0 0 5px #f1c40f, 0 0 15px #f1c40f; }
+
+.leaderboard-points-container {
+  grid-column: 2 / 3; 
+  grid-row: 2 / 3;    
+  background-color: var(--border-light); 
+  border-radius: 8px;
+  overflow: hidden;
+  height: 20px; 
+  position: relative; 
 }
+
+.leaderboard-progress-bar { 
+  height: 100%;
+  background: linear-gradient(90deg, var(--premium-blue-dark), var(--premium-blue));
+  border-radius: 8px;
+  transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-points-value { 
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 10px; 
+  color: var(--text-secondary); 
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 2;
+  pointer-events: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+
+.leaderboard-card:has(.leaderboard-rank:contains("🏆")) { 
+  border: 1.5px solid transparent; 
+  background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+              linear-gradient(135deg, var(--premium-gold), #ffe566) border-box; 
+  box-shadow: 0 6px 15px rgba(255, 215, 0, 0.2), 0 10px 30px rgba(255, 215, 0, 0.15);
+}
+.leaderboard-card:has(.leaderboard-rank:contains("🏆")):hover {
+   box-shadow: 0 8px 20px rgba(255, 215, 0, 0.25), 0 12px 40px rgba(255, 215, 0, 0.2);
+}
+
+.leaderboard-card.sparkle {
+    animation: sparkle 2s infinite ease-in-out;
+}
+
+.leaderboard-card:has(.leaderboard-rank:contains("🥈")) { 
+  border: 1.5px solid transparent;
+  background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+              linear-gradient(135deg, var(--premium-silver), #e8e8e8) border-box; 
+  box-shadow: 0 4px 10px rgba(192, 192, 192, 0.2), 0 8px 25px rgba(192, 192, 192, 0.1);
+}
+
+.leaderboard-card:has(.leaderboard-rank:contains("🥉")) { 
+  border: 1.5px solid transparent;
+  background: linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
+              linear-gradient(135deg, var(--premium-bronze), #f0bfa0) border-box; 
+  box-shadow: 0 4px 10px rgba(205, 127, 50, 0.2), 0 8px 25px rgba(205, 127, 50, 0.1);
+}
+
 .current-child-row {
-  border: 2px solid #e67e22;
-  background-color: #fff8e1;
+  border-color: var(--premium-orange);
+  background: var(--highlight-bg);
+  box-shadow: 0 4px 10px rgba(255, 127, 0, 0.15), 0 8px 25px rgba(255, 127, 0, 0.1);
 }
-.rank-change {
-  animation: rankChange 1s ease-in-out;
-  background-color: #c1ffc1;
+.current-child-row .leaderboard-progress-bar { 
+  background: linear-gradient(90deg, var(--premium-orange), var(--premium-orange-light));
 }
-@keyframes rankChange {
-  0% { background-color: #fff7c1; }
-  100% { background-color: #f8f9fa; }
+.current-child-row .leaderboard-points-value { 
+  color: var(--premium-orange);
+  font-weight: 700;
+}
+.current-child-row .leaderboard-rank { 
+    color: var(--premium-orange);
 }
 
-/* =======================================
-   5. Responsive Media Queries
-   ======================================= */
-@media (min-width: 576px) {
-  .filter-group {
-    flex: 1 1 calc(50% - 1rem);
-  }
-  .filter-submit {
-    flex: 1 1 calc(50% - 1rem);
-  }
-}
-@media (min-width: 768px) {
-  .leaderboard-title {
-    font-size: 2rem;
-  }
-  .leaderboard-card {
-    padding: 1.2rem;
-  }
-}
-/* Divider styling */
+
+
+
 .leaderboard-divider {
-  border-top: 2px dashed #888;
+  border: none;
+  height: 2px;
+  background-image: linear-gradient(to right, transparent, var(--premium-blue), transparent);
   margin: 2rem 0;
-  animation: slideIn 1s ease-in-out;
+  opacity: 0.6;
+  animation: slideInFade 1s ease-out both;
 }
 
-/* Slide in animation for the divider */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
-/* Extra children fade in and slide up */
 .animate-extra-child {
-  animation: fadeInUp 0.8s ease both;
+  animation: fadeInUpPremium 0.7s cubic-bezier(0.3, 0.8, 0.2, 1) both;
 }
 
-@keyframes fadeInUp {
+@keyframes fadeInUpPremium {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Extra child specific styling to match top children
-Inherit the same styling from .leaderboard-card or add specific tweaks 
-.extra-child {
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    width: 0%;
+    margin-left: 50%; 
+  }
+  to {
+    opacity: 0.6;
+    width: 100%;
+    margin-left: 0%;
+  }
 }
-   */
+
+
+@keyframes sparkle {
+  0% { box-shadow: 0 0 3px var(--premium-gold), 0 0 8px var(--premium-gold), 0 6px 15px rgba(255, 215, 0, 0.2), 0 10px 30px rgba(255, 215, 0, 0.15); }
+  50% { box-shadow: 0 0 8px var(--premium-gold), 0 0 18px #ffe566, 0 6px 15px rgba(255, 215, 0, 0.2), 0 10px 30px rgba(255, 215, 0, 0.15); }
+  100% { box-shadow: 0 0 3px var(--premium-gold), 0 0 8px var(--premium-gold), 0 6px 15px rgba(255, 215, 0, 0.2), 0 10px 30px rgba(255, 215, 0, 0.15); }
+}
 
 
 
+.no-results {
+  text-align: center;
+  background-color: #fff3cd; 
+  color: #664d03; 
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid #ffecb5;
+}
+
+
+#confettiCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+
+@media (min-width: 576px) {
+  .filter-group {
+    flex: 1 1 calc(50% - 1rem); 
+  }
+  .filter-submit {
+    flex: 1 1 100%; 
+    align-self: flex-end; 
+  }
+
+  .leaderboard-title {
+    font-size: 2.2rem;
+  }
+
+  .leaderboard-card {
+    padding: 1.2rem 1.5rem; 
+  }
+}
+
+@media (min-width: 768px) {
+  .leaderboard-title {
+    font-size: 2.5rem;
+  }
+
+  
+}
 </style>
 {% endblock %}

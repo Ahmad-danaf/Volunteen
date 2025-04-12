@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
+import os
 
 class TaskCompletion(models.Model):
     STATUS_CHOICES = [
@@ -39,3 +40,11 @@ class TaskCompletion(models.Model):
     def is_expired(self):
         """ Check if the TeenCoins from this task have expired (3 months limit). """
         return self.completion_date + relativedelta(months=3) < timezone.now()
+
+
+    def delete(self, *args, **kwargs):
+        if self.checkin_img and os.path.exists(self.checkin_img.path):
+            os.remove(self.checkin_img.path)
+        if self.checkout_img and os.path.exists(self.checkout_img.path):
+            os.remove(self.checkout_img.path)
+        super().delete(*args, **kwargs)

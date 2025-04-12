@@ -1,17 +1,822 @@
-{% extends 'base.html' %}
+{% extends 'mentor_primary_base.html' %}
 {% load static %}
+
+{% block title %}עריכת משימה{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --premium-bg: #f8f9fa; 
+        --premium-card-bg: #ffffff; 
+        --premium-text: #212529; 
+        --premium-text-secondary: #6c757d; 
+        --premium-accent: #007bff; 
+        --premium-accent-hover: #0056b3; 
+        --premium-border: #dee2e6;
+        --premium-success: #198754;
+        --premium-error: #dc3545;
+        --premium-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        --premium-radius: 12px;
+        --premium-font: 'Heebo', sans-serif; 
+    }
+
+    body {
+        background-color: var(--premium-bg);
+        font-family: var(--premium-font);
+        color: var(--premium-text);
+    }
+
+    .premium-container {
+        padding: 20px 15px;
+        max-width: 700px; 
+        margin: 20px auto;
+        opacity: 0; 
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--premium-border);
+        animation: slideDown 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--premium-text);
+    }
+
+    .teencoin-display {
+        background-color: var(--premium-accent);
+        color: white;
+        padding: 8px 15px;
+        border-radius: var(--premium-radius);
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    .teencoin-display:hover {
+        transform: scale(1.05);
+    }
+
+    /* --- Form Card --- */
+    .form-card {
+        background-color: var(--premium-card-bg);
+        border-radius: var(--premium-radius);
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: var(--premium-shadow);
+        opacity: 0; 
+        animation: fadeInUp 0.8s 0.2s ease-out forwards; 
+    }
+
+    @keyframes fadeInUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .form-section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--premium-accent);
+        padding-bottom: 5px;
+        border-bottom: 2px solid var(--premium-accent);
+        display: inline-block;
+    }
+
+    /* --- Form Fields Styling --- */
+    .form-group {
+        margin-bottom: 25px;
+        opacity: 0; 
+        animation: fadeInUp 0.7s ease-out forwards;
+        animation-delay: calc(0.3s + var(--field-index, 0) * 0.08s);
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        color: var(--premium-text-secondary);
+    }
+
+    .form-control,
+    .form-control-file {
+        display: block;
+        width: 100%;
+        padding: 12px 15px;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--premium-text);
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid var(--premium-border);
+        appearance: none; 
+        border-radius: 8px;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .form-control:focus {
+        color: var(--premium-text);
+        background-color: #fff;
+        border-color: var(--premium-accent);
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25); 
+    }
+
+    .form-control[readonly] {
+        background-color: #e9ecef; 
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* --- File Input & Preview --- */
+    .image-preview-container {
+        margin-top: 15px;
+        margin-bottom: 10px; 
+        min-height: 100px; 
+        display: flex; 
+        justify-content: flex-start; 
+    }
+    #image-preview { 
+        max-width: 180px; 
+        max-height: 180px;
+        border-radius: var(--premium-radius);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: block; 
+        object-fit: cover; 
+        border: 1px solid var(--premium-border); 
+        background-color: #f8f9fa; 
+    }
+     #image-preview[src=""], 
+     #image-preview[src$="/media/defaults/no-image.png"] {
+        min-height: 100px;
+        min-width: 100px;
+     }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden; 
+        display: inline-block;
+        width: 100%;
+    }
+    .file-input-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: var(--premium-text-secondary);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-align: center;
+    }
+    .file-input-button:hover {
+        background-color: #5a6268;
+    }
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0; 
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    #file-name-display {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: var(--premium-text-secondary);
+        display: block;
+        min-height: 1.2em; 
+    }
+
+    .checkbox-multiple-group .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid var(--premium-border);
+        border-radius: 8px;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+    }
+    .checkbox-multiple-group .form-check:hover {
+        background-color: #f8f9fa;
+    }
+     .checkbox-multiple-group .form-check input[type="checkbox"] {
+        opacity: 0; 
+        position: absolute;
+     }
+    .checkbox-multiple-group .form-check label {
+        position: relative;
+        padding-right: 35px; 
+        cursor: pointer;
+        font-weight: 500;
+        flex-grow: 1;
+        transition: color 0.3s ease;
+    }
+     .checkbox-multiple-group .form-check label::before { 
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--premium-border);
+        border-radius: 4px;
+        background-color: white;
+        transition: all 0.3s ease;
+     }
+     .checkbox-multiple-group .form-check label::after { 
+        content: '\2713'; 
+        position: absolute;
+        right: 4px;
+        top: 48%;
+        transform: translateY(-50%) scale(0); 
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        transition: transform 0.3s ease;
+     }
+
+     .checkbox-multiple-group .form-check input[type="checkbox"]:checked + label {
+        color: var(--premium-accent);
+     }
+     .checkbox-multiple-group .form-check input[type="checkbox"]:checked + label::before {
+        background-color: var(--premium-accent);
+        border-color: var(--premium-accent);
+     }
+     .checkbox-multiple-group .form-check input[type="checkbox"]:checked + label::after {
+        transform: translateY(-50%) scale(1); 
+     }
+
+     .checkbox-multiple-group .form-check input[type="checkbox"]:focus + label::before {
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+     }
+
+
+    /* --- Toggle Switch (Is Template) --- */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: var(--premium-accent);
+    }
+    input:focus + .slider {
+        box-shadow: 0 0 1px var(--premium-accent);
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    /* --- Submit Button --- */
+    .submit-button {
+        display: block;
+        width: 100%;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        background-color: var(--premium-accent);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        margin-top: 30px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(111, 66, 193, 0.3);
+    }
+
+    .submit-button:hover {
+        background-color: var(--premium-accent-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(111, 66, 193, 0.4);
+    }
+    .submit-button:active {
+         transform: translateY(-1px);
+         box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+    }
+
+    /* --- Error/Success Messages --- */
+    .messages {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    .messages li {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+    }
+    .messages li.success {
+        background-color: #d1e7dd; 
+        color: var(--premium-success);
+        border: 1px solid #a3cfbb;
+    }
+    .messages li.error {
+        background-color: #f8d7da; 
+        color: var(--premium-error);
+        border: 1px solid #f1aeb5;
+    }
+
+    /* --- Helper text --- */
+    .form-text {
+        font-size: 0.85rem;
+        color: var(--premium-text-secondary);
+        margin-top: 5px;
+    }
+/* --- Collapsible Card Styling --- */
+.collapsible-card .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-bottom: 15px; 
+    border-bottom: 1px solid transparent; 
+    transition: border-color 0.3s ease;
+}
+
+.collapsible-card .collapsible-header .form-section-title {
+    margin-bottom: 0; 
+    border-bottom: none; 
+}
+
+.collapsible-card .selection-summary {
+    font-size: 0.9rem;
+    color: var(--premium-text-secondary);
+    margin-right: auto; 
+    margin-left: 15px; 
+    font-weight: 500;
+    display: none; 
+}
+
+.collapsible-card .toggle-icon {
+    font-size: 1.2rem;
+    transition: transform 0.4s ease;
+    color: var(--premium-accent);
+}
+
+.collapsible-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, opacity 0.3s ease-out, margin-top 0.5s ease-out;
+    margin-top: 0; 
+}
+
+.collapsible-card.is-expanded .collapsible-header {
+     border-bottom-color: transparent; 
+}
+.collapsible-card.is-expanded .collapsible-content {
+    max-height: 1500px; 
+    opacity: 1;
+    margin-top: 20px; 
+    overflow: visible; 
+}
+.collapsible-card.is-expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+.collapsible-card.is-expanded .selection-summary {
+     display: none; 
+}
+
+.collapsible-card:not(.is-expanded) .collapsible-header {
+      border-bottom-color: var(--premium-border); 
+ }
+.collapsible-card:not(.is-expanded) .selection-summary {
+      display: inline; 
+ }
+
+
+/* --- Children Selection Enhancements --- */
+#children-list-container {
+    max-height: 300px; 
+    overflow-y: auto;
+    border: 1px solid var(--premium-border);
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #fdfdff; 
+}
+
+#children-list-container .form-check {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.child-item {
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+    overflow: hidden;
+    opacity: 1;
+    max-height: 100px;
+}
+.child-item.hidden-by-filter {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border: none;
+}
+
+.btn-secondary-action {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    color: var(--premium-accent);
+    background-color: transparent;
+    border: 1px solid var(--premium-accent);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.btn-secondary-action:hover {
+    background-color: rgba(111, 66, 193, 0.1);
+    color: var(--premium-accent-hover);
+}
+
+.current-cost-display {
+    font-size: 1rem;
+    color: var(--premium-text-secondary);
+}
+#current-task-cost {
+    font-weight: 700;
+    font-size: 1.1em;
+}
+</style>
+{% endblock %}
+
+
 {% block content %}
-<div class="container mt-5">
-    <h2 style="color: #ff6600;">ערוך משימה: {{ task.title }}</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="available_teencoins" class="form-label">טינקאוינס זמינים</label>
-            <label> - {{ available_teencoins }}</label>
+<div class="premium-container" dir="rtl">
+
+    <div class="page-header">
+        <h1 class="page-title">עריכת משימה</h1>
+        <div class="teencoin-display">
+            נקודות זמינות: {{ available_teencoins }} 💰
         </div>
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> שמור שינויים</button>
+    </div>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="form-card">
+            <h2 class="form-section-title">פרטי המשימה</h2>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-group" style="--field-index: 1;">
+                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}:</label>
+                {{ form.title }}
+                {% if form.title.help_text %}<small class="form-text">{{ form.title.help_text }}</small>{% endif %}
+                {% if form.title.errors %}<div class="text-danger">{{ form.title.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="--field-index: 2;">
+                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}:</label>
+                {{ form.description }}
+                {% if form.description.help_text %}<small class="form-text">{{ form.description.help_text }}</small>{% endif %}
+                {% if form.description.errors %}<div class="text-danger">{{ form.description.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="--field-index: 3;">
+                <label for="{{ form.points.id_for_label }}" class="form-label">{{ form.points.label }}:</label>
+                {{ form.points }}
+                {% if form.points.help_text %}<small class="form-text">{{ form.points.help_text }}</small>{% endif %}
+                {% if form.points.errors %}<div class="text-danger">{{ form.points.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="--field-index: 4;">
+                <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}:</label>
+                {{ form.deadline }}
+                {% if form.deadline.help_text %}<small class="form-text">{{ form.deadline.help_text }}</small>{% endif %}
+                {% if form.deadline.errors %}<div class="text-danger">{{ form.deadline.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="--field-index: 5;">
+                <label for="{{ form.img.id_for_label }}" class="form-label">{{ form.img.label }}:</label>
+
+                <div class="image-preview-container">
+                     <img src="{{ task.img.url | default:'/static/defaults/no-image.png' }}" alt="תצוגה מקדימה של תמונת משימה"
+                          id="image-preview"> </div>
+
+                 <div class="file-input-wrapper">
+                     <span class="file-input-button">בחירת קובץ...</span>
+                     <input type="file" name="{{ form.img.name }}" id="{{ form.img.id_for_label }}" accept="image/*" class="form-control-file">
+                     {{ form.img.as_hidden }} </div>
+                 <span id="file-name-display">
+                    {% if task.img and task.img.url != '/media/defaults/no-image.png' %}
+                        תמונה נוכחית קיימת. בחר קובץ חדש להחלפה.
+                    {% else %}
+                        לא נבחר קובץ
+                    {% endif %}
+                 </span>
+                 {% if form.img.help_text %}<small class="form-text">{{ form.img.help_text }}</small>{% endif %}
+                 {% if form.img.errors %}<div class="text-danger">{{ form.img.errors }}</div>{% endif %}
+             </div>
+             <div class="form-group" style="--field-index: 6;">
+                <label for="{{ form.additional_details.id_for_label }}" class="form-label">{{ form.additional_details.label }}:</label>
+                {{ form.additional_details }}
+                {% if form.additional_details.help_text %}<small class="form-text">{{ form.additional_details.help_text }}</small>{% endif %}
+                {% if form.additional_details.errors %}<div class="text-danger">{{ form.additional_details.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-card collapsible-card" id="children-assignment-card">
+            <div class="collapsible-header" role="button" tabindex="0" aria-expanded="false" aria-controls="collapsible-children-content">
+                <h2 class="form-section-title">שיוך לילדים</h2>
+                <span class="selection-summary" id="children-selection-summary"></span>
+                <span class="toggle-icon">▼</span>
+            </div>
+
+            <div class="collapsible-content" id="collapsible-children-content">
+
+                <div class="current-cost-display" style="margin-bottom: 20px; padding: 10px 15px; background-color: #e9ecef; border-radius: 8px; text-align: center;">
+                   עלות נוכחית למשימה זו: <strong id="current-task-cost" style="color: var(--premium-accent);">0</strong> מטבעות 💰
+                </div>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="search" id="child-search" class="form-control" placeholder="חיפוש ילד/ה לפי שם...">
+                </div>
+
+                <div class="child-selection-actions" style="margin-bottom: 15px; display: flex; gap: 10px;">
+                    <button type="button" id="select-all-children" class="btn-secondary-action">בחר הכל</button>
+                    <button type="button" id="deselect-all-children" class="btn-secondary-action">בטל בחירת הכל</button>
+                </div>
+
+                <div class="form-group checkbox-multiple-group" style="--field-index: 7;">
+                   <label class="form-label" style="margin-bottom: 10px;">{{ form.assigned_children.label }}:</label>
+                    {% if form.assigned_children.errors %}<div class="text-danger">{{ form.assigned_children.errors }}</div>{% endif %}
+
+                    <div id="children-list-container"> {# Scrollable Container #}
+                        {% if form.assigned_children.field.queryset.exists %}
+                            {% for choice in form.assigned_children %}
+                                <div class="form-check child-item" data-child-name="{{ choice.choice_label|lower }}"> {# Added class and data-attribute #}
+                                    {{ choice.tag }} {# Renders the input checkbox #}
+                                    <label for="{{ choice.id_for_label }}">
+                                        {{ choice.choice_label }} {# Child's name #}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">אין ילדים זמינים לשיוך.</p>
+                        {% endif %}
+                    </div> {# End Scrollable Container #}
+
+                   {% if form.assigned_children.help_text %}<small class="form-text" style="margin-top: 15px;">{{ form.assigned_children.help_text }}</small>{% endif %}
+                </div>
+             </div> 
+        </div>
+
+        <div class="form-card">
+             <h2 class="form-section-title">אפשרויות נוספות</h2>
+              <div class="form-group d-flex align-items-center" style="--field-index: 8;">
+                 <label for="{{ form.is_template.id_for_label }}" class="form-label" style="margin-bottom: 0; margin-left: 15px;">{{ form.is_template.label }}?</label>
+                 <label class="toggle-switch">
+                      {{ form.is_template }}
+                      <span class="slider"></span>
+                  </label>
+                  {% if form.is_template.errors %}<div class="text-danger">{{ form.is_template.errors }}</div>{% endif %}
+             </div>
+              {% if form.is_template.help_text %}<small class="form-text" style="margin-top: -15px; display:block;">{{ form.is_template.help_text }}</small>{% endif %}
+
+        </div>
+
+
+        <button type="submit" class="submit-button">שמור שינויים</button>
+
     </form>
-    <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> חזרה למסך המשימות</a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Element References ---
+        const pointsInput = document.getElementById('{{ form.points.id_for_label }}');
+        const costDisplay = document.getElementById('current-task-cost');
+        const childrenCheckboxes = document.querySelectorAll('#children-list-container input[type="checkbox"]');
+        const childSearchInput = document.getElementById('child-search');
+        const childItems = document.querySelectorAll('.child-item');
+        const selectAllButton = document.getElementById('select-all-children');
+        const deselectAllButton = document.getElementById('deselect-all-children');
+        const fileInput = document.getElementById('{{ form.img.id_for_label }}');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const imagePreview = document.getElementById('image-preview');
+        const originalImageSrc = imagePreview ? imagePreview.src : '';
+    
+        // *** Collapsible Section Elements ***
+        const childrenCard = document.getElementById('children-assignment-card');
+        const childrenHeader = childrenCard?.querySelector('.collapsible-header');
+        const childrenContent = childrenCard?.querySelector('.collapsible-content');
+        const childrenSummary = childrenCard?.querySelector('#children-selection-summary');
+    
+        // --- Update Summary & Cost ---
+        function updateSummaryAndCost() {
+            if (!pointsInput || !costDisplay || !childrenSummary) return;
+    
+            const points = parseInt(pointsInput.value, 10) || 0;
+            let selectedCount = 0;
+            childrenCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedCount++;
+                }
+            });
+    
+            const totalCost = points * selectedCount;
+            costDisplay.textContent = totalCost.toLocaleString();
+    
+            if (selectedCount === 1) {
+                 childrenSummary.textContent = `ילד אחד נבחר`; // 1 child selected
+            } else {
+                 childrenSummary.textContent = `${selectedCount} ילדים נבחרו`; // X children selected
+            }
+        
+        }
+    
+        // --- Child Filtering Logic ---
+        function filterChildren() {
+             if (!childSearchInput || !childItems) return;
+             const searchTerm = childSearchInput.value.toLowerCase().trim();
+             childItems.forEach(item => {
+                 const childName = item.dataset.childName || '';
+                 const isVisible = childName.includes(searchTerm);
+                  if (isVisible) {
+                      item.classList.remove('hidden-by-filter');
+                  } else {
+                      item.classList.add('hidden-by-filter');
+                  }
+             });
+        }
+    
+        // --- Select/Deselect All Logic ---
+        function setAllCheckboxes(checkedState) {
+             const searchTerm = childSearchInput.value.toLowerCase().trim();
+             childrenCheckboxes.forEach(checkbox => {
+                 const item = checkbox.closest('.child-item');
+                 const childName = item.dataset.childName || '';
+                 const isVisible = childName.includes(searchTerm);
+                 if (isVisible) {
+                     if (checkbox.checked !== checkedState) {
+                         checkbox.checked = checkedState;
+                         checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                     }
+                 }
+             });
+        }
+    
+        // --- Toggle Collapsible Section ---
+        function toggleChildrenSection() {
+            if (!childrenCard || !childrenContent) return;
+            const isExpanded = childrenCard.classList.toggle('is-expanded');
+            childrenHeader.setAttribute('aria-expanded', isExpanded);
+            // Update summary visibility handled by CSS based on is-expanded class
+            // updateSummaryAndCost(); // Update summary text just in case, though change events should cover it
+        }
+    
+    
+        if (pointsInput) {
+            pointsInput.addEventListener('input', updateSummaryAndCost);
+        }
+        childrenCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSummaryAndCost); // Update both on change
+        });
+    
+        if (childSearchInput) {
+            childSearchInput.addEventListener('input', filterChildren);
+        }
+    
+        if (selectAllButton) {
+            selectAllButton.addEventListener('click', () => setAllCheckboxes(true));
+        }
+        if (deselectAllButton) {
+            deselectAllButton.addEventListener('click', () => setAllCheckboxes(false));
+        }
+    
+        if (childrenHeader) {
+            childrenHeader.addEventListener('click', toggleChildrenSection);
+            childrenHeader.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault(); 
+                    toggleChildrenSection();
+                }
+            });
+        }
+    
+        if (fileInput && fileNameDisplay && imagePreview) {
+             fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                 if (file) {
+                     fileNameDisplay.textContent = file.name;
+                     fileNameDisplay.style.color = 'var(--premium-text)';
+                     if (file.type.startsWith('image/')) {
+                         const reader = new FileReader();
+                         reader.onload = function(event) { imagePreview.src = event.target.result; }
+                         reader.readAsDataURL(file);
+                     } else {
+                         alert('אנא בחר קובץ תמונה בלבד.');
+                         imagePreview.src = originalImageSrc;
+                         fileNameDisplay.textContent = 'בחירת קובץ...';
+                          fileNameDisplay.style.color = 'var(--premium-text-secondary)';
+                         fileInput.value = '';
+                     }
+                 } else {
+                     imagePreview.src = originalImageSrc;
+                      const initialText = "{% if task.img and task.img.url != '/media/defaults/no-image.png' %}תמונה נוכחית קיימת. בחר קובץ חדש להחלפה.{% else %}לא נבחר קובץ{% endif %}";
+                     fileNameDisplay.textContent = initialText.trim();
+                     fileNameDisplay.style.color = 'var(--premium-text-secondary)';
+                 }
+             });
+        }
+    
+        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        allCheckboxes.forEach(checkbox => {
+            const label = checkbox.closest('label, .form-check');
+            if (label) {
+                checkbox.addEventListener('focus', () => label.classList.add('is-focused'));
+                checkbox.addEventListener('blur', () => label.classList.remove('is-focused'));
+            }
+            if (checkbox.closest('.checkbox-multiple-group')) {
+                 const checkContainer = checkbox.closest('.form-check');
+                 if(checkContainer){
+                     checkbox.addEventListener('focus', () => checkContainer.classList.add('is-focused'));
+                     checkbox.addEventListener('blur', () => checkContainer.classList.remove('is-focused'));
+                 }
+            }
+        });
+    
+        updateSummaryAndCost();
+        filterChildren();
+    
+    });
+    </script>
 {% endblock %}

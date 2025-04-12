@@ -121,38 +121,63 @@ def add_task(request, task_id=None, duplicate=False, template=False):
 
 @login_required
 def edit_task(request, task_id):
-     task = get_object_or_404(Task, id=task_id)
-     mentor = get_object_or_404(Mentor, user=request.user)
-     
-     if request.method == 'POST':
-         form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
-         if form.is_valid():
-             updated_task = form.save(commit=False)
-             assigned_children = form.cleaned_data['assigned_children']
-             total_cost = updated_task.points * assigned_children.count()
-             
-             # Calculate the Teencoins difference
-             previous_assigned_count = task.assigned_children.count()
-             previous_cost = task.points * previous_assigned_count
-             new_cost = updated_task.points * assigned_children.count()
-             cost_difference = new_cost - previous_cost
-             
-             if mentor.available_teencoins - cost_difference < 0:
-                 messages.error(request, "Not enough Teencoins to update this task.")
-             else:
-                 updated_task.save()
-                 form.save_m2m()
-                 
-                 # Update Teencoins
-                 mentor.available_teencoins -= cost_difference
-                 mentor.save()
-                 
-                 messages.success(request, f"Task updated successfully! Remaining Teencoins: {mentor.available_teencoins}")
-                 return redirect('mentorApp:mentor_task_list') 
-     else:
-         form = TaskForm(instance=task, mentor=mentor)
-     
-     return render(request, 'edit_task.html', {'form': form, 'task': task, 'available_teencoins': mentor.available_teencoins})
+    task = get_object_or_404(Task, id=task_id)
+    mentor = get_object_or_404(Mentor, user=request.user)
+    
+    if request.method == 'POST':
+        form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
+        if form.is_valid():
+            updated_task = form.save(commit=False)
+
+            old_points = task.points  
+            new_points = form.cleaned_data['points']
+            old_children = set(task.assigned_children.all())
+            new_children = set(form.cleaned_data['assigned_children'])
+
+            added_children = new_children - old_children
+            removed_children = old_children - new_children
+
+            old_cost = old_points * len(old_children)
+            new_cost = new_points * len(new_children)
+            cost_difference = new_cost - old_cost
+
+            if mentor.available_teencoins < cost_difference:
+                messages.error(request, "Not enough Teencoins to update this task.")
+            else:
+                updated_task.save()
+                form.save_m2m()
+
+                for child in added_children:
+                    TaskAssignment.objects.create(
+                        task=updated_task,
+                        child=child,
+                        assigned_by=mentor.user
+                    )
+
+                for child in removed_children:
+                    completions = TaskCompletion.objects.filter(task=updated_task, child=child)
+                    for completion in completions:
+                        completion.delete()
+                    TaskAssignment.objects.filter(task=updated_task,child=child).delete()
+
+
+                mentor.available_teencoins -= cost_difference
+                mentor.save()
+
+                messages.success(
+                    request,
+                    f"Task updated successfully! Remaining Teencoins: {mentor.available_teencoins}"
+                )
+                return redirect('mentorApp:mentor_task_list')
+
+    else:
+        form = TaskForm(instance=task, mentor=mentor)
+
+    return render(request, 'edit_task.html', {
+        'form': form,
+        'task': task,
+        'available_teencoins': mentor.available_teencoins,
+    })
 
 
 @login_required
