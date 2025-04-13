@@ -212,6 +212,11 @@
             <input type="checkbox" id="is_template" name="is_template" {% if form.is_template.value %}checked{% endif %}>
             <label for="is_template" class="form-label">שמור כמשימה לשכפול בעתיד</label>
         </div>
+
+        <div class="mb-3">
+            <input type="checkbox" id="is_pinned" name="is_pinned" {% if form.is_pinned.value %}checked{% endif %}>
+            <label for="is_pinned" class="form-label">נעץ משימה זו בראש רשימת המשימות של הילדים לצורך הדגשה</label>
+        </div>
        
         <button type="submit" class="btn-submit w-100">הוסף משימה</button>
     </form>

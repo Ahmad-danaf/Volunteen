@@ -12,14 +12,16 @@
 {% if can_show_expiration_warning %}
 <div class="premium-warning">
   <div class="warning-content">
-    <h2>המנוי שלך עומד לפוג!</h2>
-    <p>המשתמש שלך עומד לפוג בעוד {{ days_left_to_expire }} ימים – אל תוותר!</p>
+    <h2>רוצים להמשיך ליהנות מהוולנטין?</h2>
+    <p>המנוי שלך מתקרב לסיום בעוד {{ days_left_to_expire }} ימים.<br>
+    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!</p>
     <a href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20" class="warning-cta">
-      להצטרף מחדש
+    לחדש מנוי
     </a>
   </div>
 </div>
 {% endif %}
+
 
 
 <div class="avatar-streak-container">
@@ -90,10 +92,14 @@
     {% if new_tasks_count > 0 %}
         <ul class="task-list">
             {% for task_assignment in new_tasks %}
-            <li>
+            <li class="{% if task_assignment.task.is_pinned %}pinned-task{% endif %}">
+                {% if task_assignment.task.is_pinned %}
+                    <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                {% endif %}
                 <strong>{{ task_assignment.task.title }}</strong><br>
                 <small>{{ task_assignment.task.description|slice:":40" }}...</small><br>
                 <span>נקודות למשימה: {{ task_assignment.task.points }}</span>
+                
             </li>
             {% endfor %}
         </ul>
@@ -214,7 +220,6 @@ function scrollToTasks() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    // ערך true/false לפי child.user.phone
     const hasPhoneNumber = {{ child.user.phone|yesno:"true,false" }};
     if (!hasPhoneNumber) {
         document.getElementById('phoneNumberModal').style.display = 'block';
@@ -578,6 +583,7 @@ body {
     border-radius: 10px;
     border: 1px solid #eee;
 }
+
 .featured-tasks-container h2 {
     text-align: center;
     margin-bottom: 10px;
@@ -589,17 +595,34 @@ body {
 }
 .task-list li {
     background: #f7f7f7;
-    padding: 10px;
+    padding: 10px 10px 10px 35px; 
     margin-bottom: 8px;
     border-radius: 6px;
     color: #555;
+    position: relative; 
 }
+
 .task-list li span {
     display: inline-block;
     margin-top: 5px;
     color: #5d22ff;
     font-weight: bold;
 }
+
+.pinned-task {
+    background-color: #fff8e1;
+    border: 2px solid #ffcc00;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pin-icon {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 1.2rem;
+    cursor: default;
+}
+
 
 .navigation-grid {
     display: grid;

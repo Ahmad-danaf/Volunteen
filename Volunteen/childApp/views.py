@@ -195,7 +195,8 @@ def update_streak(request):
 
 @child_subscription_required
 def top_streaks(request):
-    top_children = Child.objects.order_by('-streak_count')
+    child = request.user.child
+    top_children = LeaderboardUtils.get_top_streaks(institution=child.institution)
     return render(request, "streak_leaderboard.html", {"top_children": top_children})
 
 @child_subscription_required
@@ -536,7 +537,7 @@ def task_check_in_out(request):
         ChildTaskManager
         .get_unresolved_tasks_for_child(child)
         .filter(deadline__gte=today)
-        .order_by('deadline')
+        .order_by('-is_pinned', 'deadline')
     )
     
     return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})

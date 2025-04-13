@@ -13,7 +13,8 @@ class Task(models.Model):
     assigned_mentors = models.ManyToManyField('mentorApp.Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
     completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
     is_template=models.BooleanField(default=False, verbose_name='Template', help_text='Mark as a template for future duplication')
-
+    is_pinned = models.BooleanField(default=False, verbose_name='Pinned', help_text='Pin this task to highlight it for mentors and children')
+    
     def __str__(self):
         return self.title
 

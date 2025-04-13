@@ -257,3 +257,25 @@ class LeaderboardUtils:
         child.streak_count = 0
         child.save()
         return 0  # Reset streak (more than 1 day gap)
+    
+    
+    @staticmethod
+    def get_top_streaks(institution=None, limit=None):
+        """
+        Returns a queryset of Child objects ordered by their streak_count in descending order.
+        
+        Optionally filters by institution if provided (and not "ALL"), 
+        and applies a limit (e.g. top 5, top 10).
+        
+        :param institution: An Institution instance or identifier to filter by.
+        :param limit: Optional integer to limit the number of results.
+        :return: QuerySet of Child objects.
+        """
+        qs=Child.objects.all()
+        if institution and institution != "ALL":
+            qs=qs.filter(institution=institution)
+            
+        qs=qs.order_by('-streak_count')
+        if limit:
+            qs=qs[:limit]
+        return qs

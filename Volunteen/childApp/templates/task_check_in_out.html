@@ -194,6 +194,18 @@
             font-weight: bold;
         }
 
+        .pinned-task {
+            background-color: #fff8e1 !important;
+            border: 2px solid #ffcc00 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .pin-icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+
         @media only screen and (max-width: 430px) {
             .task-list h1 {
                 font-size: 2rem;
@@ -260,11 +272,16 @@
             <ul>
                 {% for task in tasks %}
                     {% if not task.status %}
-                    <li>
+                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
                         <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
                         {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">{{ task.title }}</div>
+                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
+                            {% if task.is_pinned %}
+                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                            {% endif %}
+                            {{ task.title }}
+                        </div>
                         <div id="details-{{ task.id }}" class="task-details">
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
@@ -275,9 +292,7 @@
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">
-                        ! אין משימות ממתינות
-                    </div>
+                    <div class="empty-message">! אין משימות ממתינות</div>
                 {% endfor %}
             </ul>
         </div>
@@ -287,11 +302,16 @@
             <ul>
                 {% for task in tasks %}
                     {% if task.status == 'checked_in' %}
-                    <li>
+                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
                         <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
                         {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">{{ task.title }}</div>
+                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
+                            {% if task.is_pinned %}
+                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                            {% endif %}
+                            {{ task.title }}
+                        </div>
                         <div id="details-{{ task.id }}-checkin" class="task-details">
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
@@ -299,13 +319,11 @@
                                 <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין מחדש</a>
                                 <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט</a>
                             </div>
-                        </div>a 
+                        </div>
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">
-                        ! אין משימות עם צ'ק-אין בלבד
-                    </div>
+                    <div class="empty-message">! אין משימות עם צ'ק-אין בלבד</div>
                 {% endfor %}
             </ul>
         </div>
@@ -315,11 +333,16 @@
             <ul>
                 {% for task in tasks %}
                     {% if task.status == 'checked_out' or task.status == 'pending' %}
-                    <li>
+                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
                         <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
                         {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">{{ task.title }}</div>
+                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
+                            {% if task.is_pinned %}
+                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                            {% endif %}
+                            {{ task.title }}
+                        </div>
                         <div id="details-{{ task.id }}-checkout" class="task-details">
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
@@ -331,9 +354,7 @@
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">
-                        ! אין משימות שהושלמו
-                    </div>
+                    <div class="empty-message">! אין משימות שהושלמו</div>
                 {% endfor %}
             </ul>
         </div>
@@ -350,7 +371,6 @@
                 return;
             }
             
-            // Try alternate IDs for checkin/checkout tabs
             const checkinDetails = document.getElementById(`details-${taskId}-checkin`);
             if (checkinDetails) {
                 if (checkinDetails.style.display === "none" || checkinDetails.style.display === "") {
@@ -372,28 +392,22 @@
         }
         
         function openTab(evt, tabName) {
-            // Hide all tab content
             const tabContents = document.getElementsByClassName("tab-content");
             for (const content of tabContents) {
                 content.classList.remove("active");
             }
             
-            // Remove active class from all tab buttons
             const tabButtons = document.getElementsByClassName("tab-button");
             for (const button of tabButtons) {
                 button.classList.remove("active");
             }
             
-            // Show the specific tab content
             document.getElementById(tabName).classList.add("active");
-            
-            // Add active class to the clicked button
             evt.currentTarget.classList.add("active");
         }
         
         // Initialize tab counters
         document.addEventListener('DOMContentLoaded', function() {
-            // Count tasks for each tab and update badges
             const noCheckinCount = document.querySelectorAll('#no-checkin ul li').length;
             document.getElementById('no-checkin-count').textContent = noCheckinCount;
             

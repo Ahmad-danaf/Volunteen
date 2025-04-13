@@ -30,6 +30,7 @@ class ChildTaskManager:
         Retrieve all Task objects assigned to a child that have not been completed.
         Only include assignments that have not been refunded.
         Includes the `is_new` field from TaskAssignment and the latest `status` from TaskCompletion.
+        Pinned tasks appear first.
         """
         # Retrieve only the task IDs that were completed
         completed_task_ids = TaskCompletion.objects.filter(
@@ -49,7 +50,7 @@ class ChildTaskManager:
         ).exclude(id__in=completed_task_ids).annotate(
             is_new=F("assignments__is_new"),  # Fetching `is_new` field from TaskAssignment
             status=Subquery(latest_status_subquery)  # Fetching latest `status` from TaskCompletion
-        ).distinct()
+        ).distinct().order_by('-is_pinned', 'deadline')
 
     @staticmethod
     def get_completed_tasks(child):
@@ -199,14 +200,15 @@ class ChildTaskManager:
     @staticmethod
     def get_new_assigned_tasks(child):
         """
-        Retrieve the list of new tasks assigned to the child.
+        Retrieve the list of new tasks assigned to the child,
+        ordering pinned tasks first.
         """
         return TaskAssignment.objects.filter(
             child=child,
             is_new=True,
             refunded_at__isnull=True,
             task__deadline__gte=timezone.now().date()
-            )
+            ).order_by('-task__is_pinned', 'task__deadline')
     
     
     @staticmethod

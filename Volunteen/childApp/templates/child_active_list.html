@@ -12,7 +12,7 @@
   <!-- Main Task List Display -->
   <div id="task-list" class="grid gap-4">
     {% for task in tasks %}
-      <div id="task-{{ task.id }}" class="task-card bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:scale-105" onclick="toggleDetails({{ task.id }})">
+      <div id="task-{{ task.id }}" class="task-card bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:scale-105 {% if task.is_pinned %}pinned-task{% endif %}" onclick="toggleDetails({{ task.id }})">
         <div class="task-card bg-white rounded-xl shadow-md p-3 flex items-center relative mb-4" dir="rtl">
             <!-- Left Column: Image -->
             <div class="w-16 h-16 flex-shrink-0">
@@ -21,7 +21,7 @@
               {% else %}
                 <!-- Fallback if no image -->
                 <div class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                <img src="{% static 'images/logo.png' %}" alt="logo" class="w-full h-full object-cover rounded-lg" />
+                  <img src="{% static 'images/logo.png' %}" alt="logo" class="w-full h-full object-cover rounded-lg" />
                 </div>
               {% endif %}
             </div>
@@ -30,6 +30,9 @@
             <div class="flex-1 px-2">
               <h2 class="text-base font-semibold text-gray-800">
                 {{ task.title }}
+                {% if task.is_pinned %}
+                  <span class="pin-icon ml-2" title="משימה מוצמדת">📌</span>
+                {% endif %}
               </h2>
               <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
               <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
@@ -109,13 +112,13 @@
 
 {% block extra_css %}
 <style>
-  /* Pulse animation for NEW badge */
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+  .pinned-task {
+    background-color: #fff8e1 !important;
+    border: 2px solid #ffcc00 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   }
-  .animate-pulse {
-    animation: pulse 2s infinite;
+  .pin-icon {
+    font-size: 1.2rem; 
   }
 </style>
 {% endblock %}
