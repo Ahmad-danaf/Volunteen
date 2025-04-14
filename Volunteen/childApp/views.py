@@ -387,6 +387,7 @@ def rewards_view(request):
             'categories': [cat.code for cat in shop.categories.all()],
             'can_redeem': can_redeem,
             'reason': reason,
+            'img_url': shop.img.url if shop.img else '',
         })
 
     categories_list = [{'code': cat['code'], 'name': cat['name']} for cat in available_categories]

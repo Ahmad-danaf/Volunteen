@@ -208,7 +208,7 @@
       <div class="shop-card {% if not shop.can_redeem %}unclickable{% endif %}" 
            data-city="{{ shop.city }}" 
            data-categories="{{ shop.categories|join:',' }}">
-        <div class="shop-header" style="background-image: url('{{ shop.img }}')">
+        <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
           <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}">
             {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
           </div>
