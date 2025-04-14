@@ -170,8 +170,7 @@
           // Re-enable button on error
           buttonElement.disabled = false;
           buttonElement.textContent = originalText;
-          alert("שגיאה ");
-          console.log("שגיאה: " + data.message);
+          alert("שגיאה " + data.message);
         }
       })
       .catch((error) => {
@@ -221,8 +220,7 @@
           // Re-enable button on error
           buttonElement.disabled = false;
           buttonElement.textContent = originalText;
-          console.log("שגיאה: " + data.message);
-          alert("שגיאה");
+          alert("שגיאה " + data.message);
         }
       })
       .catch((error) => {
@@ -310,6 +308,7 @@
         buttonElement.disabled = false;
         buttonElement.textContent = originalText;
         console.error("Error:", error);
+        alert("שגיאה " + data.message);
       });
   }
 </script>

@@ -2,354 +2,342 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>פרסים ומבצעים</title>
-    <link rel="stylesheet" href="https://unpkg.com/@shoelace-style/shoelace@2.0.0-beta.87/dist/shoelace/shoelace.css">
-    <style>
-        :root {
-            --primary: #FF6B6B;
-            --secondary: #4ECDC4;
-            --dark: #2D3436;
-            --light: #F9F9F9;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>פרסים ומבצעים</title>
+  <link rel="stylesheet" href="https://unpkg.com/@shoelace-style/shoelace@2.0.0-beta.87/dist/shoelace/shoelace.css">
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Rubik', sans-serif;
-        }
+  <style>
+    :root {
+      --primary: #FF6B6B;
+      --secondary: #4ECDC4;
+      --dark: #2D3436;
+      --light: #F9F9F9;
+    }
+    * {
+      box-sizing: border-box;
+      font-family: 'Rubik', sans-serif;
+    }
+    body {
+      margin: 0;
+      background: var(--light);
+      color: var(--dark);
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        body {
-            margin: 0;
-            background: var(--light);
-            color: var(--dark);
-            -webkit-tap-highlight-color: transparent;
-        }
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+    .city-select {
+      background: rgba(255,255,255,0.9);
+      border-radius: 25px;
+      padding: 0.5rem 1rem;
+      width: 70%;
+    }
+    .shop-grid {
+      padding: 1rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+    /* Shop card styling */
+    .shop-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .shop-card:not(.unclickable):hover,
+    .shop-card.active {
+      transform: translateY(-5px);
+    }
+    .shop-card.unclickable {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(3px); }
+      50% { transform: translateX(0); }
+      75% { transform: translateX(-3px); }
+      100% { transform: translateX(0); }
+    }
+    .shake {
+      animation: shake 0.5s;
+    }
+    .shop-header {
+      position: relative;
+      height: 180px;
+      background-size: cover;
+      background-position: center;
+    }
+    .shop-overlay {
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .shop-status {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(255,255,255,0.9);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .shop-status.open { color: #2ecc71; }
+    .shop-status.closed { color: #e74c3c; }
+    .shop-info h2 {
+      margin: 0;
+      color: white;
+      font-size: 1.4rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .shop-meta {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+    .rewards-container {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .reward-scroll {
+      display: flex;
+      overflow-x: auto;
+      padding: 1rem;
+      gap: 1rem;
+      scroll-snap-type: x mandatory;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) transparent;
+    }
+    .reward-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .reward-scroll::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
 
-        .nav-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-        }
-
-        .city-select {
-            background: rgba(255,255,255,0.9);
-            border-radius: 25px;
-            padding: 0.5rem 1rem;
-            width: 70%;
-        }
-
-        .shop-grid {
-            padding: 1rem;
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .shop-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .shop-card.active {
-            transform: translateY(-5px);
-        }
-
-        .shop-header {
-            position: relative;
-            height: 180px;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .shop-overlay {
-            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
-            padding: 1rem;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .shop-status {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background: rgba(255,255,255,0.9);
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .shop-status.open { color: #2ecc71; }
-        .shop-status.closed { color: #e74c3c; }
-
-        .shop-info h2 {
-            margin: 0;
-            color: white;
-            font-size: 1.4rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .shop-meta {
-            color: rgba(255,255,255,0.9);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        .rewards-container {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .reward-scroll {
-            display: flex;
-            overflow-x: auto;
-            padding: 1rem;
-            gap: 1rem;
-        }
-
-        .reward-card {
-            flex: 0 0 200px;
-            background: white;
-            border-radius: 15px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .reward-image {
-            width: 100%;
-            height: 120px;
-            border-radius: 10px;
-            object-fit: cover;
-            margin-bottom: 0.5rem;
-        }
-
-        .reward-points {
-            color: var(--primary);
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-
-        .redeem-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            width: 100%;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .redeem-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .buy-btn {
-            background: var(--secondary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            width: 100%;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            margin-top: 1rem;
-        }
-
-        .buy-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 480px) {
-            .shop-header { height: 150px; }
-            .reward-card { flex: 0 0 160px; }
-            .buy-btn {
-                padding: 0.4rem 0.8rem;
-            }
-        }
-        .reward-scroll {
-            display: flex;
-            overflow-x: auto;
-            padding: 1rem;
-            gap: 1rem;
-            scroll-snap-type: x mandatory;
-            white-space: nowrap;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) transparent;
-        }
-        
-        /* Improve scrolling experience */
-        .reward-scroll::-webkit-scrollbar {
-            height: 8px;
-        }
-        
-        .reward-scroll::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
-        }
-        
-    </style>
+    .reward-card {
+      flex: 0 0 200px;
+      background: white;
+      border-radius: 15px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .reward-image {
+      width: 100%;
+      height: 120px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 0.5rem;
+    }
+    .reward-points {
+      color: var(--primary);
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .buy-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      width: 100%;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      margin-top: 1rem;
+    }
+    .buy-btn:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+    @media (max-width: 480px) {
+      .shop-header { height: 150px; }
+      .reward-card { flex: 0 0 160px; }
+      .buy-btn {
+        padding: 0.4rem 0.8rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header class="header">
-        <div class="nav-bar">
-            <a href="{% url 'teenApp:home_redirect' %}">🏠</a>
-            <select class="city-select" id="citySelect">
-                <option value="">כל הערים</option>
-                {% for code, name in available_cities %}
-                    <option value="{{ code }}" {% if child_city == code %}selected{% endif %}>{{ name }}</option>
-                {% endfor %}
-            </select>
-            <select class="city-select" id="categorySelect">
-                <option value="">כל הקטגריות</option>
-                
-                {% for cat in categories_list %}
-                    <option value="{{ cat.code }}">{{ cat.name }}</option>
-                {% endfor %}
-            </select>
-            <a href="{% url 'teenApp:logout_view' %}">🚪</a>
-        </div>
-    </header>
-
-    <main class="shop-grid">
-        {% for shop in shops %}
-        <div class="shop-card" data-city="{{ shop.city }}" data-categories="{{ shop.categories|join:',' }}">
-            <div class="shop-header" style="background-image: url('{{ shop.img }}')">
-                <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}">
-                    {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
-                </div>
-                <div class="shop-overlay">
-                    <div class="shop-info">
-                        <h2>{{ shop.name }}</h2>
-                        <div class="shop-meta">
-                            <span>
-                                {% for code, name in available_cities %}
-                                    {% if code == shop.city %}{{ name }}{% endif %}
-                                {% endfor %}
-                            </span> • 
-                            <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <a href="{% url 'childApp:shop_rewards' shop.id %}">
-                <button class="buy-btn">בחר פרס מהחנות</button>
-            </a>
-            <div class="rewards-container">
-                <div class="reward-scroll">
-                    {% for reward in shop.rewards %}
-                    <div class="reward-card">
-                        <img src="{{ reward.img_url }}" alt="{{ reward.title }}" class="reward-image {% if not reward.sufficient_points %}grey-scale{% endif %}">
-                        <h3>{{ reward.title }}</h3>
-                        <div class="reward-points">{{ reward.points }} טינקואינס</div>
-                    </div>
-                    {% empty %}
-                    <div class="no-rewards">אין פרסים זמינים כרגע</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+  <header class="header">
+    <div class="nav-bar">
+      <a href="{% url 'teenApp:home_redirect' %}">🏠</a>
+      <select class="city-select" id="citySelect">
+        <option value="">כל הערים</option>
+        {% for code, name in available_cities %}
+          <option value="{{ code }}" {% if child_city == code %}selected{% endif %}>{{ name }}</option>
         {% endfor %}
-    </main>
+      </select>
+      <select class="city-select" id="categorySelect">
+        <option value="">כל הקטגריות</option>
+        {% for cat in categories_list %}
+          <option value="{{ cat.code }}">{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <a href="{% url 'teenApp:logout_view' %}">🚪</a>
+    </div>
+  </header>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const citySelect = document.getElementById('citySelect');
-            const categorySelect = document.getElementById('categorySelect');
-            const shopCards = document.querySelectorAll('.shop-card');
-        
-            function filterShops() {
-                const selectedCity = citySelect.value;
-                const selectedCategory = categorySelect.value;
-        
-                shopCards.forEach(card => {
-                    const cardCity = card.dataset.city;
-                    const cardCategories = card.dataset.categories.split(',');
-        
-                    const cityMatch = !selectedCity || cardCity === selectedCity;
-                    const categoryMatch = !selectedCategory || cardCategories.includes(selectedCategory);
-        
-                    card.style.display = cityMatch && categoryMatch ? 'block' : 'none';
-                });
-            }
-        
-            // Filter on change
-            citySelect.addEventListener('change', filterShops);
-            categorySelect.addEventListener('change', filterShops);
-        
-            // Run filtering on page load
-            filterShops();
+  <main class="shop-grid">
+    {% for shop in shops %}
+      <div class="shop-card {% if not shop.can_redeem %}unclickable{% endif %}" 
+           data-city="{{ shop.city }}" 
+           data-categories="{{ shop.categories|join:',' }}">
+        <div class="shop-header" style="background-image: url('{{ shop.img }}')">
+          <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}">
+            {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
+          </div>
+          <div class="shop-overlay">
+            <div class="shop-info">
+              <h2>{{ shop.name }}</h2>
+              <div class="shop-meta">
+                <span>
+                  {% for code, name in available_cities %}
+                    {% if code == shop.city %}{{ name }}{% endif %}
+                  {% endfor %}
+                </span> • 
+                <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'childApp:shop_rewards' shop.id %}">
+          <button class="buy-btn" {% if not shop.can_redeem %}disabled{% endif %}>בחר פרס מהחנות</button>
+        </a>
 
-             // Prevent click inside rewards from triggering shop toggle
-             document.querySelectorAll('.reward-scroll').forEach(rewardScroll => {
-                rewardScroll.addEventListener('click', (event) => {
-                    event.stopPropagation(); // Prevent click from bubbling to .shop-card
-                });
-            });
+        {% if not shop.can_redeem %}
+          <div class="disabled-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:0.5rem 1rem;border-radius:15px;font-size:0.9rem;z-index:2;">
+            {% if shop.reason == "no_rewards_available" %}
+              אין פרסים זמינים
+            {% elif shop.reason == "max_shops_reached" %}
+              הגעת למגבלת חנויות
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="rewards-container">
+          <div class="reward-scroll">
+            {% for reward in shop.rewards %}
+              <div class="reward-card">
+                <img src="{{ reward.img_url }}" alt="{{ reward.title }}" 
+                     class="reward-image {% if not reward.sufficient_points %}grey-scale{% endif %}">
+                <h3>{{ reward.title }}</h3>
+                <div class="reward-points">{{ reward.points }} טינקואינס</div>
+              </div>
+            {% empty %}
+              <div class="no-rewards">אין פרסים זמינים כרגע</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </main>
+
+  <audio id="coinJingle" src="{% static 'audio/coin-jingle.mp3' %}" preload="auto"></audio>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const citySelect = document.getElementById('citySelect');
+      const categorySelect = document.getElementById('categorySelect');
+      const shopCards = document.querySelectorAll('.shop-card');
+      const coinAudio = document.getElementById('coinJingle');
+
+      function filterShops() {
+        const selectedCity = citySelect.value;
+        const selectedCategory = categorySelect.value;
+
+        shopCards.forEach(card => {
+          const cardCity = card.dataset.city;
+          const cardCategories = card.dataset.categories.split(',');
+          const cityMatch = !selectedCity || cardCity === selectedCity;
+          const categoryMatch = !selectedCategory || cardCategories.includes(selectedCategory);
+          card.style.display = cityMatch && categoryMatch ? 'block' : 'none';
         });
-        // Toggle shop rewards when clicking on shop card
-    document.querySelectorAll('.shop-card').forEach(card => {
-        card.addEventListener('click', function () {
-            if (event.target.closest('.reward-scroll')) return; // Ignore clicks inside rewards
+      }
 
-            this.classList.toggle('active');
-            const rewards = this.querySelector('.rewards-container');
-            rewards.style.maxHeight = rewards.style.maxHeight ? null : `${rewards.scrollHeight}px`;
+      citySelect.addEventListener('change', filterShops);
+      categorySelect.addEventListener('change', filterShops);
+      filterShops();
+
+      // Prevent clicks inside the horizontal scroll from triggering shop toggle
+      document.querySelectorAll('.reward-scroll').forEach(scroll => {
+        scroll.addEventListener('click', e => e.stopPropagation());
+      });
+
+      // Shop card toggle
+      shopCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+          // If user clicked inside .reward-scroll, ignore the click
+          if (e.target.closest('.reward-scroll')) return;
+
+          if (this.classList.contains('unclickable')) {
+            this.classList.add('shake');
+            setTimeout(() => { this.classList.remove('shake'); }, 500);
+            return;
+          }
+
+          // Toggle active class for subtle lift
+          this.classList.toggle('active');
+
+          // Expand or collapse the rewards-container
+          const rewardsContainer = this.querySelector('.rewards-container');
+          if (!rewardsContainer.style.maxHeight) {
+            rewardsContainer.style.maxHeight = rewardsContainer.scrollHeight + 'px';
+            // Play coin jingle on successful toggle
+            coinAudio.currentTime = 0;
+            coinAudio.play().catch(err => console.warn("Audio play prevented:", err));
+          } else {
+            rewardsContainer.style.maxHeight = null;
+          }
         });
-    });
-         // Enable swipe scrolling for reward-scroll
-    document.querySelectorAll('.reward-scroll').forEach(scrollContainer => {
+      });
+
+      // Enable horizontal "drag to scroll" on reward-scroll containers
+      document.querySelectorAll('.reward-scroll').forEach(scrollContainer => {
         let isDown = false;
         let startX;
         let scrollLeft;
-
-        scrollContainer.addEventListener('mousedown', (e) => {
-            isDown = true;
-            scrollContainer.classList.add('active');
-            startX = e.pageX - scrollContainer.offsetLeft;
-            scrollLeft = scrollContainer.scrollLeft;
+        scrollContainer.addEventListener('mousedown', e => {
+          isDown = true;
+          startX = e.pageX - scrollContainer.offsetLeft;
+          scrollLeft = scrollContainer.scrollLeft;
         });
-
-        scrollContainer.addEventListener('mouseleave', () => {
-            isDown = false;
-            scrollContainer.classList.remove('active');
+        scrollContainer.addEventListener('mouseleave', () => { isDown = false; });
+        scrollContainer.addEventListener('mouseup', () => { isDown = false; });
+        scrollContainer.addEventListener('mousemove', e => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - scrollContainer.offsetLeft;
+          const walk = (x - startX) * 2;
+          scrollContainer.scrollLeft = scrollLeft - walk;
         });
-
-        scrollContainer.addEventListener('mouseup', () => {
-            isDown = false;
-            scrollContainer.classList.remove('active');
-        });
-
-        scrollContainer.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - scrollContainer.offsetLeft;
-            const walk = (x - startX) * 2;
-            scrollContainer.scrollLeft = scrollLeft - walk;
-        });
+      });
     });
-        </script>
-
-    
+  </script>
 </body>
 </html>

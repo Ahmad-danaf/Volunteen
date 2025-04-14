@@ -222,7 +222,7 @@ def process_request(request):
             check_result = ShopManager.can_redeem_rewards(redemption_req.child, shop, selected_request, is_approval=True)
             if check_result["status"] == "error":
                 return JsonResponse(check_result, status=400)
-            result = ShopManager.approve_redemption_requests(redemption_req.child, selected_request)
+            result = ShopManager.approve_redemption_requests(redemption_req.child, selected_request,shop)
             if result["status"] == "error":
                 return JsonResponse(result, status=400)
             # Mark this specific request as approved.
@@ -279,7 +279,7 @@ def batch_process_requests(request):
             check_result = ShopManager.can_redeem_rewards(child, shop, selected_requests, is_approval=True)
             if check_result["status"] == "error":
                 return JsonResponse(check_result, status=400)
-            result = ShopManager.approve_redemption_requests(child, selected_requests)
+            result = ShopManager.approve_redemption_requests(child, selected_requests,shop)
             if result["status"] == "error":
                 return JsonResponse(result, status=400)
             # Mark each processed request as approved.
@@ -291,7 +291,7 @@ def batch_process_requests(request):
             if result["status"] == "error":
                 return JsonResponse(result, status=400)
 
-        return JsonResponse({"status": "success", "message": "Batch processing successful."})
+        return JsonResponse({"status": "success", "message": "תהליך  רכישה הושלם"})
     
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)

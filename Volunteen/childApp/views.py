@@ -24,7 +24,10 @@ from django.utils.timezone import localdate
 from .forms import RedemptionRatingForm,DonationForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
-from Volunteen.constants import AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,CHILDREN_REQUIRE_DEFAULT_IMAGE
+from Volunteen.constants import (
+    AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
+    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY
+)
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
 from childApp.utils.child_task_manager import ChildTaskManager
@@ -309,54 +312,90 @@ def child_points_history(request):
 
 @login_required
 def rewards_view(request):
-    # Prefetch related rewards for efficiency
+    ShopManager.expire_old_requests()
     shops = Shop.objects.filter(is_active=True).prefetch_related(
-    Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
+        Prefetch('rewards', queryset=Reward.objects.filter(is_visible=True))
+    )
+    child = request.user.child
+    child_city = child.city or ''
+    available_categories = Category.objects.all().values("code", "name")
+    today = localdate()
+
+    # Approved redemptions today (finalized redemptions)
+    redeemed_shop_ids = set(
+        Redemption.objects.filter(child=child, date_redeemed__date=today)
+        .values_list('shop_id', flat=True)
     )
 
-    child = request.user.child
-    child_city = child.city if child.city else ''
+    # Pending redemption requests (still “in process”)
+    expiration_threshold = now() - timedelta(minutes=REDEMPTION_REQUEST_EXPIRATION_MINUTES)
+    pending_shop_ids = set(
+        RedemptionRequest.objects.filter(
+            child=child,
+            date_requested__date=today,
+            status="pending",
+            locked_at__gte=expiration_threshold
+        ).values_list('shop_id', flat=True)
+    )
+    shops_used_today = redeemed_shop_ids.union(pending_shop_ids)
 
-    # Get available categories
-    available_categories = Category.objects.all().values("code", "name")
-
-    shops_with_images = []
+    shops_with_data = []
     for shop in shops:
         points_used_this_month = ShopManager.get_points_used_this_month(shop)
-        shop_image = shop.img.url if shop.img else static('images/logo.png')
         points_left_to_spend = ShopManager.get_remaining_points_this_month(shop)
-        rewards_with_images = [
+        
+        rewards_data = [
             {
                 'title': reward.title,
-                'img_url': reward.img.url if reward.img else static('images/logo.png'),
+                'img_url': reward.img.url if reward.img else '',
                 'points': reward.points_required,
                 'sufficient_points': TeenCoinManager.get_total_active_teencoins(child) >= reward.points_required
             }
-            for reward in shop.rewards.filter(is_visible=True)
+            for reward in shop.rewards.all() 
         ]
         
-        shops_with_images.append({
+        min_reward = shop.rewards.all().order_by('points_required').first()
+        min_points_required = min_reward.points_required if min_reward else 0
+        can_redeem_points = points_left_to_spend >= min_points_required
+
+        # Determine if the shop has already been used by the child today.
+        shop_used = shop.id in shops_used_today
+
+        # The shop limit is reached if the number of distinct shops used is at or above the maximum
+        # and the current shop is not among those already used.
+        shop_limit_reached = (len(shops_used_today) >= MAX_SHOPS_PER_DAY) and (not shop_used)
+
+        # Decide overall redeemability with a reason flag.
+        if not can_redeem_points:
+            can_redeem = False
+            reason = "no_rewards_available"  # Shop reached its monthly point cap (or has no visible rewards)
+        elif shop_limit_reached:
+            can_redeem = False
+            reason = "max_shops_reached"      # Child has already used the maximum number of shops today
+        else:
+            can_redeem = True
+            reason = ""
+
+        shops_with_data.append({
             'id': shop.id,
             'name': shop.name,
-            'img': shop_image,
-            'city': shop.city,  
-            'rewards': rewards_with_images,
+            'city': shop.city,
+            'rewards': rewards_data,
             'used_points': points_used_this_month,
             'is_open': shop.is_open(),
             'points_left_to_spend': points_left_to_spend,
-            'categories': [cat.code for cat in shop.categories.all()]  # Add categories
+            'categories': [cat.code for cat in shop.categories.all()],
+            'can_redeem': can_redeem,
+            'reason': reason,
         })
-    categories_list = []
-    for cat in available_categories:
-        code, name = cat['code'], cat['name']
-        categories_list.append({'code': code, 'name': name})
-                            
+
+    categories_list = [{'code': cat['code'], 'name': cat['name']} for cat in available_categories]
+
     context = {
-        'shops': shops_with_images,
-        'child_points': TeenCoinManager.get_total_active_teencoins(child),
+        'shops': shops_with_data,
         'child_city': child_city,
         'available_cities': AVAILABLE_CITIES,
-        'categories_list': categories_list, 
+        'categories_list': categories_list,
     }
     return render(request, 'shop_list.html', context)
 
@@ -397,6 +436,7 @@ def shop_rewards_view(request, shop_id):
         "rewards": rewards,
         "remaining_rewards": remaining_rewards,
         "available_teencoins": available_teencoins,
+        "MAX_SHOPS_PER_DAY":MAX_SHOPS_PER_DAY
     }
     return render(request, 'shop_rewards.html', context)
 

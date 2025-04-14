@@ -1,104 +1,130 @@
-# Volunteen Project
-<img src="Volunteen/Volunteen/static/images/logo.png" alt="Volunteen Logo" width="300"/>
+# Volunteen <img src="Volunteen/Volunteen/static/images/logo.png" alt="Volunteen Logo" width="300"/>
 
-## Description
-Welcome to Volunteen! This project, Volunteen, is a system we developed to manage tasks that increase the involvement of children and youth in community projects. Each positive task they complete earns them points that can be redeemed for rewards through partnerships with local businesses.
+_A social-impact platform that empowers teens to engage in volunteering through gamification, task tracking, and reward-based motivation._
 
-Volunteen is structured following Uncle Bob's Clean Architecture principles, organized into four distinct layers:
+## Overview
 
-- **Entities:** The core business logic.
-- **Use Cases:** Application-specific business rules.
-- **Interface Adapters:** Converters that transform data from the use cases to a format that can be used by the framework.
-- **Frameworks & Drivers:** External interfaces such as databases, web frameworks, or other I/O components.
+Volunteen is built for teens, parents, mentors, and institutions to promote and manage youth volunteering in an engaging and structured way. By using gamified systems like TeenCoins, leaderboards, and streaks, the platform motivates consistent participation while offering tools for supervision, task approval, and rewards.
 
-Below are screenshots showcasing different aspects of the **Volunteen** system:
+## Features
 
-<img src="Volunteen/Volunteen/static/images/kids_portal.png" alt="Kids Portal" width="300"/>
+- Task Management: Parents, mentors, and institutions can assign tasks to teens.
+- Asynchronous Check-In/Out: Teens submit photo proof of task progress.
+- TeenCoins System: Earned by task completion and can be donated or redeemed.
+- Gamification: Streak tracking, donation leaderboards, and performance analytics.
+- Role-Specific Dashboards: Separate experiences for teens, parents, mentors, and institutions.
+- Automated Commands: Monthly parent top-ups, cleanup scripts, and more.
+- Utility-Driven Architecture: Core logic is modularized for maintainability and scalability.
+- Test Coverage: Run modular tests for each app with Django's testing framework.
 
-**Screenshot of the Kids Portal, where children and youth can view and manage their tasks.**
+## Tech Stack
 
-<img src="Volunteen/Volunteen/static/images/mentor_portal.png" alt="Mentor Portal" width="300"/>
+- Frontend: Django Templates (React migration planned)
+- Backend: Django
+- Database: PostgreSQL
+- APIs: Green API (for WhatsApp messaging/automation)
+- Deployment: PythonAnywhere / AWS
 
-**Screenshot of the Mentor Portal, where mentors can assign tasks and track progress.**
-
-<img src="Volunteen/Volunteen/static/images/shop_portal.png" alt="Shop Portal" width="300"/>
-
-**Screenshot of the Shop Portal, where points can be redeemed for rewards.**
 
 ## Installation
-To install Volunteen, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/Ahmad-danaf/Volunteen`
-2. Navigate to the project directory: `cd volunteen`
-3. [Optional] Set up a virtual environment: `python -m venv venv` (optional but recommended)
-4. Activate the virtual environment:
-   - On Windows: `venv\Scripts\activate`
-   - On macOS and Linux: `source venv/bin/activate``
-5. Install dependencies: `pip install -r requirements.txt`
-   
-## Structure
-   ```bash
-Volunteen/
-├── Volunteen/                  # Main Django project folder
-│   ├── frameworks_and_drivers/ # Project settings, URLs, etc.
-│   ├── static/                 # Static files (CSS, JS, images)
-│   ├── media/                  # Uploaded and default media
-│   ├── db.sqlite3              # SQLite database (for development)
-│   ├── constants.py            # Project-wide constants
-│   └── manage.py               # Django project management script
-│
-├── childApp/                   # Child user functionality
-├── mentorApp/                  # Mentor dashboard and views
-├── parentApp/                  # Parent tools and task assignment
-├── institutionApp/             # Institutional access and transfer tools
-├── managementApp/              # Admin and donation management
-├── shopApp/                    # Shop and reward redemption logic
-├── teenApp/                    # Core business logic and clean architecture
-│
-├── requirements.txt            # Python dependencies
-├── .env                        # Environment variables (not committed)
-└── README.md                   # Project overview (this file)
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/Volunteen.git
+cd Volunteen
 
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
+# Install dependencies
+pip install -r requirements.txt
 
+# Apply migrations
+python manage.py migrate
+
+# Start development server
+python manage.py runserver
 ```
 
-## Usage
-To use Volunteen, follow these steps:
+To enable asynchronous task handling (e.g., photo-based check-in/out), run:
 
-1. Apply database migrations:
-   ```bash
-   python manage.py migrate
-   
-2. Create a superuser account
-   ```bash
-   python manage.py createsuperuser
-   ```
-   Follow the prompts to set up your admin username and password.
+```bash
+python manage.py qcluster
+```
 
-3. Run the Django development server:
-   ```bash
-   python manage.py runserver
-4. Open your web browser and navigate to http://127.0.0.1:8000/ to access the homepage.
-5. Log in using the appropriate user credentials:
- - For children: use the credentials provided during registration.
- - For mentors: use the mentor credentials.
- - For shop owners: use the shop owner credentials.
-6. Children can view and complete tasks assigned to them, earning points for each completed task.
-7. Mentors can assign tasks to children and monitor their progress.
-8. Shop owners can manage reward redemptions and track points used by children.
-9. Use the admin panel to manage users, tasks, and rewards: http://127.0.0.1:8000/admin/
+## Environment Variables
 
+Create a `.env` file in the project root with the following:
 
-## Built With
-- [Python](https://www.python.org/) - The programming language used.
-- [Django](https://www.djangoproject.com/) - The web framework used.
-- [SQLite](https://www.sqlite.org/index.html) - The database used.
-- [HTML/CSS/JavaScript](https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics) - For the frontend components.
-- [Bootstrap](https://getbootstrap.com/) - For responsive design and styling.
-- [Git](https://git-scm.com/) - Version control system.
-- [AWS](https://aws.amazon.com/) - Used for deployment.
-- 
+```env
+GREEN_API=your_key
+DEVELOPMENT=True
+EMAIL_PASSWORD=your_email_password
+
+DATABASE_NAME=your_db_name
+DATABASE_USER=your_db_user
+DATABASE_PASSWORD=your_db_password
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+
+X-API-Key=your_internal_api_key
+```
+
+## Running Tests
+
+You can run tests per app like this:
+
+```bash
+python manage.py test childApp.tests
+```
+
+Replace `childApp` with any other app (e.g. `mentorApp`, `teenApp`, etc.)
+
+## Project Structure
+
+```
+Volunteen/
+├── Volunteen/
+│   ├── frameworks_and_drivers/
+│   ├── static/
+│   ├── media/
+│   ├── db.sqlite3
+│   ├── constants.py
+│   └── manage.py
+│
+├── childApp/
+├── mentorApp/
+├── parentApp/
+├── institutionApp/
+├── managementApp/
+├── shopApp/
+├── teenApp/
+│
+├── requirements.txt
+├── .env
+└── README.md
+```
+
+## Contributing
+
+We welcome contributions!  
+To contribute:
+
+```bash
+# 1. Fork the repository
+# 2. Create a new branch
+git checkout -b feature/my-feature
+
+# 3. Make your changes and commit
+git commit -m "Add new feature"
+
+# 4. Push your branch
+git push origin feature/my-feature
+
+# 5. Open a Pull Request
+```
+
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+This project is licensed under the MIT License.

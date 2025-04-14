@@ -4,7 +4,7 @@ from shopApp.models import Reward, Redemption, RedemptionRequest, Shop
 from childApp.models import Child
 from teenApp.utils.NotificationManager import NotificationManager
 from childApp.utils.TeenCoinManager import TeenCoinManager  
-from Volunteen.constants import MAX_REWARDS_PER_DAY, REDEMPTION_REQUEST_EXPIRATION_MINUTES
+from Volunteen.constants import MAX_REWARDS_PER_DAY, REDEMPTION_REQUEST_EXPIRATION_MINUTES, MAX_SHOPS_PER_DAY
 from django.utils.timezone import now, localdate
 from django.db.models import Sum
 import random
@@ -153,26 +153,41 @@ class ShopManager:
     @staticmethod
     def can_redeem_rewards(child, shop, selected_rewards, is_approval=False):
         """
-        Checks if a child can redeem the requested rewards based on daily limits, available TeenCoins,
-        and the shop’s monthly limit.
-        """
-        
+        Checks if a child can redeem the requested rewards based on:
+        - Per-shop daily redemption limit
+        - Max distinct shops per day
+        - TeenCoin balance
+        - Shop’s monthly point cap
+
+        is_approval:
+            If True, applies rules for final approval (ignores pending requests).
+            If False, applies rules for request submission (includes pending requests).
+        """   
         today = localdate()
 
-        # Include only pending requests created within the last REDEMPTION_REQUEST_EXPIRATION_MINUTES
-        recent_pending_requests = RedemptionRequest.objects.filter(
-            child=child, shop=shop, date_requested__date=today, status="pending",
+        # --- PENDING REQUESTS ---
+        recent_pending_requests_count = RedemptionRequest.objects.filter(
+            child=child, 
+            shop=shop, 
+            date_requested__date=today, 
+            status="pending",
             locked_at__gte=timezone.now() - timedelta(minutes=REDEMPTION_REQUEST_EXPIRATION_MINUTES)
-        )
-        recent_pending_requests_count=0
-        for req in recent_pending_requests:
-            recent_pending_requests_count+=req.quantity
+        ).aggregate(total=Sum('quantity'))['total'] or 0
 
-        total_redemption_today = Redemption.objects.filter(child=child, shop=shop, date_redeemed__date=today)
-        total_rewards_today=0
-        for redemption in total_redemption_today:
-            total_rewards_today+=redemption.quantity
+        # --- REDEMPTIONS FROM TODAY ---
+        total_rewards_today = Redemption.objects.filter(
+            child=child, 
+            shop=shop, 
+            date_redeemed__date=today
+        ).aggregate(total=Sum('quantity'))['total'] or 0
+            
+        # --- REQUESTED NOW ---
         total_rewards_requested = sum(r['quantity'] for r in selected_rewards)
+        if total_rewards_requested == 0:
+            return {"status": "error", "message": "לא נבחרו פריטים למימוש."}
+
+        
+        # --- Enforce per-shop daily limit ---
         if is_approval:
             if total_rewards_today + total_rewards_requested> MAX_REWARDS_PER_DAY:
                 return {"status": "error", "message": "הילד הגיע למגבלות הרכישות היומיות."}
@@ -180,13 +195,32 @@ class ShopManager:
             if total_rewards_today + recent_pending_requests_count + total_rewards_requested > MAX_REWARDS_PER_DAY:
                 return {"status": "error", "message": "הילד הגיע למגבלות הרכישות היומיות."}
 
+
+        # --- Enforce shop limit (distinct shops per day) ---
+        shops_redeemed_today = set(
+        Redemption.objects.filter(
+            child=child, date_redeemed__date=today
+        ).values_list('shop_id', flat=True)
+        )
+        
+        if not is_approval:
+            pending_shop_ids = RedemptionRequest.objects.filter(
+                child=child, date_requested__date=today, status="pending",
+                locked_at__gte=timezone.now() - timedelta(minutes=REDEMPTION_REQUEST_EXPIRATION_MINUTES)
+            ).values_list('shop_id', flat=True)
+            shops_redeemed_today.update(pending_shop_ids)
+
+        if len(shops_redeemed_today) >= MAX_SHOPS_PER_DAY and shop.id not in shops_redeemed_today:
+            return {"status": "error", "message": "הילד הגיע למגבלת מספר החנויות היומיות."}
+
+
+        # --- Enforce TeenCoin balance ---
         total_points_needed = sum(r['quantity'] * r['points'] for r in selected_rewards)
         if TeenCoinManager.get_total_active_teencoins(child) < total_points_needed:
             return {"status": "error", "message": "אין לך מספיק טינקואינס לביצוע הרכישה."}
 
-        # Check shop’s available monthly limit (including locked points)
+        # --- Enforce shop's monthly point limit ---
         shop_remaining_points = ShopManager.get_remaining_points_this_month(shop)
-
         if total_points_needed > shop_remaining_points:
             return {"status": "error", "message": "החנות עברה את מגבלת הנקודות החודשית."}
 
@@ -287,7 +321,7 @@ class ShopManager:
         """
         total_points_needed = sum(item['quantity'] * item['points'] for item in selected_requests)
         if TeenCoinManager.get_total_active_teencoins(child) < total_points_needed:
-            return {"status": "error", "message": "אין מספיק נקודות ברשותך."}
+            return {"status": "error", "message": "אין מספיק נקודות לילד."}
         
         try:
             TeenCoinManager.redeem_teencoins(child, total_points_needed)

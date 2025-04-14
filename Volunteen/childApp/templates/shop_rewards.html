@@ -13,7 +13,7 @@
   <form dir="rtl" method="post" id="redeem-form">
       {% csrf_token %}
       
-      <!-- Daily Limits & TeenCoins -->
+          <!-- Daily Limits & TeenCoins Summary -->
       <div class="limit-box">
         <h3>מגבלות יומיות</h3>
         <div class="limit-values">
@@ -26,41 +26,34 @@
             טינקואינס זמינים: <span id="available-teencoins">{{ available_teencoins }}</span>
           </span>
         </div>
+        <p class="limit-remark">זכרו: אפשר לממש פרסים רק ב‑{{ MAX_SHOPS_PER_DAY }} חנויות ביום</p>
       </div>
-      
-  
+
 
       <!-- Rewards Grid -->
       <div class="rewards-grid">
           {% for reward in rewards %}
-          <div class="reward-card" 
-               data-reward-id="{{ reward.id }}" 
-               data-points="{{ reward.points_required }}">
-               
+          <div class="reward-card" data-reward-id="{{ reward.id }}" data-points="{{ reward.points_required }}">
             <div class="reward-img-wrapper">
               <img src="{{ reward.img.url }}" alt="{{ reward.title }}" class="reward-img">
             </div>
-            
             <div class="reward-details">
               <h4 class="reward-title">{{ reward.title }}</h4>
               <p class="reward-points">{{ reward.points_required }} טינקוינס</p>
             </div>
-
             <div class="reward-actions">
                 <button type="button" class="btn btn-secondary btn-remove"
                         onclick="updateQuantity({{ reward.id }}, 'sell')">
                     <i class="fas fa-minus"></i>
                 </button>
-            
                 <span class="quantity" id="quantity-{{ reward.id }}">0</span>
-            
                 <button type="button" class="btn btn-primary btn-add"
                         onclick="updateQuantity({{ reward.id }}, 'buy')"
                         id="add-btn-{{ reward.id }}">
                     <i class="fas fa-plus"></i>
                 </button>
-                 <!-- Feedback Message -->
-<p class="feedback-message" id="feedback-{{ reward.id }}"></p>
+                <!-- Feedback Message -->
+                <p class="feedback-message" id="feedback-{{ reward.id }}"></p>
             </div>
           </div>
           {% endfor %}
@@ -74,7 +67,7 @@
       <div class="action-buttons">
           <button type="button" class="btn cancel-btn" onclick="cancelRequest()">ביטול בקשה</button>
           <button type="button" id="submit-request-btn" class="btn submit-btn" onclick="submitRequest()">שלח בקשת פרס</button>
-        </div>
+      </div>
 
       <!-- Hidden Fields -->
       <input type="hidden" name="child_id" value="{{ child.id }}">
@@ -83,511 +76,371 @@
   </form>
 </div>
 
+<!-- Audio element for coin jingle feedback -->
+<audio id="coinJingle" src="{% static 'audio/coin-jingle.mp3' %}" preload="auto"></audio>
+
 <script>
   // Initial daily-limit & TeenCoin values from the server
-let initialRemainingRewards = parseInt('{{ remaining_rewards }}') || 0;
-let initialTeencoins = parseInt('{{ available_teencoins }}') || 0;
+  let initialRemainingRewards = parseInt('{{ remaining_rewards }}') || 0;
+  let initialTeencoins = parseInt('{{ available_teencoins }}') || 0;
 
-// The user's current selections
-let selectedRewards = [];
+  // Array to hold the user's current selections
+  let selectedRewards = [];
 
-// Update the quantity of a given reward and recalculate limits
-function updateQuantity(rewardId, action) {
-    let quantitySpan = document.getElementById('quantity-' + rewardId);
-    let quantity = parseInt(quantitySpan.textContent);
-    let addButton = document.getElementById('add-btn-' + rewardId);
-    let feedbackMessage = document.getElementById('feedback-' + rewardId);
-    let rewardCard = document.querySelector(`[data-reward-id='${rewardId}']`);
-    let rewardCost = parseInt(rewardCard.getAttribute("data-points"));
-
-    let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
-
-    // Adjust quantity based on action
-    if (action === 'buy') {
-        if (canAddReward(rewardCost)) {
-            quantity += 1;
-            updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
-        }
-    } else if (action === 'sell' && quantity > 0) {
-        quantity -= 1;
-        updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
-    }
-
-    // Update quantity display
-    quantitySpan.textContent = quantity;
-
-    // Recalculate and update limits
-    recalcLimits();
-
-    // Check if limits are exceeded and update buttons accordingly
-    updateButtonState(addButton, feedbackMessage);
-}
-
-// Update the selected rewards array
-function updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost) {
-    let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
-    let title = rewardCard.querySelector('.reward-title').textContent;
-
-    if (rewardIndex !== -1) {
-        selectedRewards[rewardIndex].quantity = quantity;
-        if (quantity === 0) {
-            selectedRewards.splice(rewardIndex, 1);
-        }
-    } else if (quantity > 0) {
-        selectedRewards.push({
-            reward_id: rewardId,
-            title: title,
-            quantity: quantity,
-            points: rewardCost
-        });
-    }
-
-    updateReceipt();
-}
-
-// Check if the user can add a reward
-function canAddReward(rewardCost) {
-    let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
-    let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
-
-    return totalQuantity < initialRemainingRewards && (totalPoints + rewardCost) <= initialTeencoins;
-}
-
-// Update the receipt section
-function updateReceipt() {
-    let receipt = document.getElementById('receipt');
-    receipt.innerHTML = '';
-
-    selectedRewards.forEach(reward => {
-        let li = document.createElement('li');
-        li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} טינקוינס`;
-        li.style.opacity = 0;
-        receipt.appendChild(li);
-        setTimeout(() => { li.style.opacity = 1; }, 50);
-    });
-}
-
-// Recalculate and update the top daily-limit and available-teencoins section
-function recalcLimits() {
-    let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
-    let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
-
-    let newRemainingRewards = initialRemainingRewards - totalQuantity;
-    let newTeencoins = initialTeencoins - totalPoints;
-
-    // Clamp values at zero to avoid negative display
-    document.getElementById('remaining-rewards').textContent = Math.max(newRemainingRewards, 0);
-    document.getElementById('available-teencoins').textContent = Math.max(newTeencoins, 0);
-}
-
-// Disable the "Add" button when limits are exceeded & show feedback
-function updateButtonState(addButton, feedbackMessage) {
-    let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
-    let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
-
-    if (totalQuantity >= initialRemainingRewards || totalPoints >= initialTeencoins) {
-        addButton.classList.add('disabled');
-        addButton.disabled = true;
-
-        // Show relevant feedback message
-        if (totalQuantity >= initialRemainingRewards) {
-            feedbackMessage.textContent = "הגעת למגבלת הפרסים היומית!";
-        } else if (totalPoints >= initialTeencoins) {
-            feedbackMessage.textContent = "אין מספיק טינקואינס למימוש נוסף!";
-        }
-        feedbackMessage.style.display = "block";
-    } else {
-        addButton.classList.remove('disabled');
-        addButton.disabled = false;
-        feedbackMessage.style.display = "none";
-    }
-}
-
-function getCSRFToken() {
-  return document.querySelector("[name=csrfmiddlewaretoken]").value;
-}
-
-// Extracts shop_id from the URL
-function getShopIdFromURL() {
-  let pathParts = window.location.pathname.split("/");
-  return pathParts[pathParts.indexOf("shop") + 1]; 
-}
-
-function submitRequest() {
-  // Check if any rewards are selected
-  if (selectedRewards.length === 0) {
-      alert("אנא בחר לפחות פרס אחד.");
-      return;
+  // Play the coin jingle sound
+  function playCoinSound() {
+      const coinAudio = document.getElementById('coinJingle');
+      coinAudio.currentTime = 0;
+      coinAudio.play().catch(err => console.warn("Audio play prevented:", err));
   }
 
-  // Get the submit button element
-  let submitBtn = document.getElementById('submit-request-btn');
-  // Save its original innerHTML to restore later if needed
-  let originalHTML = submitBtn.innerHTML;
-  
-  // Disable the button and update its innerHTML to show the spinner and loader message
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="loading-spinner"></span> שולח בקשה...';
+  // Update the quantity of a given reward and recalc limits
+  function updateQuantity(rewardId, action) {
+      let quantitySpan = document.getElementById('quantity-' + rewardId);
+      let quantity = parseInt(quantitySpan.textContent);
+      let addButton = document.getElementById('add-btn-' + rewardId);
+      let feedbackMessage = document.getElementById('feedback-' + rewardId);
+      let rewardCard = document.querySelector(`[data-reward-id='${rewardId}']`);
+      let rewardCost = parseInt(rewardCard.getAttribute("data-points"));
 
-  // Get the shop id from URL and prepare form data
-  let shopId = getShopIdFromURL(); 
-  let formData = {
-      shop_id: shopId, 
-      selected_rewards: selectedRewards
-  };
+      // Find if the reward is already selected
+      let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
 
-  // Send the POST request
-  fetch("{% url 'childApp:submit_redemption_request' %}", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCSRFToken() 
+      // Adjust quantity based on action
+      if (action === 'buy') {
+          if (canAddReward(rewardCost)) {
+              quantity += 1;
+              updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
+              playCoinSound(); // Play sound on plus
+          }
+      } else if (action === 'sell' && quantity > 0) {
+          quantity -= 1;
+          updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
+          playCoinSound(); // Play sound on minus as well
       }
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.status === "success") {
-          // Show success message, clear selections, and recalc limits
-          showSuccessMessage(data.message);
-          selectedRewards = [];
-          updateReceipt();
-          recalcLimits();
-          // Redirect to home after a short delay
-          setTimeout(() => {
-              window.location.href = "{% url 'childApp:child_home' %}";
-          }, 500);
+
+      // Update quantity display
+      quantitySpan.textContent = quantity;
+
+      // Recalculate and update limits
+      recalcLimits();
+
+      // Check if limits are exceeded and update button state accordingly
+      updateButtonState(addButton, feedbackMessage);
+  }
+
+  // Update the selected rewards array
+  function updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost) {
+      let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
+      let title = rewardCard.querySelector('.reward-title').textContent;
+
+      if (rewardIndex !== -1) {
+          selectedRewards[rewardIndex].quantity = quantity;
+          if (quantity === 0) {
+              selectedRewards.splice(rewardIndex, 1);
+          }
+      } else if (quantity > 0) {
+          selectedRewards.push({
+              reward_id: rewardId,
+              title: title,
+              quantity: quantity,
+              points: rewardCost
+          });
+      }
+
+      updateReceipt();
+  }
+
+  // Check if the user can add one more unit of reward based on limits
+  function canAddReward(rewardCost) {
+      let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
+      let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
+
+      return totalQuantity < initialRemainingRewards && (totalPoints + rewardCost) <= initialTeencoins;
+  }
+
+  // Update the receipt display with the current rewards selected
+  function updateReceipt() {
+      let receipt = document.getElementById('receipt');
+      receipt.innerHTML = '';
+
+      selectedRewards.forEach(reward => {
+          let li = document.createElement('li');
+          li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} טינקוינס`;
+          li.style.opacity = 0;
+          receipt.appendChild(li);
+          setTimeout(() => { li.style.opacity = 1; }, 50);
+      });
+  }
+
+  // Recalculate and update the top daily-limit and available-teencoins display
+  function recalcLimits() {
+      let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
+      let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
+
+      let newRemainingRewards = initialRemainingRewards - totalQuantity;
+      let newTeencoins = initialTeencoins - totalPoints;
+
+      // Clamp values to avoid negatives
+      document.getElementById('remaining-rewards').textContent = Math.max(newRemainingRewards, 0);
+      document.getElementById('available-teencoins').textContent = Math.max(newTeencoins, 0);
+  }
+
+  // Update button state for each reward's add button and provide feedback if limits are reached
+  function updateButtonState(addButton, feedbackMessage) {
+      let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
+      let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
+
+      if (totalQuantity >= initialRemainingRewards || totalPoints >= initialTeencoins) {
+          addButton.classList.add('disabled');
+          addButton.disabled = true;
+
+          // Show feedback message
+          if (totalQuantity >= initialRemainingRewards) {
+              feedbackMessage.textContent = "הגעת למגבלת הפרסים היומית!";
+          } else if (totalPoints >= initialTeencoins) {
+              feedbackMessage.textContent = "אין מספיק טינקואינס למימוש נוסף!";
+          }
+          feedbackMessage.style.display = "block";
       } else {
-          // Show error and re-enable the button with original content
-          showErrorMessage(data.message);
+          addButton.classList.remove('disabled');
+          addButton.disabled = false;
+          feedbackMessage.style.display = "none";
+      }
+  }
+
+  function getCSRFToken() {
+      return document.querySelector("[name=csrfmiddlewaretoken]").value;
+  }
+
+  function getShopIdFromURL() {
+      let pathParts = window.location.pathname.split("/");
+      return pathParts[pathParts.indexOf("shop") + 1]; 
+  }
+
+  function submitRequest() {
+      if (selectedRewards.length === 0) {
+          alert("אנא בחר לפחות פרס אחד.");
+          return;
+      }
+
+      let submitBtn = document.getElementById('submit-request-btn');
+      let originalHTML = submitBtn.innerHTML;
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loading-spinner"></span> שולח בקשה...';
+
+      let shopId = getShopIdFromURL(); 
+      let formData = {
+          shop_id: shopId, 
+          selected_rewards: selectedRewards
+      };
+
+      fetch("{% url 'childApp:submit_redemption_request' %}", {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken()
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.status === "success") {
+              showSuccessMessage(data.message);
+              selectedRewards = [];
+              updateReceipt();
+              recalcLimits();
+              setTimeout(() => {
+                  window.location.href = "{% url 'childApp:child_home' %}";
+              }, 500);
+          } else {
+              showErrorMessage(data.message);
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalHTML;
+          }
+      })
+      .catch(error => {
+          console.error("Error:", error);
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalHTML;
-      }
-  })
-  .catch(error => {
-      console.error("Error:", error);
-      // Re-enable the button and restore original content in case of error
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalHTML;
-  });
-}
+      });
+  }
 
+  // Show success and error messages
+  function showSuccessMessage(message) {
+      let successDiv = document.createElement("div");
+      successDiv.classList.add("success-message");
+      successDiv.textContent = message;
+      document.body.appendChild(successDiv);
 
+      setTimeout(() => {
+          successDiv.remove();
+      }, 3000);
+  }
 
+  function showErrorMessage(message) {
+      let errorDiv = document.createElement("div");
+      errorDiv.classList.add("error-message");
+      errorDiv.textContent = message;
+      document.body.appendChild(errorDiv);
 
+      setTimeout(() => {
+          errorDiv.remove();
+      }, 5000);
+  }
 
-// Success & Error UI Functions
-function showSuccessMessage(message) {
-    let successDiv = document.createElement("div");
-    successDiv.classList.add("success-message");
-    successDiv.textContent = message;
-    document.body.appendChild(successDiv);
-
-    setTimeout(() => {
-        successDiv.remove();
-    }, 3000);
-}
-
-function showErrorMessage(message) {
-    let errorDiv = document.createElement("div");
-    errorDiv.classList.add("error-message");
-    errorDiv.textContent = message;
-    document.body.appendChild(errorDiv);
-
-    setTimeout(() => {
-        errorDiv.remove();
-    }, 5000);
-}
-
-
-// Cancel the request
-function cancelRequest() {
-    fetch("{% url 'childApp:cancel_request' %}", {
-        method: 'POST',
-        headers: {'X-CSRFToken': '{{ csrf_token }}'}
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-            window.location.href = "{% url 'childApp:child_home' %}";
-        }
-    });
-}
-
+  // Cancel the request
+  function cancelRequest() {
+      fetch("{% url 'childApp:cancel_request' %}", {
+          method: 'POST',
+          headers: {'X-CSRFToken': '{{ csrf_token }}'}
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.status === 'ok') {
+              window.location.href = "{% url 'childApp:child_home' %}";
+          }
+      });
+  }
 </script>
 
 <style>
-/* Global Container */
-.redeem-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 15px;
-}
-
-/* Page Title */
-.page-title {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-  font-weight: 700;
-}
-
-
-/* Rewards Grid */
-.rewards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-/* Reward Card */
-.reward-card {
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  position: relative;
-  padding-bottom: 10px; /* space for actions */
-}
-.reward-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-}
-.reward-img-wrapper {
-  background-color: #fafafa;
-  padding: 10px;
-}
-.reward-img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-.reward-details {
-  padding: 10px;
-}
-.reward-title {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #333;
-}
-.reward-points {
-  margin: 5px 0 0 0;
-  color: #777;
-  font-size: 0.9rem;
-}
-
-/* Reward Actions */
-.reward-actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-.quantity {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-/* Buttons */
-.btn {
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: #fff;
-  outline: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.btn i {
-  margin: 0 3px;
-}
-.btn:hover {
-  transform: translateY(-2px);
-}
-.minus-btn {
-  background-color: #dc3545;
-}
-.minus-btn:hover {
-  background-color: #c82333;
-}
-.plus-btn {
-  background-color: #28a745;
-}
-.plus-btn:hover {
-  background-color: #218838;
-}
-
-/* Receipt */
-.receipt-title {
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-.receipt-list {
-  list-style-type: none;
-  padding: 0;
-  border-top: 1px solid #ddd;
-  margin-top: 10px;
-}
-.receipt-list li {
-  padding: 6px 0;
-  border-bottom: 1px solid #eee;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 25px;
-}
-.cancel-btn {
-  background-color: #6c757d;
-}
-.cancel-btn:hover {
-  background-color: #5a6268;
-}
-.submit-btn {
-  background-color: #007bff;
-}
-.submit-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
   .redeem-container {
-    padding: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
+  }
+  .page-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 700;
+  }
+  .limit-box {
+    background: linear-gradient(135deg, #fffbe6, #ffeeba);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: right;
+    transition: transform 0.3s ease;
+  }
+  .limit-box:hover {
+    transform: scale(1.02);
+  }
+  .limit-box h3 {
+    margin: 0 0 10px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #333;
+  }
+  .limit-values {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .limit-item {
+    font-size: 1rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .limit-item i {
+    font-size: 1.2rem;
+    color: #ffb300;
   }
   .rewards-grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  .reward-card {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  .reward-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
+  .reward-img-wrapper {
+    background-color: #fafafa;
+    padding: 10px;
   }
   .reward-img {
-    height: 100px;
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
   }
-}
-.limit-box {
-  background: linear-gradient(135deg, #fffbe6, #ffeeba);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  text-align: right;
-  transition: transform 0.3s ease;
-}
-.limit-box:hover {
-  transform: scale(1.02);
-}
-.limit-box h3 {
-  margin: 0 0 10px;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #333;
-}
-.limit-values {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;  /* Ensures proper wrapping on smaller screens */
-}
-.limit-item {
-  font-size: 1rem;
-  color: #555;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-}
-.limit-item i {
-  font-size: 1.2rem;
-  color: #ffb300; /* Accent color */
-}
-
-
-</style>
-<style>
-
-    .action-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 10px;
-      }
-      
-      .btn {
-        border: none;
-        padding: 8px 12px;
-        font-size: 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      .btn-add {
-        background: #28a745;
-        color: white;
-      }
-      
-      .btn-remove {
-        background: #dc3545;
-        color: white;
-      }
-      
-      .btn:hover {
-        filter: brightness(1.1);
-        transform: scale(1.05);
-      }
-      
-      .reward-card {
-        background: #ffffff;
-        border-radius: 15px;
-        overflow: hidden;
-        text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      
-      .reward-card:hover {
-        transform: scale(1.03);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-      }
-      
-      .reward-img {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 15px 15px 0 0;
-      }
-      
-      .reward-details {
-        padding: 12px;
-      }
-      
-      .reward-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #333;
-      }
-      
-      .reward-price {
-        font-size: 1rem;
-        color: #777;
-        margin-top: 5px;
-      }
-      /* Button Styling */
-.btn {
+  .reward-details {
+    padding: 10px;
+  }
+  .reward-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  .reward-points {
+    margin: 5px 0 0 0;
+    color: #777;
+    font-size: 0.9rem;
+  }
+  .reward-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .quantity {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+  }
+  .cancel-btn {
+    background-color: #6c757d;
+  }
+  .cancel-btn:hover {
+    background-color: #5a6268;
+  }
+  .submit-btn {
+    background-color: #007bff;
+  }
+  .submit-btn:hover {
+    background-color: #0056b3;
+  }
+  .receipt-title {
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .receipt-list {
+    list-style-type: none;
+    padding: 0;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+  }
+  .receipt-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn {
     border: none;
     padding: 8px 12px;
     font-size: 1rem;
@@ -598,36 +451,33 @@ function cancelRequest() {
     align-items: center;
     justify-content: center;
   }
-  
+  .btn i {
+    margin: 0 3px;
+  }
+  .btn:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+  }
   .btn-add {
-    background: #28a745;
-    color: white;
+    background-color: #28a745;
   }
-  
-  .btn-remove {
-    background: #dc3545;
-    color: white;
-  }
-  
-  /* Disabled Button Style */
   .btn-add.disabled {
-    background: #ccc;
+    background-color: #ccc;
     cursor: not-allowed;
     transform: none;
   }
-  
-  /* Feedback Message */
+  .btn-remove {
+    background-color: #dc3545;
+  }
   .feedback-message {
     font-size: 0.9rem;
     font-weight: 500;
     margin-top: 5px;
     text-align: center;
     color: #dc3545;
-    display: none; /* Hidden by default */
+    display: none;
     animation: fadeIn 0.3s ease-in-out;
   }
-  
-  /* Animation */
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -643,30 +493,29 @@ function cancelRequest() {
     color: white;
     text-align: center;
     z-index: 1000;
-}
-
-.success-message {
-    background-color: #28a745;
-}
-
-.error-message {
-    background-color: #dc3545;
-}
-.loading-spinner {
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3498db;
-  border-radius: 50%;
-  width: 12px;
-  height: 12px;
-  animation: spin 1s linear infinite;
-  margin-right: 5px;
-  display: inline-block;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
+  }
+  .success-message { background-color: #28a745; }
+  .error-message { background-color: #dc3545; }
+  .loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 1s linear infinite;
+    margin-right: 5px;
+    display: inline-block;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .limit-remark {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
 </style>
 {% endblock %}
