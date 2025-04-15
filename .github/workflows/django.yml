@@ -23,10 +23,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies
       run: |
+        cd Volunteen
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run Tests for All Apps
       run: |
+        cd Volunteen
         python manage.py test childApp.tests
         python manage.py test mentorApp.tests
         python manage.py test parentApp.tests
