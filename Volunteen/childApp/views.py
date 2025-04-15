@@ -56,7 +56,7 @@ def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
     if not hasattr(child, 'subscription'):
         return redirect('childApp:inactive_home', child_id=child.id)
-    if child.subscription.status == ChildSubscription.Status.EXPIRED or child.subscription.status == ChildSubscription.Status.CANCELLED:
+    if child.subscription and not child.subscription.is_active():
         return redirect('childApp:inactive_home', child_id=child.id)
     
     if child.level > child.last_level_awarded:
