@@ -9,17 +9,46 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_NAME: testdb
+      DATABASE_USER: testuser
+      DATABASE_PASSWORD: testpassword
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DEVELOPMENT: "False"
+      SECRET_KEY: dummy-secret
+      GREEN_API: dummy
+      EMAIL_PASSWORD: dummy
+      X-API-Key: dummy
+
     strategy:
+      max-parallel: 4
       matrix:
-        python-version: [3.10]
+        python-version: [3.7, 3.8, 3.9, 3.10]
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -32,10 +61,10 @@ jobs:
     - name: Run tests for all apps
       run: |
         cd Volunteen
+        python manage.py test teenApp.tests
         python manage.py test childApp.tests
-        python manage.py test mentorApp.tests
-        python manage.py test parentApp.tests
         python manage.py test institutionApp.tests
         python manage.py test managementApp.tests
+        python manage.py test parentApp.tests
+        python manage.py test mentorApp.tests
         python manage.py test shopApp.tests
-        python manage.py test teenApp.tests
