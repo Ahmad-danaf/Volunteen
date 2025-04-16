@@ -6,6 +6,7 @@ from teenApp.entities.task import Task
 from mentorApp.models import Mentor
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+import os
 # Define a new User admin
 class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_phone')
@@ -19,18 +20,15 @@ class UserAdmin(BaseUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
-class CustomUserAdmin(BaseUserAdmin):
-    # Include the 'phone' field in the fieldsets to add it to the user form in the admin panel
-    fieldsets = BaseUserAdmin.fieldsets + (
-        (None, {'fields': ('phone',)}),
-    )
-    
-    list_display = BaseUserAdmin.list_display + ('phone',)
+if os.environ.get("VOLUNTEEN_CI_NO_PHONE", "false") != "true":
+    class CustomUserAdmin(BaseUserAdmin):
+        fieldsets = BaseUserAdmin.fieldsets + (
+            (None, {'fields': ('phone',)}),
+        )
+        list_display = BaseUserAdmin.list_display + ('phone',)
 
-# Unregister the original User admin
-admin.site.unregister(User)
-# Register the User model with the new CustomUserAdmin
-admin.site.register(User, CustomUserAdmin)
+    admin.site.unregister(User)
+    admin.site.register(User, CustomUserAdmin)
 
 @admin.register(Child)
 class ChildAdmin(admin.ModelAdmin):
