@@ -38,7 +38,6 @@ from childApp.utils.check_in_out_utils import process_check_in, process_check_ou
 from childApp.utils.child_level_management import calculate_total_points
 from managementApp.models import DonationCategory, DonationTransaction
 from childApp.decorators import child_subscription_required
-from parentApp.models import ChildSubscription
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
