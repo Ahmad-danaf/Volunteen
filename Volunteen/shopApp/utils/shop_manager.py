@@ -50,7 +50,7 @@ class ShopManager:
         return points_used_this_month + total_donation_spending_this_month
 
     @staticmethod
-    def get_remaining_points_this_month(shop: Shop) -> int:
+    def get_remaining_points_this_month(shop: Shop, is_approval=False) -> int:
         """
         Calculates how many points the shop has left for the current month.
         This is done by:
@@ -72,7 +72,11 @@ class ShopManager:
         locked_points_this_month = shop.locked_usage_this_month
         total_donation_spending_this_month = ShopDonationUtils.get_monthly_donation_spending_for_shop(shop)
         # Remaining = max_points - used points
-        remaining_points = max(0, shop.max_points - points_used_this_month - locked_points_this_month - total_donation_spending_this_month)
+        if not is_approval:
+            remaining_points = max(0, shop.max_points - points_used_this_month - locked_points_this_month - total_donation_spending_this_month)
+        else:
+            remaining_points = max(0, shop.max_points - points_used_this_month - total_donation_spending_this_month)
+        
         return remaining_points
     
     @staticmethod
@@ -147,7 +151,7 @@ class ShopManager:
             return {"status": "success", "points_used": points_used, "redemptions": redemptions}
 
         except ValueError as e:
-            return {"status": "error", "message": str(e)}
+            return {"status": "error", "message":f'שגיאת מערכת: {str(e)}'}
     
     
     @staticmethod
@@ -217,10 +221,10 @@ class ShopManager:
         # --- Enforce TeenCoin balance ---
         total_points_needed = sum(r['quantity'] * r['points'] for r in selected_rewards)
         if TeenCoinManager.get_total_active_teencoins(child) < total_points_needed:
-            return {"status": "error", "message": "אין לך מספיק טינקואינס לביצוע הרכישה."}
+            return {"status": "error", "message": "אין מספיק נקודות לילד."}
 
         # --- Enforce shop's monthly point limit ---
-        shop_remaining_points = ShopManager.get_remaining_points_this_month(shop)
+        shop_remaining_points = ShopManager.get_remaining_points_this_month(shop, is_approval)
         if total_points_needed > shop_remaining_points:
             return {"status": "error", "message": "החנות עברה את מגבלת הנקודות החודשית."}
 
@@ -242,6 +246,7 @@ class ShopManager:
             "results": [
                 {
                     "child_id": <child.id>,
+                    'user_name': <child.user.username>,
                     "status": "success" or "error",
                     "message": "Approved all" or "Not enough points" etc.
                 },
@@ -273,6 +278,7 @@ class ShopManager:
                 # Mark all requests from this child as failing
                 results.append({
                     "child_id": child.id,
+                    "user_name": child.user.username,
                     "status": "error",
                     "message": check_result["message"]
                 })
@@ -284,6 +290,7 @@ class ShopManager:
             if approval_result["status"] == "error":
                 results.append({
                     "child_id": child.id,
+                    "user_name": child.user.username,
                     "status": "error",
                     "message": approval_result["message"]
                 })
@@ -297,6 +304,7 @@ class ShopManager:
 
             results.append({
                 "child_id": child.id,
+                "user_name": child.user.username,
                 "status": "success",
                 "message": f"Approved {len(child_requests)} requests for child {child}"
             })
@@ -356,7 +364,7 @@ class ShopManager:
             return {"status": "success", "points_used": points_used, "redemptions": redemptions}
         
         except ValueError as e:
-            return {"status": "error", "message": str(e)}
+            return {"status": "error", "message":f'שגיאת מערכת: {str(e)}'}
     
     
     @staticmethod

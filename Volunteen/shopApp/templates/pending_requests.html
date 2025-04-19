@@ -27,6 +27,9 @@
     />
   </div>
 
+  <!-- Toast notifications container -->
+  <div id="toast-container"></div>
+
   {% for group in aggregated_requests %}
   <!-- Child Card -->
   <div class="child-card" data-child-id="{{ group.child.id }}">
@@ -98,6 +101,7 @@
             <span id="status-{{ req.id }}" class="status-badge pending"
               >בהמתנה</span
             >
+            <div id="error-{{ req.id }}" class="error-message"></div>
           </div>
         </div>
         {% endfor %}
@@ -117,6 +121,10 @@
         >
           דחה הכל
         </button>
+        <div
+          id="batch-error-{{ group.child.id }}"
+          class="batch-error-message"
+        ></div>
       </div>
     </div>
   </div>
@@ -128,6 +136,47 @@
 
 {% block extra_js %}
 <script>
+  // Toast notification system
+  function showToast(message, type = "error") {
+    const toast = document.createElement("div");
+    toast.className = `toast-notification ${type}`;
+    toast.textContent = message;
+
+    const container = document.getElementById("toast-container");
+    container.appendChild(toast);
+
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+      toast.classList.add("toast-fade-out");
+      setTimeout(() => {
+        container.removeChild(toast);
+      }, 500);
+    }, 10000); 
+
+    return toast;
+  }
+
+  // Format error messages for better readability
+  function formatErrorMessage(message) {
+    // Common errors with more detailed explanations
+    const errorMap = {
+      "הילד הגיע למגבלות הרכישות היומיות.":
+        "הילד הגיע למגבלת הרכישות היומית שלו.",
+      "אין מספיק נקודות לילד.":
+        "לילד אין מספיק נקודות לביצוע הרכישה. יש לבקש מהילד לבדוק את יתרת הנקודות שלו.",
+      "החנות עברה את מגבלת הנקודות החודשית.":
+        "החנות שלך הגיעה למגבלת הנקודות החודשית. לא ניתן לממש יותר פריטים החודש.",
+      "הילד הגיע למגבלת מספר החנויות היומיות.":
+        "הילד הגיע למגבלת מספר החנויות היומית שלו.",
+    };
+    if (message.startsWith("שגיאת מערכת")) {
+      return "משהו השתבש. אנא נסה שוב או פנה לתמיכה."; // Friendly fallback
+    }
+    
+    // Check if this is a known error and return the detailed version
+    return errorMap[message] || message;
+  }
+
   // Toggle collapsible child card
   function toggleCard(headerElem) {
     const cardBody = headerElem.nextElementSibling;
@@ -143,8 +192,27 @@
 
   // Individual request approval/rejection
   function processRequest(reqId, action, buttonElement) {
+    // Store the button state to prevent double clicks
+    if (buttonElement.dataset.processing === "true") {
+      return; // Prevent double clicks
+    }
+    buttonElement.dataset.processing = "true";
+
+    // Also disable the other action button (approve/reject)
+    const parentActions = buttonElement.closest(".request-actions");
+    const allButtons = parentActions.querySelectorAll(".btn");
+    allButtons.forEach((btn) => {
+      btn.disabled = true;
+    });
+
+    // Clear any previous error messages
+    const errorElement = document.getElementById(`error-${reqId}`);
+    if (errorElement) {
+      errorElement.textContent = "";
+      errorElement.style.display = "none";
+    }
+
     // Disable the button and show loading state
-    buttonElement.disabled = true;
     const originalText = buttonElement.textContent.trim();
     buttonElement.innerHTML = `<span class="loading-spinner"></span> שולח בקשה...`;
 
@@ -166,24 +234,76 @@
 
           // Keep button disabled but update text to show success
           buttonElement.innerHTML = action === "approve" ? "אושר" : "נדחה";
+          // Don't re-enable buttons on success
+
+          // Show success toast
+          showToast(
+            action === "approve" ? "הבקשה אושרה בהצלחה" : "הבקשה נדחתה בהצלחה",
+            "success"
+          );
         } else {
-          // Re-enable button on error
-          buttonElement.disabled = false;
+          // Re-enable buttons on error
+          allButtons.forEach((btn) => {
+            btn.disabled = false;
+          });
+          buttonElement.dataset.processing = "false";
           buttonElement.textContent = originalText;
-          alert("שגיאה " + data.message);
+
+          // Display formatted error message
+          const formattedError = formatErrorMessage(data.message);
+
+          // Create more noticeable toast
+          const toast = showToast(`שגיאה: ${formattedError}`, "error");
+          // Add a pulsating effect to draw attention to the error
+          toast.classList.add("pulse-attention");
+
+          // Show inline error with more visibility
+          if (errorElement) {
+            errorElement.textContent = formattedError;
+            errorElement.style.display = "block";
+            errorElement.classList.add("pulse-attention");
+
+            // Schedule removal of pulsating effect after 3 seconds
+            setTimeout(() => {
+              errorElement.classList.remove("pulse-attention");
+            }, 3000);
+          }
         }
       })
       .catch((error) => {
-        // Re-enable button on error
-        buttonElement.disabled = false;
+        // Re-enable buttons on error
+        allButtons.forEach((btn) => {
+          btn.disabled = false;
+        });
+        buttonElement.dataset.processing = "false";
         buttonElement.textContent = originalText;
         console.error("Error:", error);
+        showToast("שגיאת מערכת, אנא נסה שוב מאוחר יותר", "error");
       });
   }
 
   function batchProcess(childId, action, buttonElement) {
+    // Store the button state to prevent double clicks
+    if (buttonElement.dataset.processing === "true") {
+      return; // Prevent double clicks
+    }
+    buttonElement.dataset.processing = "true";
+
+    // Also disable the other batch button
+    const batchActions = buttonElement.closest(".batch-actions");
+    const allBatchButtons = batchActions.querySelectorAll(".btn");
+    allBatchButtons.forEach((btn) => {
+      btn.disabled = true;
+    });
+
+    // Clear any previous batch error messages
+    const batchErrorElement = document.getElementById(`batch-error-${childId}`);
+    if (batchErrorElement) {
+      batchErrorElement.textContent = "";
+      batchErrorElement.style.display = "none";
+    }
+
     // Disable the button and show loading state
-    buttonElement.disabled = true;
     const originalText = buttonElement.textContent.trim();
     buttonElement.innerHTML = `<span class="loading-spinner"></span> שולח בקשה...`;
 
@@ -192,8 +312,11 @@
       `.child-card[data-child-id="${childId}"]`
     );
     if (!childCard) {
-      alert("לא נמצאו בקשות עבור הילד הזה.");
-      buttonElement.disabled = false;
+      showToast("לא נמצאו בקשות עבור הילד הזה.");
+      allBatchButtons.forEach((btn) => {
+        btn.disabled = false;
+      });
+      buttonElement.dataset.processing = "false";
       buttonElement.textContent = originalText;
       return;
     }
@@ -215,19 +338,56 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "success") {
-          location.reload(); // Page will reload, no need to reset button
+          // Show success toast and delay reload to allow toast to be visible
+          const toast = showToast(
+            action === "approve"
+              ? "כל הבקשות אושרו בהצלחה!"
+              : "כל הבקשות נדחו בהצלחה!",
+            "success"
+          );
+
+          // Delay reload by 2 seconds to ensure user sees the message
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
         } else {
-          // Re-enable button on error
-          buttonElement.disabled = false;
+          // Re-enable buttons on error
+          allBatchButtons.forEach((btn) => {
+            btn.disabled = false;
+          });
+          buttonElement.dataset.processing = "false";
           buttonElement.textContent = originalText;
-          alert("שגיאה " + data.message);
+
+          // Display formatted error
+          const formattedError = formatErrorMessage(data.message);
+
+          // Create more noticeable toast
+          const toast = showToast(`שגיאה: ${formattedError}`, "error");
+          // Add a pulsating effect to draw attention to the error
+          toast.classList.add("pulse-attention");
+
+          // Show inline error with more visibility
+          if (batchErrorElement) {
+            batchErrorElement.textContent = formattedError;
+            batchErrorElement.style.display = "block";
+            batchErrorElement.classList.add("pulse-attention");
+
+            // Schedule removal of pulsating effect after 3 seconds
+            setTimeout(() => {
+              batchErrorElement.classList.remove("pulse-attention");
+            }, 3000);
+          }
         }
       })
       .catch((error) => {
-        // Re-enable button on error
-        buttonElement.disabled = false;
+        // Re-enable buttons on error
+        allBatchButtons.forEach((btn) => {
+          btn.disabled = false;
+        });
+        buttonElement.dataset.processing = "false";
         buttonElement.textContent = originalText;
         console.error("Error:", error);
+        showToast("שגיאת מערכת, אנא נסה שוב מאוחר יותר", "error");
       });
   }
 
@@ -251,6 +411,12 @@
 
   // Approve all requests for all children
   function approveAllRequests(buttonElement) {
+    // Store the button state to prevent double clicks
+    if (buttonElement.dataset.processing === "true") {
+      return; // Prevent double clicks
+    }
+    buttonElement.dataset.processing = "true";
+
     // Disable the button and show loading state
     buttonElement.disabled = true;
     const originalText = buttonElement.textContent.trim();
@@ -269,9 +435,10 @@
     });
 
     if (requestIds.length === 0) {
-      alert("אין בקשות בהמתנה לאישור.");
+      showToast("אין בקשות בהמתנה לאישור.", "warning");
       // Re-enable button
       buttonElement.disabled = false;
+      buttonElement.dataset.processing = "false";
       buttonElement.textContent = originalText;
       return;
     }
@@ -287,28 +454,55 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "success") {
-          alert("כל הבקשות שאושרו בהצלחה!");
-          location.reload(); // Page will reload, no need to reset button
+          // Show toast and delay page reload
+          const toast = showToast("כל הבקשות אושרו בהצלחה!", "success");
+
+          // Delay reload by 2 seconds to ensure user sees the message
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
         } else if (data.status === "partial_success") {
-          alert(
-            `חלק מהבקשות אושרו, אך היו בעיות עם חלקן: ${data.failed_children.join(
-              ", "
-            )}`
-          );
-          location.reload(); // Page will reload, no need to reset button
+          // Create a more detailed message for partial success
+          let detailedMessage = "חלק מהבקשות אושרו, אך היו בעיות עם חלקן:";
+
+          // Show detailed results for each child
+          if (data.results && data.results.length > 0) {
+            data.results.forEach((result) => {
+              if (result.status === "error") {
+                detailedMessage += `\n• ילד ${result.user_name}: ${formatErrorMessage(result.message)}`;
+              }
+            });
+          } else if (Array.isArray(data.failed_children) && data.failed_children.length > 0) {
+            detailedMessage += `\n${data.failed_children.join(", ")}`;
+          }
+
+          const toast = showToast(detailedMessage, "warning");
+          toast.classList.add("pulse-attention"); // Add attention-grabbing effect
+
+          // Delay reload by 3 seconds for partial success to give user more time to read errors
+          setTimeout(() => {
+            location.reload();
+          }, 3000);
         } else {
           // Re-enable button on error
           buttonElement.disabled = false;
+          buttonElement.dataset.processing = "false";
           buttonElement.textContent = originalText;
-          alert(`שגיאה: ${data.message}`);
+
+          const toast = showToast(
+            `שגיאה: ${formatErrorMessage(data.message)}`,
+            "error"
+          );
+          toast.classList.add("pulse-attention"); // Add attention-grabbing effect
         }
       })
       .catch((error) => {
         // Re-enable button on error
         buttonElement.disabled = false;
+        buttonElement.dataset.processing = "false";
         buttonElement.textContent = originalText;
         console.error("Error:", error);
-        alert("שגיאה " + data.message);
+        showToast("שגיאת מערכת, אנא נסה שוב מאוחר יותר", "error");
       });
   }
 </script>
@@ -346,6 +540,100 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
+  }
+
+  /* Toast Notifications */
+  #toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 300px;
+  }
+
+  .toast-notification {
+    background-color: #ffffff;
+    color: #333;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    border-right: 4px solid #f44336;
+    animation: toast-in 0.3s ease;
+    word-break: break-word;
+  }
+
+  .toast-notification.success {
+    border-right-color: #4caf50;
+  }
+
+  .toast-notification.warning {
+    border-right-color: #ff9800;
+  }
+
+  .toast-notification.error {
+    border-right-color: #f44336;
+  }
+
+  .toast-fade-out {
+    animation: toast-out 0.3s ease forwards;
+  }
+
+  /* Pulsating effect for important notifications */
+  .pulse-attention {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes toast-out {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+  }
+
+  /* Error Messages */
+  .error-message,
+  .batch-error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    background-color: rgba(220, 53, 69, 0.1);
+    padding: 5px 8px;
+    border-radius: 4px;
+    display: none;
+  }
+
+  .batch-error-message {
+    text-align: center;
+    margin: 10px 0;
   }
 
   /* Child Card */
@@ -557,6 +845,11 @@
       margin-right: 0;
       margin-top: 5px;
       gap: 10px;
+    }
+
+    #toast-container {
+      width: 90%;
+      right: 5%;
     }
   }
   .dashboard-title {
