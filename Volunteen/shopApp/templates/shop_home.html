@@ -41,9 +41,6 @@ header {
     text-align: center;
 }
 </style>
-<header>
-    <h1>{% block header %}דף הבית{% endblock %}</h1>
-</header>
     <div class="container mt-3">
         <div class="text-center">
             <h2>{{ shop.name }} שלום</h2>
@@ -62,7 +59,7 @@ header {
         <div class="section mt-4">
             <h3>בקשות מימוש בהמתנה</h3>
             <a href="{% url 'shopApp:pending_redemption_requests' %}" class="btn blue-btn btn-block">
-                <i class="fas fa-gift"></i> בקשות מימוש בהמתנה            </a>
+                <i class="fas fa-gift"></i> בקשות מימוש בהמתנה</a>
         </div>
 
         <div class="section mt-4">
@@ -97,6 +94,9 @@ header {
         <div class="section mt-4">
             <h3>הפרסים שלך</h3>
             <a href="{% url 'shopApp:shop_rewards' %}" class="btn btn-primary btn-block">הצגת הפרסים</a>
+        </div>
+        <div class="section mt-4">
+            <a href="{% url 'shopApp:opening_hours' %}" class="btn btn-primary btn-block">שעות פתיחה</a>
         </div>
     </div>    
 {% endblock %}
