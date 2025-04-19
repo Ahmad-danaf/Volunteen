@@ -232,6 +232,7 @@
     function closeRejectModal() {
       const modal = document.getElementById("rejectModal");
       modal.classList.add("hidden");
+      document.getElementById("rejectFeedback").value = "";
     }
 
     function handleBulkAction(action, feedback = null) {
