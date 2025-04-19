@@ -457,7 +457,8 @@ def submit_redemption_request(request):
         child = get_object_or_404(Child, user=request.user)
         shop = get_object_or_404(Shop, id=data.get("shop_id"))
         selected_rewards = data.get("selected_rewards", [])
-
+        if not shop.is_open():
+            return JsonResponse({"status": "error", "message": "החנות אינה פתוחה כעת."})
         if not selected_rewards:
             return JsonResponse({"status": "error", "message": "לא נבחרו פרסים."})
 

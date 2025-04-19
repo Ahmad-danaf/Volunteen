@@ -13,12 +13,38 @@ def activate_shops(modeladmin, request, queryset):
 def deactivate_shops(modeladmin, request, queryset):
     queryset.update(is_active=False)
 
+@admin.display(boolean=True, description="Open Now?")
+def is_open_now(obj):
+    return obj.is_open()
+
+class OpeningHoursInline(admin.TabularInline):
+    model = OpeningHours
+    extra = 1
+    fields = ('day', 'opening_hour', 'closing_hour')
+    ordering = ('day',)
+
+@admin.action(description="Copy Sunday's hours to all weekdays")
+def copy_sunday_hours(modeladmin, request, queryset):
+    for shop in queryset:
+        sunday_hours = shop.opening_hours.filter(day=6)
+        for target_day in range(0, 5):  # Copy to monday-Thursday
+            for hour in sunday_hours:
+                OpeningHours.objects.update_or_create(
+                    shop=shop,
+                    day=target_day,
+                    opening_hour=hour.opening_hour,
+                    defaults={
+                        'closing_hour': hour.closing_hour,
+                    }
+                )
+
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'get_category_names', 'is_active')
+    inlines = [OpeningHoursInline]
+    list_display = ('name', 'city', 'get_category_names', 'is_active', is_open_now)
     list_filter = ('city', 'categories', 'is_active')
     search_fields = ('name',)
-    actions = [activate_shops, deactivate_shops]
+    actions = [activate_shops, deactivate_shops, copy_sunday_hours]
 @admin.register(Reward)
 class RewardAdmin(admin.ModelAdmin):
     list_display = ('title', 'points_required', 'shop', 'is_visible')

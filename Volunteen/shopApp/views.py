@@ -101,49 +101,49 @@ def toggle_reward_visibility(request, reward_id): # if the reward is visible, ma
 @login_required
 def opening_hours_view(request):
     shop = request.user.shop
-    opening_hours = OpeningHours.objects.filter(shop=shop)
-    days_of_week_dict = {0: 'ראשון', 1: 'שני', 2: 'שלישי', 3: 'רביעי', 4: 'חמישי', 5: 'שישי', 6: 'שבת'}
 
-    # Convert opening hours to a dictionary for easy rendering in the template
-    hours_dict = {
-        day: {
-            'day_name': days_of_week_dict[day],
-            'opening_hour': None,
-            'closing_hour': None
-        } for day in range(7)  # 0-6 for Sunday to Saturday
-    }
+    days_of_week = dict(OpeningHours.DAYS_OF_WEEK)
 
-    for entry in opening_hours:
-        hours_dict[entry.day]['opening_hour'] = entry.opening_hour.strftime('%H:%M') if entry.opening_hour else None
-        hours_dict[entry.day]['closing_hour'] = entry.closing_hour.strftime('%H:%M') if entry.closing_hour else None
+    raw_hours = OpeningHours.objects.filter(shop=shop).order_by('day', 'opening_hour')
+    hours_by_day = {day: [] for day in days_of_week}
+    for entry in raw_hours:
+        opening = entry.opening_hour.strftime('%H:%M') if entry.opening_hour else ''
+        closing = entry.closing_hour.strftime('%H:%M') if entry.closing_hour else ''
+        hours_by_day[ entry.day ].append({
+            'opening': opening,
+            'closing': closing,
+        })
 
     if request.method == 'POST':
         try:
-            for day in range(7):
-                opening_hour = request.POST.get(f'opening_hour_{day}')
-                closing_hour = request.POST.get(f'closing_hour_{day}')
-
-                # If both fields are empty, delete the entry (mark as closed)
-                if not opening_hour and not closing_hour:
-                    OpeningHours.objects.filter(shop=shop, day=day).delete()
-                else:
-                    OpeningHours.objects.update_or_create(
-                        shop=shop,
-                        day=day,
-                        defaults={
-                            'opening_hour': opening_hour,
-                            'closing_hour': closing_hour
-                        }
-                    )
+            for day in days_of_week:
+                OpeningHours.objects.filter(shop=shop, day=day).delete()
+                opens  = request.POST.getlist(f'opening_hour_{day}')
+                closes = request.POST.getlist(f'closing_hour_{day}')
+                for o, c in zip(opens, closes):
+                    if o and c:
+                        OpeningHours.objects.create(
+                            shop=shop,
+                            day=day,
+                            opening_hour=o,
+                            closing_hour=c
+                        )
             messages.success(request, 'שעות הפתיחה עודכנו בהצלחה!')
         except Exception as e:
-            messages.error(request, f'שגיאה בעדכון שעות הפתיחה: {str(e)}')
-
+            messages.error(request, f'שגיאה בעדכון שעות הפתיחה: {e}')
         return redirect('shopApp:opening_hours')
+
+    days = []
+    for idx, name in days_of_week.items():
+        days.append({
+            'index': idx,
+            'name': name,
+            'slots': hours_by_day.get(idx, []),
+        })
 
     return render(request, 'opening_hours.html', {
         'shop': shop,
-        'hours_dict': hours_dict
+        'days': days,
     })
     
     

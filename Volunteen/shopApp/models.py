@@ -65,30 +65,25 @@ class Shop(models.Model):
         """
         Returns True if the shop is currently open based on its opening hours.
         """
-        now = datetime.now()
+        now = timezone.localtime(timezone.now())
         current_day = now.weekday()  # Monday is 0, Sunday is 6
         current_time = now.time()
+        today_periods = self.opening_hours.filter(day=current_day)
 
-        try:
-            # Get today's opening hours
-            opening_hours = self.opening_hours.get(day=current_day)
-            
-            # If no opening hours exist for today, assume closed
-            if not opening_hours:
-                return False
+        for period in today_periods:
+            start = period.opening_hour
+            end = period.closing_hour
 
-            # Handle shops that are open past midnight
-            if opening_hours.opening_hour and opening_hours.closing_hour:
-                if opening_hours.opening_hour < opening_hours.closing_hour:
-                    # Normal case: opening and closing on same day
-                    return opening_hours.opening_hour <= current_time <= opening_hours.closing_hour
-                else:
-                    # Special case: closing time is next day (e.g., 22:00-02:00)
-                    return current_time >= opening_hours.opening_hour or current_time <= opening_hours.closing_hour
+            if not start or not end:
+                continue
 
-        except OpeningHours.DoesNotExist:
-            # No opening hours defined for this day
-            return False
+            if start < end:
+                if start <= current_time <= end:
+                    return True
+            else:
+                # Overnight case: e.g., 22:00–02:00
+                if current_time >= start or current_time <= end:
+                    return True
 
         return False
 
@@ -108,13 +103,13 @@ class Shop(models.Model):
 
 class OpeningHours(models.Model):
     DAYS_OF_WEEK = [
-        (0, 'ראשון'),
-        (1, 'שני'),
-        (2, 'שלישי'),
-        (3, 'רביעי'),
-        (4, 'חמישי'),
-        (5, 'שישי'),
-        (6, 'שבת'),
+        (0, 'שני'),
+        (1, 'שלישי'),
+        (2, 'רביעי'),
+        (3, 'חמישי'),
+        (4, 'שישי'),
+        (5, 'שבת'),
+        (6, 'ראשון'),
     ]
 
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name="opening_hours")
@@ -123,7 +118,9 @@ class OpeningHours(models.Model):
     closing_hour = models.TimeField(verbose_name="Closing Hour", blank=True, null=True)
 
     class Meta:
-        unique_together = ('shop', 'day')  # Ensure each shop has only one schedule per day
+        indexes = [
+            models.Index(fields=["shop", "day"]),  # Faster queries
+        ]
 
     def __str__(self):
         day_name = dict(self.DAYS_OF_WEEK).get(self.day, "Unknown Day")
