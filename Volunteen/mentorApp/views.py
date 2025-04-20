@@ -317,6 +317,7 @@ def review_task(request):
             data = json.loads(request.body)
             task_ids = data.get('task_ids', [])
             action = data.get('action')
+            feedback = data.get('mentor_feedback', None)
 
             if not task_ids:
                 return JsonResponse({'success': False, 'error': 'לא נבחרו משימות.'})
@@ -334,6 +335,7 @@ def review_task(request):
                     task_completion.remaining_coins = task_completion.task.points+task_completion.bonus_points
                 elif action == 'reject':
                     task_completion.status = 'rejected'
+                    task_completion.mentor_feedback = feedback
                 
                 task_completion.save()
 

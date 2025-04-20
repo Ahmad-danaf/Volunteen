@@ -72,6 +72,19 @@
   <button id="approve-selected" class="approve-btn">אשר נבחרים</button>
   <button id="reject-selected" class="reject-btn">דחה נבחרים</button>
 </div>
+
+<div id="rejectModal" class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50 hidden">
+  <h3 class="text-lg font-bold mb-4">דחיית משימה</h3>
+  <p class="mb-4">האם אתה בטוח שברצונך לדחות את המשימה? ניתן לספק משוב (אופציונלי):</p>
+  <div class="mb-4">
+    <label class="block text-sm font-medium mb-1">משוב:</label>
+    <textarea id="rejectFeedback" class="w-full p-2 border rounded !rounded-button" rows="3"></textarea>
+  </div>
+  <div class="flex gap-4 mt-6">
+    <button id="closeRejectBtn" type="button" class="flex-1 py-2 px-4 border rounded !rounded-button">ביטול</button>
+    <button id="confirmRejectBtn" type="button" class="flex-1 py-2 px-4 bg-red-500 rounded !rounded-button">דחה משימה</button>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
@@ -156,6 +169,16 @@
       padding: 0.4rem 0.8rem;
     }
   }
+
+  .modal {
+    transition: transform 0.3s ease;
+  }
+  .modal.show {
+    transform: translateY(0);
+  }
+  .hidden {
+    display: none;
+  }
 </style>
 {% endblock %}
 
@@ -180,10 +203,6 @@
     });
 
     document.getElementById("reject-selected").addEventListener("click", function () {
-      handleBulkAction("reject");
-    });
-
-    function handleBulkAction(action) {
       const selectedTasks = Array.from(document.querySelectorAll('.select-checkbox'))
         .filter(checkbox => checkbox.checked && !checkbox.disabled)
         .map(checkbox => checkbox.getAttribute("data-id"));
@@ -192,6 +211,34 @@
         alert("לא נבחרו משימות.");
         return;
       }
+      openRejectModal();
+    });
+
+    function openRejectModal() {
+      const modal = document.getElementById("rejectModal");
+      modal.classList.remove("hidden");
+    }
+
+    document.getElementById("confirmRejectBtn").addEventListener("click", function () {
+      const feedback = document.getElementById("rejectFeedback").value;
+      handleBulkAction("reject", feedback);
+      closeRejectModal();
+    });
+    
+    document.getElementById("closeRejectBtn").addEventListener("click", function () {
+      closeRejectModal();
+    });
+
+    function closeRejectModal() {
+      const modal = document.getElementById("rejectModal");
+      modal.classList.add("hidden");
+      document.getElementById("rejectFeedback").value = "";
+    }
+
+    function handleBulkAction(action, feedback = null) {
+      const selectedTasks = Array.from(document.querySelectorAll('.select-checkbox'))
+        .filter(checkbox => checkbox.checked && !checkbox.disabled)
+        .map(checkbox => checkbox.getAttribute("data-id"));
 
       fetch("{% url 'mentorApp:review_task' %}", {
         method: "POST",
@@ -199,7 +246,7 @@
           "Content-Type": "application/json",
           "X-CSRFToken": "{{ csrf_token }}",
         },
-        body: JSON.stringify({ task_ids: selectedTasks, action: action }),
+        body: JSON.stringify({ task_ids: selectedTasks, action: action, mentor_feedback: feedback }),
       })
         .then(response => response.json())
         .then(data => {
