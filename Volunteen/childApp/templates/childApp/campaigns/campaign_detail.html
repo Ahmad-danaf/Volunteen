@@ -1,0 +1,151 @@
+{% extends 'child_base.html' %}
+{% load static %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-b from-purple-600 to-indigo-700 p-4 flex flex-col space-y-4 animate-fadeBg">
+  <!-- Back button -->
+  <a href="{% url 'childApp:child-campaigns' %}" class="flex items-center text-white hover:text-gray-200 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span class="font-semibold">חזרה לקמפיינים</span>
+  </a>
+
+  <!-- Campaign hero card -->
+  <div class="bg-white rounded-3xl overflow-hidden shadow-2xl transform transition hover:scale-105 animate-fadeInUp" style="will-change: transform;">
+    <div class="relative h-56">
+      <img src="{{ campaign.banner_img.url }}" alt="{{ campaign.title }}" class="w-full h-full object-cover">
+      <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+      <h1 class="absolute bottom-4 left-4 text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">{{ campaign.title }}</h1>
+    </div>
+    <div class="p-5 space-y-3">
+      <p class="text-gray-700 leading-relaxed">{{ campaign.description }}</p>
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 14l-3-3h6l-3 3z" />
+          </svg>
+          <span class="text-purple-600 font-medium">{{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} משתתפים</span>
+        </div>
+        {% if has_joined %}
+        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">נרשמת</span>
+        {% endif %}
+      </div>
+
+      {% if has_joined %}
+      <!-- Time left indicator with precomputed width -->
+      <div class="relative bg-gray-200 rounded-full h-4 overflow-hidden">
+        <div class="absolute inset-0 bg-indigo-500" style="width: {{ percent_time_left|floatformat:2 }}%; transition: width 0.5s ease-out;"></div>
+      </div>
+      <p id="hebrew-countdown" class="text-sm text-gray-300">
+        {% if time_left_end %}
+            {% with remaining=time_left_end|timeuntil %}
+                {% if remaining %}
+                    נותרו: {{ remaining }} לסיום הקמפיין
+                {% else %}
+                    הקמפיין הסתיים!
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            זמן לא זמין
+        {% endif %}
+    </p>
+      
+      {% endif %}
+    </div>
+  </div>
+  {% if not has_joined %}
+  <div class="mt-4">
+    <form method="post" action="{% url 'childApp:child-campaign-join' campaign.pk %}">
+      {% csrf_token %}
+      <button class="w-full bg-white text-purple-600 font-semibold py-3 rounded-2xl shadow-xl hover:bg-gray-100 transition animate-pop">
+        הצטרף לקמפיין
+      </button>
+    </form>
+  </div>
+  {% endif %}
+  <!-- Task List Section -->
+  <div class="flex-1 overflow-auto">
+    <ul class="space-y-4">
+      {% for info in tasks_info %}
+      <li class="bg-white rounded-2xl p-4 shadow-lg flex justify-between items-center transform hover:scale-[1.02] transition animate-fadeIn">
+        <div class="flex-1">
+          <h2 class="text-lg font-semibold text-gray-800">{{ info.task.title }}</h2>
+          {% if info.status == 'approved' %}
+          <p class="mt-1 text-green-600 font-medium">סטטוס: מאושר ✔️</p>
+          {% elif info.status == 'rejected' %}
+          <p class="mt-1 text-red-600 font-medium">סטטוס: נדחה ❌</p>
+          {% elif info.status == 'pending' %}
+          <p class="mt-1 text-yellow-600 font-medium">סטטוס: בהמתנה ⏳</p>
+          {% else %}
+          <p class="mt-1 text-gray-500 font-medium">לא התחלת</p>
+          {% endif %}
+        </div>
+        {% if has_joined and info.assignment %}
+        <a href="{% url 'childApp:task_check_in_out' %}" class="ml-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-5 py-2 rounded-2xl shadow-md hover:from-purple-600 hover:to-indigo-600 transition">
+          {% if info.task.proof_required %}משימה עם צילום{% else %}משימה בלי צילום{% endif %}
+        </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  
+</div>
+
+<!-- Animations -->
+<style>
+@keyframes fadeBg { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+.animate-fadeBg { background-size: 200% 200%; animation: fadeBg 8s ease infinite; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeInUp { animation: fadeInUp 0.7s ease-out both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fadeIn { animation: fadeIn 0.5s ease both; }
+@keyframes pop { 0% { transform: scale(0.9); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.animate-pop { animation: pop 0.3s ease-out both; }
+
+#hebrew-countdown {
+  min-height: 1.5em; 
+  direction: rtl;
+}
+</style>
+
+{% endblock content %}
+{% block extra_js %}
+<script>
+    const endDate = new Date("{{ time_left_end.isoformat }}");
+    
+    function formatHebrewTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        let parts = [];
+        if (hours > 0) parts.push(`${hours} שע${hours === 1 ? 'ה' : 'ות'}`);
+        if (minutes > 0) parts.push(`${minutes} דק${minutes === 1 ? 'ה' : 'ות'}`);
+        
+        return parts.join(' ו') || 'פחות מדקה';
+    }
+
+    function updateHebrewCountdown() {
+        const now = new Date();
+        const diff = Math.floor((endDate - now) / 1000); // seconds
+        
+        if (diff <= 0) {
+            document.getElementById('hebrew-countdown').textContent = 'הקמפיין הסתיים!';
+            return;
+        }
+        
+        document.getElementById('hebrew-countdown').textContent = 
+            `נותרו: ${formatHebrewTime(diff)} לסיום הקמפיין`;
+    }
+
+    // Update every minute (60000ms)
+    setInterval(updateHebrewCountdown, 60000);
+    updateHebrewCountdown(); // Initial call
+
+</script>
+{% endblock %}

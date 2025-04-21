@@ -305,3 +305,6 @@ def shop_detail(request, shop_id):
         'all_spendings': all_spendings,
     }
     return render(request, 'donation/shop_detail.html', context)
+
+
+#####VIEWS FOR campian manager(gonna seprate to other file later)##########

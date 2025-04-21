@@ -15,10 +15,13 @@ from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView, DetailView
+from django.contrib import messages
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
-from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
+from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
 from teenApp.entities.TaskCompletion import TaskCompletion
 from django.utils.timezone import localdate
 from .forms import RedemptionRatingForm,DonationForm
@@ -26,7 +29,7 @@ from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import (
     AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
-    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY
+    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES
 )
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
@@ -39,6 +42,8 @@ from childApp.utils.child_level_management import calculate_total_points
 from managementApp.models import DonationCategory, DonationTransaction
 from childApp.decorators import child_subscription_required
 from parentApp.models import ChildSubscription
+from childApp.utils.CampaignUtils import CampaignUtils
+from Volunteen.constants import CAMPAIGN_TIME_LIMIT_MINUTES
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
@@ -718,3 +723,110 @@ def donation_leaderboard(request):
         'form': form,
     })
    
+   
+@method_decorator(login_required, name='dispatch')
+class CampaignListView(ListView):
+    model = Campaign
+    template_name = "childApp/campaigns/campaign_list.html"
+    context_object_name = "campaigns"
+
+    def get_queryset(self):
+        CampaignUtils.expire_campaign_reservations()  
+        today = timezone.localtime(timezone.now()).date()
+        return Campaign.objects.filter(
+            is_active=True,
+            end_date__gte=today,
+        ).order_by("-start_date")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        child = self.request.user.child
+        for campaign in ctx["campaigns"]:
+            campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
+            campaign.has_joined = CampaignUtils.child_has_joined(child, campaign)
+        return ctx
+
+
+
+@method_decorator(login_required, name='dispatch')
+class CampaignDetailView(DetailView):
+    model = Campaign
+    template_name = "childApp/campaigns/campaign_detail.html"
+    context_object_name = "campaign"
+
+    def get_context_data(self, **kwargs):
+        CampaignUtils.expire_campaign_reservations()
+
+        ctx = super().get_context_data(**kwargs)
+        campaign = self.object
+        child = self.request.user.child
+        campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
+        all_tasks = campaign.tasks.all()
+
+        raw_assignments = TaskAssignment.objects.filter(
+            child=child,
+            task__campaign=campaign
+        ).select_related("task")
+
+        assign_map = {a.task_id: a for a in raw_assignments}
+
+        tasks_info = []
+        for task in all_tasks:
+            assignment = assign_map.get(task.id)
+            if assignment:
+                comp = TaskCompletion.objects.filter(
+                    task=task,
+                    child=child
+                ).first()
+                status = comp.status if comp else "pending"
+            else:
+                assignment = None
+                status = None
+
+            tasks_info.append({
+                "task":       task,
+                "assignment": assignment,
+                "status":     status,
+            })
+
+        has_joined = bool(raw_assignments)
+        
+
+        time_left = (
+            CampaignUtils.get_time_left(child, campaign)
+            if has_joined else None
+        )
+        if time_left:
+            time_left_end = timezone.localtime(timezone.now()) + time_left
+        else:
+            time_left_end = None
+        if has_joined:
+            total_seconds = time_left.total_seconds()
+            percent = (total_seconds / (CAMPAIGN_TIME_LIMIT_MINUTES * 60)) * 100
+            ctx["percent_time_left"] = percent
+        else:
+            ctx["percent_time_left"] = 0
+        ctx.update({
+            "tasks_info": tasks_info,
+            "has_joined": has_joined,
+            "time_left":  time_left,
+            "time_left_end": time_left_end,
+        })
+        return ctx
+
+@login_required
+def join_campaign_view(request, pk):
+    CampaignUtils.expire_campaign_reservations()  
+    campaign = get_object_or_404(Campaign, pk=pk)
+    child = request.user.child
+
+    try:
+        assigned_count = CampaignUtils.join_campaign(child, campaign)
+        messages.success(
+            request,
+            f"נרשמת לקמפיין בהצלחה! קיבלת {assigned_count} משימות ולך {CAMPAIGN_TIME_LIMIT_MINUTES} דקות לסיים אותן."
+        )
+    except ValueError as err:
+        messages.error(request, str(err))
+
+    return redirect("childApp:child-campaign-detail", pk=pk)

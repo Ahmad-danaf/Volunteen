@@ -34,4 +34,8 @@ urlpatterns = [
     path('shop/<int:shop_id>/rewards/', child_views.shop_rewards_view, name='shop_rewards'),
     path('submit_redemption_request/', child_views.submit_redemption_request, name='submit_redemption_request'),
     path('cancel_request/', child_views.cancel_request, name='cancel_request'),
+    
+    path("campaigns/", child_views.CampaignListView.as_view(), name="child-campaigns"),
+    path("campaigns/<int:pk>/", child_views.CampaignDetailView.as_view(), name="child-campaign-detail"),
+    path("campaigns/<int:pk>/join", child_views.join_campaign_view, name="child-campaign-join"),
 ]
