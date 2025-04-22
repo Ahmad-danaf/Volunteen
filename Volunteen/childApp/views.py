@@ -81,10 +81,11 @@ def child_home(request):
         6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
     todays_greeting = greetings[current_day]
-    new_tasks = ChildTaskManager.get_new_assigned_tasks(child)
+    CampaignUtils.expire_campaign_reservations()
     new_tasks_count = ChildTaskManager.get_new_assigned_tasks_count(child)
 
     if request.method == 'POST' and 'close_notification' in request.POST:
+        new_tasks = ChildTaskManager.get_new_assigned_tasks(child)
         for task in new_tasks:
             ChildTaskManager.mark_task_as_viewed(child, task)
 
@@ -101,7 +102,6 @@ def child_home(request):
         'active_points': active_points,
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
-        'new_tasks': new_tasks,
         'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level,
@@ -281,10 +281,10 @@ def child_completed_tasks(request):
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-        assignments = ChildTaskManager.get_all_child_active_tasks(child)
+        core_tasks, campaign_tasks = ChildTaskManager.get_all_child_active_tasks(child)
         
 
-        return render(request, 'child_active_list.html', {'tasks': assignments})
+        return render(request, 'child_active_list.html', {'core_tasks': core_tasks, 'campaign_tasks': campaign_tasks})
     
     except Child.DoesNotExist:
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
@@ -578,7 +578,7 @@ def task_check_in_out(request):
     """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
     today = timezone.now().date()
-
+    CampaignUtils.expire_campaign_reservations()
     # Retrieve assigned tasks that are not completed
     assigned_tasks = (
         ChildTaskManager
@@ -601,7 +601,8 @@ def check_in(request, task_id):
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
     replace_image = request.GET.get('replace_image') == 'true'
-    
+    if not task.proof_required:
+        use_default_image = True
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
@@ -620,7 +621,8 @@ def check_out(request, task_id):
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
-
+    if not task.proof_required:
+        use_default_image = True
     # Ensure the task was checked in before allowing check-out
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if not task_completion or not task_completion.checkin_img:
@@ -748,7 +750,7 @@ class CampaignListView(ListView):
 
 
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(child_subscription_required, name='dispatch')
 class CampaignDetailView(DetailView):
     model = Campaign
     template_name = "childApp/campaigns/campaign_detail.html"
@@ -814,7 +816,7 @@ class CampaignDetailView(DetailView):
         })
         return ctx
 
-@login_required
+@child_subscription_required
 def join_campaign_view(request, pk):
     CampaignUtils.expire_campaign_reservations()  
     campaign = get_object_or_404(Campaign, pk=pk)
@@ -828,5 +830,32 @@ def join_campaign_view(request, pk):
         )
     except ValueError as err:
         messages.error(request, str(err))
+
+    return redirect("childApp:child-campaign-detail", pk=pk)
+
+@require_POST
+@child_subscription_required
+def leave_campaign_view(request, pk):
+    """
+    Allows a child to leave a campaign, if currently joined.
+    Removes all TaskAssignments and marks any unapproved completions as rejected.
+    """
+    CampaignUtils.expire_campaign_reservations()
+    campaign = get_object_or_404(Campaign, pk=pk)
+    child = request.user.child
+    has_joined = TaskAssignment.objects.filter(
+        child=child,
+        task__campaign=campaign
+    ).exists()
+
+    if not has_joined:
+        messages.warning(request, "לא הצטרפת לקמפיין זה.")
+        return redirect("childApp:child-campaign-detail", pk=pk)
+
+    try:
+        removed = CampaignUtils.leave_campaign(child, campaign)
+        messages.success(request, f"הוסרת מהקמפיין. {removed} משימות נמחקו.")
+    except Exception as e:
+        messages.error(request, f"שגיאה בעת ההסרה מהקמפיין: {str(e)}")
 
     return redirect("childApp:child-campaign-detail", pk=pk)

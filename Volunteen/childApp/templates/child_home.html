@@ -81,32 +81,19 @@
 {% if new_tasks_count > 0 %}
 <div id="newTaskNotification" class="notification">
     <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
-    <button type="button" onclick="markTasksAsViewed()" class="button close-button">
-        סימנתי כנקרא
-    </button>
+    
+    <p>
+        <a href="{% url 'childApp:child_active_list' %}" class="button close-button task-button">
+            קדימה למשימות! 🧡
+        </a>
+    </p>
+        <button type="button" onclick="markTasksAsViewed()" class="button close-button">
+            סימנתי כנקרא
+        </button>   
 </div>
 {% endif %}
 
-<div id="featuredTasks" class="featured-tasks-container">
-    <h2>משימות מומלצות לשבוע זה</h2>
-    {% if new_tasks_count > 0 %}
-        <ul class="task-list">
-            {% for task_assignment in new_tasks %}
-            <li class="{% if task_assignment.task.is_pinned %}pinned-task{% endif %}">
-                {% if task_assignment.task.is_pinned %}
-                    <span class="pin-icon" title="משימה מוצמדת">📌</span>
-                {% endif %}
-                <strong>{{ task_assignment.task.title }}</strong><br>
-                <small>{{ task_assignment.task.description|slice:":40" }}...</small><br>
-                <span>נקודות למשימה: {{ task_assignment.task.points }}</span>
-                
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>אין משימות חדשות כרגע. שמור על הרצף היומי כדי לזכות בבונוסים!</p>
-    {% endif %}
-</div>
+
 
 <div class="navigation-grid">
     <a href="{% url 'childApp:child_active_list' %}" class="nav-button" style="background-color: #28a745;">
@@ -125,10 +112,11 @@
         <i class="fas fa-clock"></i>
         <span>בקשות בתהליך</span>
     </a>
-    <a href="{% url 'childApp:child_completed_tasks' %}" class="nav-button" style="background-color: #5d22ff;">
-        <i class="fas fa-check-circle"></i>
-        <span>משימות מושלמות</span>
+    <a href="{% url 'childApp:child-campaigns' %}" class="nav-button" style="background-color: #c542a4;">
+        <i class="fas fa-bullhorn"></i>
+        <span>קמפיינים</span>
     </a>
+    
     <a href="{% url 'childApp:child_points_history' %}" class="nav-button" style="background-color: #9175c8;">
         <i class="fas fa-coins"></i>
         <span>היסטוריית טינקוינס</span>
@@ -150,10 +138,7 @@
         <i class="fas fa-map-marker-alt"></i>
         <span>צ'ק אין/אאוט</span>
     </a>
-    <a href="{% url 'childApp:child-campaigns' %}" class="nav-button" style="background-color: #4CAF50;">
-        <i class="fas fa-bullhorn"></i>
-        <span>קמפיינים</span>
-    </a>
+   
     <a
     href="{% url 'childApp:donate_coins' %}"
     class="nav-button"
@@ -162,6 +147,10 @@
     <i class="fas fa-hand-holding-heart"></i>
     <span>צדקה</span>
   </a>
+  <a href="{% url 'childApp:child_completed_tasks' %}" class="nav-button" style="background-color: #5d22ff;">
+    <i class="fas fa-check-circle"></i>
+    <span>משימות מושלמות</span>
+</a>
     <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>
         <span>יציאה</span>
@@ -832,6 +821,12 @@ body {
       font-size: 0.9rem;
     }
   }
-  
+  .task-button {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px 20px;
+
+  }
 </style>
 {% endblock extra_scripts %}

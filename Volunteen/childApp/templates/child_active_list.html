@@ -3,122 +3,41 @@
 
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6" dir="rtl">
+<div class="container mx-auto px-4 py-6" dir="rtl" x-data="{ tab: 'core' }">
   <h1 class="text-2xl font-bold text-center mb-6">משימות פעילות</h1>
-  
-  <!-- Main Task List Display -->
-  <div id="task-list" class="grid gap-4">
-    {% for task in tasks %}
-      <div id="task-{{ task.id }}" class="task-card bg-white rounded-xl shadow-md overflow-hidden transition-transform transform hover:scale-105 {% if task.is_pinned %}pinned-task{% endif %}" onclick="toggleDetails({{ task.id }})">
-        <div class="task-card bg-white rounded-xl shadow-md p-3 flex items-center relative mb-4" dir="rtl">
-            <!-- Left Column: Image -->
-            <div class="w-16 h-16 flex-shrink-0">
-              {% if task.img %}
-                <img src="{{ task.img.url }}" alt="{{ task.title }}" class="w-full h-full object-cover rounded-lg " />
-              {% else %}
-                <!-- Fallback if no image -->
-                <div class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                  <img src="{% static 'images/logo.png' %}" alt="logo" class="w-full h-full object-cover rounded-lg" />
-                </div>
-              {% endif %}
-            </div>
-          
-            <!-- Center Column: Title, Deadline, Points -->
-            <div class="flex-1 px-2">
-              <h2 class="text-base font-semibold text-gray-800">
-                {{ task.title }}
-                {% if task.is_pinned %}
-                  <span class="pin-icon ml-2" title="משימה מוצמדת">📌</span>
-                {% endif %}
-              </h2>
-              <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
-              <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
-            </div>
-          
-            <!-- Right Column: Status Badge -->
-            <div class="w-12 flex items-center justify-center">
-              {% if task.status %}
-                {% if task.status == "checked_out" %}
-                  <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-yellow-500">ממתין לאישור המנטור</span>
-                {% elif task.status == "approved" %}
-                  <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-green-500">מאושר</span>
-                {% elif task.status == "rejected" %}
-                  <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-red-500">נדחה</span>
-                {% elif task.status == "checked_in" %}
-                  <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-blue-500">צ`ק אין</span>
-                {% elif task.status == "pending" %}
-                  <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-gray-500">ממתין לאישור המנטור</span>
-                {% endif %}
-              {% else %}
-                <span class="status-badge text-xs text-white px-2 py-1 rounded-full bg-indigo-500">לא התחיל</span>
-              {% endif %}
-            </div>
-          
-            <!-- NEW Badge (top-right corner) if task.is_new -->
-            {% if task.is_new %}
-              <span class="new-badge absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs animate-pulse">
-                חדש
-              </span>
-            {% endif %}
-          </div>
-          
-        <!-- Expandable Details (hidden by default) -->
-        <div id="details-{{ task.id }}" class="task-details px-4 pb-4 hidden opacity-0 transition-opacity duration-300">
-          <p class="text-gray-700">תיאור: {{ task.description }}</p>
-          {% if task.additional_details %}
-            <p class="text-gray-700 mt-2">פרטים נוספים: {{ task.additional_details }}</p>
-          {% endif %}
-          {% if task.assigned_mentors.all %}
-            <p class="text-gray-700 mt-2">מנטורים שהוקצו: 
-              {% for mentor in task.assigned_mentors.all %}
-                {{ mentor.user.username }}{% if not forloop.last %}, {% endif %}
-              {% endfor %}
-            </p>
-          {% endif %}
-        </div>
-      </div>
-    {% empty %}
-      <p class="text-center text-gray-600">אין משימות פעילות.</p>
-    {% endfor %}
+
+  <!-- Tab Buttons -->
+  <div class="flex justify-center mb-6 space-x-2 rtl:space-x-reverse">
+    <button @click="tab = 'core'" :class="{ 'bg-blue-500 text-white': tab === 'core', 'bg-gray-200 text-gray-700': tab !== 'core' }"
+            class="px-4 py-2 rounded-full transition">משימות רגילות</button>
+    <button @click="tab = 'campaign'" :class="{ 'bg-blue-500 text-white': tab === 'campaign', 'bg-gray-200 text-gray-700': tab !== 'campaign' }"
+            class="px-4 py-2 rounded-full transition">משימות קמפיין</button>
+  </div>
+
+  <!-- Core Tasks -->
+  <div x-show="tab === 'core'" x-transition>
+    <div id="task-list" class="grid gap-4">
+      {% for task in core_tasks %}
+        {% include "childApp/partials/task_card.html" with task=task %}
+      {% empty %}
+        <p class="text-center text-gray-600">אין משימות רגילות.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Campaign Tasks -->
+  <div x-show="tab === 'campaign'" x-transition>
+    <div id="task-list" class="grid gap-4">
+      {% for task in campaign_tasks %}
+        {% include "childApp/partials/task_card.html" with task=task %}
+      {% empty %}
+        <p class="text-center text-gray-600">אין משימות קמפיין פעילות.</p>
+      {% endfor %}
+    </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  // Function to toggle task details with smooth fade in/out animations
-  function toggleDetails(taskId) {
-    const detailsElem = document.getElementById('details-' + taskId);
-    if (detailsElem.classList.contains('hidden')) {
-      detailsElem.classList.remove('hidden');
-      // Start with opacity 0 and then animate to full opacity
-      detailsElem.style.opacity = 0;
-      setTimeout(() => {
-        detailsElem.style.opacity = 1;
-      }, 10);
-    } else {
-      // Fade out the details and hide after animation
-      detailsElem.style.opacity = 0;
-      setTimeout(() => {
-        detailsElem.classList.add('hidden');
-      }, 300);
-    }
-  }
-</script>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-  .pinned-task {
-    background-color: #fff8e1 !important;
-    border: 2px solid #ffcc00 !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  }
-  .pin-icon {
-    font-size: 1.2rem; 
-  }
-</style>
 {% endblock %}

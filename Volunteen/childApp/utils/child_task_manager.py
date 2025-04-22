@@ -27,10 +27,15 @@ class ChildTaskManager:
     @staticmethod
     def get_all_child_active_tasks(child):
         """
-        Retrieve all Task objects assigned to a child that have not been completed.
-        Only include assignments that have not been refunded.
-        Includes the `is_new` field from TaskAssignment and the latest `status` from TaskCompletion.
-        Pinned tasks appear first.
+        Return two separate querysets:
+        - core_tasks: non-campaign tasks assigned to the child
+        - campaign_tasks: campaign-related tasks assigned to the child
+
+        Both include:
+        - only non-completed tasks
+        - tasks with no refunded assignments
+        - annotated with `is_new` from TaskAssignment
+        - annotated with latest TaskCompletion status
         """
         # Retrieve only the task IDs that were completed
         completed_task_ids = TaskCompletion.objects.filter(
@@ -42,15 +47,19 @@ class ChildTaskManager:
             task=OuterRef("pk"), child=child
         ).values("status")[:1]
 
-        # Retrieve active tasks with `is_new` from TaskAssignment and `status` from TaskCompletion
-        return Task.objects.filter(
+        base_qs = Task.objects.filter(
             assignments__child=child,
             assignments__refunded_at__isnull=True,
             deadline__gte=timezone.now().date()
-        ).exclude(id__in=completed_task_ids).annotate(
-            is_new=F("assignments__is_new"),  # Fetching `is_new` field from TaskAssignment
-            status=Subquery(latest_status_subquery)  # Fetching latest `status` from TaskCompletion
-        ).distinct().order_by('-is_pinned', 'deadline')
+            ).exclude(id__in=completed_task_ids).annotate(
+                is_new=F("assignments__is_new"),
+                status=Subquery(latest_status_subquery)
+        ).distinct().order_by("-is_pinned", "deadline")
+
+        core_tasks = base_qs.filter(campaign__isnull=True)
+        campaign_tasks = base_qs.filter(campaign__isnull=False)
+
+        return core_tasks, campaign_tasks
 
     @staticmethod
     def get_completed_tasks(child):

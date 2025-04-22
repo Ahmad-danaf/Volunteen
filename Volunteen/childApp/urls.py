@@ -38,4 +38,5 @@ urlpatterns = [
     path("campaigns/", child_views.CampaignListView.as_view(), name="child-campaigns"),
     path("campaigns/<int:pk>/", child_views.CampaignDetailView.as_view(), name="child-campaign-detail"),
     path("campaigns/<int:pk>/join", child_views.join_campaign_view, name="child-campaign-join"),
+    path("campaigns/<int:pk>/leave", child_views.leave_campaign_view, name="child-campaign-leave"),
 ]
