@@ -1,0 +1,228 @@
+{% extends 'mentor_primary_base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .task-form-container {
+        max-width: 1100px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    label {
+        font-weight: bold;
+    }
+    .form-control {
+        margin-bottom: 10px;
+    }
+    .btn-submit {
+        background-color: #ff6600;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-submit:hover {
+        background-color: #e65c00;
+    }
+    .back-btn {
+        border: 1px solid;
+    }
+    .assign-container {
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .snooze-container {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+    .points {
+        width: 100px;
+    }
+    .deadline-buttons {
+        margin-top: 10px;
+    }
+    .deadline-buttons button {
+        margin-right: 10px;
+    }
+    @media screen and (max-width: 600px) {
+        .task-form-container {
+            padding: 10px;
+        }
+    }
+</style>
+
+<div class="container mt-5 task-form-container" dir="rtl">
+    <h2 style="color: #ff6600; text-align: center;">הוסף משימה להורה</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="taskName" class="form-label">שם המשימה</label>
+            <input type="text" id="taskName" name="title" class="form-control" value="{{ form.title.value|default_if_none:'' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">תיאור</label>
+            <textarea id="description" name="description" class="form-control" rows="3" required>{{ form.description.value|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="mb-3 points">
+            <label for="points" class="form-label">ניקוד</label>
+            <input type="number" id="points" name="points" class="form-control points" value="{{ form.points.value|default_if_none:'' }}" required>
+        </div>
+
+        <label class="form-label">הקצאה ל</label><br>
+        <div class="mb-3 assign-container">
+            <input type="checkbox" id="checkAll" name="checkAll" disabled>
+            <label for="checkAll">בחר הכל</label><br>
+            {% for child in children %}
+                <input type="checkbox" id="child{{ child.id }}" name="assigned_children" value="{{ child.id }}" disabled>
+                <label for="child{{ child.id }}">{{ child.user.username }}</label><br>
+            {% endfor %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="deadline" class="form-label">תאריך יעד</label>
+            <input type="date" id="deadline" name="deadline" class="form-control" value="{{ form.deadline.value|date:'Y-m-d' }}" required>
+            <div class="deadline-buttons">
+                <button type="button" id="todayButton" class="btn btn-secondary">היום</button>
+                <button type="button" id="tomorrowButton" class="btn btn-secondary">מחר</button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn-submit w-100">הוסף משימה</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum deadline as today
+        var deadlineInput = document.getElementById('deadline');
+        var today = new Date().toISOString().split('T')[0];
+        deadlineInput.setAttribute('min', today);
+        
+        // Deadline buttons event listeners
+        var todayButton = document.getElementById('todayButton');
+        var tomorrowButton = document.getElementById('tomorrowButton');
+        
+        todayButton.addEventListener('click', function() {
+            deadlineInput.value = today;
+        });
+        
+        tomorrowButton.addEventListener('click', function() {
+            var tomorrowDate = new Date();
+            tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+            var tomorrow = tomorrowDate.toISOString().split('T')[0];
+            deadlineInput.value = tomorrow;
+        });
+    
+        // Assignment checkboxes update logic (existing functionality)
+        var checkAll = document.getElementById('checkAll');
+        var childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
+        var pointsInput = document.getElementById('points');
+        var availableTeencoins = {{ available_teencoins }};
+     
+        function updateAssignmentLimit() {
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            
+            // If taskPoints is 0 or invalid, enable the child checkboxes so the mentor can fix it.
+            if (taskPoints <= 0) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    cb.checked = false;
+                });
+                checkAll.disabled = false;
+                checkAll.checked = false;
+                // Also update group checkboxes accordingly.
+                updateGroupCheckboxes();
+                return;
+            }
+            
+            var maxChildren = Math.floor(availableTeencoins / taskPoints);
+            
+            if (taskPoints > availableTeencoins) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+                checkAll.disabled = true;
+                checkAll.checked = false;
+            } else {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = false;
+                    cb.checked = false;
+                });
+                checkAll.disabled = (maxChildren === 0) || (taskPoints > availableTeencoins / 2);
+                checkAll.checked = false;
+            }
+            // After updating individual checkboxes, check group selection limits.
+            updateGroupCheckboxes();
+        }
+     
+        function updateTeencoins() {
+            var taskPoints = parseInt(pointsInput.value, 10) || 0;
+            var selectedChildren = Array.from(childCheckboxes).filter(cb => cb.checked);
+            var remainingTeencoins = availableTeencoins - (selectedChildren.length * taskPoints);
+            
+            if (taskPoints > availableTeencoins) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+                checkAll.disabled = true;
+                // Also update groups when coins run out.
+                updateGroupCheckboxes();
+                return;
+            }
+     
+            var canAssignAll = (taskPoints * childCheckboxes.length) <= availableTeencoins;
+            checkAll.disabled = !canAssignAll || (taskPoints > availableTeencoins / 2);
+     
+            childCheckboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.disabled = (remainingTeencoins < taskPoints);
+                }
+            });
+     
+            if (selectedChildren.length === 0) {
+                childCheckboxes.forEach(cb => {
+                    cb.disabled = taskPoints > availableTeencoins;
+                });
+            }
+            // Also update groups when children selections change.
+            updateGroupCheckboxes();
+        }
+     
+        pointsInput.addEventListener('input', updateAssignmentLimit);
+        childCheckboxes.forEach(cb => cb.addEventListener('change', updateTeencoins));
+        checkAll.addEventListener('change', function() {
+            childCheckboxes.forEach(cb => {
+                if (!cb.disabled) cb.checked = checkAll.checked;
+            });
+            updateTeencoins();
+        });
+        
+        // Initial call so that checkboxes reflect the state at page load
+        updateAssignmentLimit();
+        
+        // Re-enable checked assignment checkboxes on form submit (so they get sent)
+        document.querySelector('form').addEventListener('submit', function() {
+            childCheckboxes.forEach(function(cb) {
+                if (cb.checked) {
+                    cb.disabled = false;
+                }
+            });
+        });
+    
+    });
+    </script>
+    
+    
+{% endblock %}

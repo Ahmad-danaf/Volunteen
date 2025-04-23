@@ -408,10 +408,10 @@ def create_parent_task(request):
     if request.method != "POST":
         return HttpResponseBadRequest("Invalid request method.")
 
-    try:
-        parent = request.user.parent
-    except Parent.DoesNotExist:
-        return HttpResponseForbidden("Only parents can create tasks.")
+    # try:
+    #     parent = request.user.parent
+    # except Parent.DoesNotExist:
+    #     return HttpResponseForbidden("Only parents can create tasks.")
     
     try:
         data = json.loads(request.body)

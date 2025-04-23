@@ -116,6 +116,7 @@
   {% endif %}
     <div class="section" dir="rtl">
         <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn"><i class="fas fa-plus"></i> הוספת משימה</a>
+        <a href="{% url 'mentorApp:add_parent_task' %}" class="btn mentor-btn"><i class="fas fa-plus"></i> הוספת משימה להורה</a>
         <a href="{% url 'mentorApp:template_list' %}" class="btn mentor-btn"><i class="fas fa-copy"></i> משימות לשכפול</a>
         <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn mentor-btn"><i class="fas fa-tasks"></i>רשימת משימות</a>
         <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn mentor-btn">

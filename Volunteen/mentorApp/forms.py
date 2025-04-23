@@ -12,7 +12,6 @@ class TaskForm(forms.ModelForm):
         required=False
     )
     
-
     class Meta:
         model = Task
         fields = [

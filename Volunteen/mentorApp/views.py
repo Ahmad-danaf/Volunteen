@@ -24,6 +24,7 @@ from django.core.paginator import Paginator
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
 from django.views.decorators.http import require_POST
+from parentApp import views as parent_views
 
 @login_required
 def mentor_home(request):
@@ -117,6 +118,37 @@ def add_task(request, task_id=None, duplicate=False, template=False):
         'is_duplicate': duplicate,
         'available_teencoins': mentor.available_teencoins,
         'mentor_groups': mentor_groups,
+    })
+
+@login_required
+def create_parent_task(request, task_id=None, duplicate=False, template=False):
+    print("create_parent_task")
+    mentor = get_object_or_404(Mentor, user=request.user)
+    task_data = {}
+    
+    if request.method == 'POST':
+        taskForm = TaskForm(
+            mentor=mentor,
+            data=request.POST,
+            files=request.FILES
+        )
+        
+        task, assignments = parent_views.create_parent_task(
+            parent=parent,
+            name=taskForm.title,
+            description=taskForm.description,
+            points=taskForm.points,
+            due_date=taskForm.deadline,
+            selected_children=taskForm.assigned_children
+        )
+    else:
+        taskForm = TaskForm(mentor=mentor)
+        
+    print("taskForm", taskForm)
+
+    return render(request, 'mentorApp/tasks/add_parent_task.html', {
+        'form': taskForm,
+        'children': mentor.children.all()
     })
 
 @login_required
