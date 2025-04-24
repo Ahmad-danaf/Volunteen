@@ -211,30 +211,36 @@ def track_campaign_participants(request, campaign_id):
     CampaignUtils.expire_campaign_reservations()
     campaign = get_object_or_404(Campaign, id=campaign_id)
     joined_child_ids  = CampaignUtils.current_approved_children_qs(campaign)
-
+    total_children_joined = joined_child_ids.count()
+    total_children_finished = 0
+    total_tasks = campaign.tasks.count()
     # Compute task progress and time left
     children_data = []
     for child_id in joined_child_ids.values_list('child', flat=True):
         child = Child.objects.get(id=child_id)
-        total_tasks = campaign.tasks.count()
         approved_tasks = TaskCompletion.objects.filter(
             child=child,
             task__campaign=campaign,
             status='approved'
         ).count()
-
+        has_child_finished = approved_tasks == total_tasks
+        if has_child_finished:
+            total_children_finished += 1
         children_data.append({
             "child": child,
             "join_date": CampaignUtils.get_child_join_date(child, campaign),
             "time_left": CampaignUtils.get_time_left(child, campaign),
             "approved_tasks": approved_tasks,
             "total_tasks": total_tasks,
-            "progress": int((approved_tasks / total_tasks) * 100) if total_tasks > 0 else 0
+            "progress": int((approved_tasks / total_tasks) * 100) if total_tasks > 0 else 0,
+            "has_child_finished": has_child_finished
         })
 
     context = {
         "campaign": campaign,
         "children_data": children_data,
+        "total_children_joined": total_children_joined,
+        "total_children_finished": total_children_finished
     }
     return render(request, "campaign/campaign_details/track.html", context)
 

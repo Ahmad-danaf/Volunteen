@@ -5,7 +5,14 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 {% endblock %}
-
+{% block extra_css %}
+<style>
+  [x-cloak] { display: none !important; }
+  .task-card {
+      transition-property: transform, box-shadow;
+  }
+</style>
+{% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-6" dir="rtl" x-data="{ tab: 'core' }">
   <h1 class="text-2xl font-bold text-center mb-6">משימות פעילות</h1>

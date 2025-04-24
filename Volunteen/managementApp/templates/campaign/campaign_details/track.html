@@ -7,6 +7,8 @@
   <div class="max-w-4xl mx-auto text-right mb-6">
     <h1 class="text-3xl font-extrabold text-gray-800">{{ campaign.title }} - משתתפים</h1>
     <p class="text-sm text-gray-500 mt-1">צפייה ומעקב אחרי התקדמות הילדים בקמפיין</p>
+    <p class="text-sm text-gray-500 mt-1">כמות הילדים שהצטרפו לקמפיין: {{ total_children_joined }} מתוך {{ campaign.max_children }}</p>
+    <p class="text-sm text-gray-500 mt-1">כמות הילדים שהסיימו את הקמפיין: {{ total_children_finished }} מתוך {{ total_children_joined }}</p>
   </div>
 
   <!-- Participants Panel -->
@@ -20,6 +22,9 @@
             <p class="text-lg font-semibold text-gray-800">{{ entry.child.user.username }}</p>
             <p class="text-sm text-gray-600">הצטרף בתאריך: {{ entry.join_date|date:"d/m/Y" }}</p>
             <p class="text-sm text-gray-500">זמן שנותר: {{ entry.time_left}}</p>
+            {% if entry.has_child_finished %}
+              <p class="text-green-500"> סיים את הקמפיין</p>
+            {% endif %}
           </div>
 
           <!-- Progress Bar -->

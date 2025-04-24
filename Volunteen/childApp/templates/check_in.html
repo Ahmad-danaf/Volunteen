@@ -70,6 +70,7 @@
         <p>תאריך יעד: {{ task.deadline }}</p>
     </div>
     <button class="btn-back" onclick="window.location.href='{% url "childApp:task_check_in_out" %}'">חזרה למשימות</button>
+    <button class="btn-check-in hidden" id="checkInButton" onclick="submitCheckIn()">אישור צ'ק-אין</button>
 
     {% if not use_default_image %}
         {% if special_permissions %}
@@ -85,7 +86,6 @@
         <img id="preview" src="" alt="תצוגה מקדימה">
     </div>
 
-    <button class="btn-check-in hidden" id="checkInButton" onclick="submitCheckIn()">אישור צ'ק-אין</button>
 
     <script>
         /**
