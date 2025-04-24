@@ -57,18 +57,54 @@
         </div>
       </div>
     </a>
+    {% empty %}
+    <!-- No campaigns message with animation -->
+    <div class="max-w-md mx-auto text-center animate-bounce">
+      <div class="bg-white p-8 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105">
+        <div class="text-6xl mb-4">🎯</div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">
+          אין קמפיינים זמינים כרגע
+        </h2>
+        <p class="text-gray-600">
+          אבל אל דאגה! קמפיינים חדשים בדרך...<br>
+          תבדוק שוב בקרוב!
+        </p>
+        <div class="mt-4 text-blue-600 animate-pulse">
+          ↻ תרענן את הדף מדי פעם
+        </div>
+      </div>
+    </div>
     {% endfor %}
   </div>
 </div>
 
 <!-- Animation keyframes for fadeInUp effect -->
 <style>
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translate3d(0, 20px, 0); }
-  to   { opacity: 1; transform: none; }
-}
-.animate-fadeInUp {
-  animation: fadeInUp 0.5s ease-out both;
-}
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translate3d(0, 20px, 0); }
+    to   { opacity: 1; transform: none; }
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out both;
+  }
+  
+  .animate-bounce {
+    animation: bounce 1.5s infinite;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 </style>
 {% endblock content %}
