@@ -15,10 +15,13 @@ from datetime import datetime, date, timedelta
 from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView, DetailView
+from django.contrib import messages
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
-from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest
+from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
 from teenApp.entities.TaskCompletion import TaskCompletion
 from django.utils.timezone import localdate
 from .forms import RedemptionRatingForm,DonationForm
@@ -26,7 +29,7 @@ from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import (
     AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
-    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY
+    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES
 )
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
@@ -39,6 +42,8 @@ from childApp.utils.child_level_management import calculate_total_points
 from managementApp.models import DonationCategory, DonationTransaction
 from childApp.decorators import child_subscription_required
 from parentApp.models import ChildSubscription
+from childApp.utils.CampaignUtils import CampaignUtils
+from Volunteen.constants import CAMPAIGN_TIME_LIMIT_MINUTES
 
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
@@ -76,10 +81,11 @@ def child_home(request):
         6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
     }
     todays_greeting = greetings[current_day]
-    new_tasks = ChildTaskManager.get_new_assigned_tasks(child)
+    CampaignUtils.expire_campaign_reservations()
     new_tasks_count = ChildTaskManager.get_new_assigned_tasks_count(child)
 
     if request.method == 'POST' and 'close_notification' in request.POST:
+        new_tasks = ChildTaskManager.get_new_assigned_tasks(child)
         for task in new_tasks:
             ChildTaskManager.mark_task_as_viewed(child, task)
 
@@ -96,7 +102,6 @@ def child_home(request):
         'active_points': active_points,
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
-        'new_tasks': new_tasks,
         'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level,
@@ -269,17 +274,17 @@ def child_completed_tasks(request):
         }
         for task_completion in task_completions.order_by('-completion_date')
     ]
-    
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':child.parent.user.username})
+    parent_username = child.parent.user.username if child.parent else 'הורה'
+    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
 
 @child_subscription_required
 def child_active_list(request):
     try:
         child = Child.objects.get(user=request.user)
-        assignments = ChildTaskManager.get_all_child_active_tasks(child)
+        core_tasks, campaign_tasks = ChildTaskManager.get_all_child_active_tasks(child)
         
 
-        return render(request, 'child_active_list.html', {'tasks': assignments})
+        return render(request, 'child_active_list.html', {'core_tasks': core_tasks, 'campaign_tasks': campaign_tasks})
     
     except Child.DoesNotExist:
         return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
@@ -573,7 +578,7 @@ def task_check_in_out(request):
     """Retrieve tasks that require check-in or check-out for the child."""
     child = request.user.child
     today = timezone.now().date()
-
+    CampaignUtils.expire_campaign_reservations()
     # Retrieve assigned tasks that are not completed
     assigned_tasks = (
         ChildTaskManager
@@ -596,7 +601,8 @@ def check_in(request, task_id):
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
     replace_image = request.GET.get('replace_image') == 'true'
-    
+    if not task.proof_required:
+        use_default_image = True
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
@@ -615,7 +621,8 @@ def check_out(request, task_id):
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
-
+    if not task.proof_required:
+        use_default_image = True
     # Ensure the task was checked in before allowing check-out
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if not task_completion or not task_completion.checkin_img:
@@ -718,3 +725,138 @@ def donation_leaderboard(request):
         'form': form,
     })
    
+   
+@method_decorator(login_required, name='dispatch')
+class CampaignListView(ListView):
+    model = Campaign
+    template_name = "childApp/campaigns/campaign_list.html"
+    context_object_name = "campaigns"
+
+    def get_queryset(self):
+        CampaignUtils.expire_campaign_reservations()  
+        today = timezone.localtime(timezone.now()).date()
+        return Campaign.objects.filter(
+            is_active=True,
+            end_date__gte=today,
+        ).order_by("-start_date")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        child = self.request.user.child
+        for campaign in ctx["campaigns"]:
+            campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
+            campaign.has_joined = CampaignUtils.child_has_joined(child, campaign)
+            campaign.has_finished = CampaignUtils.child_has_finished(child, campaign)
+        return ctx
+
+
+
+@method_decorator(child_subscription_required, name='dispatch')
+class CampaignDetailView(DetailView):
+    model = Campaign
+    template_name = "childApp/campaigns/campaign_detail.html"
+    context_object_name = "campaign"
+
+    def get_context_data(self, **kwargs):
+        CampaignUtils.expire_campaign_reservations()
+
+        ctx = super().get_context_data(**kwargs)
+        campaign = self.object
+        child = self.request.user.child
+        campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
+        all_tasks = campaign.tasks.all()
+
+        raw_assignments = TaskAssignment.objects.filter(
+            child=child,
+            task__campaign=campaign
+        ).select_related("task")
+
+        assign_map = {a.task_id: a for a in raw_assignments}
+
+        tasks_info = []
+        for task in all_tasks:
+            assignment = assign_map.get(task.id)
+            if assignment:
+                comp = TaskCompletion.objects.filter(
+                    task=task,
+                    child=child
+                ).first()
+                status = comp.status if comp else ""
+            else:
+                assignment = None
+                status = None
+
+            tasks_info.append({
+                "task":       task,
+                "assignment": assignment,
+                "status":     status,
+            })
+
+        has_joined = bool(raw_assignments)
+        
+
+        time_left = (
+            CampaignUtils.get_time_left(child, campaign)
+            if has_joined else None
+        )
+        if time_left:
+            time_left_end = timezone.localtime(timezone.now()) + time_left
+        else:
+            time_left_end = None
+        if has_joined:
+            total_seconds = time_left.total_seconds()
+            percent = (total_seconds / (CAMPAIGN_TIME_LIMIT_MINUTES * 60)) * 100
+            ctx["percent_time_left"] = percent
+        else:
+            ctx["percent_time_left"] = 0
+        ctx.update({
+            "tasks_info": tasks_info,
+            "has_joined": has_joined,
+            "time_left":  time_left,
+            "time_left_end": time_left_end,
+            "has_child_finished": CampaignUtils.child_has_finished(child, campaign),
+        })
+        return ctx
+
+@child_subscription_required
+def join_campaign_view(request, pk):
+    CampaignUtils.expire_campaign_reservations()  
+    campaign = get_object_or_404(Campaign, pk=pk)
+    child = request.user.child
+    try:
+        assigned_count = CampaignUtils.join_campaign(child, campaign)
+        messages.success(
+            request,
+            f"נרשמת לקמפיין בהצלחה! קיבלת {assigned_count} משימות ולך {CAMPAIGN_TIME_LIMIT_MINUTES} דקות לסיים אותן."
+        )
+    except ValueError as err:
+        messages.error(request, str(err))
+
+    return redirect("childApp:child-campaign-detail", pk=pk)
+
+@require_POST
+@child_subscription_required
+def leave_campaign_view(request, pk):
+    """
+    Allows a child to leave a campaign, if currently joined.
+    Removes all TaskAssignments and marks any unapproved completions as rejected.
+    """
+    CampaignUtils.expire_campaign_reservations()
+    campaign = get_object_or_404(Campaign, pk=pk)
+    child = request.user.child
+    has_joined = TaskAssignment.objects.filter(
+        child=child,
+        task__campaign=campaign
+    ).exists()
+
+    if not has_joined:
+        messages.warning(request, "לא הצטרפת לקמפיין זה.")
+        return redirect("childApp:child-campaign-detail", pk=pk)
+
+    try:
+        removed = CampaignUtils.leave_campaign(child, campaign)
+        messages.success(request, f"הוסרת מהקמפיין. {removed} משימות נמחקו.")
+    except Exception as e:
+        messages.error(request, f"שגיאה בעת ההסרה מהקמפיין: {str(e)}")
+
+    return redirect("childApp:child-campaign-detail", pk=pk)

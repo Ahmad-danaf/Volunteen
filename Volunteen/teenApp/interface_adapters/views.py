@@ -38,6 +38,8 @@ def home_redirect(request):
         return redirect('institutionApp:institution_home')
     elif 'DonationManager' in user_groups:
         return redirect('managementApp:donation_manager_dashboard')
+    elif 'CampaignManager' in user_groups:
+        return redirect('managementApp:campaign_manager_home')
     else:
         return redirect('admin:index')
 

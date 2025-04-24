@@ -40,6 +40,9 @@ PARENT_TOPUP_AMOUNT = 50 # the amount of coins added to the parent's balance whe
 CHILDREN_REQUIRE_DEFAULT_IMAGE = {"מחמד_חלילי","الطفل_إبراهيم"}  # the children who have special permissions to upload images in the check in/out page
 SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN={"נור_גוראב"}  # the children who have special permissions to upload images in the check in/out page
 
+CAMPAIGN_MENTOR_USERNAME = "الاستاذ_ءادم" # the username of the campaign mentor
+CAMPAIGN_TIME_LIMIT_MINUTES =5 # the time limit for the campaign in minutes
+#TODO: change time limit to 1440 minutes & change the mentor
 LEVELS = {
     1: "מתחיל",
     2: "עוזר",

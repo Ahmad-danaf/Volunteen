@@ -1,0 +1,74 @@
+{% extends 'child_base.html' %}
+{% load static %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 p-4">
+  <h1 class="text-2xl font-bold text-center mb-6">קמפיינים פעילים</h1>
+
+  <!-- Grid layout: one column on mobile, gap between items -->
+  <div class="grid gap-4">
+    {% for campaign in campaigns %}
+    <!-- Campaign card link: hover scale and fade-in animation -->
+    <a href="{% url 'childApp:child-campaign-detail' campaign.pk %}"
+       class="group block bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-500 hover:scale-105 animate-fadeInUp">
+
+      <!-- Banner image: cover background -->
+      <div class="h-48 bg-cover bg-center"
+           style="background-image: url('{{ campaign.banner_img.url }}');">
+      </div>
+
+      <!-- Card content -->
+      <div class="p-4">
+        <!-- Campaign title -->
+        <h2 class="text-xl font-semibold mb-2 group-hover:text-blue-600">
+          {{ campaign.title }}
+        </h2>
+
+        <!-- Campaign description: truncated to 20 words -->
+        <p class="text-gray-600 mb-4">
+          {{ campaign.description|truncatewords:20 }}
+        </p>
+
+        <!-- Footer: slot count and join status badge -->
+        <div class="flex justify-between items-center">
+          <!-- Slot indicator -->
+          <span class="text-sm text-gray-500">
+            {{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} משתתפים
+          </span>
+
+          {% if campaign.has_joined and not campaign.has_finished %}
+          <!-- Joined badge -->
+          <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+            נרשמת
+          </span>
+          {% elif campaign.has_joined and campaign.has_finished %}
+          <!-- Finished badge -->
+          <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+            הושלם
+          </span>
+          {% else %}
+          <!-- Join prompt badge -->
+          <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+            הצטרף
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Animation keyframes for fadeInUp effect -->
+<style>
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translate3d(0, 20px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease-out both;
+}
+</style>
+{% endblock content %}
