@@ -27,6 +27,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 development = os.getenv("DEVELOPMENT","False") == "True"
 DEBUG = development
 ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com","*"]
+if development:
+    INTERNAL_IPS = ["127.0.0.1"]
+
 
 # Application definition
 
@@ -57,6 +60,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     
 ]
+if development:
+    INSTALLED_APPS += ['debug_toolbar']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -64,7 +69,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # LOGIN_URL = 'two_factor:login'
 # LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
 
-# מסך התחברות
 LOGIN_URL = 'teenApp:login'
 LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
 LOGOUT_REDIRECT_URL = 'teenApp:landing_page'
@@ -87,6 +91,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+if development:
+    MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'Volunteen.frameworks_and_drivers.urls'
 template_name='two_factor/login.html'
@@ -183,6 +189,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'media')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+if development:
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": lambda request: True,  # Always show when development
+        "SHOW_COLLAPSED": True,  # 🔹 This makes it collapsed by default
+    }
+
+
+
 
 Q_CLUSTER = {
     'name': 'volunteen_qcluster',
