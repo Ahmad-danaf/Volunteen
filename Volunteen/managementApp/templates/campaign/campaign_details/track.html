@@ -1,0 +1,72 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-white to-indigo-100 px-4 py-6 sm:px-6 lg:px-8 animate-fadeIn">
+
+  <!-- Title Section -->
+  <div class="max-w-4xl mx-auto text-right mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">{{ campaign.title }} - משתתפים</h1>
+    <p class="text-sm text-gray-500 mt-1">צפייה ומעקב אחרי התקדמות הילדים בקמפיין</p>
+  </div>
+
+  <!-- Participants Panel -->
+  <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-4 space-y-4 animate-slideInUp">
+
+    {% if children_data %}
+      {% for entry in children_data %}
+      <div class="bg-gray-50 rounded-xl p-4 shadow-sm hover:shadow-md transition transform hover:scale-[1.01]">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <div class="text-right flex-1 min-w-[180px]">
+            <p class="text-lg font-semibold text-gray-800">{{ entry.child.user.username }}</p>
+            <p class="text-sm text-gray-600">הצטרף בתאריך: {{ entry.join_date|date:"d/m/Y" }}</p>
+            <p class="text-sm text-gray-500">זמן שנותר: {{ entry.time_left}}</p>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="flex-1 min-w-[200px] text-right">
+            <p class="text-sm text-gray-700 mb-1">התקדמות: {{ entry.approved_tasks }}/{{ entry.total_tasks }} משימות</p>
+            <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-green-500 transition-all duration-700" style="width: {{ entry.progress }}%;"></div>
+            </div>
+          </div>
+
+          <!-- Remove Button -->
+          <div>
+            <form method="post" action="{% url 'managementApp:remove_child_from_campaign' campaign.id entry.child.id %}" onsubmit="return confirm('האם אתה בטוח שברצונך להסיר את הילד מהקמפיין?')">
+              {% csrf_token %}
+              <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-xl shadow-md transition transform hover:scale-105">
+                הסר משתתף
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-center text-gray-500 text-sm">לא נמצאו ילדים משויכים לקמפיין זה.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-in-out both;
+  }
+</style>
+{% endblock %}

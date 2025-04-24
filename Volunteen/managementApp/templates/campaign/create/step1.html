@@ -1,0 +1,71 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-100 to-white py-6 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+  <!-- Page Title -->
+  <div class="max-w-xl mx-auto text-right mb-8">
+    <h1 class="text-3xl font-extrabold text-gray-800 leading-tight">צור קמפיין חדש</h1>
+    <p class="text-sm text-gray-500 mt-1">שלב 1 מתוך 3 - פרטי בסיס</p>
+  </div>
+
+  <!-- Campaign Form Card -->
+  <div class="max-w-xl mx-auto bg-white rounded-3xl shadow-2xl p-6 space-y-6 transition-transform duration-300 hover:scale-[1.01]">
+    <form method="post" enctype="multipart/form-data" class="space-y-6 animate-slideInUp">
+      {% csrf_token %}
+      <!-- Form Fields -->
+      {% for field in form %}
+        <div class="text-right">
+          <label class="block text-gray-700 font-semibold mb-1">{{ field.label_tag }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <!-- Submit Button -->
+      <div class="flex justify-between items-center pt-4">
+        <a href="{% url 'managementApp:campaign_list' %}" class="text-sm text-indigo-600 hover:underline transition duration-200">חזרה לרשימת הקמפיינים</a>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition transform hover:scale-105 shadow-md">
+          המשך לשלב הבא 🚀
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-in-out both;
+  }
+</style>
+{% endblock %}

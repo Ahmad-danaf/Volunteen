@@ -1,0 +1,190 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-white to-indigo-50 px-4 py-6 sm:px-6 lg:px-8 animate-fadeIn">
+
+  <!-- Page Title -->
+  <div class="max-w-4xl mx-auto text-right mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">בקשות לאישור משימות</h1>
+    <p class="text-sm text-gray-500 mt-1">משימות שבוצעו במהלך 3 הימים האחרונים בקמפיינים</p>
+  </div>
+
+  <!-- Approvals Table -->
+  <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-4 space-y-4 animate-slideInUp">
+    {% if task_completions %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-right text-sm rtl border-collapse">
+          <thead>
+            <tr class="bg-indigo-100 text-indigo-900">
+              <th class="p-3 font-bold">
+                <div class="flex items-center gap-2">
+                  <span>בחירה</span>
+                  <input type="checkbox" id="selectAll" class="w-5 h-5 text-indigo-600 rounded">
+                </div>
+              </th>
+              <th class="p-3 font-bold">ילד</th>
+              <th class="p-3 font-bold">משימה ותמונות</th>
+              <th class="p-3 font-bold">סטטוס</th>
+              <th class="p-3 font-bold">תאריך ביצוע</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tc in task_completions %}
+              <tr class="border-b hover:bg-indigo-50 transition">
+                <td class="p-3 text-center">
+                  <input type="checkbox" value="{{ tc.id }}" class="task-checkbox w-5 h-5 text-indigo-600 rounded" />
+                </td>
+                <td class="p-3 font-medium">{{ tc.child.user.username }}</td>
+                <td class="p-3">
+                  <div class="space-y-1 text-right">
+                    <div class="font-semibold text-gray-700">{{ tc.task.title }}</div>
+                    <div class="flex justify-end gap-2 mt-1">
+                      {% if tc.checkin_img %}
+                        <img src="{{ tc.checkin_img.url }}" loading="lazy"
+                             class="w-14 h-14 rounded-lg object-cover cursor-pointer ring-2 ring-indigo-300"
+                             onclick="openFullscreen('{{ tc.checkin_img.url }}')"
+                             alt="תמונה בכניסה" title="לחץ להגדלה" />
+                      {% endif %}
+                      {% if tc.checkout_img %}
+                        <img src="{{ tc.checkout_img.url }}" loading="lazy"
+                             class="w-14 h-14 rounded-lg object-cover cursor-pointer ring-2 ring-pink-300"
+                             onclick="openFullscreen('{{ tc.checkout_img.url }}')"
+                             alt="תמונה ביציאה" title="לחץ להגדלה" />
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td class="p-3 text-yellow-600 font-semibold">{{ tc.get_status_display }}</td>
+                <td class="p-3 text-gray-500 text-xs">{{ tc.completion_date|date:"d/m/Y H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bulk Action Controls -->
+      <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3">
+        <textarea id="mentor-feedback" rows="2" placeholder="הכנס משוב (רק לדחייה)" class="form-textarea w-full sm:w-2/3 text-right rounded-xl shadow-sm focus:ring-indigo-500"></textarea>
+
+        <div class="flex gap-2 mt-2 sm:mt-0">
+          <button onclick="handleTaskAction('reject')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl shadow-md transition transform hover:scale-105">
+            דחה משימות ❌
+          </button>
+          <button onclick="handleTaskAction('approve')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow-md transition transform hover:scale-105">
+            אשר משימות ✅
+          </button>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-center text-gray-500 text-sm">אין משימות ממתינות לאישור.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Fullscreen Image Viewer -->
+<div id="fullscreenOverlay" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center" onclick="closeFullscreen()">
+  <img id="fullscreenImage" class="max-h-full max-w-full rounded-xl shadow-xl border-4 border-white" alt="תמונה בגודל מלא" />
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fadeIn { animation: fadeIn 0.7s ease-out both; }
+  .animate-slideInUp { animation: slideInUp 0.8s ease-out both; }
+
+  img[loading="lazy"] {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  img:hover {
+    transform: scale(1.05);
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleTaskAction(action) {
+  const selected = Array.from(document.querySelectorAll(".task-checkbox:checked"))
+                        .map(checkbox => checkbox.value);
+
+  const feedback = document.getElementById("mentor-feedback").value;
+
+  if (selected.length === 0) {
+    alert("לא נבחרו משימות.");
+    return;
+  }
+
+  fetch("{% url 'mentorApp:review_task' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: JSON.stringify({
+      task_ids: selected,
+      action: action,
+      mentor_feedback: feedback
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert("שגיאה: " + data.error);
+    }
+  })
+  .catch(error => {
+    alert("שגיאה בעת שליחת הבקשה.");
+    console.error(error);
+  });
+}
+
+function openFullscreen(imageUrl) {
+  const overlay = document.getElementById('fullscreenOverlay');
+  const image = document.getElementById('fullscreenImage');
+  image.src = imageUrl;
+  overlay.classList.remove('hidden');
+}
+
+function closeFullscreen() {
+  const overlay = document.getElementById('fullscreenOverlay');
+  const image = document.getElementById('fullscreenImage');
+  overlay.classList.add('hidden');
+  image.src = '';
+}
+// Select All functionality
+const selectAll = document.getElementById('selectAll');
+if (selectAll) {
+  selectAll.addEventListener('change', function(e) {
+    const checkboxes = document.querySelectorAll('.task-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = e.target.checked;
+    });
+  });
+}
+
+// Update Select All when individual checkboxes change
+const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+if (taskCheckboxes.length > 0) {
+  taskCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const allChecked = Array.from(taskCheckboxes).every(cb => cb.checked);
+      selectAll.checked = allChecked;
+    });
+  });
+}
+</script>
+{% endblock %}

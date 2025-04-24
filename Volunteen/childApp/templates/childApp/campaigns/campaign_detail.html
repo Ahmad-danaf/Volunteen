@@ -15,11 +15,26 @@
     </svg>
     <span class="font-semibold">חזרה לקמפיינים</span>
   </a>
-
+  {% if messages %}
+  <div class="mt-4">
+    {% for message in messages %}
+      {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+        <div class="bg-red rounded-2xl p-4 shadow-lg flex justify-between items-center transform hover:scale-[1.02] transition animate-fadeIn">
+          <p class="text-gray-800">{{ message }}</p>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
+    
   <!-- Campaign hero card -->
   <div class="bg-white rounded-3xl overflow-hidden shadow-2xl transform transition hover:scale-105 animate-fadeInUp" style="will-change: transform;">
     <div class="relative h-56">
+      {% if campaign.banner_img %}
       <img src="{{ campaign.banner_img.url }}" alt="{{ campaign.title }}" class="w-full h-full object-cover">
+      {% else %}
+      <img src="{% static 'images/logo.png' %}" alt="{{ campaign.title }}" class="w-full h-full object-cover">
+      {% endif %}
       <div class="absolute inset-0 bg-black bg-opacity-40"></div>
       <h1 class="absolute bottom-4 left-4 text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">{{ campaign.title }}</h1>
     </div>
@@ -32,8 +47,12 @@
           </svg>
           <span class="text-orange-600 font-medium">{{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} משתתפים</span>
         </div>
-        {% if has_joined %}
+        {% if has_joined and not has_child_finished %}
         <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">נרשמת</span>
+        {% elif has_joined and has_child_finished %}
+        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">הושלם</span>
+        {% else %}
+        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">הצטרף</span>
         {% endif %}
       </div>
 
@@ -59,7 +78,7 @@
       {% endif %}
     </div>
   </div>
-  {% if has_joined %}
+  {% if has_joined and not has_child_finished %}
   <!-- Leave Button (opens modal) -->
   <div class="mt-4">
     <button
@@ -92,7 +111,7 @@
       </div>
     </div>
   </div>
-{% else %}
+{% elif not has_child_finished %}
   <!-- Join Button -->
   <div class="mt-4">
     <form method="post" action="{% url 'childApp:child-campaign-join' campaign.pk %}">
@@ -115,8 +134,8 @@
           <p class="mt-1 text-green-600 font-medium">סטטוס: מאושר ✔️</p>
           {% elif info.status == 'rejected' %}
           <p class="mt-1 text-red-600 font-medium">סטטוס: נדחה ❌</p>
-          {% elif info.status == 'pending' %}
-          <p class="mt-1 text-yellow-600 font-medium">סטטוס: בהמתנה ⏳</p>
+          {% elif info.status == 'pending' or info.status == 'checked_in' or info.status == 'checked_out' %}
+          <p class="mt-1 text-yellow-600 font-medium">סטטוס: בהמתנה לאישור המנטור ⏳</p>
           {% else %}
           <p class="mt-1 text-gray-500 font-medium">לא התחלת</p>
           {% endif %}
@@ -157,7 +176,7 @@
 {% block extra_js %}
 <script>
     const endDate = new Date("{{ time_left_end.isoformat }}");
-    
+    const hasFinished = "{{ has_child_finished }} ".trim()=="True" || "{{ has_child_finished }} ".trim()=="true" ;
     function formatHebrewTime(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -181,10 +200,14 @@
         document.getElementById('hebrew-countdown').textContent = 
             `נותרו: ${formatHebrewTime(diff)} לסיום הקמפיין`;
     }
-
     // Update every minute (60000ms)
-    setInterval(updateHebrewCountdown, 60000);
-    updateHebrewCountdown(); // Initial call
+    if(!hasFinished){
+        setInterval(updateHebrewCountdown, 60000);
+        updateHebrewCountdown(); // Initial call
+    }
+    else{
+        document.getElementById('hebrew-countdown').textContent = 'הושלם!';
+    }
 
 </script>
 {% endblock %}

@@ -1,0 +1,76 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen px-4 pt-6 sm:px-6 lg:px-8 animate-fadeIn">
+
+  <!-- Welcome Section -->
+  <div class="max-w-4xl mx-auto text-right mb-8 space-y-1">
+    <h1 class="text-3xl font-extrabold text-gray-800">שלום, מנהל הקמפיינים 👋</h1>
+    <p class="text-sm text-gray-500">בחר פעולה כדי להתחיל לנהל את הקמפיינים שלך</p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-5 animate-slideInUp">
+    
+    <!-- Start New Campaign -->
+    <a href="{% url 'managementApp:create_campaign_step1' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-3xl shadow-lg p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
+      <div>
+        <h2 class="text-xl font-bold mb-1">📢 צור קמפיין חדש</h2>
+        <p class="text-sm text-indigo-100">התחל בבניית קמפיין בשלושה שלבים קלים</p>
+      </div>
+    </a>
+
+    <!-- Manage Campaigns -->
+    <a href="{% url 'managementApp:campaign_list' %}" class="bg-white hover:bg-gray-50 rounded-3xl border border-gray-200 shadow p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-1">📋 נהל קמפיינים</h2>
+        <p class="text-sm text-gray-600">עריכה, מעקב או הסרה של קמפיינים קיימים</p>
+      </div>
+    </a>
+
+    <!-- Task Approvals -->
+    <a href="{% url 'managementApp:campaign_approvals_panel' %}" class="bg-white hover:bg-gray-50 rounded-3xl border border-gray-200 shadow p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-1">✅ אישורי משימות</h2>
+        <p class="text-sm text-gray-600">אשר או דחה משימות של משתתפים בקמפיינים</p>
+      </div>
+    </a>
+
+    <!-- Participants Progress (optional feature) -->
+    <a href="{% url 'managementApp:campaign_list' %}#track" class="bg-white hover:bg-gray-50 rounded-3xl border border-gray-200 shadow p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-1">👥 עקוב אחר משתתפים</h2>
+        <p class="text-sm text-gray-600">צפה בהתקדמות הילדים בכל קמפיין</p>
+      </div>
+    </a>
+    <a href="{% url 'teenApp:logout_view' %}" class="bg-white hover:bg-gray-50 rounded-3xl border border-gray-200 shadow p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-1">🚪 יציאה מהמערכת</h2>
+        <p class="text-sm text-gray-600">סיום העבודה במערכת ניהול הקמפיינים</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.7s ease-out both;
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+</style>
+{% endblock %}

@@ -4,7 +4,7 @@ class Campaign(models.Model):
     shop       = models.ForeignKey('shopApp.Shop', on_delete=models.CASCADE, related_name="campaigns")
     title         = models.CharField(max_length=120)
     description   = models.TextField(blank=True)
-    banner_img    = models.ImageField(upload_to="campaign_banners/", blank=True, null=True)
+    banner_img    = models.ImageField(upload_to="campaign_banners/", blank=True, null=True, default='defaults/no-image.png')
 
     start_date    = models.DateField()
     end_date      = models.DateField()

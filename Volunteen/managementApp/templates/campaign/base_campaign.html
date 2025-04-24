@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ניהול קמפיינים{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-indigo-50 min-h-screen pb-20 text-right font-sans">
+
+  <!-- Main Content -->
+  <main class="px-4 sm:px-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="fixed bottom-0 inset-x-0 bg-white shadow-xl border-t z-50">
+    <div class="flex justify-around items-center py-2 animate-slideUp">
+      <!-- Home -->
+      <a href="{% url 'managementApp:campaign_manager_home' %}" class="flex flex-col items-center text-sm text-gray-600 hover:text-indigo-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-9 2v8m4-8v8m4-8l2 2m-2-2v8" />
+        </svg>
+        דף הבית
+      </a>
+
+      <!-- Campaigns -->
+      <a href="{% url 'managementApp:campaign_list' %}" class="flex flex-col items-center text-sm text-gray-600 hover:text-indigo-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
+        </svg>
+        קמפיינים
+      </a>
+
+      <!-- Approvals -->
+      <a href="{% url 'managementApp:campaign_approvals_panel' %}" class="flex flex-col items-center text-sm text-gray-600 hover:text-indigo-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        אישורים
+      </a>
+    </div>
+  </nav>
+
+  {% block extra_js %}{% endblock %}
+
+  <style>
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slideUp {
+      animation: slideUp 0.5s ease-out both;
+    }
+  </style>
+</body>
+</html>

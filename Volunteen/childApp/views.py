@@ -274,8 +274,8 @@ def child_completed_tasks(request):
         }
         for task_completion in task_completions.order_by('-completion_date')
     ]
-    
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':child.parent.user.username})
+    parent_username = child.parent.user.username if child.parent else 'הורה'
+    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
 
 @child_subscription_required
 def child_active_list(request):
@@ -746,6 +746,7 @@ class CampaignListView(ListView):
         for campaign in ctx["campaigns"]:
             campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
             campaign.has_joined = CampaignUtils.child_has_joined(child, campaign)
+            campaign.has_finished = CampaignUtils.child_has_finished(child, campaign)
         return ctx
 
 
@@ -780,7 +781,7 @@ class CampaignDetailView(DetailView):
                     task=task,
                     child=child
                 ).first()
-                status = comp.status if comp else "pending"
+                status = comp.status if comp else ""
             else:
                 assignment = None
                 status = None
@@ -813,6 +814,7 @@ class CampaignDetailView(DetailView):
             "has_joined": has_joined,
             "time_left":  time_left,
             "time_left_end": time_left_end,
+            "has_child_finished": CampaignUtils.child_has_finished(child, campaign),
         })
         return ctx
 
@@ -821,7 +823,6 @@ def join_campaign_view(request, pk):
     CampaignUtils.expire_campaign_reservations()  
     campaign = get_object_or_404(Campaign, pk=pk)
     child = request.user.child
-
     try:
         assigned_count = CampaignUtils.join_campaign(child, campaign)
         messages.success(
