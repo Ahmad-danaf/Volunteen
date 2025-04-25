@@ -4,7 +4,8 @@ from django.http import HttpResponse
 from teenApp.entities.task import Task
 from django.http import HttpResponse
 from django.contrib.auth import logout
-
+from django.http import HttpResponseForbidden
+from django.template.loader import render_to_string
 from django.conf import settings
 
 @login_required
@@ -51,4 +52,10 @@ def default_home(request):
 def list_view(request):
     tasks = Task.objects.all()
     return render(request, 'list_tasks.html', {'tasks': tasks})
+
+def csrf_failure_view(request, reason=""):
+    print("CSRF Failure:", reason)  
+    html = render_to_string('errors/csrf_failure.html')
+    return HttpResponseForbidden(html)
+
 

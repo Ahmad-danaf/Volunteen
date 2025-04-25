@@ -193,9 +193,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if development:
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": lambda request: True,  # Always show when development
-        "SHOW_COLLAPSED": True,  # 🔹 This makes it collapsed by default
+        "SHOW_COLLAPSED": True,  # This makes it collapsed by default
     }
 
+CSRF_FAILURE_VIEW = 'teenApp.interface_adapters.views.csrf_failure_view'
 
 
 
