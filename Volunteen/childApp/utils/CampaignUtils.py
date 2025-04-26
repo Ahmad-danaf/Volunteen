@@ -14,7 +14,7 @@ from mentorApp.models import Mentor
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from shopApp.models import Campaign                    
-from Volunteen.constants import CAMPAIGN_MENTOR_USERNAME, CAMPAIGN_TIME_LIMIT_MINUTES
+from Volunteen.constants import CAMPAIGN_MENTOR_USERNAME, CAMPAIGN_TIME_LIMIT_MINUTES, CAMPAIGN_BAN_DURATION_HOURS
 
 class CampaignUtils:
 
@@ -84,6 +84,8 @@ class CampaignUtils:
         """
         campaign = Campaign.objects.select_for_update().get(pk=campaign.pk)
         CampaignUtils.clear_campaign_completions(child, campaign)
+        if child.campaign_ban_until and timezone.localtime(timezone.now()) < child.campaign_ban_until:
+            raise ValueError(f"לא ניתן להצטרף לקמפיין כעת. נסה שוב בעוד {CAMPAIGN_BAN_DURATION_HOURS} שעות.")
         if CampaignUtils.current_approved_children_qs(campaign).filter(child=child.pk).exists():
             raise ValueError("את/ה כבר נרשמת לקמפיין זה.")
 
@@ -258,6 +260,8 @@ class CampaignUtils:
 
         count = assignments.count()
         assignments.delete()
+        child.campaign_ban_until = timezone.localtime(timezone.now()) + timedelta(hours=CAMPAIGN_BAN_DURATION_HOURS)
+        child.save()
         return count
 
 
@@ -291,3 +295,11 @@ class CampaignUtils:
         deleted_count = qs.count()
         qs.delete()
         return deleted_count
+
+    @staticmethod
+    def is_campaign_banned(child: Child) -> bool:
+        """
+        Returns True if the child is banned from joining campaigns.
+        """
+        return child.campaign_ban_until and timezone.localtime(timezone.now()) < child.campaign_ban_until
+

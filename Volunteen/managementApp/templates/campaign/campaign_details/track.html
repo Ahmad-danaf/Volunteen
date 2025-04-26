@@ -8,22 +8,30 @@
     <h1 class="text-3xl font-extrabold text-gray-800">{{ campaign.title }} - משתתפים</h1>
     <p class="text-sm text-gray-500 mt-1">צפייה ומעקב אחרי התקדמות הילדים בקמפיין</p>
     <p class="text-sm text-gray-500 mt-1">כמות הילדים שהצטרפו לקמפיין: {{ total_children_joined }} מתוך {{ campaign.max_children }}</p>
-    <p class="text-sm text-gray-500 mt-1">כמות הילדים שהסיימו את הקמפיין: {{ total_children_finished }} מתוך {{ total_children_joined }}</p>
+    <p class="text-sm text-gray-500 mt-1">כמות הילדים שסיימו את הקמפיין: {{ total_children_finished }} מתוך {{ total_children_joined }}</p>
   </div>
+
+  <!-- Search Input -->
+  <div class="mb-4 px-2">
+    <input type="text" id="childSearchInput" placeholder="חפש משתתף לפי שם משתמש..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-right">
+  </div>
+
+  <!-- No Results Message -->
+  <p id="noResultsMessage" class="text-center text-gray-500 text-sm hidden">לא נמצאו ילדים תואמים לחיפוש.</p>
 
   <!-- Participants Panel -->
   <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-4 space-y-4 animate-slideInUp">
 
     {% if children_data %}
       {% for entry in children_data %}
-      <div class="bg-gray-50 rounded-xl p-4 shadow-sm hover:shadow-md transition transform hover:scale-[1.01]">
-        <div class="flex justify-between items-center flex-wrap gap-2">
+      <div class="bg-gray-50 rounded-xl p-4 shadow-sm hover:shadow-md transition transform hover:scale-[1.01] participant-card" data-username="{{ entry.child.user.username|lower }}">        <div class="flex justify-between items-center flex-wrap gap-2">
           <div class="text-right flex-1 min-w-[180px]">
             <p class="text-lg font-semibold text-gray-800">{{ entry.child.user.username }}</p>
-            <p class="text-sm text-gray-600">הצטרף בתאריך: {{ entry.join_date|date:"d/m/Y" }}</p>
-            <p class="text-sm text-gray-500">זמן שנותר: {{ entry.time_left}}</p>
+            <p class="text-sm text-gray-600">הצטרף בתאריך: {{ entry.join_date|date:"d/m/Y" }} בשעה {{ entry.join_date|date:"H:i" }}</p>
             {% if entry.has_child_finished %}
-              <p class="text-green-500"> סיים את הקמפיין</p>
+            <p class="text-green-500"> סיים את הקמפיין</p>
+            {% else %}
+            <p class="text-sm text-gray-500">זמן שנותר:  {{ entry.time_left }}</p>
             {% endif %}
           </div>
 
@@ -74,4 +82,36 @@
     animation: fadeIn 1s ease-in-out both;
   }
 </style>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('childSearchInput');
+    const participantCards = document.querySelectorAll('.participant-card');
+    const noResultsMessage = document.getElementById('noResultsMessage');
+
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      participantCards.forEach(card => {
+        const username = card.getAttribute('data-username'); // Already lowercase
+
+        if (username.includes(searchTerm)) {
+          card.style.display = ''; // Show card
+          visibleCount++;
+        } else {
+          card.style.display = 'none'; // Hide card
+        }
+      });
+
+      // Show/hide the 'no results' message
+      if (visibleCount === 0 && searchTerm !== '') {
+        noResultsMessage.classList.remove('hidden');
+      } else {
+        noResultsMessage.classList.add('hidden');
+      }
+    });
+  });
+</script>
 {% endblock %}

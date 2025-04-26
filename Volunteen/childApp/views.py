@@ -29,7 +29,8 @@ from django.utils.timezone import now
 from django.http import HttpResponseForbidden
 from Volunteen.constants import (
     AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
-    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES
+    CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,
+    MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES,CAMPAIGN_BAN_DURATION_HOURS
 )
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
@@ -747,6 +748,9 @@ class CampaignListView(ListView):
             campaign.current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
             campaign.has_joined = CampaignUtils.child_has_joined(child, campaign)
             campaign.has_finished = CampaignUtils.child_has_finished(child, campaign)
+        ctx.update({
+            "is_child_banned": CampaignUtils.is_campaign_banned(child),
+        })
         return ctx
 
 
@@ -815,6 +819,9 @@ class CampaignDetailView(DetailView):
             "time_left":  time_left,
             "time_left_end": time_left_end,
             "has_child_finished": CampaignUtils.child_has_finished(child, campaign),
+            "is_campaign_banned": CampaignUtils.is_campaign_banned(child),
+            "campaign_ban_duration": CAMPAIGN_BAN_DURATION_HOURS,
+            'child_campaign_ban_until':child.campaign_ban_until
         })
         return ctx
 
@@ -856,6 +863,7 @@ def leave_campaign_view(request, pk):
     try:
         removed = CampaignUtils.leave_campaign(child, campaign)
         messages.success(request, f"הוסרת מהקמפיין. {removed} משימות נמחקו.")
+        messages.warning(request, f"עזבת את הקמפיין. לא תוכל להצטרף מחדש עד {CAMPAIGN_BAN_DURATION_HOURS} שעות.")
     except Exception as e:
         messages.error(request, f"שגיאה בעת ההסרה מהקמפיין: {str(e)}")
 
