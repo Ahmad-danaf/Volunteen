@@ -17,7 +17,7 @@ from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
-from teenApp.interface_adapters.forms import DateRangeCityForm
+from teenApp.interface_adapters.forms import DateRangeCityForm, CityDateRangeForm
 from parentApp.utils.ParentTaskUtils import ParentTaskUtils
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 import json
@@ -183,29 +183,48 @@ def all_rewards(request, child_id):
 
 @login_required
 def all_children_points_leaderboard(request,child_id):
-    selected_child  = get_object_or_404(Child, id=child_id)
-    form = DateRangeCityForm(request.GET or None)
+    child  = get_object_or_404(Child, id=child_id)
+    form = CityDateRangeForm(request.GET or None)
+
+    start_date, end_date, city = None, None, None
+
     if form.is_valid():
-        city = form.cleaned_data.get('city')  
-        if form.cleaned_data['start_date'] and form.cleaned_data['end_date']:
+        date_selection = form.cleaned_data['date_range_selection']
+        city = form.cleaned_data.get('city', None)
+
+        if date_selection == 'current_month':
+            today = timezone.now()
+            start_date = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end_date = timezone.now()
+        elif date_selection == 'last_month':
+            today = timezone.now()
+            first_of_this_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            last_month_end = first_of_this_month - timezone.timedelta(days=1)
+            last_month_start = last_month_end.replace(day=1)
+            start_date, end_date = last_month_start, last_month_end
+        elif date_selection == 'all_time':
+            start_date = timezone.make_aware(timezone.datetime(2025, 3, 1, 0, 0))
+            end_date = timezone.make_aware(datetime.now())
+        else:
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
-            start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
-        else:
-            start_date = None
-            end_date = None
-    else:
-        city = None
-        start_date = None
-        end_date = None
+            if start_date and end_date:
+                start_date, end_date = LeaderboardUtils.convert_dates_to_datetime_range(start_date, end_date)
 
-    children = LeaderboardUtils.get_children_leaderboard(
-    start_date=start_date,
-    end_date=end_date,
-    institution=selected_child.institution,
-    city=city
-)
-    return render(request, 'all_children_points_leaderboard.html', {'children': children, 'form': form})
+    leaderboard_data = LeaderboardUtils.get_custom_leaderboard(
+        child,
+        start_date=start_date,
+        end_date=end_date,
+        institution=child.institution,
+        city=city,
+        top_limit=10
+    )
+    return render(request, 'all_children_points_leaderboard.html', {
+        'top_children': leaderboard_data['top_children'],
+        'extra_children': leaderboard_data['extra_children'],
+        'show_divider': leaderboard_data['show_divider'],
+        'form': form,
+    })
 
 
 @login_required

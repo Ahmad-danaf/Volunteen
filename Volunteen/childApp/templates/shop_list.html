@@ -68,11 +68,8 @@
       opacity: 0.8;
       cursor: not-allowed;
     }
-    .shop-card.unclickable,
-    .shop-card.unclickable button,
-    .shop-card.unclickable a {
+    .shop-card.unclickable button {
       pointer-events: none;
-      cursor: not-allowed;
       opacity: 0.6;
     }
 
@@ -277,11 +274,11 @@
       const categorySelect = document.getElementById('categorySelect');
       const shopCards = document.querySelectorAll('.shop-card');
       const coinAudio = document.getElementById('coinJingle');
-
+  
       function filterShops() {
         const selectedCity = citySelect.value;
         const selectedCategory = categorySelect.value;
-
+  
         shopCards.forEach(card => {
           const cardCity = card.dataset.city;
           const cardCategories = card.dataset.categories.split(',');
@@ -290,36 +287,23 @@
           card.style.display = cityMatch && categoryMatch ? 'block' : 'none';
         });
       }
-
+  
       citySelect.addEventListener('change', filterShops);
       categorySelect.addEventListener('change', filterShops);
       filterShops();
-
-      // Prevent clicks inside the horizontal scroll from triggering shop toggle
+  
       document.querySelectorAll('.reward-scroll').forEach(scroll => {
         scroll.addEventListener('click', e => e.stopPropagation());
       });
-
-      // Shop card toggle
+  
       shopCards.forEach(card => {
         card.addEventListener('click', function(e) {
-          // If user clicked inside .reward-scroll, ignore the click
           if (e.target.closest('.reward-scroll')) return;
-
-          if (this.classList.contains('unclickable')) {
-            this.classList.add('shake');
-            setTimeout(() => { this.classList.remove('shake'); }, 500);
-            return;
-          }
-
-          // Toggle active class for subtle lift
+  
           this.classList.toggle('active');
-
-          // Expand or collapse the rewards-container
           const rewardsContainer = this.querySelector('.rewards-container');
           if (!rewardsContainer.style.maxHeight) {
             rewardsContainer.style.maxHeight = rewardsContainer.scrollHeight + 'px';
-            // Play coin jingle on successful toggle
             coinAudio.currentTime = 0;
             coinAudio.play().catch(err => console.warn("Audio play prevented:", err));
           } else {
@@ -327,28 +311,39 @@
           }
         });
       });
-
-      // Enable horizontal "drag to scroll" on reward-scroll containers
+  
+      document.querySelectorAll('.buy-btn').forEach(btn => {
+        const link = btn.closest('a');
+        link.addEventListener('click', function(e) {
+          if (btn.disabled) {
+            e.preventDefault();
+            const card = btn.closest('.shop-card');
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+          }
+        });
+      });
+  
       document.querySelectorAll('.reward-scroll').forEach(scrollContainer => {
         let isDown = false;
-        let startX;
-        let scrollLeft;
+        let startX, scrollLeft;
+  
         scrollContainer.addEventListener('mousedown', e => {
           isDown = true;
           startX = e.pageX - scrollContainer.offsetLeft;
           scrollLeft = scrollContainer.scrollLeft;
         });
-        scrollContainer.addEventListener('mouseleave', () => { isDown = false; });
-        scrollContainer.addEventListener('mouseup', () => { isDown = false; });
+        scrollContainer.addEventListener('mouseleave', () => isDown = false);
+        scrollContainer.addEventListener('mouseup', () => isDown = false);
         scrollContainer.addEventListener('mousemove', e => {
           if (!isDown) return;
           e.preventDefault();
           const x = e.pageX - scrollContainer.offsetLeft;
-          const walk = (x - startX) * 2;
+          const walk = (x - startX) * 2; // scroll speed
           scrollContainer.scrollLeft = scrollLeft - walk;
         });
       });
     });
-  </script>
+  </script>  
 </body>
 </html>
