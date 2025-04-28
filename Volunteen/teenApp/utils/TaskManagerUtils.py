@@ -72,14 +72,14 @@ class TaskManagerUtils:
         return task_completion
     
     @staticmethod
-    def get_or_create_increase_level_task():
+    def get_or_create_increase_level_task(level):
         """
         Retrieves or creates the default 'increase level' task.
         """
         
         task, created = Task.objects.get_or_create(
-            title=DEFAULT_INCREASE_LEVEL_TASK['title'],
-            description=DEFAULT_INCREASE_LEVEL_TASK['description'],
+            title=DEFAULT_INCREASE_LEVEL_TASK['title'] + " " + "שלב " + str(level),
+            description= f"{DEFAULT_INCREASE_LEVEL_TASK['description']} (Level {level})",
             points=DEFAULT_INCREASE_LEVEL_TASK['points'],
             img=DEFAULT_INCREASE_LEVEL_TASK['img'],
             deadline=DEFAULT_INCREASE_LEVEL_TASK['deadline'],
@@ -87,13 +87,13 @@ class TaskManagerUtils:
         return task
 
     @staticmethod
-    def auto_approve_increase_level_for_child(child):
+    def auto_approve_increase_level_for_child(child,level):
         """
         Automatically assigns and approves the default 'increase level' task for the child.
         Awards teencoins as per the task's configuration.
         """
         # Retrieve the default task.
-        task = TaskManagerUtils.get_or_create_increase_level_task()
+        task = TaskManagerUtils.get_or_create_increase_level_task(level)
         
         # Create a task completion record for the child.
         task_completion, created = TaskCompletion.objects.get_or_create(

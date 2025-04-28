@@ -24,7 +24,7 @@ class LeaderboardUtils:
     
     
     @staticmethod
-    def get_donations_leaderboard(start_date=None, end_date=None, limit=None, city="ALL"):
+    def get_donations_leaderboard(start_date=None, end_date=None, limit=None, city="ALL", institution=None):
         """
         Returns a queryset of top donors based on DonationTransaction amounts.
         
@@ -33,6 +33,7 @@ class LeaderboardUtils:
         
         Each entry contains the child's id, username, city, and total donated amount.
         If a city is provided (other than "ALL"), the leaderboard is filtered by that city.
+        If an institution is provided, the leaderboard is filtered to show only children from that institution.
         """
         now = timezone.now()
         if not start_date or not end_date:
@@ -53,6 +54,10 @@ class LeaderboardUtils:
         
         if limit:
             qs = qs[:limit]
+            
+        if institution:
+            qs = qs.filter(child__institution=institution)
+            
         return qs
     
     

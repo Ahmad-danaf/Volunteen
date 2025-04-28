@@ -17,6 +17,6 @@ urlpatterns = [
     path('tasks/approve/', views.approve_task_completion, name='approve_task_completion'),
     path('tasks/reject/', views.reject_task_completion, name='reject_task_completion'),
     path('tasks/edit/<int:task_id>/', views.edit_task, name='edit_task'),
-    path('donation-leaderboard/', views.donation_leaderboard, name='donation_leaderboard'),
+    path('donation-leaderboard/<int:child_id>/', views.donation_leaderboard, name='donation_leaderboard'),
     path('tasks/refund/', views.refund_task_assignment_view, name='refund_task_assignment_view'),
     ]

@@ -688,13 +688,13 @@ def reject_task_completion(request):
     
     
 @login_required
-def donation_leaderboard(request):
+def donation_leaderboard(request,child_id):
     """
     Displays a leaderboard of children based on their donation amounts.
     By default, shows current month's donations, but allows filtering by date range and city.
     """
     form = DateRangeCityForm(request.GET or None)
-    
+    child=get_object_or_404(Child,id=child_id)
     if form.is_valid():
         city = form.cleaned_data.get('city', "ALL")
         start_date = form.cleaned_data.get('start_date')
@@ -703,10 +703,11 @@ def donation_leaderboard(request):
         donations = LeaderboardUtils.get_donations_leaderboard(
             start_date=start_date,
             end_date=end_date,
-            city=city
+            city=city,
+            institution=child.institution
         )
     else:
-        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL")
+        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL", institution=child.institution)
     
     return render(request, 'parentApp/donation/donation_leaderboard.html', {
         'donations': donations,

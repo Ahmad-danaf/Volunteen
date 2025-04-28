@@ -66,8 +66,9 @@ def child_home(request):
         return redirect('childApp:inactive_home', child_id=child.id)
     
     if child.level > child.last_level_awarded:
-        TaskManagerUtils.auto_approve_increase_level_for_child(child)
-        child.last_level_awarded = child.level
+        new_level = child.level
+        TaskManagerUtils.auto_approve_increase_level_for_child(child,new_level)
+        child.last_level_awarded = new_level
         child.save()
     total_points = calculate_total_points(child)
     current_day = datetime.now().weekday()
@@ -707,7 +708,7 @@ def donation_leaderboard(request):
     By default, shows current month's donations, but allows filtering by date range and city.
     """
     form = DateRangeCityForm(request.GET or None)
-    
+    child = request.user.child
     if form.is_valid():
         city = form.cleaned_data.get('city', "ALL")
         start_date = form.cleaned_data.get('start_date')
@@ -716,10 +717,11 @@ def donation_leaderboard(request):
         donations = LeaderboardUtils.get_donations_leaderboard(
             start_date=start_date,
             end_date=end_date,
-            city=city
+            city=city,
+            institution=child.institution
         )
     else:
-        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL")
+        donations = LeaderboardUtils.get_donations_leaderboard(city="ALL", institution=child.institution)
     
     return render(request, 'donation_leaderboard.html', {
         'donations': donations,
