@@ -35,7 +35,7 @@
         <div class="category-grid">
           {% for category in categories %}
           <div class="category-card {% if category.id == default_category_id %}selected{% endif %}"
-               data-category-id="{{ category.id }}"
+            data-category-id="{{ category.id }}"
                data-balance="{{ category.leftover }}">
             <input type="radio"
                    id="cat{{ category.id }}"
@@ -70,8 +70,8 @@
           <option value="">בחר חנות...</option>
           {% for shop in shops %}
             <option value="{{ shop.id }}" data-remaining="{{ shop.remaining_points }}">
-              {{ shop.name }} - יתרה: {{ shop.remaining_points }} TeenCoins
-            </option>
+            {{ shop.name }} - יתרה: {{ shop.remaining_points }} TeenCoins
+          </option>
           {% endfor %}
         </select>
       </div>
@@ -80,10 +80,10 @@
         <label for="amount">סכום להוצאה:</label>
         <div class="input-wrapper">
           <input type="number"
-                 name="amount"
-                 id="amount"
-                 min="1"
-                 required
+            name="amount"
+            id="amount"
+            min="1"
+            required
                  placeholder="הזן סכום">
           <span class="currency">TeenCoins</span>
         </div>
@@ -92,13 +92,14 @@
       <div class="form-group">
         <label for="note">הערה (אופציונלי):</label>
         <textarea name="note"
-                  id="note"
-                  rows="3"
+          id="note"
+          rows="3"
                   placeholder="הוסף הערה לגבי ההוצאה"></textarea>
       </div>
 
-      <button type="submit" class="submit-btn">
-        <span>רשום הוצאה</span>
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="btn-text">רשום הוצאה</span>
+        <span class="spinner hidden"></span>
         <i class="fas fa-check-circle"></i>
       </button>
     </form>
@@ -109,14 +110,14 @@
 {% block extra_css %}
 <style>
   :root {
-    --primary-color: #FF9800;       
-    --secondary-color: #FFC107;     
-    --bg-color: #F7F7F7;            
-    --text-color: #333;             
-    --border-color: #E0E0E0;
-    --neumorphic-light: #ffffff;    
-    --neumorphic-dark: #d1d9e6;     
-    --font-family: 'Assistant', 'Rubik', sans-serif;
+    --primary-color: #ff9800;
+    --secondary-color: #ffc107;
+    --bg-color: #f7f7f7;
+    --text-color: #333;
+    --border-color: #e0e0e0;
+    --neumorphic-light: #ffffff;
+    --neumorphic-dark: #d1d9e6;
+    --font-family: "Assistant", "Rubik", sans-serif;
   }
 
   * {
@@ -134,19 +135,27 @@
   header {
     padding: 20px;
     text-align: center;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--secondary-color)
+    );
     color: #fff;
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   header h1 {
     font-size: 1.8rem;
     animation: kinetic 3s infinite alternate;
   }
   @keyframes kinetic {
-    from { letter-spacing: 0.5px; }
-    to { letter-spacing: 2px; }
+    from {
+      letter-spacing: 0.5px;
+    }
+    to {
+      letter-spacing: 2px;
+    }
   }
   .container {
     padding: 20px;
@@ -157,7 +166,8 @@
     background: var(--neumorphic-light);
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 9px 9px 16px var(--neumorphic-dark), -9px -9px 16px var(--neumorphic-light);
+    box-shadow: 9px 9px 16px var(--neumorphic-dark),
+      -9px -9px 16px var(--neumorphic-light);
     margin-bottom: 30px;
     position: relative;
   }
@@ -180,11 +190,11 @@
     font-size: 1.2rem;
   }
   .alert-error {
-    background: rgba(244,67,54,0.1);
+    background: rgba(244, 67, 54, 0.1);
     color: #f44336;
   }
   .alert-success {
-    background: rgba(76,175,80,0.1);
+    background: rgba(76, 175, 80, 0.1);
     color: #4caf50;
   }
   .spending-form .form-group {
@@ -211,7 +221,7 @@
   .spending-form select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(255,152,0,0.2);
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
   }
   .input-wrapper {
     position: relative;
@@ -225,7 +235,7 @@
     font-size: 0.9rem;
   }
   .balance-info {
-    background: rgba(255,152,0,0.1);
+    background: rgba(255, 152, 0, 0.1);
     padding: 12px;
     border-radius: 10px;
     text-align: center;
@@ -241,7 +251,11 @@
   }
   .submit-btn {
     width: 100%;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--secondary-color)
+    );
     color: #fff;
     border: none;
     padding: 14px;
@@ -256,10 +270,33 @@
   }
   .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(255,152,0,0.3);
+    box-shadow: 0 6px 12px rgba(255, 152, 0, 0.3);
+  }
+  .submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
   .submit-btn i {
     margin-right: 8px;
+  }
+  .hidden {
+    display: none;
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
   .category-grid {
     display: grid;
@@ -274,7 +311,7 @@
   }
   .category-card.selected {
     transform: translateY(-5px);
-    box-shadow: 0 0 0 3px rgba(255,152,0,0.2);
+    box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.2);
   }
   .category-radio {
     position: absolute;
@@ -298,7 +335,7 @@
   .category-image {
     width: 60px;
     height: 60px;
-    background: rgba(255,152,0,0.1);
+    background: rgba(255, 152, 0, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -344,7 +381,8 @@
     background: var(--neumorphic-light);
     border-radius: 15px;
     padding: 15px;
-    box-shadow: 8px 8px 16px var(--neumorphic-dark), -8px -8px 16px var(--neumorphic-light);
+    box-shadow: 8px 8px 16px var(--neumorphic-dark),
+      -8px -8px 16px var(--neumorphic-light);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -356,7 +394,7 @@
   .category-icon {
     width: 50px;
     height: 50px;
-    background: rgba(255,152,0,0.1);
+    background: rgba(255, 152, 0, 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -399,7 +437,8 @@
     background: var(--neumorphic-light);
     border-radius: 15px;
     padding: 15px;
-    box-shadow: 8px 8px 16px var(--neumorphic-dark), -8px -8px 16px var(--neumorphic-light);
+    box-shadow: 8px 8px 16px var(--neumorphic-dark),
+      -8px -8px 16px var(--neumorphic-light);
     text-align: center;
     transition: transform 0.3s;
     position: relative;
@@ -412,7 +451,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: rgba(255,152,0,0.1);
+    background: rgba(255, 152, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -473,9 +512,15 @@
     animation: pulse 1.5s infinite;
   }
   @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
   .quick-donate-fab {
     position: fixed;
@@ -490,7 +535,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     overflow: hidden;
   }
@@ -502,7 +547,7 @@
     border-radius: 50%;
     transform: scale(0);
     animation: ripple 0.6s linear;
-    background-color: rgba(255,255,255,0.7);
+    background-color: rgba(255, 255, 255, 0.7);
   }
   @keyframes ripple {
     to {
@@ -517,15 +562,27 @@
     animation: slideUp 0.3s ease forwards;
   }
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
   @media (max-width: 500px) {
-    .category-grid, .shops-grid, .balance-cards {
+    .category-grid,
+    .shops-grid,
+    .balance-cards {
       grid-template-columns: repeat(2, 1fr);
     }
   }
@@ -540,20 +597,23 @@
     const balanceInfo = document.getElementById("balanceInfo");
     const availableBalance = document.getElementById("availableBalance");
     const shopSelect = document.getElementById("shop");
-
+    const spendingForm = document.querySelector(".spending-form");
+    const submitBtn = document.getElementById("submitBtn");
+    const btnText = submitBtn.querySelector(".btn-text");
+    const spinner = submitBtn.querySelector(".spinner");
 
     if (!availableBalance.textContent || availableBalance.textContent === "0") {
       availableBalance.textContent = "{{ default_leftover }}";
     }
     let selectedShopRemaining = 0;
 
-    shopSelect.addEventListener("change", function() {
+    shopSelect.addEventListener("change", function () {
       const selectedOption = shopSelect.options[shopSelect.selectedIndex];
-      selectedShopRemaining = parseInt(selectedOption.getAttribute("data-remaining")) || 0;
+      selectedShopRemaining =
+        parseInt(selectedOption.getAttribute("data-remaining")) || 0;
     });
 
     shopSelect.dispatchEvent(new Event("change"));
-
 
     categoryCards.forEach((card) => {
       const radio = card.querySelector(".category-radio");
@@ -583,14 +643,27 @@
       amountInput.setCustomValidity(errorMsg);
     });
 
-    
+    // Handle form submission
+    spendingForm.addEventListener("submit", function (e) {
+      // Check if the form is valid before showing the spinner
+      if (spendingForm.checkValidity()) {
+        // Disable button and show spinner
+        submitBtn.disabled = true;
+        spinner.classList.remove("hidden");
+        btnText.textContent = "מבצע רישום...";
+      }
+    });
+
     const quickDonateFab = document.querySelector(".quick-donate-fab");
     if (quickDonateFab) {
       quickDonateFab.addEventListener("click", function (e) {
         const ripple = document.createElement("span");
         ripple.classList.add("ripple");
         quickDonateFab.appendChild(ripple);
-        const maxDim = Math.max(quickDonateFab.clientWidth, quickDonateFab.clientHeight);
+        const maxDim = Math.max(
+          quickDonateFab.clientWidth,
+          quickDonateFab.clientHeight
+        );
         ripple.style.width = ripple.style.height = maxDim + "px";
         const rect = quickDonateFab.getBoundingClientRect();
         ripple.style.left = e.clientX - rect.left - maxDim / 2 + "px";

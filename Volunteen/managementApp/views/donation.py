@@ -98,9 +98,8 @@ def add_spending(request):
                 raise ValueError("חנות לא נבחרה.")
 
             # Create the spending using the utility class
-            DonationSpendingUtils.spend_from_category(category, amount, note, shop)
+            DonationSpendingUtils.spend_from_category_fair(category, amount, note, shop)
             success_message = "ההוצאה נרשמה בהצלחה!"
-
         except ValueError as e:
             error_message = str(e)
         except DonationCategory.DoesNotExist:

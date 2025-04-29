@@ -14,6 +14,9 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 load_dotenv()
+import sys
+RUNNING_TESTS = len(sys.argv) > 1 and sys.argv[1] == 'test'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 # Quick-start development settings - unsuitable for production
@@ -60,8 +63,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     
 ]
-if development:
-    INSTALLED_APPS += ['debug_toolbar']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -91,8 +92,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-if development:
-    MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'Volunteen.frameworks_and_drivers.urls'
 template_name='two_factor/login.html'
@@ -190,8 +189,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if development:
+if development and not RUNNING_TESTS:
     print("#############we are in development#############")
+    MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INSTALLED_APPS += ['debug_toolbar']
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": lambda request: True,
         "SHOW_COLLAPSED": True,

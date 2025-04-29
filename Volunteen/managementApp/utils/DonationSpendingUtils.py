@@ -8,7 +8,8 @@ from managementApp.models import (
 from django.db import transaction
 from shopApp.models import Shop
 from shopApp.utils.shop_manager import ShopManager
-
+from django.utils import timezone
+from collections import OrderedDict, deque
 class DonationSpendingUtils:
     @staticmethod
     @transaction.atomic
@@ -69,6 +70,103 @@ class DonationSpendingUtils:
 
         return spending
 
+
+    @staticmethod
+    @transaction.atomic
+    def spend_from_category_fair(
+        category: DonationCategory,
+        amount: int,
+        note: str = "",
+        shop: Shop | None = None,
+    ) -> DonationSpending:
+        """
+        Round-robin (child-fair) allocation:
+        Each child is selected once before any child is selected again.
+        Preserves FIFO order *within* a child's own transactions.
+        """
+        if amount <= 0:
+            raise ValueError("Spending amount must be positive.")
+
+        leftover_category = DonationSpendingUtils.get_category_leftover(category)
+        if leftover_category < amount:
+            raise ValueError(
+                f"Not enough donations in category '{category.name}'. "
+                f"Requested: {amount}, available: {leftover_category}."
+            )
+
+        if shop and ShopManager.get_remaining_points_this_month(shop) < amount:
+            raise ValueError(f"Shop '{shop.name}' doesn't have enough points.")
+
+        spending = DonationSpending.objects.create(
+            category=category,
+            shop=shop,
+            amount_spent=amount,
+            note=note,
+        )
+
+        # Build child->transactions queue
+        transactions = (
+            DonationTransaction.objects
+            .filter(category=category)
+            .order_by("date_donated")          # global chronological order
+            .select_related("child")           # avoid extra queries
+        )
+
+        # OrderedDict preserves first-seen chronological order of children.
+        queue: "OrderedDict[int, deque[DonationTransaction]]" = OrderedDict()
+        for tx in transactions:
+            queue.setdefault(tx.child_id, deque()).append(tx)
+
+        leftover_to_spend = amount
+
+        # Round-robin allocation loop
+        while leftover_to_spend > 0 and queue:
+            child_id, child_deque = queue.popitem(last=False)  
+
+            # pull the child's first remaining transaction
+            tx = child_deque[0]
+
+            # how much is still unused in this transaction?
+            used_already = (
+                SpendingAllocation.objects
+                .filter(transaction=tx)
+                .aggregate(total_used=Sum("amount_used"))
+            )["total_used"] or 0
+            tx_leftover = tx.amount - used_already
+            if tx_leftover <= 0:
+                # transaction exhausted – drop it and continue
+                child_deque.popleft()
+                if child_deque:
+                    # child still has more transactions ➜ append to right
+                    queue[child_id] = child_deque
+                continue
+
+            allocation_amount = min(leftover_to_spend, tx_leftover)
+
+            SpendingAllocation.objects.create(
+                spending=spending,
+                transaction=tx,
+                amount_used=allocation_amount,
+            )
+
+            leftover_to_spend -= allocation_amount
+
+            # If transaction is now exhausted, pop it from child's deque
+            if allocation_amount == tx_leftover:
+                child_deque.popleft()
+
+            # If child still has something left, push them to the back
+            if child_deque:
+                queue[child_id] = child_deque
+
+        # Defensive check – should always be zero here
+        if leftover_to_spend:
+            raise RuntimeError(
+                "Round-robin allocator ended with leftover_to_spend > 0 "
+                "even though pre-validation said enough funds exist."
+            )
+
+        return spending
 
     @staticmethod
     def get_category_leftover(category: DonationCategory) -> int:

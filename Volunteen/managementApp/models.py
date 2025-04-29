@@ -16,6 +16,12 @@ class DonationTransaction(models.Model):
     amount = models.PositiveIntegerField()
     date_donated = models.DateTimeField(auto_now_add=True)
     note = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["category", "date_donated"]),
+        ]
+
 
     def __str__(self):
         return f"{self.child} donated {self.amount} to {self.category}"

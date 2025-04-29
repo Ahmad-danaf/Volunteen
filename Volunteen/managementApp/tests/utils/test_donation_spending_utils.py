@@ -411,3 +411,299 @@ class DonationSpendingUtilsTests(TestCase):
         # Verify no additional spending records were created (transaction rolled back)
         self.assertEqual(DonationSpending.objects.count(), 1)  # Still just the first one
         self.assertEqual(SpendingAllocation.objects.count(), 1)  # Still just the first allocation 
+        
+        
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_spend_from_category_fair_valid(self, mock_get_remaining_points):
+        """Test spend_from_category_fair with valid inputs and round-robin logic."""
+        mock_get_remaining_points.return_value = 1000
+        
+        # Spend 150 from category1
+        spending = DonationSpendingUtils.spend_from_category_fair(
+            category=self.category1,
+            amount=150,
+            note="Fair spending",
+            shop=self.shop
+        )
+        
+        self.assertEqual(spending.category, self.category1)
+        self.assertEqual(spending.shop, self.shop)
+        self.assertEqual(spending.amount_spent, 150)
+        self.assertEqual(spending.note, "Fair spending")
+        
+        allocations = SpendingAllocation.objects.filter(spending=spending).order_by('id')
+        self.assertEqual(allocations.count(), 2)
+        
+        # First allocation should use donation1 (child1)
+        self.assertEqual(allocations[0].transaction, self.donation1)
+        self.assertEqual(allocations[0].amount_used, 100)
+        
+        # Second allocation should use donation2 (child2)
+        self.assertEqual(allocations[1].transaction, self.donation2)
+        self.assertEqual(allocations[1].amount_used, 50)
+        
+        # Verify leftover
+        leftover = DonationSpendingUtils.get_category_leftover(self.category1)
+        self.assertEqual(leftover, 300 - 150)  # 300 total - 150 spent = 150
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_spend_from_category_fair_multiple_rounds(self, mock_get_remaining_points):
+        """
+        Fair allocator should stop once requested amount reached—even if not all
+        transactions were consumed. Here only two allocations are needed (100+200).
+        """
+        mock_get_remaining_points.return_value = 1000
+
+        extra_donation = DonationTransaction.objects.create(
+            child=self.child1,
+            category=self.category1,
+            amount=50,
+            note="Extra donation for fairness"
+        )
+
+        spending = DonationSpendingUtils.spend_from_category_fair(
+            category=self.category1,
+            amount=300,
+            note="Full rotation spending",
+            shop=self.shop
+        )
+
+        allocations = list(
+            SpendingAllocation.objects.filter(spending=spending).order_by('id')
+        )
+        self.assertEqual(len(allocations), 2)
+
+        # 1) child1’s first donation
+        self.assertEqual(allocations[0].transaction, self.donation1)
+        self.assertEqual(allocations[0].amount_used, 100)
+
+        # 2) child2’s donation
+        self.assertEqual(allocations[1].transaction, self.donation2)
+        self.assertEqual(allocations[1].amount_used, 200)
+
+        # Extra donation left untouched → 50 coins still in the pool
+        self.assertEqual(
+            DonationSpendingUtils.get_category_leftover(self.category1),
+            50
+        )
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_spend_from_category_fair_insufficient_funds(self, mock_get_remaining_points):
+        """Test spend_from_category_fair with insufficient category funds."""
+        mock_get_remaining_points.return_value = 1000
+        
+        with self.assertRaises(ValueError) as context:
+            DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=500,  # Only have 300
+                note="Should fail (fair)",
+                shop=self.shop
+            )
+        
+        self.assertIn("Not enough donations", str(context.exception))
+        self.assertEqual(DonationSpending.objects.count(), 0)
+        self.assertEqual(SpendingAllocation.objects.count(), 0)
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_spend_from_category_fair_insufficient_shop_points(self, mock_get_remaining_points):
+        """Test spend_from_category_fair with insufficient shop points."""
+        mock_get_remaining_points.return_value = 50  # Not enough
+        
+        with self.assertRaises(ValueError) as context:
+            DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=100,
+                note="Shop points fail (fair)",
+                shop=self.shop
+            )
+        
+        self.assertIn("doesn't have enough points", str(context.exception))
+        self.assertEqual(DonationSpending.objects.count(), 0)
+        self.assertEqual(SpendingAllocation.objects.count(), 0)
+
+    def test_spend_from_category_fair_zero_amount(self):
+        """Test spend_from_category_fair with zero amount."""
+        with self.assertRaises(ValueError) as context:
+            DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=0,
+                note="Zero amount (fair)",
+                shop=self.shop
+            )
+        
+        self.assertIn("must be positive", str(context.exception))
+
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_fifo_then_fair(self, mock_get_remaining_points):
+        """
+        FIFO spending first, then fair spending should respect leftovers and rotation.
+        After FIFO(125) only child2 has balance → fair allocator should make ONE allocation.
+        """
+        mock_get_remaining_points.return_value = 1000
+
+        # FIFO spend 125 (100 child1 + 25 child2)
+        DonationSpendingUtils.spend_from_category(
+            category=self.category1,
+            amount=125,
+            note="FIFO first",
+            shop=self.shop
+        )
+
+        # Fair spend 100 – only child2 has remaining coins
+        fair_spending = DonationSpendingUtils.spend_from_category_fair(
+            category=self.category1,
+            amount=100,
+            note="Fair second",
+            shop=self.shop
+        )
+
+        fair_allocs = list(
+            SpendingAllocation.objects.filter(spending=fair_spending).order_by('id')
+        )
+        self.assertEqual(len(fair_allocs), 1)
+        self.assertEqual(fair_allocs[0].transaction, self.donation2)
+        self.assertEqual(fair_allocs[0].amount_used, 100)
+
+        # Leftover should now be 75 (300-125-100)
+        self.assertEqual(
+            DonationSpendingUtils.get_category_leftover(self.category1),
+            75
+        )
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_fair_then_fifo(self, mock_get_remaining_points):
+        """Fair spending first, then FIFO spending should consume remaining coins oldest-first."""
+        mock_get_remaining_points.return_value = 1000
+
+        # 1️⃣ Fair spend 150 (child1 -> child2 order)
+        fair_spending = DonationSpendingUtils.spend_from_category_fair(
+            category=self.category1,
+            amount=150,
+            note="Fair first",
+            shop=self.shop
+        )
+
+        # 2️⃣ FIFO spend the remaining 150
+        fifo_spending = DonationSpendingUtils.spend_from_category(
+            category=self.category1,
+            amount=150,
+            note="FIFO second",
+            shop=self.shop
+        )
+
+        # --- Assertions ---
+        fair_allocs = list(
+            SpendingAllocation.objects.filter(spending=fair_spending).order_by('id')
+        )
+        self.assertEqual(fair_allocs[0].transaction, self.donation1)   # 100
+        self.assertEqual(fair_allocs[1].transaction, self.donation2)   # 50
+
+        fifo_allocs = list(
+            SpendingAllocation.objects.filter(spending=fifo_spending).order_by('id')
+        )
+        # After fair spending, donation1 is exhausted. FIFO should start with remaining of donation2.
+        self.assertEqual(len(fifo_allocs), 1)
+        self.assertEqual(fifo_allocs[0].transaction, self.donation2)
+        self.assertEqual(fifo_allocs[0].amount_used, 150)
+
+        # No coins left
+        leftover = DonationSpendingUtils.get_category_leftover(self.category1)
+        self.assertEqual(leftover, 0)
+
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_fair_allocator_rotates_evenly(self, mock_get_remaining_points):
+        mock_get_remaining_points.return_value = 1000
+
+        # Give child1 the same total as child2 (150 each)
+        DonationTransaction.objects.create(
+            child=self.child1, category=self.category1,
+            amount=50, note='extra funds for fairness'
+        )
+
+        # Six spendings of 50
+        for _ in range(6):
+            DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=50,
+                note="rotation batch",
+                shop=self.shop
+            )
+
+        c1 = SpendingAllocation.objects.filter(
+            transaction__child=self.child1
+        ).count()
+        c2 = SpendingAllocation.objects.filter(
+            transaction__child=self.child2
+        ).count()
+
+        self.assertEqual(c1, c2)           # 3 vs 3
+        self.assertEqual(c1, 3)
+
+    # ------------------------------------------------------------------
+    # Fairness-rotation proof test  (extra children, isolated to this test)
+    # ------------------------------------------------------------------
+    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
+    def test_round_robin_unique_children_first_cycle(self, mock_get_remaining_points):
+        mock_get_remaining_points.return_value = 1000
+
+        # two extra children
+        u3 = User.objects.create_user(username='c3', password='pw')
+        c3 = Child.objects.create(user=u3, points=100, identifier='C003', secret_code='003')
+        u4 = User.objects.create_user(username='c4', password='pw')
+        c4 = Child.objects.create(user=u4, points=100, identifier='C004', secret_code='004')
+
+        DonationTransaction.objects.create(child=c3, category=self.category1, amount=40)
+        DonationTransaction.objects.create(child=c4, category=self.category1, amount=40)
+
+        seen_child_ids = []
+
+        # 4 spendings of 40 → exactly one tx per spending
+        for _ in range(4):
+            spending = DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=40,
+                note="first-cycle check",
+                shop=self.shop
+            )
+            cid = SpendingAllocation.objects.filter(
+                spending=spending
+            ).values_list('transaction__child_id', flat=True).first()
+            seen_child_ids.append(cid)
+
+        # we must have got four distinct children
+        self.assertEqual(len(seen_child_ids), 4)
+        self.assertEqual(len(set(seen_child_ids)), 4)
+
+        # ------------------------------------------------------------------
+        # Four spendings of 60 each → full first rotation
+        # ------------------------------------------------------------------
+        chosen_child_ids = []
+        for i in range(4):
+            spending = DonationSpendingUtils.spend_from_category_fair(
+                category=self.category1,
+                amount=60,
+                note=f"round {i}",
+                shop=self.shop
+            )
+            alloc = SpendingAllocation.objects.filter(
+                spending=spending
+            ).first()
+            chosen_child_ids.append(alloc.transaction.child_id)
+
+        # -- Assertions -----------------------------------------------------
+        # 1) We saw 4 allocations in total (one per spending)
+        self.assertEqual(len(chosen_child_ids), 4)
+
+        # 2) All four child IDs are unique → no repeats in first cycle
+        self.assertEqual(len(set(chosen_child_ids)), 4)
+
+        # 3) Optional: verify chronological order of first donations:
+        # Expect child1 (oldest), child2, child3, child4 in that order.
+        expected_order = [
+            self.child1.id,
+            self.child2.id,
+            child3.id,
+            child4.id,
+        ]
+        self.assertEqual(chosen_child_ids, expected_order)
