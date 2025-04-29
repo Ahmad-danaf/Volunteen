@@ -78,11 +78,13 @@ class TaskManagerUtils:
         """
         
         task, created = Task.objects.get_or_create(
-            title=DEFAULT_INCREASE_LEVEL_TASK['title'] + " " + "שלב " + str(level),
-            description= f"{DEFAULT_INCREASE_LEVEL_TASK['description']} (Level {level})",
-            points=DEFAULT_INCREASE_LEVEL_TASK['points'],
-            img=DEFAULT_INCREASE_LEVEL_TASK['img'],
-            deadline=DEFAULT_INCREASE_LEVEL_TASK['deadline'],
+            title=DEFAULT_INCREASE_LEVEL_TASK['title'] + " " + " | שלב " + str(level),
+            defaults={
+                'description': f"{DEFAULT_INCREASE_LEVEL_TASK['description']} (Level {level})",
+                'points': DEFAULT_INCREASE_LEVEL_TASK['points'],
+                'img': DEFAULT_INCREASE_LEVEL_TASK['img'],
+                'deadline': DEFAULT_INCREASE_LEVEL_TASK['deadline'],
+            }
         )
         return task
 
