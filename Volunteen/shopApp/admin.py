@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Shop, Reward, Redemption, OpeningHours, Category, RedemptionRequest
+from shopApp.models import Shop, Reward, Redemption, OpeningHours, Category, RedemptionRequest,Campaign
+from childApp.utils.CampaignUtils import CampaignUtils
+from teenApp.entities.TaskAssignment import TaskAssignment
+from datetime import timedelta
+import csv
+from Volunteen.constants import CAMPAIGN_TIME_LIMIT_MINUTES
+from django.contrib import admin, messages
+from django.db.models import Q
+from django.http import HttpResponse
+from django.utils import timezone
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -77,3 +86,53 @@ class RedemptionRequestAdmin(admin.ModelAdmin):
     list_select_related = ('child', 'reward')
     list_display_links = ('child', 'reward')
     actions = [make_pending]
+    
+    
+@admin.action(description="Activate selected campaigns")
+def activate_campaigns(modeladmin, request, queryset):
+    updated = queryset.update(is_active=True)
+    messages.success(request, f"{updated} campaign(s) activated.")
+
+
+@admin.action(description="Deactivate selected campaigns")
+def deactivate_campaigns(modeladmin, request, queryset):
+    updated = queryset.update(is_active=False)
+    messages.success(request, f"{updated} campaign(s) deactivated.")
+
+
+@admin.action(description="Export participants to CSV")
+def export_participants_csv(modeladmin, request, queryset):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = "attachment; filename=campaign_participants.csv"
+    writer = csv.writer(response)
+    writer.writerow(["Campaign Title", "Child Username", "Assigned At"])
+
+    for campaign in queryset:
+        assignments = TaskAssignment.objects.filter(task__campaign=campaign)
+        for a in assignments:
+            writer.writerow([
+                campaign.title,
+                a.child.user.username,
+                a.assigned_at.isoformat(),
+            ])
+    return response
+
+
+@admin.register(Campaign)
+class CampaignAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "shop",
+        "start_date",
+        "end_date",
+        "max_children",
+        "participant_count",
+        "is_active",
+    )
+    list_filter = ("shop", "is_active", "start_date", "end_date")
+    search_fields = ("title", "shop__name")
+    actions = [activate_campaigns, deactivate_campaigns, export_participants_csv]
+
+    @admin.display(description="Current Participants")
+    def participant_count(self, obj):
+        return CampaignUtils.current_approved_children_qs(obj).count()

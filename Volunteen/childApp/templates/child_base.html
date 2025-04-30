@@ -5,43 +5,251 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}פרופיל ילד{% endblock %}</title>
-    
-    <!-- Font Awesome for icons -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papNM6Qb4K8bIKGMiEwK5MFO0N6umx1N8iBt8n+V0g1LFeSTU1R+blXg1NRw0K5+eYhNqB5sBmXKZrKf5Qk5Kg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Include custom styles -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/child_base.css' %}">
-<!-- Favicon for most browsers -->
-<link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 
-<!-- Apple Touch Icon (for Safari and iOS Home Screen) -->
-<link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon-iphone-60x60.png' %}">
-<link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-touch-icon-ipad-76x76.png' %}">
-<link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone-retina-120x120.png' %}">
-<link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-touch-icon-ipad-retina-152x152.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon-iphone-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-touch-icon-ipad-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone-retina-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-touch-icon-ipad-retina-152x152.png' %}">
     {% block extra_head %}{% endblock %}
+    <style>
+:root {
+    --primary-accent: #ff5722; 
+    --secondary-accent: #ff8a65;
+    --leaderboard-gold: #ffd700; 
+    --nav-background: #ffffff; 
+    --nav-text-color: #666666; 
+    --nav-icon-color: #aaaaaa; 
+    --nav-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); 
+    --wave-height: 20px; 
+    --button-raise: 25px; 
+}
+
+body {
+    padding-bottom: 100px;  
+    margin: 0;
+}
+
+.child-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px; 
+    background-color: var(--nav-background);
+    box-shadow: var(--nav-shadow);
+    border-top: 1px solid #eee;
+    z-index: 1000;
+}
+
+.child-nav::before {
+    content: '';
+    position: absolute;
+    top: calc(-1 * var(--wave-height)); 
+    left: 0;
+    right: 0;
+    height: var(--wave-height);
+    background-color: var(--nav-background); 
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+    box-shadow: 0 -1px 0 0 #eee inset;
+
+}
+
+
+.nav-content {
+    display: flex;
+    justify-content: space-around; 
+    align-items: center; 
+    height: 100%;
+    padding: 0 15px; 
+    position: relative; 
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--nav-text-color);
+    font-size: 0.75rem; 
+    text-align: center;
+    padding: 5px;
+    flex-grow: 1; 
+    flex-basis: 0; 
+    position: relative; 
+    transition: color 0.2s ease;
+}
+
+.nav-btn i {
+    font-size: 1.4rem; 
+    margin-bottom: 4px; 
+    color: var(--nav-icon-color);
+    transition: color 0.2s ease;
+}
+
+.nav-btn:hover,
+.nav-btn:focus {
+    color: var(--primary-accent); 
+}
+.nav-btn:hover i,
+.nav-btn:focus i {
+     color: var(--primary-accent); 
+}
+
+
+
+
+.leader-btn i {
+    color: var(--leaderboard-gold); 
+    text-shadow: 0 1px 3px rgba(255, 215, 0, 0.2);
+}
+.leader-btn:hover i,
+.leader-btn:focus i{
+    color: var(--leaderboard-gold); 
+}
+
+
+.leader-btn::after {
+    content: "";
+    position: absolute;
+    top: 15%; 
+    left: 50%;
+    width: 35px; 
+    height: 35px;
+    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    animation: glow 2.5s infinite ease-in-out;
+    z-index: -1; 
+}
+
+.checkin-btn {
+    position: absolute;
+    left: 50%;
+    bottom: var(--button-raise);
+    transform: translateX(-50%);
+    z-index: 1001; 
+    background-color: var(--primary-accent);
+    color: white;
+    border-radius: 50%; 
+    width: 60px; 
+    height: 60px;
+    padding: 0; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex-grow: 0; 
+    flex-shrink: 0; 
+    flex-basis: auto; 
+}
+
+.checkin-btn i {
+    color: white; 
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+}
+
+.checkin-btn span {
+    font-size: 0.65rem; 
+    line-height: 1;
+}
+
+
+.checkin-btn:hover,
+.checkin-btn:focus {
+    color: white;
+    background-color: var(--secondary-accent); 
+}
+.checkin-btn:hover i,
+.checkin-btn:focus i {
+     color: white;
+}
+
+
+
+
+@keyframes glow {
+    0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.9); }
+    50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.15); }
+    100% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+
+@media (max-width: 360px) {
+    .nav-btn span {
+        font-size: 0.65rem; 
+    }
+    .nav-btn i {
+        font-size: 1.3rem;
+    }
+     .checkin-btn {
+        width: 55px;
+        height: 55px;
+        bottom: calc(var(--button-raise) - 5px); 
+     }
+     .checkin-btn i { font-size: 1.3rem; }
+     .checkin-btn span { font-size: 0.6rem; }
+}
+    </style>
     {% block extra_css %}{% endblock %}
+
 </head>
 <body>
-    <div class="container" dir="rtl">
-        <!-- Back to Home Button -->
-        <a href="{% url 'teenApp:home_redirect' %}" class="button">
-            <i class="fas fa-home"></i> חזרה למסך הבית
+<nav class="child-nav">
+     <div class="nav-content">
+
+<a href="{% url 'teenApp:home_redirect' %}" class="nav-btn home-btn">
+            <i class="fas fa-home"></i>
+            <span>מסך הבית</span>
         </a>
 
-        {% block content %}{% endblock %}
-    </div>
+        <a href="{% url 'childApp:task_check_in_out' %}" class="nav-btn checkin-btn">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>צ'ק אין</span>
+        </a>
 
-    <!-- Footer with centered logo and support email -->
-    <footer>
-        &copy; 2025 Volunteen
-        <div class="support-email">
-            <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - לעזרה או תמיכה, צרו קשר ב
-        </div>
-    </footer>
-    
-    {% block extra_scripts %}{% endblock %}
-    {% block extra_js %}{% endblock %}
+
+
+          <a href="{% url 'childApp:points_leaderboard' %}" class="nav-btn leader-btn">
+            <i class="fas fa-trophy"></i>
+            <span>קיר התהילה</span>
+        </a>
+    </div>
+</nav>
+
+<div class="container" dir="rtl">
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    &copy; 2025 Volunteen
+    <div class="support-email">
+        <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - לעזרה או תמיכה, צרו קשר ב
+    </div>
+</footer>
+
+{% block extra_scripts %}{% endblock %}
+{% block extra_js %}{% endblock %}
+ <script>
+    document.querySelectorAll('.nav-btn').forEach(link => {
+        link.addEventListener('click', (e) => {
+            
+             if (!link.classList.contains('checkin-btn') && window.innerWidth <= 768) { 
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                setTimeout(() => window.location = link.href, 300); 
+            }
+            
+        });
+    });
+    </script>
 </body>
 </html>

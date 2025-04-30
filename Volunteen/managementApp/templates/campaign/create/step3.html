@@ -1,0 +1,102 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-white to-indigo-100 px-4 py-6 sm:px-6 lg:px-8 animate-fadeIn">
+
+  <!-- Page Title & Subtitle -->
+  <div class="max-w-3xl mx-auto text-right mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">אישור קמפיין</h1>
+    <p class="text-sm text-gray-500 mt-1">שלב 3 מתוך 3 - סקירה ואישור סופי</p>
+  </div>
+
+  <!-- Confirmation Summary Card -->
+  <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-6 space-y-8 transition-transform duration-300 hover:scale-[1.01] animate-slideInUp">
+
+    <!-- Campaign Summary -->
+    <div class="space-y-3 text-right">
+      <h2 class="text-xl font-bold text-gray-800 border-b pb-2">פרטי הקמפיין</h2>
+      <p><strong>כותרת:</strong> {{ step1.title }}</p>
+      <p><strong>תיאור:</strong> {{ step1.description|default:"לא צויין" }}</p>
+      <p><strong>תאריכים:</strong> {{ step1.start_date }} - {{ step1.end_date }}</p>
+      <p><strong>מגבלת משתתפים:</strong> {{ step1.max_children|default:"ללא הגבלה" }}</p>
+      <p><strong>תגמול:</strong> {{ step1.reward_title|default:"-" }}</p>
+    </div>
+
+    <!-- Task Summary -->
+    <div class="space-y-3 text-right border-t pt-4">
+      <h2 class="text-xl font-bold text-gray-800">משימות נבחרות</h2>
+      {% if existing_tasks %}
+        <ul class="space-y-1 list-disc pr-6 text-gray-700">
+          {% for task in existing_tasks %}
+            <li>{{ task.title }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-gray-500">לא נבחרו משימות קיימות.</p>
+      {% endif %}
+    </div>
+
+    <!-- New Task Summary -->
+    <div class="space-y-3 text-right border-t pt-4">
+      <h2 class="text-xl font-bold text-gray-800">משימות חדשות</h2>
+      {% if new_tasks %}
+        <ul class="space-y-2">
+          {% for task in new_tasks %}
+            <li class="p-3 bg-gray-50 rounded-xl shadow-sm hover:bg-indigo-50 transition">
+              <p class="font-semibold text-gray-800">{{ task.title }}</p>
+              <p class="text-sm text-gray-600">{{ task.description|truncatechars:100 }}</p>
+              <p class="text-xs text-gray-500 mt-1">נקודות: {{ task.points }} | תאריך סיום: {{ task.deadline }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-gray-500">לא הוזנו משימות חדשות.</p>
+      {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <form method="post" enctype="multipart/form-data" class="pt-6 border-t mt-4 flex justify-between items-center">
+      {% csrf_token %}
+      <a href="{% url 'managementApp:create_campaign_step2' %}" class="text-sm text-indigo-600 hover:underline transition duration-200">
+        ⬅ חזור לשלב הקודם
+      </a>
+      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl transition transform hover:scale-105 shadow-md">
+        אשר וצור קמפיין ✅
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-in-out both;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>שגיאת אבטחה</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+      color: #333;
+      animation: fadeInBody 0.6s ease-in-out;
+    }
+
+    @keyframes fadeInBody {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: slideIn 0.8s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .icon {
+      font-size: 4rem;
+      color: #ff5f57;
+      margin-bottom: 1rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #222;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #007bff, #5bc0de);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, #0056b3, #31a4c0);
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🚫</div>
+
+    <h1>שגיאת אבטחה</h1>
+    <p>
+      🛠️ נראה שהתרחשה תקלה זמנית. ייתכן שהדף פשוט פג תוקף או נשלח פעמיים.  
+      אל דאגה – חזרו לעמוד הבית ונסו שוב.
+    </p>
+
+    
+
+    <a href="{% url 'teenApp:home_redirect' %}" class="btn">חזרה לעמוד הבית</a>
+  </div>
+
+  <footer id="footer">
+    Volunteen &copy; 2025
+  </footer>
+  <script>
+    const footer = document.getElementById('footer');
+    footer.innerHTML = `Volunteen &copy; ${new Date().getFullYear()}`;
+  </script>
+</body>
+</html>

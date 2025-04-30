@@ -41,7 +41,7 @@ class Command(BaseCommand):
                     auto_renew_str = row.get('auto_renew', '').strip().upper()
 
                     try:
-                        child = Child.objects.get(identifier=identifier)
+                        child = Child.objects.get(identifier=identifier, user__username=username)
                     except Child.DoesNotExist:
                         self.stderr.write(f"[ERROR] Child with identifier '{identifier}' and username '{username}' not found. Skipping.")
                         error_count += 1

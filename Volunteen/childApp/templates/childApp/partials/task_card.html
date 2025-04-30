@@ -1,0 +1,101 @@
+{% load static %}
+
+<div x-data="{ isOpen: false }" 
+     @click="isOpen = !isOpen"
+     id="task-{{ task.id }}" 
+     class="task-card bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:scale-105 {% if task.is_pinned %}pinned-task{% endif %} cursor-pointer ring-1 ring-gray-200"
+     :class="{ 'ring-2 ring-blue-500': isOpen }"
+     x-cloak>
+    <div class="relative p-3 flex items-center" dir="rtl">
+        <!-- NEW Badge -->
+        {% if task.is_new %}
+        <span class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs animate-pulse">
+            חדש
+        </span>
+        {% endif %}
+
+        <!-- Left Column: Image -->
+        <div class="w-16 h-16 flex-shrink-0 mr-3">
+            {% if task.img %}
+                <img src="{{ task.img.url }}" alt="{{ task.title }}" class="w-full h-full object-cover rounded-lg" />
+            {% else %}
+                <div class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                    <img src="{% static 'images/logo.png' %}" alt="logo" class="w-full h-full object-cover rounded-lg" />
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Center Column: Title, Deadline, Points -->
+        <div class="flex-1 px-2">
+            <h2 class="text-base font-semibold text-gray-800">
+                {{ task.title }}
+                {% if task.is_pinned %}
+                    <span class="pin-icon ml-2" title="משימה מוצמדת">📌</span>
+                {% endif %}
+            </h2>
+            <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
+            <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
+        </div>
+
+        <!-- Right Column: Status Badge & Chevron -->
+        <div class="flex items-center gap-2">
+            <!-- Status Badge -->
+            <div class="w-12 flex items-center justify-center">
+                {% if task.status %}
+                    {% if task.status == "checked_out" %}
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-yellow-500">ממתין לאישור המנטור</span>
+                    {% elif task.status == "approved" %}
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-green-500">מאושר</span>
+                    {% elif task.status == "rejected" %}
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-red-500">נדחה</span>
+                    {% elif task.status == "checked_in" %}
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-blue-500">צ`ק אין</span>
+                    {% elif task.status == "pending" %}
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-gray-500">ממתין לאישור המנטור</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-xs text-white px-2 py-1 rounded-full bg-indigo-500">לא התחיל</span>
+                {% endif %}
+            </div>
+
+            <!-- Animated Chevron -->
+            <div class="transform transition-transform duration-300" :class="{ 'rotate-180': isOpen }">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expandable Details -->
+    <div x-show="isOpen" 
+         x-collapse
+         class="px-4 pb-4 border-t border-gray-100 space-y-3"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100">
+        <div class="pt-3">
+            <p class="text-gray-700 font-medium">תיאור המשימה:</p>
+            <p class="text-gray-600">{{ task.description }}</p>
+        </div>
+
+        {% if task.additional_details %}
+        <div>
+            <p class="text-gray-700 font-medium">פרטים נוספים:</p>
+            <p class="text-gray-600">{{ task.additional_details }}</p>
+        </div>
+        {% endif %}
+
+        {% if task.assigned_mentors.all %}
+        <div>
+            <p class="text-gray-700 font-medium">מנטורים אחראים:</p>
+            <p class="text-gray-600">
+                {% for mentor in task.assigned_mentors.all %}
+                    {{ mentor.user.username }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        
+        {% endif %}
+    </div>
+</div>

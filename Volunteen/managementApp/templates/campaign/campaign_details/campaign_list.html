@@ -1,0 +1,81 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen px-4 pt-6 sm:px-6 lg:px-8 animate-fadeIn">
+  <!-- Page Title -->
+  <div class="max-w-5xl mx-auto text-right mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">רשימת קמפיינים</h1>
+    <p class="text-sm text-gray-500 mt-1">ניהול ומעקב אחרי הקמפיינים הפעילים והטיוטות</p>
+  </div>
+
+  <!-- Campaign Grid -->
+  <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for campaign in page_obj %}
+      <div class="bg-white rounded-3xl shadow-lg overflow-hidden transition-transform transform hover:scale-[1.015] animate-slideInUp">
+        <img src="{{ campaign.banner_img.url }}" class="w-full h-40 object-cover" alt="{{ campaign.title }}">
+        <div class="p-4 text-right space-y-2">
+          <h2 class="text-xl font-bold text-gray-800">{{ campaign.title }}</h2>
+          <p class="text-sm text-gray-600 line-clamp-3">{{ campaign.description|default:"ללא תיאור" }}</p>
+
+          <!-- Dates & Status -->
+          <div class="text-sm text-gray-500">
+            📅 {{ campaign.start_date|date:"d/m/Y" }} - {{ campaign.end_date|date:"d/m/Y" }}
+            <span class="ml-2">
+              {% if campaign.is_active %}
+                <span class="text-green-600 font-semibold">✅ פעיל</span>
+              {% else %}
+                <span class="text-red-500 font-semibold">❌ טיוטה</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between items-center pt-4">
+            <a href="{% url 'managementApp:track_campaign_participants' campaign.id %}" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow transition transform hover:scale-105">
+              עקוב אחר משתתפים
+            </a>
+            <span class="text-xs text-gray-400">מספר משימות: {{ campaign.tasks.count }}</span>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="col-span-full text-center text-gray-500">אין קמפיינים להצגה כרגע.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination Controls -->
+  {% if is_paginated %}
+    <div class="mt-8 flex justify-center space-x-2 rtl:space-x-reverse">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-l-xl">הקודם</a>
+      {% endif %}
+      <span class="bg-gray-100 text-gray-600 px-4 py-2">{{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-r-xl">הבא</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.8s ease-out both;
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+</style>
+{% endblock %}

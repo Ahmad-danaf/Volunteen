@@ -1,4 +1,5 @@
-from django.db.models import Sum, Case, When, Value, IntegerField, F
+from django.db.models import Sum, Case, When, Value, IntegerField, F,Q
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from childApp.models import Child
 from teenApp.entities.TaskCompletion import TaskCompletion
@@ -23,7 +24,7 @@ class LeaderboardUtils:
     
     
     @staticmethod
-    def get_donations_leaderboard(start_date=None, end_date=None, limit=None, city="ALL"):
+    def get_donations_leaderboard(start_date=None, end_date=None, limit=None, city="ALL", institution=None):
         """
         Returns a queryset of top donors based on DonationTransaction amounts.
         
@@ -32,6 +33,7 @@ class LeaderboardUtils:
         
         Each entry contains the child's id, username, city, and total donated amount.
         If a city is provided (other than "ALL"), the leaderboard is filtered by that city.
+        If an institution is provided, the leaderboard is filtered to show only children from that institution.
         """
         now = timezone.now()
         if not start_date or not end_date:
@@ -52,6 +54,10 @@ class LeaderboardUtils:
         
         if limit:
             qs = qs[:limit]
+            
+        if institution:
+            qs = qs.filter(child__institution=institution)
+            
         return qs
     
     
@@ -78,41 +84,39 @@ class LeaderboardUtils:
         
         # Create the annotation for total points based on the provided date range.
         if start_date and end_date:
-            qs = qs.annotate(
-                total_points=Sum(
-                    Case(
-                        When(
-                            taskcompletion__completion_date__range=(start_date, end_date),
-                            taskcompletion__status='approved',
-                            then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                        ),
-                        default=Value(0),
-                        output_field=IntegerField()
-                    )
-                )
-            )
+            date_q = Q(
+            taskcompletion__completion_date__range=(start_date, end_date)
+        )
         else:
             today = timezone.now()
             start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             if timezone.is_naive(start_of_month):
                 start_of_month = timezone.make_aware(start_of_month)
-            qs = qs.annotate(
-                total_points=Sum(
-                    Case(
-                        When(
-                            taskcompletion__status='approved',
-                            taskcompletion__completion_date__gte=start_of_month,
-                            then=F('taskcompletion__task__points') + F('taskcompletion__bonus_points')
-                        ),
-                        default=Value(0),
-                        output_field=IntegerField()
-                    )
-                )
+            date_q = Q(
+            taskcompletion__completion_date__gte=start_of_month
             )
+        
+        approved_q = Q(taskcompletion__status='approved')
+        inst_q = Q()
+        if institution:
+            inst_q = Q(
+                taskcompletion__task__assigned_mentors__institutions=institution
+            )
+        qs = qs.annotate(
+            total_points=Coalesce(
+                Sum(
+                    F('taskcompletion__task__points') + F('taskcompletion__bonus_points'),
+                    filter=(date_q & approved_q & inst_q),
+                    output_field=IntegerField()
+                ),
+                Value(0),
+                output_field=IntegerField()
+            )
+)
         
         # Order by total_points in descending order.
         qs = qs.order_by('-total_points')
-        
+
         # Apply a limit to the queryset, if provided.
         if limit:
             qs = qs[:limit]

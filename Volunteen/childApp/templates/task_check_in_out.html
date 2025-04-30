@@ -284,6 +284,9 @@
                         </div>
                         <div id="details-{{ task.id }}" class="task-details">
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
+                            {% if task.additional_details %}
+                              <p><strong>פרטים נוספים:</strong> {{ task.additional_details }}</p>
+                            {% endif %}
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
                             <div class="button-group">
                                 <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין</a>

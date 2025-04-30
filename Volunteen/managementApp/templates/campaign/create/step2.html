@@ -1,0 +1,133 @@
+{% extends "campaign/base_campaign.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-white to-indigo-100 px-4 py-6 sm:px-6 lg:px-8 animate-fadeIn">
+
+  <!-- Page Title & Subtitle -->
+  <div class="max-w-3xl mx-auto text-right mb-6">
+    <h1 class="text-3xl font-extrabold text-gray-800">בחירת / יצירת משימות</h1>
+    <p class="text-sm text-gray-500 mt-1">שלב 2 מתוך 3 - הוספת משימות לקמפיין</p>
+  </div>
+
+  <!-- Form Container -->
+  <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-6 space-y-8 transition-transform duration-300 hover:scale-[1.01]">
+
+    <form method="post" enctype="multipart/form-data" class="space-y-8 animate-slideInUp" id="campaignForm">
+      {% csrf_token %}
+
+      <!-- Existing Tasks Section -->
+      <div class="space-y-2">
+        <h2 class="text-xl font-bold text-right text-gray-800 border-b pb-2">בחר משימות קיימות (5 המשימות האחרונות)</h2>
+        {% if available_tasks %}
+          <div class="space-y-3 mt-2">
+            {% for task in available_tasks %}
+              <label class="flex items-center justify-between p-3 bg-gray-50 rounded-xl shadow-sm hover:bg-indigo-50 transition">
+                <span class="text-right text-gray-700 font-medium">{{ task.title }}</span>
+                <input type="checkbox" name="existing_tasks" value="{{ task.id }}" class="form-checkbox text-indigo-600 w-5 h-5" />
+              </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-right text-sm text-gray-500">אין משימות זמינות לשיוך.</p>
+        {% endif %}
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t pt-6">
+        <h2 class="text-xl font-bold text-right text-gray-800 mb-3">צור משימות חדשות</h2>
+        <p class="text-sm text-gray-500 mb-4 text-right">הזן פרטי משימה אחת או יותר שייווצרו עבור הקמפיין.</p>
+
+        <!-- Render Management Form -->
+        {{ formset.management_form }}
+
+        <!-- Formset Container -->
+        <div id="task-formset-container" class="space-y-8">
+          {% for form in formset.forms %}
+            <div class="bg-gray-100 rounded-xl p-4 space-y-3 task-form">
+              {% for field in form.visible_fields %}
+                <div class="text-right">
+                  <label class="block text-gray-700 font-semibold mb-1">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ field.errors.0 }}</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Add More Button -->
+        <div class="text-left mt-4">
+          <button type="button" id="add-task-btn" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-md transition transform hover:scale-105">
+            ➕ הוסף משימה חדשה
+          </button>
+        </div>
+      </div>
+
+      <!-- Form Controls -->
+      <div class="flex justify-between items-center pt-6 border-t mt-4">
+        <a href="{% url 'managementApp:create_campaign_step1' %}" class="text-sm text-indigo-600 hover:underline transition duration-200">⬅ חזור לשלב הקודם</a>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-xl transition transform hover:scale-105 shadow-md">
+          המשך לשלב הסופי 🚀
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Hidden empty form template -->
+  <div id="empty-form-template" style="display: none;">
+    <div class="bg-gray-100 rounded-xl p-4 space-y-3 task-form">
+      {% for field in formset.empty_form.visible_fields %}
+        <div class="text-right">
+          <label class="block text-gray-700 font-semibold mb-1">{{ field.label }}</label>
+          {{ field.as_widget }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-slideInUp {
+    animation: slideInUp 0.8s ease-out both;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 1s ease-in-out both;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("task-formset-container");
+  const addButton = document.getElementById("add-task-btn");
+  const emptyFormHTML = document.getElementById("empty-form-template").innerHTML;
+  const totalFormsInput = document.getElementById("id_form-TOTAL_FORMS");
+
+  let formIndex = parseInt(totalFormsInput.value);
+
+  addButton.addEventListener("click", () => {
+    const newForm = emptyFormHTML.replace(/__prefix__/g, formIndex);
+    container.insertAdjacentHTML("beforeend", newForm);
+    formIndex += 1;
+    totalFormsInput.value = formIndex;
+  });
+});
+</script>
+{% endblock %}

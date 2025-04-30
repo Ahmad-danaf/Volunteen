@@ -14,7 +14,11 @@ class Task(models.Model):
     completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
     is_template=models.BooleanField(default=False, verbose_name='Template', help_text='Mark as a template for future duplication')
     is_pinned = models.BooleanField(default=False, verbose_name='Pinned', help_text='Pin this task to highlight it for mentors and children')
-    
+    campaign = models.ForeignKey(
+        "shopApp.Campaign", null=True, blank=True,
+        on_delete=models.CASCADE, related_name="tasks"
+    )
+    proof_required  = models.BooleanField(default=True)
     def __str__(self):
         return self.title
 

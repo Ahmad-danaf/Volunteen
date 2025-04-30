@@ -17,4 +17,17 @@ urlpatterns = [
     path('shops/summary/', views.shop_summary, name='shop_summary'),
     path('shops/report/', views.download_shop_report, name='download_shop_report'),
     path('shop/<int:shop_id>/', views.shop_detail, name='shop_detail'),
+    
+    ###############CAMPAIGN MANAGER################
+    path("campaign/manager_home/", views.campaign_manager_home, name="campaign_manager_home"),
+    path('campaigns/list/', views.campaign_list, name='campaign_list'),
+    path('campaigns/create/step1/', views.create_campaign_step1, name='create_campaign_step1'),
+    path('campaigns/create/step2/', views.create_campaign_step2, name='create_campaign_step2'),
+    path('campaigns/create/step3/', views.create_campaign_step3, name='create_campaign_step3'),
+    path("campaign/approvals/", views.campaign_approvals_panel, name="campaign_approvals_panel"),
+    path("campaign/<int:campaign_id>/participants/", views.track_campaign_participants, name="track_campaign_participants"),
+    path("campaign/<int:campaign_id>/remove_child/<int:child_id>/", views.remove_child_from_campaign, name="remove_child_from_campaign"),
+    
+    
+    
 ]

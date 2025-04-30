@@ -33,6 +33,7 @@ class Child(models.Model):
         blank=True,
         null=True,
     )
+    campaign_ban_until = models.DateTimeField(null=True, blank=True)
     @property
     def level(self):
         return (calculate_total_points(self) // 100) + 1

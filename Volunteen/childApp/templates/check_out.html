@@ -60,7 +60,13 @@
       <p>{{ task.description }}</p>
       <p>תאריך יעד: {{ task.deadline }}</p>
     </div>
-
+    <button
+    class="btn-check-out hidden"
+    id="checkOutButton"
+    onclick="submitCheckOut()"
+  >
+    אישור צ'ק-אאוט
+  </button>
     <!-- Only show the camera/file input if NOT using the default image -->
     {% if not use_default_image %}
       {% if special_permissions %}
@@ -99,13 +105,7 @@
       <img id="preview" src="" alt="תצוגה מקדימה" />
     </div>
 
-    <button
-      class="btn-check-out hidden"
-      id="checkOutButton"
-      onclick="submitCheckOut()"
-    >
-      אישור צ'ק-אאוט
-    </button>
+   
 
     <script>
       /**
