@@ -40,7 +40,6 @@ def mentor_children_details(request):
     children = MentorTaskUtils.get_children_with_completed_tasks_for_mentor(mentor)
     return render(request, 'mentor_children_details.html', {'children': children})
 
-
 @login_required
 def children_performance(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -50,10 +49,6 @@ def children_performance(request):
         'performance_data': performance_data,
     }
     return render(request, 'mentor_children_performance.html', context)
-
-
-
-
 
 @login_required
 def add_task(request, task_id=None, duplicate=False, template=False):
@@ -121,37 +116,6 @@ def add_task(request, task_id=None, duplicate=False, template=False):
     })
 
 @login_required
-def create_parent_task(request, task_id=None, duplicate=False, template=False):
-    print("create_parent_task")
-    mentor = get_object_or_404(Mentor, user=request.user)
-    task_data = {}
-    
-    if request.method == 'POST':
-        taskForm = TaskForm(
-            mentor=mentor,
-            data=request.POST,
-            files=request.FILES
-        )
-        
-        task, assignments = parent_views.create_parent_task(
-            parent=parent,
-            name=taskForm.title,
-            description=taskForm.description,
-            points=taskForm.points,
-            due_date=taskForm.deadline,
-            selected_children=taskForm.assigned_children
-        )
-    else:
-        taskForm = TaskForm(mentor=mentor)
-        
-    print("taskForm", taskForm)
-
-    return render(request, 'mentorApp/tasks/add_parent_task.html', {
-        'form': taskForm,
-        'children': mentor.children.all()
-    })
-
-@login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -211,7 +175,6 @@ def edit_task(request, task_id):
         'available_teencoins': mentor.available_teencoins,
     })
 
-
 @login_required
 def mentor_task_list(request):
     mentor = Mentor.objects.get(user=request.user)
@@ -265,8 +228,6 @@ def assign_task(request, task_id):
             return redirect('mentorApp:mentor_task_list')
 
     return render(request, 'assign_task.html', {'task': task, 'children': children, 'available_teencoins': mentor.available_teencoins})
-
-
 
 @login_required
 def assign_points(request, task_id):
@@ -340,7 +301,6 @@ def mentor_task_images(request):
     )
     return render(request, 'mentor_task_images.html', {'completions': task_completions})
 
-
 @csrf_exempt
 @login_required
 def review_task(request):
@@ -384,8 +344,6 @@ def review_task(request):
 
     return JsonResponse({'success': False, 'error': 'בקשה לא חוקית.'})
 
-
-
 @login_required
 def template_list(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -403,7 +361,6 @@ def template_list(request):
     }
     return render(request, 'mentor_template_list.html', context)
     
-    
 @login_required
 def remove_from_templates(request, task_id):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -414,7 +371,6 @@ def remove_from_templates(request, task_id):
     messages.success(request, f"'{task.title}' was removed from templates.")
     return redirect('mentorApp:template_list')
 
-
 @login_required
 def bonus_task_selection(request):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -423,7 +379,6 @@ def bonus_task_selection(request):
     end_date = today + relativedelta(months=TEEN_COINS_EXPIRATION_MONTHS)
     tasks = MentorTaskUtils.get_all_tasks_assigned_to_mentor(mentor, start_date, end_date).order_by('-deadline')
     return render(request, 'mentorApp/bonus/bonus_task_selection.html', {'tasks': tasks})
-
 
 @login_required
 def bonus_children_selection(request, task_id):
@@ -442,6 +397,34 @@ def bonus_children_selection(request, task_id):
     }
     return render(request, 'mentorApp/bonus/bonus_children_selection.html', context)
 
+@login_required
+def add_parent_task(request, task_id=None, duplicate=False, template=False):
+    if request.method == 'POST':
+        mentor = get_object_or_404(Mentor, user=request.user)
+        name = request.POST.get('title')
+        description = request.POST.get('description')
+        points = request.POST.get('points')
+        dueDate = request.POST.get('deadline')
+        selectedChildren = request.POST.getlist('assigned_children')
+        selectedChildren = [int(child_id) for child_id in selectedChildren]
+        
+        payload = json.dumps({
+            "name": name,
+            "description": description,
+            "points": points,
+            "dueDate": dueDate,
+            "selectedChildren": selectedChildren
+        })
+        
+        request.body = payload
+        response = parent_views.create_parent_task(request)
+    else:
+        messages.error(request, "Unauthorized access. Bonus can only be assigned via POST.")
+        return redirect('mentorApp:mentor_home')
+
+    return render(request, 'mentorApp/tasks/add_parent_task.html', {
+        'children': mentor.children.all()
+    })
 
 @login_required
 def assign_bonus_multi(request, task_id):
@@ -475,13 +458,11 @@ def assign_bonus_multi(request, task_id):
         messages.error(request, "Unauthorized access. Bonus can only be assigned via POST.")
         return redirect('mentorApp:mentor_home')
 
-
 @login_required
 def mentor_group_list(request):
     mentor = get_object_or_404(Mentor, user=request.user)
     groups = MentorGroup.objects.filter(mentor=mentor)
     return render(request, 'mentorApp/groups/group_list.html', {'groups': groups})
-
 
 @login_required
 def mentor_group_create(request):
@@ -498,8 +479,6 @@ def mentor_group_create(request):
         form = MentorGroupForm(mentor=mentor)
     return render(request, 'mentorApp/groups/group_form.html', {'form': form})
 
-
-
 @login_required
 def mentor_group_edit(request, group_id):
     mentor = get_object_or_404(Mentor, user=request.user)
@@ -513,7 +492,6 @@ def mentor_group_edit(request, group_id):
     else:
         form = MentorGroupForm(instance=group, mentor=mentor)
     return render(request, 'mentorApp/groups/group_form.html', {'form': form, 'group': group})
-
 
 @login_required
 @require_POST
