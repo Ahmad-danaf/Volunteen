@@ -17,7 +17,8 @@ urlpatterns = [
     path('shops/summary/', views.shop_summary, name='shop_summary'),
     path('shops/report/', views.download_shop_report, name='download_shop_report'),
     path('shop/<int:shop_id>/', views.shop_detail, name='shop_detail'),
-    
+    path("donation/simulate/", views.simulate_donation_spend_view, name="simulate_donation_spend"),
+
     ###############CAMPAIGN MANAGER################
     path("campaign/manager_home/", views.campaign_manager_home, name="campaign_manager_home"),
     path('campaigns/list/', views.campaign_list, name='campaign_list'),

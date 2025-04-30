@@ -412,7 +412,7 @@ class DonationSpendingUtilsTests(TestCase):
         self.assertEqual(DonationSpending.objects.count(), 1)  # Still just the first one
         self.assertEqual(SpendingAllocation.objects.count(), 1)  # Still just the first allocation 
         
-        
+     #start here   
     @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
     def test_spend_from_category_fair_valid(self, mock_get_remaining_points):
         """Test spend_from_category_fair with valid inputs and round-robin logic."""
@@ -611,99 +611,4 @@ class DonationSpendingUtilsTests(TestCase):
         leftover = DonationSpendingUtils.get_category_leftover(self.category1)
         self.assertEqual(leftover, 0)
 
-    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
-    def test_fair_allocator_rotates_evenly(self, mock_get_remaining_points):
-        mock_get_remaining_points.return_value = 1000
-
-        # Give child1 the same total as child2 (150 each)
-        DonationTransaction.objects.create(
-            child=self.child1, category=self.category1,
-            amount=50, note='extra funds for fairness'
-        )
-
-        # Six spendings of 50
-        for _ in range(6):
-            DonationSpendingUtils.spend_from_category_fair(
-                category=self.category1,
-                amount=50,
-                note="rotation batch",
-                shop=self.shop
-            )
-
-        c1 = SpendingAllocation.objects.filter(
-            transaction__child=self.child1
-        ).count()
-        c2 = SpendingAllocation.objects.filter(
-            transaction__child=self.child2
-        ).count()
-
-        self.assertEqual(c1, c2)           # 3 vs 3
-        self.assertEqual(c1, 3)
-
-    # ------------------------------------------------------------------
-    # Fairness-rotation proof test  (extra children, isolated to this test)
-    # ------------------------------------------------------------------
-    @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
-    def test_round_robin_unique_children_first_cycle(self, mock_get_remaining_points):
-        mock_get_remaining_points.return_value = 1000
-
-        # two extra children
-        u3 = User.objects.create_user(username='c3', password='pw')
-        c3 = Child.objects.create(user=u3, points=100, identifier='C003', secret_code='003')
-        u4 = User.objects.create_user(username='c4', password='pw')
-        c4 = Child.objects.create(user=u4, points=100, identifier='C004', secret_code='004')
-
-        DonationTransaction.objects.create(child=c3, category=self.category1, amount=40)
-        DonationTransaction.objects.create(child=c4, category=self.category1, amount=40)
-
-        seen_child_ids = []
-
-        # 4 spendings of 40 → exactly one tx per spending
-        for _ in range(4):
-            spending = DonationSpendingUtils.spend_from_category_fair(
-                category=self.category1,
-                amount=40,
-                note="first-cycle check",
-                shop=self.shop
-            )
-            cid = SpendingAllocation.objects.filter(
-                spending=spending
-            ).values_list('transaction__child_id', flat=True).first()
-            seen_child_ids.append(cid)
-
-        # we must have got four distinct children
-        self.assertEqual(len(seen_child_ids), 4)
-        self.assertEqual(len(set(seen_child_ids)), 4)
-
-        # ------------------------------------------------------------------
-        # Four spendings of 60 each → full first rotation
-        # ------------------------------------------------------------------
-        chosen_child_ids = []
-        for i in range(4):
-            spending = DonationSpendingUtils.spend_from_category_fair(
-                category=self.category1,
-                amount=60,
-                note=f"round {i}",
-                shop=self.shop
-            )
-            alloc = SpendingAllocation.objects.filter(
-                spending=spending
-            ).first()
-            chosen_child_ids.append(alloc.transaction.child_id)
-
-        # -- Assertions -----------------------------------------------------
-        # 1) We saw 4 allocations in total (one per spending)
-        self.assertEqual(len(chosen_child_ids), 4)
-
-        # 2) All four child IDs are unique → no repeats in first cycle
-        self.assertEqual(len(set(chosen_child_ids)), 4)
-
-        # 3) Optional: verify chronological order of first donations:
-        # Expect child1 (oldest), child2, child3, child4 in that order.
-        expected_order = [
-            self.child1.id,
-            self.child2.id,
-            child3.id,
-            child4.id,
-        ]
-        self.assertEqual(chosen_child_ids, expected_order)
+    

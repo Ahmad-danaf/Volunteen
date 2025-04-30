@@ -16,6 +16,7 @@ from django.http import Http404
 from shopApp.models import Shop
 from shopApp.utils.shop_manager import ShopManager
 from shopApp.utils.ShopDonationUtils import ShopDonationUtils
+from managementApp.forms.donation_forms import SimulateSpendForm
 
 @donation_manager_required
 def donation_manager_dashboard(request):
@@ -199,7 +200,7 @@ def spending_detail(request, spending_id):
     This includes the spending's note, date, and a list of donation allocations
     (child username, donation amount, amount used, donation date, and donation note).
     """
-    details = DonationSpendingUtils.get_spending_details(spending_id)
+    details = DonationSpendingUtils.get_spending_details_grouped_by_child(spending_id)
     if details is None:
         raise Http404("Spending record not found.")
     
@@ -305,3 +306,22 @@ def shop_detail(request, shop_id):
     }
     return render(request, 'donation/shop_detail.html', context)
 
+@donation_manager_required
+def simulate_donation_spend_view(request):
+    form = SimulateSpendForm(request.GET or None)
+    results = []
+    error = None
+
+    if form.is_valid():
+        category = form.cleaned_data["category"]
+        amount = form.cleaned_data["amount"]
+        try:
+            results = DonationSpendingUtils.simulate_spend_from_category_fair(category, amount)
+        except ValueError as e:
+            error = str(e)
+
+    return render(request, "donation/simulate_spend.html", {
+        "form": form,
+        "results": results,
+        "error": error,
+    })

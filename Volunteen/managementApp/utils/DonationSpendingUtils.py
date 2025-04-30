@@ -77,26 +77,30 @@ class DonationSpendingUtils:
         category: DonationCategory,
         amount: int,
         note: str = "",
-        shop: Shop | None = None,
+        shop=None,
     ) -> DonationSpending:
         """
-        Round-robin (child-fair) allocation:
-        Each child is selected once before any child is selected again.
-        Preserves FIFO order *within* a child's own transactions.
+        Persistent round-robin (child-fair) allocator that:
+        - Remembers the last child picked in previous spendings.
+        - Ensures each child is picked only once per cycle inside a single spending.
+        - Resets cycle only after all active children had a turn.
         """
+
+        # Lock category row to prevent concurrent spends corrupting the pointer
+        category = DonationCategory.objects.select_for_update().get(pk=category.pk)
+
+        # Validations
         if amount <= 0:
             raise ValueError("Spending amount must be positive.")
 
-        leftover_category = DonationSpendingUtils.get_category_leftover(category)
-        if leftover_category < amount:
-            raise ValueError(
-                f"Not enough donations in category '{category.name}'. "
-                f"Requested: {amount}, available: {leftover_category}."
-            )
+        leftover = DonationSpendingUtils.get_category_leftover(category)
+        if leftover < amount:
+            raise ValueError(f"Not enough donations in category '{category.name}'. Requested: {amount}, available: {leftover}.")
 
         if shop and ShopManager.get_remaining_points_this_month(shop) < amount:
             raise ValueError(f"Shop '{shop.name}' doesn't have enough points.")
 
+        # Create the spending record
         spending = DonationSpending.objects.create(
             category=category,
             shop=shop,
@@ -104,41 +108,52 @@ class DonationSpendingUtils:
             note=note,
         )
 
-        # Build child->transactions queue
+        # Build child → transaction queue
         transactions = (
             DonationTransaction.objects
             .filter(category=category)
-            .order_by("date_donated")          # global chronological order
-            .select_related("child")           # avoid extra queries
+            .order_by("date_donated")
+            .select_related("child")
         )
 
-        # OrderedDict preserves first-seen chronological order of children.
-        queue: "OrderedDict[int, deque[DonationTransaction]]" = OrderedDict()
+        queue: OrderedDict[int, deque] = OrderedDict()
         for tx in transactions:
             queue.setdefault(tx.child_id, deque()).append(tx)
 
+        # Rotate queue based on last selected child
+        last_pointer = category.last_selected_child_id
+        if last_pointer in queue:
+            while next(iter(queue)) != last_pointer:
+                k, v = queue.popitem(last=False)
+                queue[k] = v
+            # move the pointer child itself to end
+            k, v = queue.popitem(last=False)
+            queue[k] = v
+
+        # Allocation logic
         leftover_to_spend = amount
+        selected_this_cycle = set()
+        initial_cycle_size = len(queue)
+        last_child_used = None
 
-        # Round-robin allocation loop
         while leftover_to_spend > 0 and queue:
-            child_id, child_deque = queue.popitem(last=False)  
+            child_id, child_tx_queue = queue.popitem(last=False)
 
-            # pull the child's first remaining transaction
-            tx = child_deque[0]
+            if not child_tx_queue:
+                continue
 
-            # how much is still unused in this transaction?
-            used_already = (
+            tx = child_tx_queue[0]
+            used = (
                 SpendingAllocation.objects
                 .filter(transaction=tx)
-                .aggregate(total_used=Sum("amount_used"))
-            )["total_used"] or 0
-            tx_leftover = tx.amount - used_already
+                .aggregate(total_used=Sum('amount_used'))
+            )['total_used'] or 0
+
+            tx_leftover = tx.amount - used
             if tx_leftover <= 0:
-                # transaction exhausted – drop it and continue
-                child_deque.popleft()
-                if child_deque:
-                    # child still has more transactions ➜ append to right
-                    queue[child_id] = child_deque
+                child_tx_queue.popleft()
+                if child_tx_queue:
+                    queue[child_id] = child_tx_queue
                 continue
 
             allocation_amount = min(leftover_to_spend, tx_leftover)
@@ -146,27 +161,110 @@ class DonationSpendingUtils:
             SpendingAllocation.objects.create(
                 spending=spending,
                 transaction=tx,
-                amount_used=allocation_amount,
+                amount_used=allocation_amount
             )
 
             leftover_to_spend -= allocation_amount
+            last_child_used = child_id
 
-            # If transaction is now exhausted, pop it from child's deque
             if allocation_amount == tx_leftover:
-                child_deque.popleft()
+                child_tx_queue.popleft()
 
-            # If child still has something left, push them to the back
-            if child_deque:
-                queue[child_id] = child_deque
+            if child_tx_queue:
+                selected_this_cycle.add(child_id)
+                if len(selected_this_cycle) == initial_cycle_size:
+                    selected_this_cycle.clear()
+                queue[child_id] = child_tx_queue
 
-        # Defensive check – should always be zero here
-        if leftover_to_spend:
-            raise RuntimeError(
-                "Round-robin allocator ended with leftover_to_spend > 0 "
-                "even though pre-validation said enough funds exist."
-            )
+        if leftover_to_spend > 0:
+            raise RuntimeError("Spending ended with leftover amount, despite passing validation.")
+
+        # Save pointer for next time
+        category.last_selected_child_id = last_child_used
+        category.save(update_fields=["last_selected_child"])
 
         return spending
+    
+    @staticmethod
+    def simulate_spend_from_category_fair(category: DonationCategory, amount: int):
+        """
+        Simulate a persistent fair spend:
+        - Returns a list of child allocations WITHOUT saving anything.
+        """
+        if amount <= 0:
+            raise ValueError("Amount must be positive.")
+
+        leftover = DonationSpendingUtils.get_category_leftover(category)
+        if leftover < amount:
+            raise ValueError("Not enough coins.")
+
+        transactions = (
+            DonationTransaction.objects
+            .filter(category=category)
+            .order_by("date_donated")
+            .select_related("child", "child__user")
+        )
+
+        queue: OrderedDict[int, deque] = OrderedDict()
+        for tx in transactions:
+            queue.setdefault(tx.child_id, deque()).append(tx)
+
+        last_pointer = category.last_selected_child_id
+        if last_pointer in queue:
+            while next(iter(queue)) != last_pointer:
+                k, v = queue.popitem(last=False)
+                queue[k] = v
+            k, v = queue.popitem(last=False)
+            queue[k] = v
+
+        leftover_to_spend = amount
+        selected_this_cycle = set()
+        initial_cycle_size = len(queue)
+        result = []
+        child_alloc_map = {}  # {child_id: {'child':..., 'amount':..., 'tx_ids': [...]}}
+
+        while leftover_to_spend > 0 and queue:
+            child_id, child_tx_queue = queue.popitem(last=False)
+            child = child_tx_queue[0].child
+
+            if not child_tx_queue:
+                continue
+
+            tx = child_tx_queue[0]
+            used = (
+                SpendingAllocation.objects
+                .filter(transaction=tx)
+                .aggregate(total_used=Sum("amount_used"))
+            )["total_used"] or 0
+            tx_left = tx.amount - used
+            if tx_left <= 0:
+                child_tx_queue.popleft()
+                if child_tx_queue:
+                    queue[child_id] = child_tx_queue
+                continue
+
+            alloc = min(leftover_to_spend, tx_left)
+            leftover_to_spend -= alloc
+
+            if child_id not in child_alloc_map:
+                child_alloc_map[child_id] = {
+                    "child": child.user.username,
+                    "child_id": child.id,
+                    "allocated": 0,
+                    "from_transactions": []
+                }
+            child_alloc_map[child_id]["allocated"] += alloc
+            child_alloc_map[child_id]["from_transactions"].append(tx.id)
+
+            if alloc == tx_left:
+                child_tx_queue.popleft()
+            if child_tx_queue:
+                selected_this_cycle.add(child_id)
+                if len(selected_this_cycle) == initial_cycle_size:
+                    selected_this_cycle.clear()
+                queue[child_id] = child_tx_queue
+
+        return list(child_alloc_map.values())
 
     @staticmethod
     def get_category_leftover(category: DonationCategory) -> int:
@@ -236,6 +334,66 @@ class DonationSpendingUtils:
             }
         else:
             details['shop'] = None
+
+        return details
+    
+    @staticmethod
+    def get_spending_details_grouped_by_child(spending_id):
+        """
+        Returns grouped details of a spending, per child:
+        - Total used per child
+        - All donation notes and amounts used
+        """
+        try:
+            spending = DonationSpending.objects.get(id=spending_id)
+        except DonationSpending.DoesNotExist:
+            return None
+
+        allocations = (
+            SpendingAllocation.objects
+            .filter(spending=spending)
+            .select_related('transaction__child__user')
+        )
+
+        child_map = {}  # child_id → entry
+        for alloc in allocations:
+            child = alloc.transaction.child
+            child_id = child.id
+            tx = alloc.transaction
+
+            if child_id not in child_map:
+                child_map[child_id] = {
+                    "child_id": child_id,
+                    "username": child.user.username,
+                    "total_used": 0,
+                    "transactions": []
+                }
+
+            child_map[child_id]["total_used"] += alloc.amount_used
+            child_map[child_id]["transactions"].append({
+                "transaction_id": tx.id,
+                "donation_amount": tx.amount,
+                "amount_used": alloc.amount_used,
+                "date": tx.date_donated,
+                "note": tx.note,
+            })
+
+        details = {
+            "spending_id": spending.id,
+            "category": spending.category.name,
+            "amount_spent": spending.amount_spent,
+            "date_spent": spending.date_spent,
+            "note": spending.note,
+            "children": list(child_map.values()),
+        }
+
+        if spending.shop:
+            details["shop"] = {
+                "name": spending.shop.name,
+                "img": spending.shop.img.url if spending.shop.img else None,
+            }
+        else:
+            details["shop"] = None
 
         return details
 

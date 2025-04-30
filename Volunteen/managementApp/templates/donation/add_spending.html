@@ -5,7 +5,10 @@
 <div class="container fade-in">
   <div class="form-card slide-up">
     <h1 class="form-title">הוספת הוצאה חדשה</h1>
-
+    <div class="card slide-up" style="background-color: #ff9800; color: white;" onclick="window.location.href='{% url 'managementApp:simulate_donation_spend' %}'">
+      <i class="fas fa-calculator"></i>
+      <p>סימולציית חלוקת תרומות</p>
+    </div>
     {% if error_message %}
     <div class="alert alert-error">
       <i class="fas fa-exclamation-circle"></i>

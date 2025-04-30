@@ -1,0 +1,88 @@
+{% extends "donation/donation_base.html" %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %} 
+
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-white to-gray-100 p-4 flex flex-col gap-6 text-right animate-fade-in">
+
+  <!-- Title -->
+  {% if form.is_bound and form.is_valid %}
+    <div class="text-2xl font-bold text-gray-800">
+      תוצאה לדימוי עבור הקטגוריה {{ form.cleaned_data.category.name }}
+    </div>
+  {% else %}
+    <div class="text-2xl font-bold text-gray-800">
+      דימוי חלוקה עבור קטגוריה
+    </div>
+  {% endif %}
+
+  <!-- Form -->
+  <form method="get" class="bg-white rounded-2xl shadow-md p-4 flex flex-col gap-4 animate-slide-in">
+    <label for="id_category" class="text-sm font-semibold text-gray-700">בחר קטגוריה</label>
+    {{ form.category }}
+
+    <label for="id_amount" class="text-sm font-semibold text-gray-700">כמות</label>
+    <div class="flex items-center gap-2">
+      {{ form.amount }}
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-all">סימולציה</button>
+    </div>
+  </form>
+
+  <!-- Error -->
+  {% if error %}
+    <div class="bg-red-100 text-red-800 text-sm p-3 rounded-xl animate-shake">
+      {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- Results Table -->
+  {% if results %}
+    <div class="bg-white rounded-2xl shadow-lg p-4 animate-fade-in">
+      <div class="text-lg font-bold mb-2 text-gray-800">
+        תוצאות הסימולציה ({{ form.cleaned_data.amount }} נקודות)
+      </div>
+      <table class="w-full text-sm text-gray-700">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2">שם הילד</th>
+            <th class="p-2">סכום</th>
+            <th class="p-2">transactions id</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+            <tr class="hover:bg-gray-50 transition-all">
+              <td class="p-2 font-medium">{{ r.child }}</td>
+              <td class="p-2">{{ r.allocated }}</td>
+              <td class="p-2 text-xs text-gray-500">{{ r.from_transactions|join:", " }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Animations -->
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.animate-fade-in { animation: fade-in 0.6s ease-out; }
+.animate-slide-in { animation: slide-in 0.5s ease-out; }
+.animate-shake { animation: shake 0.4s ease-in-out; }
+</style>
+{% endblock %}
