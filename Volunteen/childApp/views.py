@@ -60,6 +60,11 @@ def inactive_home(request, child_id):
 @login_required
 def child_home(request):
     child = Child.objects.select_related("user").get(user=request.user)
+    
+    # Redirect if no phone number set
+    if not hasattr(request.user, 'personal_info') or not request.user.personal_info.phone_number:
+        return redirect('teenApp:update_phone_page')
+    
     if not hasattr(child, 'subscription'):
         return redirect('childApp:inactive_home', child_id=child.id)
     if child.subscription and not child.subscription.is_active():
@@ -559,20 +564,6 @@ def points_leaderboard(request):
         'form': form,
     })
 
-
-@csrf_exempt
-def save_phone_number(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        phone_number = data.get("phone_number")
-        
-        child = request.user.child
-        child.user.phone = phone_number
-        child.user.save()
-
-        return json.JsonResponse({"success": True})
-    
-    return json.JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 
 @child_subscription_required

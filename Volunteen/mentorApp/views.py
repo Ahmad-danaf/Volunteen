@@ -281,11 +281,7 @@ def send_whatsapp_message(request):
         for child_id in selected_children_ids:
             #get child
             child=Child.objects.get(id=child_id)
-            if child.user.phone:
-                NotificationManager.sent_whatsapp(
-                    message_text,
-                    child.user.phone
-                )
+            
         return redirect('mentorApp:mentor_children_details')
     
     # Get all children

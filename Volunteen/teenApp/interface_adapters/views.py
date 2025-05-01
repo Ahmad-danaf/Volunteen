@@ -1,13 +1,13 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from teenApp.entities.task import Task
-from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from django.template.loader import render_to_string
 from django.conf import settings
-
+from django.views.decorators.http import require_POST
+from teenApp.utils.PersonalInfoUtils import PersonalInfoUtils
 @login_required
 def logout_view(request):
     logout(request)
@@ -58,4 +58,22 @@ def csrf_failure_view(request, reason=""):
     html = render_to_string('errors/csrf_failure.html')
     return HttpResponseForbidden(html)
 
+@login_required
+def phone_update_page(request):
+    return render(request, 'teenApp/update_phone.html')
 
+
+@require_POST
+@login_required
+def update_phone_number(request):
+    phone = request.POST.get('phone') or request.body.decode()  
+
+    if not phone:
+        return JsonResponse({'success': False, 'error': 'Missing phone number'}, status=400)
+
+    updated = PersonalInfoUtils.update_user_phone(request.user, phone)
+
+    if updated:
+        return JsonResponse({'success': True, 'message': 'Phone number updated'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid phone number'}, status=400)

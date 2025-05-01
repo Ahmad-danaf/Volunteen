@@ -1,6 +1,11 @@
-from django.contrib.auth.models import User
 from django.db import models
-import os
+from django.contrib.auth import get_user_model
 
-if not os.environ.get('VOLUNTEEN_CI_NO_PHONE', 'false') == 'true':
-    User.add_to_class('phone', models.CharField(unique=True, max_length=10, blank=True, null=True))
+User = get_user_model()
+
+class PersonalInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='personal_info')
+    phone_number = models.CharField(max_length=10, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} Personal Info"

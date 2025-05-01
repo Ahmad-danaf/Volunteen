@@ -92,9 +92,9 @@
                            {% for mentor in task.assigned_mentors.all %}
                            <li>
                                 {% if mentor.user.first_name %}
-                                    {{mentor.user.username}} ({{mentor.user.first_name }}) טלפון: {{ mentor.user.phone }}
+                                    {{mentor.user.username}} ({{mentor.user.first_name }}) טלפון: {{ mentor.user.personal_info.phone_number }}
                                 {% else %}
-                                    {{mentor.user.username}} טלפון: {{ mentor.user.phone }}
+                                    {{mentor.user.username}} טלפון: {{ mentor.user.personal_info.phone_number }}
                                 {% endif %}
                             </li>
                             {% endfor %}

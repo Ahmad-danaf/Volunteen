@@ -14,8 +14,7 @@ from managementApp.models import (
 )
 from managementApp.utils.DonationSpendingUtils import DonationSpendingUtils
 from shopApp.models import Shop
-
-
+from django.db.models import Sum
 # ----------------------------------------------------------------------
 # Helper
 # ----------------------------------------------------------------------
@@ -559,3 +558,51 @@ class DonationSpendingRoundRobinTests(TestCase):
             # Reset used_ids after a full rotation
             if len(used_ids) == total_children:
                 used_ids.clear()
+                
+                
+    @patch("shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month")
+    def test_total_allocation_matches_amount(self, mock_pts):
+        """sum(amount_used) must equal spending.amount_spent for diverse amounts."""
+        mock_pts.return_value = 1_000
+        child = _make_child("sumKid")
+        # 3 donations totalling 120
+        DonationTransaction.objects.bulk_create([
+            DonationTransaction(child=child, category=self.category, amount=40, date_donated=self.week_ago),
+            DonationTransaction(child=child, category=self.category, amount=50, date_donated=self.day_ago),
+            DonationTransaction(child=child, category=self.category, amount=30, date_donated=self.now),
+        ])
+
+        for amount in (10, 65, 25, 20):   # 4 separate spendings, total 120
+            spending = DonationSpendingUtils.spend_from_category_fair(
+                category=self.category, amount=amount, shop=self.shop, note=f"amount {amount}"
+            )
+            total_alloc = SpendingAllocation.objects.filter(spending=spending).aggregate(
+                s=Sum("amount_used")
+            )["s"]
+            self.assertEqual(total_alloc, amount, f"Allocation sum mismatch for amount {amount}")
+
+
+    @patch("shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month")
+    def test_fifo_order_inside_child(self, mock_pts):
+        """Ensure child allocations consume donations oldest-first."""
+        mock_pts.return_value = 1_000
+        fifo_child = _make_child("fifoKid")
+
+        t1 = DonationTransaction.objects.create(child=fifo_child, category=self.category, amount=30, date_donated=self.week_ago)
+        t2 = DonationTransaction.objects.create(child=fifo_child, category=self.category, amount=30, date_donated=self.day_ago)
+        t3 = DonationTransaction.objects.create(child=fifo_child, category=self.category, amount=30, date_donated=self.now)
+
+        spending = DonationSpendingUtils.spend_from_category_fair(
+            category=self.category, amount=70, note="FIFO test", shop=self.shop
+        )
+        alloc_tx_ids = list(
+            SpendingAllocation.objects.filter(spending=spending)
+            .values_list("transaction_id", flat=True)
+        )
+
+        # Expected order: first t1, then t2, finally t3 (partial)
+        self.assertEqual(alloc_tx_ids[0], t1.id)
+        self.assertEqual(alloc_tx_ids[1], t2.id)
+        # The third allocation (if split) must be t3
+        if len(alloc_tx_ids) > 2:
+            self.assertEqual(alloc_tx_ids[2], t3.id)

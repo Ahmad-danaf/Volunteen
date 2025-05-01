@@ -11,5 +11,8 @@ urlpatterns = [
     path('list/', views.list_view, name='list'),
     path('default_home/', views.default_home, name='default_home'),
     path('logout/', views.logout_view, name='logout_view'),
+    path('update-phone/', views.phone_update_page, name='update_phone_page'),  
+    path('save-phone/', views.update_phone_number, name='update_phone'),
+
 ]
 
