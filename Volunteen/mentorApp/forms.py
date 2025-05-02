@@ -17,7 +17,8 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = [
             'title', 'description', 'points', 'deadline', 
-            'img', 'additional_details', 'assigned_children', 'is_template', 'is_pinned'
+            'img', 'additional_details', 'assigned_children', 'is_template', 'is_pinned',
+            'proof_required', 'send_whatsapp_on_assign'
         ]       
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
@@ -28,6 +29,8 @@ class TaskForm(forms.ModelForm):
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
             'is_template': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_pinned': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'proof_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'send_whatsapp_on_assign': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -48,6 +51,9 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_children'].help_text = 'בחר את הילדים שיקבלו את המשימה'
             self.fields['is_template'].help_text = 'סמן אם ברצונך לשמור כתבנית לשימוש עתידי'
             self.fields['is_pinned'].help_text = 'הפעל את האופציה אם ברצונך להעדיף משימה זו ולהציג אותה בצורה בולטת בראש הרשימה.'
+            self.fields['proof_required'].help_text = 'אם מסומן, הילד יצטרך להעלות תמונת הוכחה (צ׳ק אין). אם לא, תתווסף תמונה אוטומטית.'
+            self.fields['send_whatsapp_on_assign'].help_text = 'אם מסומן, תישלח הודעת WhatsApp כאשר מוקצת המשימה לילד'
+
             self.fields['title'].label = 'כותרת'
             self.fields['description'].label = 'תיאור'
             self.fields['points'].label = 'נקודות'
@@ -57,7 +63,8 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_children'].label = 'הקצאת ילדים'
             self.fields['is_template'].label = 'שמור כתבנית'
             self.fields['is_pinned'].label = 'מועדפת'
-
+            self.fields['proof_required'].label = 'עם תמונת הוכחה'
+            self.fields['send_whatsapp_on_assign'].label = 'שלח WhatsApp בעת ההקצאה'
 
             if self.mentor:
                 self.fields['assigned_children'].queryset = self.mentor.children.all()

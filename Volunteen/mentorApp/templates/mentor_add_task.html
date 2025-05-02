@@ -207,7 +207,7 @@
             <textarea id="additional_details" name="additional_details" class="form-control" rows="3">{{ form.additional_details.value|default_if_none:'' }}</textarea>
         </div>
         
-        <!-- New Template Feature -->
+        <!-- Template Feature -->
         <div class="mb-3">
             <input type="checkbox" id="is_template" name="is_template" {% if form.is_template.value %}checked{% endif %}>
             <label for="is_template" class="form-label">שמור כמשימה לשכפול בעתיד</label>
@@ -217,7 +217,23 @@
             <input type="checkbox" id="is_pinned" name="is_pinned" {% if form.is_pinned.value %}checked{% endif %}>
             <label for="is_pinned" class="form-label">נעץ משימה זו בראש רשימת המשימות של הילדים לצורך הדגשה</label>
         </div>
-       
+       <div class="mb-3">
+            <input type="checkbox" id="proof_required" name="proof_required"
+                {% if form.proof_required.value or form.proof_required.value is None %}checked{% endif %}>
+            <label for="proof_required" class="form-label">האם נדרשת תמונת צ'ק אין מהילד?</label>
+        </div>
+
+
+        <!--Send WhatsApp Notification -->
+       <div class="mb-3">
+            <input type="checkbox" id="send_whatsapp_on_assign" name="send_whatsapp_on_assign"
+                {% if form.send_whatsapp_on_assign.value or form.send_whatsapp_on_assign.value is None %}checked{% endif %}>
+            <label for="send_whatsapp_on_assign" class="form-label">
+                שלח הודעת WhatsApp לילד כאשר מוקצה המשימה
+            </label>
+        </div>
+
+
         <button type="submit" class="btn-submit w-100">הוסף משימה</button>
     </form>
 </div>

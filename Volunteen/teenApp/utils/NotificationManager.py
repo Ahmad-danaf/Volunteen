@@ -24,7 +24,6 @@ class NotificationManager:
             )
             
     def sent_whatsapp(msg: str, phone: str):
-        print("972"+phone[1:]+"@c.us")
         payload = {
         "chatId": "972"+phone[1:]+"@c.us", 
         "message": msg, 
@@ -36,7 +35,6 @@ class NotificationManager:
 
         response = requests.post(URL, json=payload, headers=headers)
 
-        print(response.text.encode('utf8'))
         
         
     def valid_phone(self, phone: str):

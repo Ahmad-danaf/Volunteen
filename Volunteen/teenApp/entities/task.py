@@ -19,6 +19,11 @@ class Task(models.Model):
         on_delete=models.CASCADE, related_name="tasks"
     )
     proof_required  = models.BooleanField(default=True)
+    send_whatsapp_on_assign = models.BooleanField(
+        default=True,
+        verbose_name="Send WhatsApp notification when task is assigned",
+        help_text="If checked, an automatic WhatsApp message will be sent to the user when a task is assigned to them"
+    )
     def __str__(self):
         return self.title
 
