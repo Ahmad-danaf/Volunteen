@@ -13,7 +13,9 @@ PASSWORD = os.getenv("EMAIL_PASSWORD", "default-password")
 
 
 class NotificationManager:
-    def sent_mail(self, msg: str, mail: str):
+
+    @staticmethod
+    def sent_mail(msg: str, mail: str):
         with smtplib.SMTP(EMAIL_HOST) as connection:
             connection.starttls()
             connection.login(user=MY_EMAIL, password=PASSWORD)
@@ -22,7 +24,8 @@ class NotificationManager:
                 to_addrs=mail,
                 msg=f"Subject:volunteen\n\n{msg}\n".encode("utf-8")
             )
-            
+
+    @staticmethod
     def sent_whatsapp(msg: str, phone: str):
         payload = {
         "chatId": "972"+phone[1:]+"@c.us", 
@@ -36,18 +39,10 @@ class NotificationManager:
         response = requests.post(URL, json=payload, headers=headers)
         print("=======================")
         print("sent msg")
-        if msg:
-            print("the msg is: ", msg)
-        else:
-            print("the msg is empty")
-        if phone:
-            print("the phone is: ", phone)
-        else:
-            print("the phone is empty")
+        print("the msg is:", msg if msg else "empty")
+        print("the phone is:", phone if phone else "empty")
         print("=======================")
-        
-    def valid_phone(self, phone: str):
-        if len(phone) != 10 or phone[0] != '0':
-            return False
-        return True
 
+    @staticmethod
+    def valid_phone(phone: str):
+        return len(phone) == 10 and phone[0] == '0'
