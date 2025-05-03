@@ -24,16 +24,16 @@ class NotificationManager:
             )
             
     def sent_whatsapp(msg: str, phone: str):
-        # payload = {
-        # "chatId": "972"+phone[1:]+"@c.us", 
-        # "message": msg, 
-        # "linkPreview": True
-        # }
-        # headers = {
-        # 'Content-Type': 'application/json'
-        # }
+        payload = {
+        "chatId": "972"+phone[1:]+"@c.us", 
+        "message": msg, 
+        "linkPreview": True
+        }
+        headers = {
+        'Content-Type': 'application/json'
+        }
 
-        # response = requests.post(URL, json=payload, headers=headers)
+        response = requests.post(URL, json=payload, headers=headers)
         print("=======================")
         print("sent msg")
         if msg:
