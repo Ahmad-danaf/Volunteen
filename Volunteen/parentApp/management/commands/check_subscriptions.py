@@ -43,9 +43,9 @@ class Command(BaseCommand):
         for sub in auto_renew_subs:
             try:
                 if sub.plan == ChildSubscription.Plan.MONTHLY:
-                    new_end = sub.end_date + timedelta(days=37)
+                    new_end = sub.end_date + timedelta(days=30)
                 elif sub.plan == ChildSubscription.Plan.YEARLY:
-                    new_end = sub.end_date + timedelta(days=372)
+                    new_end = sub.end_date + timedelta(days=365)
                 else:
                     self.stderr.write(
                         f"[ERROR] Unknown plan type for subscription (ID: {sub.id})."

@@ -24,9 +24,9 @@ def make_active_and_extend(modeladmin, request, queryset):
 
         # Decide how many days to add
         if sub.plan == ChildSubscription.Plan.MONTHLY:
-            added_days = 37
+            added_days = 30 
         elif sub.plan == ChildSubscription.Plan.YEARLY:
-            added_days = 372
+            added_days = 365
         else:
             modeladmin.message_user(request, f"[SKIP] Unknown plan for {sub}. Skipping.")
             continue

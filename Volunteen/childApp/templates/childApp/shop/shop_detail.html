@@ -1,0 +1,359 @@
+{% extends 'child_base.html' %} 
+{% load static %} 
+{% block content %}
+<style>
+  .shop-hero {
+    position: relative;
+    height: 280px;
+    background-size: cover;
+    background-position: center;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+    overflow: hidden;
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .shop-hero-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.75),
+      rgba(0, 0, 0, 0.1)
+    );
+    height: 100%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: white;
+  }
+
+  .shop-hero h1 {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+
+  .shop-meta {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+  }
+
+  .section {
+    padding: 1.5rem 1rem;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.3rem;
+  }
+
+  .rating-badge {
+    background: #4ecdc4;
+    color: white;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    margin-inline-end: 0.5rem;
+  }
+
+  .opening-hours-group {
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+  }
+
+  .opening-hours-group:nth-of-type(1) {
+    background: #ffeceb;
+  }
+  .opening-hours-group:nth-of-type(2) {
+    background: #fff5eb;
+  }
+  .opening-hours-group:nth-of-type(3) {
+    background: #ecffeb;
+  }
+  .opening-hours-group:nth-of-type(4) {
+    background: #ebf4ff;
+  }
+  .opening-hours-group:nth-of-type(5) {
+    background: #f0ebff;
+  }
+  .opening-hours-group:nth-of-type(6) {
+    background: #ffebf7;
+  }
+  .opening-hours-group:nth-of-type(7) {
+    background: #ebfffa;
+  }
+
+  .opening-hours-group h4 {
+    margin: 0;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: #2d3436;
+    font-weight: bold;
+  }
+
+  .opening-hours-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .opening-hours-group li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0.2rem;
+    font-size: 1.1rem;
+    color: #2d3436;
+    border-bottom: 1px dashed #ccc;
+  }
+
+  .opening-hours-group li span {
+    color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .nav-buttons a {
+    flex: 1;
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 12px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    transition: background 0.3s ease;
+    font-size: 1rem;
+  }
+
+  .waze-btn {
+    background: #05c46b;
+  }
+
+  .google-btn {
+    background: #3a7ced;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: #f1f2f6;
+    color: #2f3542;
+    border-radius: 12px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .map-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+    margin-top: 1rem;
+  }
+  
+  .map-card iframe {
+    width: 100%;
+    height: 280px;
+    display: block;
+    border: none;
+  }
+  .copy-address {
+    background: #ecf0f1;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    color: #2d3436;
+    font-weight: 500;
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.3s ease;
+  }
+  
+  .copy-address:hover {
+    background: #dfe6e9;
+  }
+  
+  .copy-tooltip {
+    margin-right: 0.5rem;
+    float: left;
+    font-size: 1.2rem;
+  }
+  
+  .points-box {
+    font-size: 1.2rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    color: white;
+    padding: 1rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+  }
+  
+  .category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .category-tag {
+    background: #ecf0f1;
+    color: #2d3436;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 999px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+  }
+  
+  .category-tag:hover {
+    background: #dfe6e9;
+  }
+  
+</style>
+
+<div class="shop-hero" style="background-image: url('{{ shop.img.url }}')">
+  <div class="shop-hero-overlay">
+    <h1>{{ shop.name }}</h1>
+    <div class="shop-meta">
+      {{ shop.city }} • {{ points_left_to_redeem }} טינקואינס למימוש
+    </div>
+  </div>
+</div>
+  
+<section class="section">
+  <div class="section-title">דירוגים</div>
+  <div>
+    <span class="rating-badge"
+      >שירות: {{ average_rating_service|default:"אין" }}</span
+    >
+    <span class="rating-badge"
+      >פרסים: {{ average_rating_reward|default:"אין" }}</span
+    >
+  </div>
+</section>
+<section class="section">
+    <div class="section-title">קטגוריות</div>
+    {% if shop.categories.all %}
+      <div class="category-tags">
+        {% for category in shop.categories.all %}
+          <span class="category-tag">{{ category.name }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: #636e72;">אין קטגוריות זמינות</p>
+    {% endif %}
+  </section>
+  
+<section class="section">
+  <div class="section-title">שעות פתיחה</div>
+  {% for day in ordered_opening_hours %}
+  <div class="opening-hours-group">
+    <h4>{{ day.day_name }}</h4>
+    <ul>
+      {% for entry in day.entries %}
+      <li>
+        <span>
+          {% if entry.opening_hour and entry.closing_hour %}
+          {{entry.opening_hour|time:"H:i" }} - {{ entry.closing_hour|time:"H:i"}} {% else %} סגור {% endif %}
+        </span>
+      </li>
+      {% endfor %} {% if day.entries|length == 0 %}
+      <li><span>סגור</span></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endfor %}
+</section>
+
+{% if shop.address or shop.google_map_embed %}
+<section class="section">
+    <div class="section-title">ניווט לחנות</div>
+    {% if shop.address %}
+    <div class="section-subtitle copy-address" onclick="copyAddress('{{ shop.address|escapejs }}')">
+      {{ shop.address }}
+      <span class="copy-tooltip" id="copyTooltip">📋</span>
+    </div>
+    {% endif %}
+    {% if shop.google_map_embed %}
+    <div class="map-card">
+        {{ shop.google_map_embed|safe }}
+    </div>  
+    {% endif %}
+
+</section>
+{% endif %}
+    
+<section class="section">
+  <a
+    href="{% url 'childApp:shop_rewards' shop.id %}"
+    class="buy-btn"
+    style="
+      display: block;
+      text-align: center;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+      padding: 1rem;
+      border-radius: 15px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+    "
+  >
+    🎁 עבור לפרסים הזמינים
+  </a>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyAddress(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const tooltip = document.getElementById('copyTooltip');
+          const original = tooltip.textContent;
+          tooltip.textContent = '✅';
+      
+          if (navigator.vibrate) navigator.vibrate(100);
+      
+          setTimeout(() => {
+            tooltip.textContent = original;
+          }, 1500);
+        });
+      }
+  </script>
+  
+
+{% endblock %}

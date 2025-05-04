@@ -62,9 +62,9 @@ class Command(BaseCommand):
                     # Calculate end_date
                     if end_date_str is None:
                         if plan == "MONTHLY":
-                            end_date = start_date + datetime.timedelta(days=37)
+                            end_date = start_date + datetime.timedelta(days=30)
                         elif plan == "YEARLY":
-                            end_date = start_date + datetime.timedelta(days=372)
+                            end_date = start_date + datetime.timedelta(days=365)
                         else:
                             self.stderr.write(f"[ERROR] Invalid plan '{plan}' for child '{identifier}' and username '{username}'. Skipping.")
                             error_count += 1

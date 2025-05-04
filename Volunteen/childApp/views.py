@@ -27,6 +27,7 @@ from django.utils.timezone import localdate
 from .forms import RedemptionRatingForm,DonationForm
 from django.utils.timezone import now
 from django.http import HttpResponseForbidden
+from collections import defaultdict
 from Volunteen.constants import (
     AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
     CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,
@@ -411,6 +412,52 @@ def rewards_view(request):
         'categories_list': categories_list,
     }
     return render(request, 'shop_list.html', context)
+
+
+@login_required
+def shop_detail(request, shop_id):
+    """
+    Display details of a specific shop including its rewards and categories.
+    """
+    ShopManager.expire_old_requests()
+    shop = get_object_or_404(
+    Shop.objects.prefetch_related('categories'),
+    id=shop_id, is_active=True
+    )
+    points_left_to_redeem = ShopManager.get_remaining_points_this_month(shop)
+    average_rating_service = shop.average_service_rating()
+    average_rating_reward = shop.average_reward_rating()
+    HEBREW_WEEK_ORDER = [6, 0, 1, 2, 3, 4, 5]
+    DAYS_OF_WEEK = {
+        0 : 'שני',
+        1: 'שלישי',
+        2: 'רביעי',
+        3: 'חמישי',
+        4: 'שישי',
+        5: 'שבת',
+        6: 'ראשון',
+    }
+    grouped_hours = defaultdict(list)
+    for hour in shop.opening_hours.all():
+        grouped_hours[hour.day].append(hour)
+
+    ordered_opening_hours = [
+        {'day_code': day, 'day_name': DAYS_OF_WEEK[day], 'entries': grouped_hours.get(day, [])}
+        for day in HEBREW_WEEK_ORDER
+    ]
+    context = {
+        "shop": shop,
+        "ordered_opening_hours": ordered_opening_hours,
+        "MAX_SHOPS_PER_DAY":MAX_SHOPS_PER_DAY,
+        "points_left_to_redeem": points_left_to_redeem,
+        "average_rating_service": average_rating_service,
+        "average_rating_reward": average_rating_reward,
+        "shop_is_open": shop.is_open(),
+        'days_of_week':DAYS_OF_WEEK,
+        
+    }
+    return render(request, 'childApp/shop/shop_detail.html', context)
+
 
 @login_required
 def shop_rewards_view(request, shop_id):

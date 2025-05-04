@@ -186,7 +186,32 @@
         padding: 0.4rem 0.8rem;
       }
     }
+    .shop-info-icon {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      padding: 0.6rem;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    
+    .shop-info-icon i {
+      font-size: 1.2rem;
+      color: #2d3436;
+    }
+    
+    
+    
+    
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
 </head>
 <body>
   <header class="header">
@@ -213,24 +238,37 @@
       <div class="shop-card {% if not shop.can_redeem or not shop.is_open %}unclickable{% endif %}" 
            data-city="{{ shop.city }}" 
            data-categories="{{ shop.categories|join:',' }}">
-        <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
-          <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}">
-            {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
-          </div>
-          <div class="shop-overlay">
-            <div class="shop-info">
-              <h2>{{ shop.name }}</h2>
-              <div class="shop-meta">
-                <span>
-                  {% for code, name in available_cities %}
-                    {% if code == shop.city %}{{ name }}{% endif %}
-                  {% endfor %}
-                </span> • 
-                <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
+           <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
+
+            <!-- Info Icon - Top Right -->
+            <a href="{% url 'childApp:shop_detail' shop.id %}" class="shop-info-icon" title="פרטים נוספים על החנות">
+              <i class="fa-solid fa-circle-info"></i>
+
+            </a>
+         
+          
+            <!-- Shop Status - Top Left -->
+            <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}" style="position: absolute; top: 1rem; left: 1rem;">
+              {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
+            </div>
+          
+            <!-- Overlay with Shop Info -->
+            <div class="shop-overlay">
+              <div class="shop-info">
+                <h2>{{ shop.name }}</h2>
+                <div class="shop-meta">
+                  <span>
+                    {% for code, name in available_cities %}
+                      {% if code == shop.city %}{{ name }}{% endif %}
+                    {% endfor %}
+                  </span> • 
+                  <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
+                </div>
               </div>
             </div>
+          
           </div>
-        </div>
+          
         <a href="{% url 'childApp:shop_rewards' shop.id %}">
           <button class="buy-btn"
                   {% if not shop.can_redeem or not shop.is_open %}disabled{% endif %}>
