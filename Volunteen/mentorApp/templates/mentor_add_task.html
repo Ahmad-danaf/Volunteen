@@ -234,12 +234,33 @@
         </div>
 
 
-        <button type="submit" class="btn-submit w-100">הוסף משימה</button>
+        <button type="submit" class="btn-submit w-100" id="submitBtn">
+            <span id="submitText">הוסף משימה</span>
+            <span id="submitSpinner" class="spinner-border spinner-border-sm" style="display: none;" role="status" aria-hidden="true"></span>
+        </button>
+        
     </form>
 </div>
 
 <script>
+  
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitSpinner = document.getElementById('submitSpinner');
+    
+        form.addEventListener('submit', function () {
+            submitBtn.disabled = true;
+            submitText.textContent = 'שולח...';
+            submitSpinner.style.display = 'inline-block';
+    
+            // Re-enable checked child checkboxes so they get submitted
+            const childCheckboxes = document.querySelectorAll('.assign-container input[type="checkbox"]:not(#checkAll)');
+            childCheckboxes.forEach(function(cb) {
+                if (cb.checked) cb.disabled = false;
+            });
+        });
         // Set minimum deadline as today
         var deadlineInput = document.getElementById('deadline');
         var today = new Date().toISOString().split('T')[0];

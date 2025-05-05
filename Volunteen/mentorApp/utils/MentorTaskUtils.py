@@ -263,7 +263,7 @@ class MentorTaskUtils(TaskManagerUtils):
             mentor.available_teencoins -= total_cost
             mentor.save()
 
-            if new_task.send_whatsapp_on_assign and mentor.user.username =='الاستاذ_ءادم':
+            if new_task.send_whatsapp_on_assign:
                 for child in assigned_children:
                     phone = getattr(child.user.personal_info, 'phone_number', None)
                     if hasattr(child, 'subscription') and child.subscription and child.subscription.is_active:
@@ -280,18 +280,17 @@ class MentorTaskUtils(TaskManagerUtils):
 
                             notification_data.append((msg, phone))
 
-        if mentor.user.username == 'الاستاذ_ءادم':
-            for msg, phone in notification_data:
-                async_task(
-                    'teenApp.utils.NotificationManager.NotificationManager.sent_whatsapp',
-                    msg,
-                    phone,
-                    q_options={
-                        'priority': 0,
-                        'label': f'task_notify_{new_task.id}_{phone}',
-                        'queue_limit': 1
-                    }
-                )
+        for msg, phone in notification_data:
+            async_task(
+                'teenApp.utils.NotificationManager.NotificationManager.sent_whatsapp',
+                msg,
+                phone,
+                q_options={
+                    'priority': 0,
+                    'label': f'task_notify_{new_task.id}_{phone}',
+                    'queue_limit': 1
+                }
+            )
         return new_task
     
     
