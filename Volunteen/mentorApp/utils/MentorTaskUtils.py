@@ -264,10 +264,12 @@ class MentorTaskUtils(TaskManagerUtils):
             mentor.save()
 
             if new_task.send_whatsapp_on_assign:
+                sent_phones = set()
                 for child in assigned_children:
                     phone = getattr(child.user.personal_info, 'phone_number', None)
                     if hasattr(child, 'subscription') and child.subscription and child.subscription.is_active:
-                        if phone:
+                        if phone and phone not in sent_phones:
+                            sent_phones.add(phone)
                             msg = (
                                 f"היי {child.user.username} 😎\n"
                                 f"קיבלת משימה חדשה! 📣\n\n"
