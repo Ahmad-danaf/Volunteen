@@ -141,12 +141,6 @@ class ShopManager:
                 }) 
             shop.unlock_monthly_points(points_used)
 
-            # Send notification if child has an email
-            if child.user.email:
-                NotificationManager.sent_mail(
-                    f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.',
-                    child.user.email
-                )
 
             return {"status": "success", "points_used": points_used, "redemptions": redemptions}
 
@@ -355,12 +349,7 @@ class ShopManager:
                 })
             if shop:
                 shop.unlock_monthly_points(points_used)
-            if child.user.email:
-                NotificationManager.sent_mail(
-                    f'שלום {child.user.first_name}, הרכישה שלך הושלמה. ניצלת {points_used} נקודות.',
-                    child.user.email
-                )
-            
+    
             return {"status": "success", "points_used": points_used, "redemptions": redemptions}
         
         except ValueError as e:
