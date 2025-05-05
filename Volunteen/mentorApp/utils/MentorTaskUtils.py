@@ -11,7 +11,18 @@ from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
 from django_q.tasks import async_task
 from teenApp.utils.NotificationManager import NotificationManager
+import hashlib
+
 class MentorTaskUtils(TaskManagerUtils):
+
+    @staticmethod
+    def generate_notify_label(mentor_id, child_id, phone, title, deadline):
+        """
+        Generate a deterministic label based on task content to prevent duplicate notifications.
+        """
+        key = f"{mentor_id}-{child_id}-{phone}-{title}-{deadline}"
+        return "task_notify_" + hashlib.md5(key.encode()).hexdigest()
+
 
     @staticmethod
     def assign_task_to_child(mentor: Mentor, task: Task, child: Child):
@@ -262,7 +273,7 @@ class MentorTaskUtils(TaskManagerUtils):
             # Deduct the total cost from the mentor's available TeenCoins
             mentor.available_teencoins -= total_cost
             mentor.save()
-
+            print(f"assigned_children: {assigned_children}")
             if new_task.send_whatsapp_on_assign:
                 sent_phones = set()
                 for child in assigned_children:
@@ -280,16 +291,27 @@ class MentorTaskUtils(TaskManagerUtils):
                                 f"בהצלחה! – צוות Volunteen🧡"
                             )
 
-                            notification_data.append((msg, phone))
-
-        for msg, phone in notification_data:
+                            notification_data.append((msg, phone,child.id))
+        print(f"Notification data: {notification_data}")
+        for (msg, phone, child_id) in notification_data:
+            label = MentorTaskUtils.generate_notify_label(
+                    mentor_id=mentor.id,
+                    child_id=child_id,
+                    phone=phone,
+                    title=new_task.title,
+                    deadline=new_task.deadline
+                )
+            print("====== Sending WhatsApp message ===")
+            print(f"phone: {phone}")
+            print(f"msg: {msg}")
+            print(f"[DEBUG] Dispatching WhatsApp with label: {label}")
             async_task(
                 'teenApp.utils.NotificationManager.NotificationManager.sent_whatsapp',
                 msg,
                 phone,
                 q_options={
                     'priority': 0,
-                    'label': f'task_notify_{new_task.id}_{phone}',
+                    'label': label,
                     'queue_limit': 1
                 }
             )
