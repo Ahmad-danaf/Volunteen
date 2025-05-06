@@ -6,7 +6,14 @@ class DonationCategory(models.Model):
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     img = models.ImageField(verbose_name="Image", upload_to='media/images/donation_categories/', null=True, blank=True, default='defaults/no-image.png')
-
+    last_selected_child = models.ForeignKey(
+        "childApp.Child",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Round-robin pointer: child picked last in the most recent "
+                "spending; used to rotate queue on the next one",
+    )
     def __str__(self):
         return self.name
 
@@ -16,6 +23,12 @@ class DonationTransaction(models.Model):
     amount = models.PositiveIntegerField()
     date_donated = models.DateTimeField(auto_now_add=True)
     note = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["category", "date_donated"]),
+        ]
+
 
     def __str__(self):
         return f"{self.child} donated {self.amount} to {self.category}"

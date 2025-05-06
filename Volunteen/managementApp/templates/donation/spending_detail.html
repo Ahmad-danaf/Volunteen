@@ -40,40 +40,43 @@
       </div>
       {% endif %}
     </section>
+
+    <!-- New Section: Grouped by Children -->
     <section class="allocations-section">
-      <h2>תרומות בשימוש</h2>
+      <h2>חלוקת תרומות לפי ילדים</h2>
       <div class="allocations-list">
-        {% for alloc in details.allocations %}
-        <div class="allocation-card slide-up" style="animation-delay: {{ forloop.counter|add:"0.1"|floatformat:1 }}s;">
+        {% for child in details.children %}
+        <div class="allocation-card slide-up">
           <div class="allocation-header">
-            <h3>{{ alloc.child_username }}</h3>
+            <h3>{{ child.username }}</h3>
           </div>
           <div class="allocation-details">
             <div class="detail-row">
-              <span class="label">תרומה:</span>
-              <span class="value">{{ alloc.donation_amount }} TeenCoins</span>
+              <span class="label">סה"כ בשימוש:</span>
+              <span class="value">{{ child.total_used }} TeenCoins</span>
             </div>
             <div class="detail-row">
-              <span class="label">ניצל:</span>
-              <span class="value">{{ alloc.amount_used }} TeenCoins</span>
+              <span class="label">תרומות:</span>
+              <span class="value">{{ child.transactions|length }}</span>
             </div>
             <div class="detail-row">
-              <span class="label">תאריך תרומה:</span>
-              <span class="value">{{ alloc.donation_date|date:"d/m/Y H:i" }}</span>
+              <span class="label">רשימת תרומות:</span>
             </div>
-            {% if alloc.donation_note %}
-            <div class="detail-row">
-              <span class="label">הערה:</span>
-              <span class="value">{{ alloc.donation_note }}</span>
-            </div>
-            {% endif %}
+            <ul class="text-sm list-disc pr-6 text-gray-700">
+              {% for tx in child.transactions %}
+              <li>
+                {{ tx.amount_used }}/{{ tx.donation_amount }} נק' - {{ tx.date|date:"d/m/Y H:i" }}{% if tx.note %} - {{ tx.note }}{% endif %}
+              </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
         {% empty %}
-        <p class="no-allocations">אין תרומות לשימוש בהוצאה זו.</p>
+        <p class="no-allocations">אין הקצאות לילדים בהוצאה זו.</p>
         {% endfor %}
       </div>
     </section>
+
   </div>
 </div>
 {% endblock %}
@@ -209,4 +212,3 @@
   }
 </style>
 {% endblock %}
-

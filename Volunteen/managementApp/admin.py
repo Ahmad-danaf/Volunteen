@@ -2,8 +2,15 @@ from django.contrib import admin
 from .models import DonationCategory, DonationTransaction, DonationSpending, SpendingAllocation
 
 class DonationCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active')
+    list_display = ('name', 'is_active', 'last_selected_child')
     search_fields = ('name',)
+    
+    def last_selected_child_display(self, obj):
+        if obj.last_selected_child:
+            return obj.last_selected_child.user.username
+        return "-"
+    last_selected_child_display.short_description = "Last Picked Child"
+    
 
 class DonationTransactionAdmin(admin.ModelAdmin):
     list_display = ('child', 'category', 'amount', 'date_donated')

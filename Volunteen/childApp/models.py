@@ -37,6 +37,11 @@ class Child(models.Model):
     @property
     def level(self):
         return (calculate_total_points(self) // 100) + 1
+    
+    @property
+    def phone_number(self):
+        return self.user.personal_info.phone_number if hasattr(self.user, 'personal_info') else None
+
     def add_points(self, points):
         """
         Add points to the child and save changes.

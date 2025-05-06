@@ -212,59 +212,12 @@ function scrollToTasks() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    const hasPhoneNumber = {{ child.user.phone|yesno:"true,false" }};
-    if (!hasPhoneNumber) {
-        document.getElementById('phoneNumberModal').style.display = 'block';
-    }
 
     {% if new_tasks_count > 0 %}
         throwConfetti();
     {% endif %}
 });
 
-function submitPhoneNumber() {
-    const phoneNumber = document.getElementById('phoneNumberInput').value.trim();
-    const secPhoneNumber = document.getElementById('secPhoneNumberInput').value.trim();
-
-    if (!phoneNumber) {
-        alert("אנא הכנס מספר טלפון תקין.");
-        return;
-    }
-    if (phoneNumber.length !== 10 || !/^\d+$/.test(phoneNumber) || phoneNumber[0] !== '0' || phoneNumber[1] !== '5') {
-        alert("מספר הטלפון חייב להתחיל ב-05 ולהכיל 10 ספרות.");
-        return;
-    }
-    if (!secPhoneNumber) {
-        alert("אנא הזן מספר טלפון שני.");
-        return;
-    }
-    if (phoneNumber === secPhoneNumber) {
-        alert("מספר הטלפון השני חייב להיות שונה מהראשון.");
-        return;
-    }
-
-    fetch("{% url 'childApp:save_phone_number' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({ 
-            phone_number: phoneNumber, 
-            secondary_phone_number: secPhoneNumber 
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("מספר הטלפון נשמר בהצלחה!");
-            document.getElementById('phoneNumberModal').style.display = 'none';
-        } else {
-            alert("אירעה שגיאה בעת שמירת מספר הטלפון. אנא נסה שוב.");
-        }
-    })
-    .catch(error => console.error("Error:", error));
-}
 
 function showMedalPopup(name, description, points) {
     const popup = document.createElement('div');
@@ -304,10 +257,10 @@ function saveStreak() {
         .then(data => {
             if (data.success) {
                 document.getElementById("streak-count").innerText = data.streak;
-                document.getElementById("streak-success").style.display = "block";  // הצגת הודעה
-                document.getElementById("streak-button").disabled = true;  // ביטול הכפתור אחרי לחיצה
+                document.getElementById("streak-success").style.display = "block";  
+                document.getElementById("streak-button").disabled = true;  
             } else {
-                alert(data.message);  // אם הילד כבר לחץ, להציג הודעה מתאימה
+                alert(data.message);
             }
         })
         .catch(error => console.error("Error:", error));
@@ -322,14 +275,11 @@ function createConfettiParticle() {
     particle.className = 'confetti';
     document.body.appendChild(particle);
 
-    // X רנדומי
     const left = Math.random() * 100;
     particle.style.left = left + "%";
-    // זמן התחלה אקראי
     particle.style.animationDelay = Math.random() + 's';
     particle.style.backgroundColor = getRandomColor();
 
-    // מחיקה לאחר האנימציה
     particle.addEventListener('animationend', () => {
         particle.remove();
     });
@@ -421,7 +371,6 @@ body {
     transform: scale(0.95);
 }
 
-/* אנימציית האש */
 .fire-animation {
     position: absolute;
     top: 50px;

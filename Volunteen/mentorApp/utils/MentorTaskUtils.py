@@ -9,7 +9,8 @@ from django.db import transaction
 from django.db.models import Q, Sum, F, IntegerField, Prefetch
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
-
+from django_q.tasks import async_task
+from teenApp.utils.NotificationManager import NotificationManager
 class MentorTaskUtils(TaskManagerUtils):
 
     @staticmethod
@@ -234,6 +235,7 @@ class MentorTaskUtils(TaskManagerUtils):
         
         # Calculate total cost for the task assignment
         total_cost = task_data.get("points", 0) * assigned_children.count()
+        notification_data = []
 
         # Use an atomic transaction to ensure data consistency
         with transaction.atomic():
@@ -260,7 +262,36 @@ class MentorTaskUtils(TaskManagerUtils):
             # Deduct the total cost from the mentor's available TeenCoins
             mentor.available_teencoins -= total_cost
             mentor.save()
-        
+
+            if new_task.send_whatsapp_on_assign and mentor.user.username =='الاستاذ_ءادم':
+                for child in assigned_children:
+                    phone = getattr(child.user.personal_info, 'phone_number', None)
+                    if hasattr(child, 'subscription') and child.subscription and child.subscription.is_active:
+                        if phone:
+                            msg = (
+                                f"היי {child.user.username} 😎\n"
+                                f"קיבלת משימה חדשה! 📣\n\n"
+                                f"📝 משימה: *{new_task.title}*\n"
+                                f"📅 מועד סיום: {new_task.deadline.strftime('%d/%m/%Y')}\n"
+                                f"⭐ ניקוד: {new_task.points} Teencoins\n\n"
+                                f"📲 כנס לראות את כל הפרטים: https://www.volunteen.site/child/home/\n"
+                                f"בהצלחה! – צוות Volunteen🧡"
+                            )
+
+                            notification_data.append((msg, phone))
+
+        if mentor.user.username == 'الاستاذ_ءادم':
+            for msg, phone in notification_data:
+                async_task(
+                    'teenApp.utils.NotificationManager.NotificationManager.sent_whatsapp',
+                    msg,
+                    phone,
+                    q_options={
+                        'priority': 0,
+                        'label': f'task_notify_{new_task.id}_{phone}',
+                        'queue_limit': 1
+                    }
+                )
         return new_task
     
     

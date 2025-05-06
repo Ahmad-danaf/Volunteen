@@ -36,7 +36,8 @@
             <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
             <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
         </div>
-
+   
+        
         <!-- Right Column: Status Badge & Chevron -->
         <div class="flex items-center gap-2">
             <!-- Status Badge -->
@@ -97,5 +98,15 @@
         </div>
         
         {% endif %}
+        <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold
+            {% if task.proof_required %}bg-green-100 text-green-700
+            {% else %}bg-gray-100 text-gray-500{% endif %}">
+            {% if task.proof_required %}
+                ✔️ עם תמונה
+            {% else %}
+                ❌ בלי תמונה
+            {% endif %}
+        </span>
+
     </div>
 </div>

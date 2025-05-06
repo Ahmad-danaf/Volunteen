@@ -6,29 +6,31 @@ from teenApp.entities.task import Task
 from mentorApp.models import Mentor
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-import os
-# Define a new User admin
-class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_phone')
-    search_fields = ('username', 'first_name', 'last_name', 'email', 'phone')
+from django.contrib.auth import get_user_model
+from teenApp.models import PersonalInfo
+User = get_user_model()
 
-    def get_phone(self, instance):
-        return instance.phone
+class PersonalInfoInline(admin.StackedInline): 
+    model = PersonalInfo
+    can_delete = False
+    verbose_name_plural = 'Personal Info'
+    fk_name = 'user'
+class UserAdmin(BaseUserAdmin):
+    inlines = (PersonalInfoInline,)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_phone')
+    search_fields = ('username', 'first_name', 'last_name', 'email', 'personal_info__phone_number')
+
+    def get_phone(self, obj):
+        return obj.personal_info.phone_number if hasattr(obj, 'personal_info') else '-'
+
     get_phone.short_description = 'Phone'
+
+
 
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
-if os.environ.get("VOLUNTEEN_CI_NO_PHONE", "false") != "true":
-    class CustomUserAdmin(BaseUserAdmin):
-        fieldsets = BaseUserAdmin.fieldsets + (
-            (None, {'fields': ('phone',)}),
-        )
-        list_display = BaseUserAdmin.list_display + ('phone',)
-
-    admin.site.unregister(User)
-    admin.site.register(User, CustomUserAdmin)
 
 @admin.register(Child)
 class ChildAdmin(admin.ModelAdmin):

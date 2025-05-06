@@ -288,6 +288,13 @@
                               <p><strong>פרטים נוספים:</strong> {{ task.additional_details }}</p>
                             {% endif %}
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
+                            <span class="status-badge">
+                                {% if task.proof_required %}
+                                    ✔️ עם תמונה
+                                {% else %}
+                                    ❌ בלי תמונה
+                                {% endif %}
+                            </span>
                             <div class="button-group">
                                 <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין</a>
                             </div>
@@ -318,6 +325,13 @@
                         <div id="details-{{ task.id }}-checkin" class="task-details">
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
+                            <span class="status-badge">
+                                {% if task.proof_required %}
+                                    ✔️ עם תמונה
+                                {% else %}
+                                    ❌ בלי תמונה
+                                {% endif %}
+                            </span>
                             <div class="button-group">
                                 <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין מחדש</a>
                                 <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט</a>
@@ -350,6 +364,13 @@
                             <p><strong>תיאור:</strong> {{ task.description }}</p>
                             <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
                             <p><strong>סטטוס:</strong> {% if task.status == "pending" or task.status == "checked_out" %}ממתין לאישור{% else %}הושלם{% endif %}</p>
+                            <span class="status-badge">
+                            {% if task.proof_required %}
+                                ✔️ עם תמונה
+                            {% else %}
+                                ❌ בלי תמונה
+                            {% endif %}
+                            </span>
                             <div class="button-group">
                                 <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט מחדש</a>
                             </div>
