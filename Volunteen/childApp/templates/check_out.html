@@ -1,248 +1,489 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="he">
-  <head>
+<html lang="he" dir="rtl">
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>צ'ק-אאוט למשימה</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>צ'ק-אין למשימה!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 20px;
-        background-color: #f9f9f9;
-      }
-      h1 {
-        color: #ff5722;
-      }
-      .task-info {
-        margin: 20px 0;
-        padding: 15px;
-        background-color: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      .btn-camera,
-      .btn-check-out {
-        background-color: #ff5722;
-        color: #ffffff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-      .btn-camera:hover,
-      .btn-check-out:hover {
-        background-color: #e64a19;
-      }
-      #preview-container {
-        position: relative;
-        display: inline-block;
-        margin-top: 20px;
-      }
-      #preview-container img {
-        max-width: 300px;
-        max-height: 300px;
-        border-radius: 10px;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-   
-    <h1>צ'ק-אאוט למשימה</h1>
-
-    <div class="task-info">
-      <h3>{{ task.title }}</h3>
-      <p>{{ task.description }}</p>
-      <p>תאריך יעד: {{ task.deadline }}</p>
-    </div>
-    <button
-    class="btn-check-out hidden"
-    id="checkOutButton"
-    onclick="submitCheckOut()"
-  >
-    אישור צ'ק-אאוט
-  </button>
-    <!-- Only show the camera/file input if NOT using the default image -->
-    {% if not use_default_image %}
-      {% if special_permissions %}
-        <input
-          type="file"
-          id="cameraInput"
-          accept="image/*"
-          class="hidden"
-          onchange="previewImage(event)"
-        />
-        <button
-          class="btn-camera"
-          onclick="document.getElementById('cameraInput').click()"
-        >
-          בחר תמונה
-        </button>
-      {% else %}
-        <input
-          type="file"
-          id="cameraInput"
-          accept="image/*"
-          capture="camera"
-          class="hidden"
-          onchange="previewImage(event)"
-        />
-        <button
-          class="btn-camera"
-          onclick="document.getElementById('cameraInput').click()"
-        >
-          צלם תמונה
-        </button>
-      {% endif %}
-    {% endif %}
-
-    <div id="preview-container" class="hidden">
-      <img id="preview" src="" alt="תצוגה מקדימה" />
-    </div>
-
-   
-
-    <script>
-      /**
-       * @param {string} imageSrc - The image (base64 URL or static path)
-       * @param {string} text - The overlay text (child name, timestamp)
-       * @param {function} callback - Callback receiving the final dataURL
-       */
-      function generateImageWithText(imageSrc, text, callback) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-
-          // Draw the original image
-          ctx.drawImage(img, 0, 0);
-
-          // Draw a semi-transparent rectangle for the text overlay
-          const rectHeight = 200;
-          const rectY = canvas.height - rectHeight;
-          ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-          ctx.fillRect(0, rectY, canvas.width, rectHeight);
-
-          // Add text
-          ctx.fillStyle = "white";
-          ctx.font = "bold 75px Arial";
-          ctx.textBaseline = "middle";
-          ctx.textAlign = "center";
-
-          const textX = canvas.width / 2;
-          const textY = rectY + rectHeight / 2;
-          ctx.fillText(text, textX, textY);
-
-          const finalDataURL = canvas.toDataURL("image/jpeg", 0.9);
-          callback(finalDataURL);
-        };
-        img.src = imageSrc;
-      }
-
-      function previewImage(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const now = new Date();
-          const day = now.getDate();
-          const month = now.getMonth() + 1;
-          const hours = now.getHours();
-          const minutes = now.getMinutes();
-          const formattedDate = `${day}/${month} ${hours}:${minutes}`;
-
-          const childName = "{{ child.user.username }}";
-          const overlayText = `${childName}, ${formattedDate}`;
-
-          // Create an image with the overlay
-          generateImageWithText(e.target.result, overlayText, function (finalDataURL) {
-            const preview = document.getElementById("preview");
-            preview.src = finalDataURL;
-
-            document.getElementById("preview-container").classList.remove("hidden");
-            document.getElementById("checkOutButton").classList.remove("hidden");
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-
-      function submitCheckOut() {
-        const preview = document.getElementById("preview");
-        const dataURL = preview.src;
-
-        if (!dataURL || dataURL.trim() === "") {
-          alert("אנא בחר תמונה לפני ביצוע צ'ק-אאוט.");
-          return;
+        body {
+            font-family: 'Assistant', sans-serif;
+            overscroll-behavior-y: contain;
+            background-color: #3A220A;
+        }
+        .screen {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out; /* Faster transition */
+            will-change: opacity, transform;
+        }
+        .screen.hidden {
+            opacity: 0;
+            transform: translateY(15px) scale(0.97); 
+            pointer-events: none;
+            position: absolute; 
+            width: 100%;
+        }
+         .screen:not(.hidden) {
+            position: relative; 
+            opacity: 1;
+            transform: translateY(0px) scale(1);
         }
 
-        const checkOutButton = document.getElementById("checkOutButton");
-        checkOutButton.disabled = true; // Disable button
-        checkOutButton.innerText = "שולח..."; // Indicate progress
 
-        fetch(dataURL)
-          .then((res) => res.blob())
-          .then((blob) => {
-            const formData = new FormData();
-            const taskId = "{{ task.id }}";
+        @keyframes pulse-glow-orange {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px 12px rgba(251, 146, 60, 0.5); }
+            75% { transform: scale(1.02); box-shadow: 0 0 15px 8px rgba(251, 146, 60, 0.25); }
+        }
+        .animate-pulse-glow-orange {
+            animation: pulse-glow-orange 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
 
-            formData.append("image", blob, "checkout_image.jpg");
-            formData.append("task_id", taskId);
+        .glass-card-orange {
+            background: rgba(251, 146, 60, 0.08); /* orange-500 with low opacity */
+            backdrop-filter: blur(12px) saturate(130%);
+            -webkit-backdrop-filter: blur(12px) saturate(130%);
+            border: 1px solid rgba(253, 186, 116, 0.25); /* orange-300 for border */
+            border-radius: 1.5rem;
+        }
 
-            return fetch("{% url 'childApp:submit_check_out' %}", {
-              method: "POST",
-              headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-              },
-              body: formData,
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.7); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(217, 119, 6, 0.8); }
+
+        @keyframes sparkle-fall-orange-theme {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .sparkle-orange-theme {
+            position: absolute;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FBBF24"><path d="M12 .587l3.668 7.568L24 9.737l-6 5.845L19.416 24 12 19.737 4.584 24 6 15.582l-6-5.845 7.568-1.582L12 .587z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+            animation: sparkle-fall-orange-theme linear infinite;
+            pointer-events: none;
+        }
+         .success-title-gradient-orange {
+            background-image: linear-gradient(to right, #FDBA74, #FB923C, #EA580C);
+        }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(10, 5, 0, 0.7); /* Darker, warm overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: #4A2C0F; /* Dark Brown-Orange */
+            padding: 2rem; /* More padding */
+            border-radius: 1.25rem; /* 20px */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: calc(100% - 2rem); /* Responsive width */
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid rgba(251, 146, 60, 0.4); /* Orange border */
+            transform: scale(0.95);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-orange-900/30 to-slate-800 text-gray-100 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden relative">
+
+    <div id="backgroundSparkles" class="absolute inset-0 z-0 overflow-hidden"></div>
+
+    <div class="w-full max-w-sm mx-auto z-10 relative">
+
+        <div id="screenTaskIntro" class="screen text-center space-y-5 sm:space-y-6 p-5 sm:p-8 glass-card-orange shadow-2xl">
+        </div>
+
+        <div id="screenImagePreview" class="screen hidden text-center space-y-5 sm:space-y-6 p-5 sm:p-8 glass-card-orange shadow-2xl">
+            <h2 class="text-2xl sm:text-3xl font-bold text-amber-300">איזה יופי! 🔥</h2>
+            <div id="preview-container" class="relative w-full aspect-[4/3] bg-orange-900/30 rounded-2xl shadow-lg overflow-hidden border-2 border-orange-500/70 flex items-center justify-center">
+              <img id="preview" src="" alt="תצוגה מקדימה של התמונה" class="max-w-full max-h-full object-contain"/>
+          </div>
+            <div class="flex gap-3">
+                <button id="retakeButton" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-4 rounded-xl shadow-md text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-slate-400/50 transform active:scale-95 transition-colors duration-150">
+                    <span class="inline-block rtl:ml-2 ltr:mr-2">🔄</span> צלם שוב
+                </button>
+                <button id="submitCheckInButton" class="flex-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-xl text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-orange-300/70 transform active:scale-95 transition-all duration-150 ease-in-out animate-pulse-glow-orange">
+                    <span class="inline-block rtl:ml-2 ltr:mr-2">🚀</span>  לחצו כאן כדי לסיים את הצ'ק‑אאוט 
+                </button>
+            </div>
+        </div>
+
+        <div id="screenLoading" class="screen hidden text-center space-y-6 p-8">
+            <dotlottie-player src="{% static 'animations/rocket_loading.lottie' %}" fallbackPlayerSrc="{% static 'animations/rocket_loading.lottie' %}" background="transparent" speed="1.2" style="width: 180px; height: 180px; margin:auto;" loop autoplay></dotlottie-player>
+            <p class="text-xl font-semibold text-orange-300 animate-pulse">משגרים את התמונה... ☄️</p>
+        </div>
+
+        <div id="screenSuccess" class="screen hidden text-center space-y-6 p-8">
+            <dotlottie-player id="successAnimationPlayer" src="{% static 'animations/stars_confetti_success.lottie' %}" fallbackPlayerSrc="{% static 'animations/stars_confetti_success.lottie' %}" background="transparent" speed="1" style="width: 250px; height: 250px; margin:auto;" autoplay></dotlottie-player>
+            <h2 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent success-title-gradient-orange">מעולה! התמונה טסה למנטור כמו טיל 🚀</h2>
+            <button id="backToHomeButton" class="w-full max-w-xs mx-auto bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-bold py-3 sm:py-3.5 px-6 rounded-xl shadow-lg text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-orange-400/60 transform active:scale-95 transition-colors duration-150">
+                חזרה למשימות
+            </button>
+        </div>
+    </div>
+
+    <input type="file" id="cameraInput" accept="image/*" class="hidden" />
+
+    <div id="customLeaveModal" class="modal-overlay">
+        <div class="modal-content space-y-6">
+            <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="קמע חושב" class="w-24 h-24 mx-auto"/>
+            <h3 class="text-2xl font-bold text-orange-300">רגע לפני שיוצאים...</h3>
+            <p class="text-orange-100/90 text-md">התמונה שלך עוד לא נשלחה. האם אתה בטוח שברצונך לחזור?</p>
+            <div class="flex gap-3 justify-center pt-2">
+                <button id="modalConfirmLeaveButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">כן, צא</button>
+                <button id="modalCancelLeaveButton" class="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">לא, המשך</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let imageSubmitted = false;
+        let imageLoadedForPreview = false; // New flag
+        let currentVisibleScreen = 'screenTaskIntro'; // Default, might be skipped
+
+        const screens = {
+            intro: document.getElementById('screenTaskIntro'),
+            preview: document.getElementById('screenImagePreview'),
+            loading: document.getElementById('screenLoading'),
+            success: document.getElementById('screenSuccess')
+        };
+        const cameraInput = document.getElementById('cameraInput');
+        const previewImageEl = document.getElementById('preview');
+        // Start Capture Button and other intro screen elements will be created dynamically if needed
+        let startCaptureButton, useDefaultImageButton, goBackButton; // Declare, will be assigned if intro screen is built
+
+        const retakeButton = document.getElementById('retakeButton');
+        const submitCheckInButton = document.getElementById('submitCheckInButton');
+        const backToHomeButton = document.getElementById('backToHomeButton');
+        const successAnimationPlayer = document.getElementById('successAnimationPlayer');
+        const backgroundSparklesContainer = document.getElementById('backgroundSparkles');
+
+        // Modal elements
+        const customLeaveModal = document.getElementById('customLeaveModal');
+        const modalConfirmLeaveButton = document.getElementById('modalConfirmLeaveButton');
+        const modalCancelLeaveButton = document.getElementById('modalCancelLeaveButton');
+
+        const USE_DEFAULT_IMAGE_FLAG = {{ use_default_image|yesno:"true,false" }};
+        const HAS_SPECIAL_PERMISSIONS = {{ special_permissions|yesno:"true,false" }};
+        const USER_NAME = "{{ child.user.username|escapejs }}";
+        const TASK_ID_VALUE = "{{ task.id|escapejs }}";
+        const TASK_TITLE = "{{ task.title|escapejs }}"; // For intro screen
+        const TASK_DESCRIPTION = "{{ task.description|escapejs }}"; // For intro screen
+        const SUBMIT_URL_ENDPOINT = "{% url 'childApp:submit_check_out' %}";
+        const HOME_PAGE_URL = "{% url 'childApp:child_home' %}";
+        const TASK_CHECK_IN_OUT_URL = "{% url 'childApp:task_check_in_out' %}"; // For the "Go Back" button
+        const CSRF_TOKEN_VALUE = "{{ csrf_token }}";
+        const DEFAULT_IMAGE_PATH = USE_DEFAULT_IMAGE_FLAG ? "{% static 'images/defaults/default_check_out_pic.png' %}" : null; // Check if this should be always available or tied to USE_DEFAULT_IMAGE_FLAG
+
+        // --- Screen Management ---
+        function switchScreen(screenToShow) {
+            Object.values(screens).forEach(screen => {
+                if (screen) screen.classList.add('hidden');
             });
-          })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              alert("צ'ק-אאוט נשמר בהצלחה!");
-              window.location.href = "{% url 'childApp:child_home' %}";
-            } else {
-              throw new Error(data.error || "שגיאה בלתי צפויה.");
+            if (screens[screenToShow]) {
+                screens[screenToShow].classList.remove('hidden');
+                currentVisibleScreen = screenToShow; // Store as 'intro', 'preview', etc.
             }
-          })
-          .catch((error) => {
-            alert(error.message);
-          })
-          .finally(() => {
-            checkOutButton.disabled = false; // Re-enable button
-            checkOutButton.innerText = "אישור צ'ק-אאוט"; // Restore original text
-          });
-      }
+            if (screenToShow === 'success' && successAnimationPlayer) {
+                successAnimationPlayer.stop();
+                successAnimationPlayer.play();
+            }
+        }
 
-     // If the use_default_image flag is true, automatically generate the default image with overlay.
-     {% if use_default_image %}
-     document.addEventListener('DOMContentLoaded', function() {
-         const defaultImageSrc = "{% static 'images/defaults/default_check_out_pic.png' %}";
-         const now = new Date();
-         const day = now.getDate();
-         const month = now.getMonth() + 1;
-         const hours = now.getHours();
-         const minutes = now.getMinutes();
-         const formattedDate = `${day}/${month} ${hours}:${minutes}`;
-         const childName = "{{ child.user.username }}";
-         const overlayText = `${childName}, ${formattedDate}`;
+        function generateImageWithText(imageSrc, text, callback) {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = function () {
+                const canvas = document.createElement("canvas");
+                const aspectRatio = img.width / img.height;
+                // Define a common output size or max dimension for consistency
+                const outputWidth = Math.min(img.width, 800); // Max width
+                canvas.width = outputWidth;
+                canvas.height = outputWidth / aspectRatio;
 
-         generateImageWithText(defaultImageSrc, overlayText, function(finalDataURL) {
-             const preview = document.getElementById('preview');
-             preview.src = finalDataURL;
-             document.getElementById('preview-container').classList.remove('hidden');
-             document.getElementById('checkOutButton').classList.remove('hidden');
-         });
-     });
-     {% endif %}
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                const padding = canvas.width * 0.035;
+                const textRectHeight = canvas.height * 0.15; // Ensure this isn't too large if images are very tall
+                let rectY = canvas.height - textRectHeight - padding;
+                if (rectY < 0) rectY = padding; // Prevent overlay going off-canvas for very tall images
+
+                const cornerRadius = Math.min(22, canvas.width * 0.03);
+
+                const gradient = ctx.createLinearGradient(0, rectY, 0, rectY + textRectHeight);
+                gradient.addColorStop(0, "rgba(202, 85, 20, 0.8)");
+                gradient.addColorStop(0.5, "rgba(234, 88, 12, 0.85)");
+                gradient.addColorStop(1, "rgba(251, 146, 60, 0.9)");
+                ctx.fillStyle = gradient;
+
+                ctx.beginPath();
+                ctx.moveTo(padding + cornerRadius, rectY);
+                ctx.lineTo(canvas.width - padding - cornerRadius, rectY);
+                ctx.arcTo(canvas.width - padding, rectY, canvas.width - padding, rectY + cornerRadius, cornerRadius);
+                ctx.lineTo(canvas.width - padding, rectY + textRectHeight - cornerRadius);
+                ctx.arcTo(canvas.width - padding, rectY + textRectHeight, canvas.width - padding - cornerRadius, rectY + textRectHeight, cornerRadius);
+                ctx.lineTo(padding + cornerRadius, rectY + textRectHeight);
+                ctx.arcTo(padding, rectY + textRectHeight, padding, rectY + textRectHeight - cornerRadius, cornerRadius);
+                ctx.lineTo(padding, rectY + cornerRadius);
+                ctx.arcTo(padding, rectY, padding + cornerRadius, rectY, cornerRadius);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = "white";
+                let fontSize = Math.max(16, Math.min(canvas.width / 25, textRectHeight * 0.4)); // Font size also relative to rect height
+                ctx.font = `800 ${fontSize}px 'Assistant', sans-serif`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 2;
+                ctx.fillText(text, canvas.width / 2, rectY + textRectHeight / 2, canvas.width - (padding * 2.5)); // Max width for text
+
+                callback(canvas.toDataURL("image/jpeg", 0.9)); // Higher quality for better text
+            };
+            img.onerror = () => {
+                console.error("Error loading image for overlay:", imageSrc);
+                callback(null);
+            };
+            img.src = imageSrc;
+        }
+
+        function processImageFile(file) {
+            if (!file) return;
+            switchScreen('loading');
+            imageLoadedForPreview = false;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const now = new Date();
+                const overlayText = `${USER_NAME}, ${now.toLocaleDateString('he-IL')} ${now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+                generateImageWithText(e.target.result, overlayText, (finalDataURL) => {
+                    if (finalDataURL) {
+                        previewImageEl.src = finalDataURL;
+                        imageLoadedForPreview = true;
+                        switchScreen('preview');
+                    } else {
+                        alert("אופס! הייתה בעיה בעיבוד התמונה. נסה שוב.");
+                        buildIntroScreen(); // Rebuild intro if it was bypassed
+                        switchScreen('intro');
+                    }
+                });
+            };
+            reader.readAsDataURL(file);
+            cameraInput.value = null;
+        }
+
+        function triggerDefaultImageProcess() { // Renamed from useDefaultImage for clarity
+            if (!DEFAULT_IMAGE_PATH) { // This path should be for the *actual* default image, not tied to USE_DEFAULT_IMAGE_FLAG for its existence
+                alert("קובץ תמונת ברירת המחדל אינו מוגדר כראוי.");
+                buildIntroScreen(); // Show manual options if default is misconfigured
+                switchScreen('intro');
+                return;
+            }
+            switchScreen('loading');
+            imageLoadedForPreview = false; // Reset
+            const now = new Date();
+            const overlayText = `${USER_NAME}, ${now.toLocaleDateString('he-IL')} ${now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+            generateImageWithText(DEFAULT_IMAGE_PATH, overlayText, (finalDataURL) => {
+                if (finalDataURL) {
+                    previewImageEl.src = finalDataURL;
+                    imageLoadedForPreview = true;
+                    switchScreen('preview');
+                } else {
+                    alert("אופס! הייתה בעיה בטעינת תמונת ברירת המחדל.");
+                    buildIntroScreen(); // Rebuild intro if it was bypassed
+                    switchScreen('intro');
+                }
+            });
+        }
+
+        function submitCheckIn() {
+            const dataURL = previewImageEl.src;
+            if (!dataURL || dataURL.startsWith('file://') || dataURL === window.location.href || !imageLoadedForPreview) {
+                alert("אנא בחר/י או צלם/י תמונה לפני השליחה.");
+                return;
+            }
+            switchScreen('loading');
+            submitCheckInButton.disabled = true;
+            submitCheckInButton.classList.add('opacity-60', 'cursor-not-allowed');
+
+            fetch(dataURL)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append("image", blob, "checkout_image.jpg");
+                    formData.append("task_id", TASK_ID_VALUE);
+                    return fetch(SUBMIT_URL_ENDPOINT, {
+                        method: "POST",
+                        headers: { "X-CSRFToken": CSRF_TOKEN_VALUE },
+                        body: formData,
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => { throw new Error(errData.error || `שגיאת שרת: ${response.status}`); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        imageSubmitted = true; 
+                        switchScreen('success');
+                    } else {
+                        throw new Error(data.error || "שגיאה לא צפויה בעת השמירה.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Submit Error:", error);
+                    alert(`אוי לא! ${error.message}`);
+                    switchScreen('preview'); // Go back to preview on error
+                })
+                .finally(() => {
+                    submitCheckInButton.disabled = false;
+                    submitCheckInButton.classList.remove('opacity-60', 'cursor-not-allowed');
+                });
+        }
+
+        // --- Build Intro Screen Dynamically ---
+        function buildIntroScreen() {
+            screens.intro.innerHTML = `
+                <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="קמע כתום וחברותי" class="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-3 rounded-full border-4 border-orange-500 shadow-xl transform transition-transform duration-300 hover:scale-110"/>
+                <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 drop-shadow-md">צ'ק-אין למשימה!</h1>
+                <div class="bg-orange-400/10 p-4 rounded-xl shadow-inner">
+                    <h2 class="text-2xl sm:text-3xl font-semibold text-orange-300">${TASK_TITLE}</h2>
+                    ${TASK_DESCRIPTION ? `<p class="text-orange-200/80 mt-2 text-xs sm:text-sm">${TASK_DESCRIPTION}</p>` : ''}
+                </div>
+                <p class="text-md sm:text-lg text-amber-400">משימת הצ'ק־אין מוכנה לשיגור... 📸 לחץ כדי להתחיל!</p>
+                <button id="startCaptureButtonDynamic" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl shadow-xl text-lg sm:text-xl focus:outline-none focus:ring-4 focus:ring-orange-300/70 transform active:scale-95 transition-all duration-150 ease-in-out animate-pulse-glow-orange">
+                    ${HAS_SPECIAL_PERMISSIONS ? '<span class="inline-block rtl:ml-2 ltr:mr-2">🖼️</span> בחר/י תמונה' : '<span class="inline-block rtl:ml-2 ltr:mr-2">📸</span> צלם/י תמונה'}
+                </button>
+                ${DEFAULT_IMAGE_PATH ? ` <button id="useDefaultImageButtonDynamic" class="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-lg text-sm sm:text-base focus:outline-none focus:ring-4 focus:ring-amber-400/60 transform active:scale-95 transition-all duration-150 ease-in-out">
+                    השתמש בתמונת ברירת מחדל
+                </button>` : ''}
+                <a href="#" id="goBackButtonDynamic" class="block w-full mt-4 text-orange-300 hover:text-orange-100 border-2 border-orange-500/60 hover:border-orange-400 font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-300/50 transform active:scale-95 transition-all duration-150 ease-in-out">
+                    <span class="inline-block rtl:ml-1 ltr:mr-1">⬅️</span> חזרה לבחירת משימות
+                </a>
+            `;
+            // Re-assign and re-attach event listeners for dynamically created buttons
+            startCaptureButton = document.getElementById('startCaptureButtonDynamic');
+            useDefaultImageButton = document.getElementById('useDefaultImageButtonDynamic'); // Might be null
+            goBackButton = document.getElementById('goBackButtonDynamic');
+
+            if (startCaptureButton) {
+                startCaptureButton.addEventListener('click', () => cameraInput.click());
+            }
+            if (useDefaultImageButton) { // Check if it was rendered
+                useDefaultImageButton.addEventListener('click', triggerDefaultImageProcess);
+            }
+            if (goBackButton) {
+                goBackButton.addEventListener('click', handleGoBackClick);
+            }
+        }
+
+
+        // --- Event Listeners Setup ---
+        cameraInput.addEventListener('change', (event) => processImageFile(event.target.files[0]));
+        retakeButton.addEventListener('click', () => {
+             previewImageEl.src = "";
+             imageLoadedForPreview = false;
+             cameraInput.value = null;
+             if (USE_DEFAULT_IMAGE_FLAG) { // If default was forced, retake should probably offer capture
+                buildIntroScreen(); // Build the intro to allow capture
+             }
+             switchScreen('intro');
+        });
+        submitCheckInButton.addEventListener('click', submitCheckIn);
+        backToHomeButton.addEventListener('click', () => window.location.href = HOME_PAGE_URL);
+
+        // Modal Logic
+        function showCustomLeaveModal() {
+            customLeaveModal.classList.add('active');
+        }
+        function hideCustomLeaveModal() {
+            customLeaveModal.classList.remove('active');
+        }
+        modalConfirmLeaveButton.addEventListener('click', () => {
+            imageSubmitted = true; // To bypass beforeunload if they confirm leaving via modal
+            window.location.href = TASK_CHECK_IN_OUT_URL;
+        });
+        modalCancelLeaveButton.addEventListener('click', hideCustomLeaveModal);
+
+        function handleGoBackClick(event) {
+            event.preventDefault(); // Prevent default link behavior
+            if (imageLoadedForPreview && !imageSubmitted) {
+                showCustomLeaveModal();
+            } else {
+                window.location.href = TASK_CHECK_IN_OUT_URL; // Navigate directly if no unsaved changes
+            }
+        }
+
+
+        // --- Browser Unload Warning ---
+        window.addEventListener('beforeunload', (e) => {
+            if (imageLoadedForPreview && !imageSubmitted) {
+                const confirmationMessage = ' 🤔 רגע! עוד לא שלחת את התמונה. בטוח שאת/ה רוצה לצאת?';
+                e.returnValue = confirmationMessage; // Standard for most browsers.
+                return confirmationMessage;        // For some older browsers.
+            }
+        });
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!HAS_SPECIAL_PERMISSIONS) {
+                cameraInput.setAttribute('capture', 'camera');
+            }
+
+            if (USE_DEFAULT_IMAGE_FLAG) { // If Django context says to use default image (e.g., task configuration)
+                triggerDefaultImageProcess(); // Directly process and show default image
+                // Intro screen is skipped, so `goBackButton` on intro won't be an issue unless retake rebuilds it
+            } else {
+                buildIntroScreen(); // Build the intro screen with manual capture options
+                switchScreen('intro');
+            }
+
+            function createBackgroundSparkleOrangeTheme() {
+                if(Math.random() > 0.6) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle-orange-theme';
+                    const size = Math.random() * 12 + 6;
+                    sparkle.style.width = `${size}px`;
+                    sparkle.style.height = `${size}px`;
+                    sparkle.style.left = `${Math.random() * 100}%`;
+                    sparkle.style.animationDuration = `${Math.random() * 5 + 4}s`;
+                    sparkle.style.animationDelay = `${Math.random() * 3}s`;
+                    backgroundSparklesContainer.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 9000);
+                }
+            }
+            setInterval(createBackgroundSparkleOrangeTheme, 200);
+        });
+
     </script>
-  </body>
+</body>
 </html>

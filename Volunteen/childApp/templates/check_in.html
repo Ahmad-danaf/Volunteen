@@ -1,228 +1,329 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>צ'ק-אין למשימה</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            color: #0d96d5;
-        }
-        .task-info {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .btn-camera, .btn-check-in {
-            background-color: #15b2dd;
-            color: #ffffff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .btn-camera:hover, .btn-check-in:hover {
-            background-color: #298fd3;
-        }
-        #preview-container {
-            position: relative;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        #preview-container img {
-            max-width: 300px;
-            max-height: 300px;
-            border-radius: 10px;
-        }
-        .hidden {
-            display: none;
-        }
-        .btn-back {
-            background-color: #f98519;
-            color: #ffffff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .btn-back:hover {
-            background-color: #e88718;
-        }
-    </style>
-</head>
-<body>
-    <h1>צ'ק-אין למשימה</h1>
-    <div class="task-info">
-        <h3>{{ task.title }}</h3>
-        <p>{{ task.description }}</p>
-        <p>תאריך יעד: {{ task.deadline }}</p>
-    </div>
-    <button class="btn-back" onclick="window.location.href='{% url "childApp:task_check_in_out" %}'">חזרה למשימות</button>
-    <button class="btn-check-in hidden" id="checkInButton" onclick="submitCheckIn()">אישור צ'ק-אין</button>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1.0,maximum-scale=1,user-scalable=no">
+  <title>צ'ק‑אין למשימה</title>
 
+  <!-- Tailwind CSS CDN (JIT) -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+
+  <!-- Extra utilities / keyframes -->
+  <style>
+    /* Glow for camera button */
+    @keyframes pulseGlow{
+      0%,100%{box-shadow:0 0 0 0 rgba(13,150,213,.6)}
+      50%{box-shadow:0 0 20px 8px rgba(13,150,213,.3)}
+    }
+    .animate-glow{animation:pulseGlow 2.5s ease-in-out infinite}
+
+    /* Spinner */
+    .spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Fade‑in */
+    .fade-in{animation:fadeIn .5s ease-out}@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}}
+    @keyframes pulseRing {
+        0% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+        }
+        70% {
+          box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+      }
+      .animate-glow-ring {
+        animation: pulseRing 2s infinite;
+      }
+      
+      @keyframes bounceDelayed {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+      .animate-bounce-delay {
+        animation: bounceDelayed 4s infinite;
+      }
+      
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-sky-50 to-cyan-100 min-h-screen flex flex-col items-center font-sans text-slate-800 select-none">
+
+  <!-- ───────────────── Action Bar (sticky top) ───────────────── -->
+  <header id="actionBar"
+          class="w-full max-w-md pt-4 flex flex-col gap-3 sticky top-0 bg-gradient-to-b
+                 from-sky-50/80 to-transparent backdrop-blur-md z-20">
+
+    <!-- Submit button (hidden until preview) -->
+    <button id="checkInButton"
+        type="button"
+        onclick="submitCheckIn()"
+        class="hidden w-full py-5 px-4 text-xl font-black rounded-full
+               text-white bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400
+               shadow-2xl hover:shadow-green-500/60 active:scale-95
+               flex items-center justify-center gap-3 animate-glow-ring animate-bounce-delay
+               border-4 border-white border-opacity-20 transition-all duration-300">
+
+  🚀 לחצו כאן כדי לסיים את הצ'ק‑אין
+
+  <!-- Spinner inside button -->
+  <svg id="spinner" class="spin w-6 h-6 hidden" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" opacity=".25"/>
+    <path d="M22 12a10 10 0 0 1-10 10"
+          stroke="white" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+</button>
+
+
+    <!-- Camera / Choose -->
     {% if not use_default_image %}
-        {% if special_permissions %}
-            <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="previewImage(event)">
-            <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">בחר תמונה</button>
-        {% else %}
-            <input type="file" id="cameraInput" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
-            <button class="btn-camera" onclick="document.getElementById('cameraInput').click()">צלם תמונה</button>
-        {% endif %}
+      {% if special_permissions %}
+        <input type="file" id="cameraInput" accept="image/*"
+               class="hidden" onchange="previewImage(event)">
+        <button type="button"
+                class="w-full py-4 text-lg font-bold rounded-2xl
+                       bg-cyan-600 hover:bg-cyan-700 active:scale-95
+                       animate-glow shadow-xl"
+                onclick="document.getElementById('cameraInput').click()">
+          לבחור תמונה
+        </button>
+      {% else %}
+        <input type="file" id="cameraInput" accept="image/*" capture="camera"
+               class="hidden" onchange="previewImage(event)">
+        <button type="button"
+                class="w-full py-4 text-lg font-bold rounded-2xl
+                       bg-cyan-600 hover:bg-cyan-700 active:scale-95
+                       animate-glow shadow-xl"
+                onclick="document.getElementById('cameraInput').click()">
+          📷 צלם תמונה
+        </button>
+      {% endif %}
     {% endif %}
 
-    <div id="preview-container" class="hidden">
-        <img id="preview" src="" alt="תצוגה מקדימה">
+    <!-- Back button (opens modal) -->
+    <button id="backBtn"
+            class="w-full py-4 text-lg font-bold rounded-2xl
+                   bg-amber-400 hover:bg-amber-500 active:scale-95 shadow-xl">
+      חזרה למשימות
+    </button>
+  </header>
+
+  <!-- ───────────────── Task Card ───────────────── -->
+  <main class="w-full max-w-md mt-4">
+    <section class="bg-white/70 backdrop-blur-md rounded-3xl p-6 shadow-xl fade-in">
+      <h2 class="text-xl font-bold mb-1 text-emerald-700">{{ task.title }}</h2>
+      <p class="text-sm mb-2 leading-snug">{{ task.description }}</p>
+      <p class="text-sm font-medium text-pink-600">
+        <span class="material-symbols-outlined align-middle text-base"></span>
+        תאריך יעד: {{ task.deadline|date:"d/m/Y" }}
+      </p>
+    </section>
+
+    <!-- Preview area -->
+    <section id="preview-container" class="hidden mt-6 relative">
+      <img id="preview" src="" alt="תצוגה מקדימה"
+           class="w-full aspect-square object-cover rounded-3xl shadow-lg fade-in"/>
+    </section>
+  </main>
+
+  <!-- Success overlay -->
+  <div id="successOverlay"
+       class="fixed inset-0 bg-white/80 backdrop-blur-sm hidden
+              flex-col items-center justify-center text-emerald-600 text-center z-50">
+    <svg class="w-24 h-24 mx-auto mb-4" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10"
+              stroke="#10B981" stroke-width="2" opacity=".2"/>
+      <path d="M7 13l3 3 7-7"
+            stroke="#10B981" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p class="text-2xl font-bold mb-2">כל הכבוד!</p>
+    <p class="text-sm">הצ'ק‑אין נשלח בהצלחה 🎉</p>
+  </div>
+
+  <!-- Leave‑modal -->
+  <div id="leaveModal"
+       class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden
+              items-center justify-center z-50">
+    <div class="bg-white rounded-3xl w-80 p-6 text-center space-y-4 shadow-2xl fade-in">
+      <h3 class="text-xl font-bold text-rose-600">לא שלחת צ'ק‑אין!</h3>
+      <p class="text-sm">האם לצאת בלי לשלוח את התמונה?</p>
+      <div class="flex gap-3">
+        <button id="stayBtn"
+                class="flex-1 py-3 rounded-xl bg-emerald-600 text-white
+                       font-semibold hover:bg-emerald-700">
+          להישאר
+        </button>
+        <button id="leaveConfirmBtn"
+                class="flex-1 py-3 rounded-xl bg-rose-500 text-white
+                       font-semibold hover:bg-rose-600">
+          לעזוב
+        </button>
+      </div>
     </div>
+  </div>
 
+  <!-- Confetti lib -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" defer></script>
 
-    <script>
-        /**
-         * @param {string} imageSrc  
-         * @param {string} text     
-         * @param {function} callback 
-         */
-        function generateImageWithText(imageSrc, text, callback) {
-            const img = new Image();
-            img.onload = function () {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
+  <script>
+    /* State flags */
+    let previewLoaded = false,
+        isSubmitted    = false;
 
-                ctx.drawImage(img, 0, 0);
+    /* ------------- helper: generateImageWithText ------------- */
+    /**
+     * @param {string} imageSrc
+     * @param {string} text
+     * @param {function} callback
+     */
+    function generateImageWithText(imageSrc, text, callback) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width  = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
 
-                const rectHeight = 200;
-                const rectY = canvas.height - rectHeight;
+        ctx.drawImage(img, 0, 0);
 
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(0, rectY, canvas.width, rectHeight);
+        const rectH = 200, rectY = canvas.height - rectH;
+        ctx.fillStyle = 'rgba(0,0,0,.4)';
+        ctx.fillRect(0, rectY, canvas.width, rectH);
 
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 75px Arial';
-                ctx.textBaseline = 'middle';
-                ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 75px Arial';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, canvas.width / 2, rectY + rectH / 2);
 
-                const textX = canvas.width / 2;
-                const textY = rectY + (rectHeight / 2);
+        callback(canvas.toDataURL('image/jpeg', 0.9));
+      };
+      img.src = imageSrc;
+    }
 
-                ctx.fillText(text, textX, textY);
+    /* ------------- previewImage ------------- */
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-                const finalDataURL = canvas.toDataURL('image/jpeg', 0.9);
-                callback(finalDataURL);
-            };
-            img.src = imageSrc;
-        }
-
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const now = new Date();
-                const day = now.getDate();
-                const month = now.getMonth() + 1; 
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const formattedDate = `${day}/${month} ${hours}:${minutes}`;
-
-                const childName = "{{ child.user.username }}";
-                const overlayText = `${childName}, ${formattedDate}`;
-
-                generateImageWithText(e.target.result, overlayText, function(finalDataURL) {
-                    const preview = document.getElementById('preview');
-                    preview.src = finalDataURL;
-
-                    document.getElementById('preview-container').classList.remove('hidden');
-                    document.getElementById('checkInButton').classList.remove('hidden');
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        
-        function submitCheckIn() {
-            const preview = document.getElementById('preview');
-            const dataURL = preview.src; 
-
-            if (!dataURL || dataURL.trim() === "") {
-                alert("אנא בחר תמונה לפני ביצוע צ'ק-אין.");
-                return;
-            }
-
-            const checkInButton = document.getElementById('checkInButton');
-            checkInButton.disabled = true;  // Disable button
-            checkInButton.innerText = "שולח..."; // Indicate progress
-
-            fetch(dataURL)
-                .then(res => res.blob())
-                .then(blob => {
-                    const formData = new FormData();
-                    const taskId = "{{ task.id }}";
-
-                    formData.append('image', blob, 'checkin_image.jpg');
-                    formData.append('task_id', taskId);
-
-                    return fetch("{% url 'childApp:submit_check_in' %}", {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: formData
-                    });
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("צ'ק-אין נשמר בהצלחה!");
-                        window.location.href = "{% url 'childApp:child_home' %}";
-                    } else {
-                        throw new Error(data.error || "שגיאה בלתי צפויה.");
-                    }
-                })
-                .catch(error => {
-                    alert(error.message);
-                })
-                .finally(() => {
-                    checkInButton.disabled = false;  // Re-enable button
-                    checkInButton.innerText = "אישור צ'ק-אין";  // Restore original text
-                });
-        }
-
-        // If the use_default_image flag is true, automatically generate the default image with overlay.
-        {% if use_default_image %}
-        document.addEventListener('DOMContentLoaded', function() {
-            const defaultImageSrc = "{% static 'images/defaults/default_check_in_pic.png' %}";
-            const now = new Date();
-            const day = now.getDate();
-            const month = now.getMonth() + 1;
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const formattedDate = `${day}/${month} ${hours}:${minutes}`;
-            const childName = "{{ child.user.username }}";
-            const overlayText = `${childName}, ${formattedDate}`;
-
-            generateImageWithText(defaultImageSrc, overlayText, function(finalDataURL) {
-                const preview = document.getElementById('preview');
-                preview.src = finalDataURL;
-                document.getElementById('preview-container').classList.remove('hidden');
-                document.getElementById('checkInButton').classList.remove('hidden');
-            });
+      const reader = new FileReader();
+      reader.onload = e => {
+        const now = new Date();
+        const overlayText =
+          `{{ child.user.username }}, ${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes()}`;
+        generateImageWithText(e.target.result, overlayText, dataURL => {
+          document.getElementById('preview').src = dataURL;
+          document.getElementById('preview-container').classList.remove('hidden');
+          document.getElementById('checkInButton').classList.remove('hidden');
+          previewLoaded = true;
         });
-        {% endif %}
-    </script>
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ------------- submitCheckIn ------------- */
+    function submitCheckIn() {
+      const dataURL = document.getElementById('preview').src;
+      if (!dataURL.trim()) {
+        alert("אנא בחר תמונה לפני ביצוע צ'ק‑אין.");
+        return;
+      }
+
+      const btn   = document.getElementById('checkInButton'),
+            spin  = document.getElementById('spinner');
+      btn.disabled = true;
+      spin.classList.remove('hidden');
+      btn.childNodes[0].textContent = " שולח...";
+
+      fetch(dataURL)
+        .then(res => res.blob())
+        .then(blob => {
+          const fd = new FormData();
+          fd.append('image', blob, 'checkin.jpg');
+          fd.append('task_id', "{{ task.id }}");
+          return fetch("{% url 'childApp:submit_check_in' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: fd
+          });
+        })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) {
+            isSubmitted = true;
+            /* Confetti & overlay */
+            if (window.confetti) {
+              confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            }
+            document.getElementById('successOverlay').classList.remove('hidden');
+            setTimeout(() => window.location.href = "{% url 'childApp:child_home' %}", 1800);
+          } else {
+            throw new Error(d.error || "שגיאה בלתי צפויה.");
+          }
+        })
+        .catch(err => alert(err.message))
+        .finally(() => {
+          spin.classList.add('hidden');
+          btn.disabled = false;
+          btn.childNodes[0].textContent = " 🚀 לחצו כאן כדי לסיים את הצ'ק‑אין";
+        });
+    }
+
+    /* ------------- default image auto‑preview ------------- */
+    {% if use_default_image %}
+    document.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      const overlayText =
+        `{{ child.user.username }}, ${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes()}`;
+      generateImageWithText(
+        "{% static 'images/defaults/default_check_in_pic.png' %}",
+        overlayText,
+        dataURL => {
+          document.getElementById('preview').src = dataURL;
+          document.getElementById('preview-container').classList.remove('hidden');
+          document.getElementById('checkInButton').classList.remove('hidden');
+          previewLoaded = true;
+        });
+    });
+    {% endif %}
+
+    /* ───────────── Leave‑modal logic ───────────── */
+    const backBtn         = document.getElementById('backBtn');
+    const leaveModal      = document.getElementById('leaveModal');
+    const stayBtn         = document.getElementById('stayBtn');
+    const leaveConfirmBtn = document.getElementById('leaveConfirmBtn');
+
+    backBtn.addEventListener('click', () => {
+      if (previewLoaded && !isSubmitted) {
+        leaveModal.classList.remove('hidden');
+      } else {
+        window.location.href = '{% url "childApp:task_check_in_out" %}';
+      }
+    });
+
+    stayBtn.addEventListener('click', () =>
+      leaveModal.classList.add('hidden'));
+
+    leaveConfirmBtn.addEventListener('click', () => {
+      isSubmitted = true; /* avoid beforeunload */
+      window.location.href = '{% url "childApp:task_check_in_out" %}';
+    });
+
+    /* Fallback for refresh/close tab */
+    window.addEventListener('beforeunload', e => {
+      if (previewLoaded && !isSubmitted) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+  </script>
 </body>
 </html>
