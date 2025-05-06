@@ -219,102 +219,57 @@ class MentorTaskUtils(TaskManagerUtils):
 
 
     @staticmethod
+    def create_task_with_assignments_async(mentor_id, children_ids, task_data):
+        from mentorApp.models import Mentor
+        mentor = Mentor.objects.get(id=mentor_id)
+        return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)  
+
+    @staticmethod
     def create_task_with_assignments(mentor, children_ids, task_data):
-        """
-        Create a new task using provided task_data, assign the mentor and given children to it,
-        and deduct the corresponding cost from the mentor's available TeenCoins.
-        
-        Args:
-            mentor (Mentor): The mentor creating the task.
-            children_ids (list of int): List of IDs for children to assign the task to.
-            task_data (dict): Dictionary of task fields. The 'description' key defaults to an empty string
-                              if not provided.
-        
-        Returns:
-            Task: The newly created Task object.
-        
-        Raises:
-            ValueError: If the mentor does not have enough TeenCoins to cover the total cost.
-        """
-        # Set default description if not provided
         task_data.setdefault("description", "")
-        # Remove many-to-many field if present to avoid direct assignment during creation
         task_data.pop("assigned_children", None)
 
-        # Retrieve children objects based on provided IDs
         assigned_children = Child.objects.filter(id__in=children_ids)
-        
-        # Calculate total cost for the task assignment
         total_cost = task_data.get("points", 0) * assigned_children.count()
-        notification_data = []
 
-        # Use an atomic transaction to ensure data consistency
         with transaction.atomic():
-            # Refresh mentor to ensure latest available_teencoins value
-            mentor.refresh_from_db()
+            mentor = Mentor.objects.select_for_update().get(id=mentor.id)
+
             if mentor.available_teencoins < total_cost:
                 raise ValueError("Not enough TeenCoins to assign the task.")
-            
-            # Create the task
+
             new_task = Task.objects.create(**task_data)
-            
-            # Add mentor to the task's assigned_mentors field
             new_task.assigned_mentors.add(mentor)
-            
-            # Assign children to the task
             new_task.assigned_children.set(assigned_children)
-            
-            # Create a TaskAssignment for each child with the mentor as the assigner
-            TaskAssignment.objects.bulk_create([
-                TaskAssignment(task=new_task, child=child, assigned_by=mentor.user)
-                for child in assigned_children
-            ])
-            
-            # Deduct the total cost from the mentor's available TeenCoins
+
+            TaskAssignment.objects.bulk_create(
+                TaskAssignment(task=new_task, child=ch, assigned_by=mentor.user)
+                for ch in assigned_children
+            )
+
             mentor.available_teencoins -= total_cost
             mentor.save()
-            print(f"assigned_children: {assigned_children}")
-            if new_task.send_whatsapp_on_assign:
-                sent_phones = set()
-                for child in assigned_children:
-                    phone = getattr(child.user.personal_info, 'phone_number', None)
-                    if hasattr(child, 'subscription') and child.subscription and child.subscription.is_active:
-                        if phone and phone not in sent_phones:
-                            sent_phones.add(phone)
-                            msg = (
-                                f"היי {child.user.username} 😎\n"
-                                f"קיבלת משימה חדשה! 📣\n\n"
-                                f"📝 משימה: *{new_task.title}*\n"
-                                f"📅 מועד סיום: {new_task.deadline.strftime('%d/%m/%Y')}\n"
-                                f"⭐ ניקוד: {new_task.points} Teencoins\n\n"
-                                f"📲 כנס לראות את כל הפרטים: https://www.volunteen.site/child/home/\n"
-                                f"בהצלחה! – צוות Volunteen🧡"
-                            )
 
-                            notification_data.append((msg, phone,child.id))
-        print(f"Notification data: {notification_data}")
-        for (msg, phone, child_id) in notification_data:
-            label = MentorTaskUtils.generate_notify_label(
-                    mentor_id=mentor.id,
-                    child_id=child_id,
-                    phone=phone,
-                    title=new_task.title,
-                    deadline=new_task.deadline
-                )
-            print("====== Sending WhatsApp message ===")
-            print(f"phone: {phone}")
-            print(f"msg: {msg}")
-            print(f"[DEBUG] Dispatching WhatsApp with label: {label}")
-            async_task(
-                'teenApp.utils.NotificationManager.NotificationManager.sent_whatsapp',
-                msg,
-                phone,
-                q_options={
-                    'priority': 0,
-                    'label': label,
-                    'queue_limit': 1
-                }
-            )
+        if new_task.send_whatsapp_on_assign:
+            for child in assigned_children.select_related("user__personal_info", "subscription"):
+                phone = getattr(child.user.personal_info, "phone_number", None)
+                subscription = getattr(child, "subscription", None)
+                if not phone or not subscription or not subscription.is_active():
+                    continue
+                try:
+                    NotificationManager.sent_whatsapp(
+                        f"היי {child.user.username} 😎\n"
+                        f"קיבלת משימה חדשה! 📣\n\n"
+                        f"📝 משימה: *{new_task.title}*\n"
+                        f"📅 מועד סיום: {new_task.deadline:%d/%m/%Y}\n"
+                        f"⭐ ניקוד: {new_task.points} Teencoins\n\n"
+                        f"📲 כנס לראות את כל הפרטים: https://www.volunteen.site/child/home/\n"
+                        f"בהצלחה! – צוות Volunteen🧡",
+                        phone,
+                    )
+                except Exception as exc:
+                    print(f"Failed to send WhatsApp message: {exc}")
+
         return new_task
     
     

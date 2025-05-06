@@ -14,7 +14,7 @@ from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum,IntegerField, F
+from django.db.models import Sum, F, IntegerField, Value, ExpressionWrapper, Subquery, OuterRef
 from datetime import timedelta
 from django.db import transaction
 from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
@@ -24,6 +24,16 @@ from django.core.paginator import Paginator
 from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
 from dateutil.relativedelta import relativedelta
 from django.views.decorators.http import require_POST
+import os, mimetypes
+from uuid import uuid4
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django_q.tasks import async_task
+from django.db.models.fields.files import FieldFile
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from childApp.utils.TeenCoinManager import TeenCoinManager
+
 
 @login_required
 def mentor_home(request):
@@ -51,17 +61,20 @@ def children_performance(request):
     return render(request, 'mentor_children_performance.html', context)
 
 
-
+def build_label(mentor_id, title, deadline, child_ids):
+    deadline_str = deadline.isoformat() if deadline else "none"
+    child_sig = "-".join(map(str, sorted(child_ids)))[:40]
+    return f"create_task_{mentor_id}_{title.strip()}_{deadline_str}_{child_sig}"
 
 
 @login_required
 def add_task(request, task_id=None, duplicate=False, template=False):
+    DEFAULT_IMG = "defaults/no-image.png"
     mentor = get_object_or_404(Mentor, user=request.user)
     task_data = {}
-
-    # Fetch only active mentor groups
     mentor_groups = MentorGroupUtils.get_groups_for_mentor(mentor, active_only=True)
 
+    # preset for duplication 
     if task_id:
         original_task = get_object_or_404(Task, id=task_id)
         if duplicate:
@@ -71,53 +84,98 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 "points": original_task.points,
                 "deadline": None,
                 "additional_details": original_task.additional_details,
-                "img": original_task.img,
+                "img": original_task.img.name,
             }
 
-    if request.method == 'POST':
-        taskForm = TaskForm(
+    if request.method == "POST":
+        form = TaskForm(
             mentor=mentor,
             data=request.POST,
             files=request.FILES,
             is_duplicate=duplicate,
-            is_template=template
+            is_template=template,
         )
 
-        if taskForm.is_valid():
-            # Extract task fields and assigned children
-            task_data.update(taskForm.cleaned_data)
-            assigned_children = taskForm.cleaned_data.get('assigned_children', [])
+        if form.is_valid():
+            task_data.update(form.cleaned_data)
+
+            assigned_children = task_data.pop("assigned_children", [])
             children_ids = list(assigned_children.values_list("id", flat=True))
-            if duplicate and not taskForm.cleaned_data.get('img'):
-                task_data['img'] = original_task.img
+
+            # handle image upload
+            uploaded_img = task_data.get("img")
 
             try:
-                new_task = MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
-                if duplicate and original_task.img:
-                    if taskForm.cleaned_data.get('img') == 'defaults/no-image.png':
-                        new_task.img = original_task.img
-                        new_task.save()
+                # existing logic ↓
+                if duplicate and isinstance(uploaded_img, FieldFile):
+                    task_data["img"] = uploaded_img.name
 
-                messages.success(request, f"המשימה נוספה בהצלחה! יתרת Teencoins: {mentor.available_teencoins}")
-                return redirect('mentorApp:mentor_home')
-            except ValueError as e:
-                messages.error(request, str(e))
+                elif duplicate and (
+                        uploaded_img in [None, "", DEFAULT_IMG]
+                        or (isinstance(uploaded_img, str) and uploaded_img.endswith("no-image.png"))
+                ):
+                    task_data["img"] = original_task.img.name
 
+                elif isinstance(uploaded_img, InMemoryUploadedFile):
+                    ext = os.path.splitext(uploaded_img.name)[1] or mimetypes.guess_extension(
+                        uploaded_img.content_type
+                    )
+                    filename = default_storage.save(
+                        f"tasks/{uuid4().hex}{ext or ''}",
+                        ContentFile(uploaded_img.read()),
+                    )
+                    task_data["img"] = filename
+
+                # Make absolutely sure task_data["img"] is plain str or None
+                if isinstance(task_data.get("img"), FieldFile):
+                    task_data["img"] = task_data["img"].name
+                img_val = task_data.get("img")
+                if not (img_val is None or isinstance(img_val, str)):
+                    task_data["img"] = getattr(img_val, "name", DEFAULT_IMG)
+            except Exception as exc:
+                print(f"Error saving image: {exc}")
+                task_data["img"] = DEFAULT_IMG
+
+            # queue label with deadline + child sig
+            label = build_label(
+                mentor.id,
+                task_data.get("title", ""),
+                task_data.get("deadline"),
+                children_ids,
+            )
+
+            async_task(
+                "mentorApp.utils.MentorTaskUtils.MentorTaskUtils.create_task_with_assignments_async",
+                mentor.id,
+                children_ids,
+                task_data,
+                q_options={"label": label, "queue_limit": 1},
+            )
+
+            messages.success(request, "המשימה נשלחת ברקע. תופיע בדף המשימות בעוד רגע 🙂")
+            return redirect("mentorApp:mentor_home")
     else:
-        taskForm = TaskForm(
+        form = TaskForm(
             mentor=mentor,
             initial=task_data,
             is_duplicate=duplicate,
-            is_template=template
+            is_template=template,
         )
-
-    return render(request, 'mentor_add_task.html', {
-        'form': taskForm,
-        'children': mentor.children.all(),
-        'is_duplicate': duplicate,
-        'available_teencoins': mentor.available_teencoins,
-        'mentor_groups': mentor_groups,
-    })
+    children_qs = mentor.children.all()
+    for child in children_qs:
+        child.active_teenCoins = TeenCoinManager.get_total_active_teencoins(child)
+        
+    return render(
+        request,
+        "mentor_add_task.html",
+        {
+            "form": form,
+            "children": children_qs,
+            "is_duplicate": duplicate,
+            "available_teencoins": mentor.available_teencoins,
+            "mentor_groups": mentor_groups,
+        },
+    )
 
 @login_required
 def edit_task(request, task_id):
