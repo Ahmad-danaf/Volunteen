@@ -84,7 +84,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 "points": original_task.points,
                 "deadline": None,
                 "additional_details": original_task.additional_details,
-                "img": original_task.img.name,
+                "img": original_task.img,
             }
 
     if request.method == "POST":
@@ -161,16 +161,13 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             is_duplicate=duplicate,
             is_template=template,
         )
-    children_qs = mentor.children.all()
-    for child in children_qs:
-        child.active_teenCoins = TeenCoinManager.get_total_active_teencoins(child)
         
     return render(
         request,
         "mentor_add_task.html",
         {
             "form": form,
-            "children": children_qs,
+            "children": mentor.children.all(),
             "is_duplicate": duplicate,
             "available_teencoins": mentor.available_teencoins,
             "mentor_groups": mentor_groups,

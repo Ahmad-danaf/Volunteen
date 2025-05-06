@@ -37,11 +37,6 @@ class NotificationManager:
         }
 
         response = requests.post(URL, json=payload, headers=headers)
-        print("=======================")
-        print("sent msg")
-        print("the msg is:", msg if msg else "empty")
-        print("the phone is:", phone if phone else "empty")
-        print("=======================")
 
     @staticmethod
     def valid_phone(phone: str):

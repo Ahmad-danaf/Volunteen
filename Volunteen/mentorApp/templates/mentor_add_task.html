@@ -181,7 +181,7 @@
             <label for="checkAll">בחר הכל</label><br>
             {% for child in children %}
                 <input type="checkbox" id="child{{ child.id }}" name="assigned_children" value="{{ child.id }}" disabled>
-                <label for="child{{ child.id }}"> {{ child.user.username }} – {{ child.active_teenCoins }} 🪙 נקודות</label><br>
+                <label for="child{{ child.id }}"> {{ child.user.username }}</label><br>
             {% endfor %}
         </div>
         
@@ -197,7 +197,7 @@
         <div class="mb-3">
             <label for="image" class="form-label">תמונת המשימה</label>
             <input type="file" id="image" name="img" class="form-control">
-            {% if form.img.value %}
+            {% if form.img.value and form.img.value.url %}
                 <img src="{{ form.img.value.url }}" alt="Task Image" width="100">
             {% endif %}
         </div>
