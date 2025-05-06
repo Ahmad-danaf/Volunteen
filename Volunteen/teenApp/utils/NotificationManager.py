@@ -37,6 +37,19 @@ class NotificationManager:
         }
 
         response = requests.post(URL, json=payload, headers=headers)
+     
+    @staticmethod   
+    def sent_to_log_group_whatsapp(msg: str):
+        payload = {
+            "chatId": "120363418761716629@g.us", 
+            "message": msg,
+            "linkPreview": True
+            }
+        headers = {
+            'Content-Type': 'application/json'
+            }
+        response = requests.post(URL, json=payload, headers=headers)
+
 
     @staticmethod
     def valid_phone(phone: str):

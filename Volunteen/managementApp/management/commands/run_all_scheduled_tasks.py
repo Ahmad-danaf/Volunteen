@@ -9,6 +9,7 @@ class Command(BaseCommand):
             ("refund_overdue_tasks", "Refund overdue teencoins"),
             ("grant_monthly_parent_points", "Monthly parent top-up"),
             ("check_subscriptions", "Check child subscriptions and expire overdue subscriptions"),
+            ('log_suspicious_events',"Log suspicious events"),
         ]
 
         self.stdout.write("========== START: Daily Scheduled Tasks ==========\n")
