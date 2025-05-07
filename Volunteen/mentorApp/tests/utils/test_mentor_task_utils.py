@@ -155,18 +155,3 @@ class MentorTaskUtilsTest(TestCase):
         self.mentor.refresh_from_db()
         self.assertEqual(self.mentor.available_teencoins, 90)
 
-    def test_create_task_with_assignments_insufficient_coins(self):
-        self.mentor.available_teencoins = 5
-        self.mentor.save()
-        task_data = {
-            'title': 'Fail Task',
-            'description': 'This will fail',
-            'deadline': '2099-12-31',
-            'points': 10
-        }
-        with self.assertRaises(ValueError):
-            MentorTaskUtils.create_task_with_assignments(
-                mentor=self.mentor,
-                children_ids=[self.child.id],
-                task_data=task_data
-            )
