@@ -143,7 +143,14 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 task_data.get("deadline"),
                 children_ids,
             )
-
+            if task_data.get("points", 0) <= 0:
+                messages.error(request, "הנקודות למשימה צריכות להיות ערך חיובי")
+                return redirect("mentorApp:mentor_add_task")
+            task_cost = task_data.get("points", 0) * len(children_ids)
+            mentor.refresh_from_db()
+            if mentor.available_teencoins < task_cost:
+                messages.error(request, "אין מספיק נקודות להקצאת המשימה")
+                return redirect("mentorApp:mentor_add_task")
             async_task(
                 "mentorApp.utils.MentorTaskUtils.MentorTaskUtils.create_task_with_assignments_async",
                 mentor.id,

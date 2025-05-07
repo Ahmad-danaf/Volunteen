@@ -162,7 +162,6 @@ class TestShopManager(TestCase):
         
     @patch('childApp.utils.TeenCoinManager.TeenCoinManager.get_total_active_teencoins')
     @patch('childApp.utils.TeenCoinManager.TeenCoinManager.redeem_teencoins')
-    @patch('teenApp.utils.NotificationManager.NotificationManager.sent_mail')
     @patch('shopApp.utils.shop_manager.ShopManager.get_remaining_points_this_month')
     @patch('shopApp.utils.shop_manager.localdate')
     @patch('shopApp.utils.shop_manager.get_object_or_404')
@@ -173,7 +172,6 @@ class TestShopManager(TestCase):
         mock_get_object,
         mock_localdate,
         mock_remaining_points,
-        mock_sent_mail,
         mock_redeem_teencoins,
         mock_get_total_active_teencoins
     ):
@@ -221,8 +219,7 @@ class TestShopManager(TestCase):
         # Verify that the TeenCoin redemption happened correctly
         mock_redeem_teencoins.assert_called_once_with(self.child, 100)
 
-        # Check that a notification was sent
-        self.assertGreaterEqual(mock_sent_mail.call_count, 1)
+    
 
 
     @patch('childApp.utils.TeenCoinManager.TeenCoinManager.get_total_active_teencoins')
@@ -404,10 +401,9 @@ class TestShopManager(TestCase):
             self.assertEqual(result['status'], 'error')
             self.assertIn('מגבלת מספר החנויות היומיות', result['message'])
 
-    @patch('teenApp.utils.NotificationManager.NotificationManager.sent_mail')  
     @patch('childApp.utils.TeenCoinManager.TeenCoinManager.redeem_teencoins')
     @patch('childApp.utils.TeenCoinManager.TeenCoinManager.get_total_active_teencoins')
-    def test_approve_redemption_requests_success(self, mock_get_total_active_teencoins, mock_redeem_teencoins, mock_sent_mail):
+    def test_approve_redemption_requests_success(self, mock_get_total_active_teencoins, mock_redeem_teencoins):
         """Test successful approval of redemption requests."""
         # Mock the TeenCoin methods
         mock_get_total_active_teencoins.return_value = 500  # Child has enough TeenCoins

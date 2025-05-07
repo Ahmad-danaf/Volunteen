@@ -119,6 +119,18 @@
 </style>
 
 <div class="container mt-5 task-form-container" dir="rtl">
+    {% if messages %}
+  <div class="mt-4">
+    {% for message in messages %}
+    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR or message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+      <div class="alert alert-danger d-flex justify-content-between align-items-center shadow-sm rounded p-3 mb-3">
+        <p class="mb-0 text-dark">{{ message }}</p>
+      </div>
+    {% endif %}
+  {% endfor %}
+  
+  </div>
+{% endif %}
     <h2 style="color: #ff6600; text-align: center;">הוסף משימה</h2>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}

@@ -220,12 +220,20 @@ class MentorTaskUtils(TaskManagerUtils):
 
     @staticmethod
     def create_task_with_assignments_async(mentor_id, children_ids, task_data):
-        from mentorApp.models import Mentor
-        mentor = Mentor.objects.get(id=mentor_id)
-        return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)  
+        
+        try:
+            from mentorApp.models import Mentor
+            mentor = Mentor.objects.get(id=mentor_id)
+            return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
+        except Exception as e:
+            print(f"[FATAL] Task creation failed: {e}")
 
     @staticmethod
     def create_task_with_assignments(mentor, children_ids, task_data):
+        """
+        Assumes all validation is already done.
+        Creates the task, assigns children, and optionally sends WhatsApp messages.
+        """
         task_data.setdefault("description", "")
         task_data.pop("assigned_children", None)
 
@@ -234,10 +242,9 @@ class MentorTaskUtils(TaskManagerUtils):
 
         with transaction.atomic():
             mentor = Mentor.objects.select_for_update().get(id=mentor.id)
-
-            if mentor.available_teencoins < total_cost:
-                raise ValueError("Not enough TeenCoins to assign the task.")
-
+            mentor.available_teencoins =max(0, mentor.available_teencoins - total_cost)
+            mentor.save()
+            
             new_task = Task.objects.create(**task_data)
             new_task.assigned_mentors.add(mentor)
             new_task.assigned_children.set(assigned_children)
@@ -247,8 +254,6 @@ class MentorTaskUtils(TaskManagerUtils):
                 for ch in assigned_children
             )
 
-            mentor.available_teencoins -= total_cost
-            mentor.save()
 
         if new_task.send_whatsapp_on_assign:
             for child in assigned_children.select_related("user__personal_info", "subscription"):
@@ -261,10 +266,12 @@ class MentorTaskUtils(TaskManagerUtils):
                         f"היי {child.user.username} 😎\n"
                         f"קיבלת משימה חדשה! 📣\n\n"
                         f"📝 משימה: *{new_task.title}*\n"
-                        f"📅 מועד סיום: {new_task.deadline:%d/%m/%Y}\n"
-                        f"⭐ ניקוד: {new_task.points} Teencoins\n\n"
-                        f"📲 כנס לראות את כל הפרטים: https://www.volunteen.site/child/home/\n"
-                        f"בהצלחה! – צוות Volunteen🧡",
+                        f"📅 עד מתי? {new_task.deadline:%d/%m/%Y}\n"
+                        f"⭐ שווה: {new_task.points} Teencoins\n\n"
+                        f"📲 כל הפרטים כאן: https://www.volunteen.site/child/home/\n"
+                        f"👇 הולך להיות מעניין בוואטסאפ… באים? 😉\nhttp://bit.ly/3EXVxLL\n"
+                        f"📸 עקבו אחרינו באינסטה:\nhttps://rb.gy/9i3yxf\n\n"
+                        f"בהצלחה! – צוות Volunteen 🧡",
                         phone,
                     )
                 except Exception as exc:
