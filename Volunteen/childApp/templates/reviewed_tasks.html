@@ -28,37 +28,37 @@
   </div>
 
   <!-- Task Table -->
-  <div class="overflow-x-auto">
-    <table class="table-auto w-full bg-white border border-gray-200 text-sm shadow-sm rounded-lg">
+  <div class="overflow-x-auto -mx-2 sm:mx-0">
+    <table class="min-w-full sm:table-fixed bg-white border border-gray-200 text-sm shadow-sm rounded-lg">
       <thead class="bg-blue-600 text-white">
         <tr>
-          <th class="px-2 py-2 text-right whitespace-nowrap">משימה</th>
-          <th class="px-2 py-2 text-right whitespace-nowrap">טינקוינס</th>
-          <th class="px-2 py-2 text-right whitespace-nowrap">תאריך</th>
-          <th class="px-2 py-2 text-right whitespace-nowrap">הוקצה ע"י</th>
-          <th class="px-2 py-2 text-right whitespace-nowrap">סטטוס</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">משימה</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">טינקוינס</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">תאריך</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">הוקצה ע"י</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">סטטוס</th>
         </tr>
       </thead>
       <tbody class="text-gray-700">
         {% for task in tasks_with_bonus %}
           <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all duration-150 ease-in-out task-row" data-status="{{ task.status }}">
-            <td class="px-2 py-2 text-right break-words font-medium">
+            <td class="px-1 sm:px-2 py-2 text-right break-words font-medium">
               {{ task.title }}
             </td>
-            <td class="px-2 py-2 text-right">
+            <td class="px-1 sm:px-2 py-2 text-right">
               {{ task.points }}
             </td>
-            <td class="px-2 py-2 text-right whitespace-nowrap">
+            <td class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">
               {{ task.completion_date|date:"d/m/Y" }}
             </td>
-            <td class="px-2 py-2 text-right">
+            <td class="px-1 sm:px-2 py-2 text-right">
               {% if task.mentor %}
                 {{ task.mentor }}
               {% else %}
                 {{ parent_username }}
               {% endif %}
             </td>
-            <td class="px-2 py-2 text-right">
+            <td class="px-1 sm:px-2 py-2 text-right">
               {% if task.status == 'approved' %}
                 <span class="text-green-600 font-bold">✓ אושר</span>
               {% elif task.status == 'rejected' %}

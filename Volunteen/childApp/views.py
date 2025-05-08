@@ -285,7 +285,7 @@ def get_reviewed_tasks(request):
     for tc in task_completions.order_by('-completion_date')
     ]
     parent_username = child.parent.user.username if child.parent else 'הורה'
-    return render(request, 'get_reviewed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
+    return render(request, 'reviewed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
 
 @child_subscription_required
 def child_active_list(request):
