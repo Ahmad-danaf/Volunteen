@@ -12,7 +12,7 @@ from dateutil.relativedelta import relativedelta
 from django_q.tasks import async_task
 from teenApp.utils.NotificationManager import NotificationManager
 import hashlib
-
+from childApp.utils.TeenCoinManager import  TeenCoinManager
 class MentorTaskUtils(TaskManagerUtils):
 
     @staticmethod
@@ -339,6 +339,7 @@ class MentorTaskUtils(TaskManagerUtils):
                 total_points=Sum(F('task__points') + F('bonus_points'), output_field=IntegerField())
             )
             child.task_total_points = total['total_points'] or 0
+            child.active_points = TeenCoinManager.get_total_active_teencoins(child)
         return children
     
     

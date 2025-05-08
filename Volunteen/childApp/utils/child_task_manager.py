@@ -61,6 +61,17 @@ class ChildTaskManager:
 
         return core_tasks, campaign_tasks
 
+
+    @staticmethod
+    def get_reviewed_tasks(child):
+        """
+        Returns TaskCompletions that were either approved or rejected.
+        """
+        return TaskCompletion.objects.filter(
+            child=child,
+            status__in=["approved", "rejected"]
+        )
+    
     @staticmethod
     def get_completed_tasks(child):
         """
@@ -272,13 +283,22 @@ class ChildTaskManager:
         ).values_list("task_id", flat=True)
 
         tasks = Task.objects.filter(id__in=mentor_assigned_tasks_ids)
-        completed_tasks_ids = TaskCompletion.objects.filter(child=child, status="approved").values_list("task_id", flat=True)
-
-        if status_filter == "completed":
-            return tasks.filter(id__in=completed_tasks_ids)
-        elif status_filter == "pending":
-            return tasks.exclude(id__in=completed_tasks_ids)
-        return tasks  # For 'all'
+        if status_filter == 'completed':
+            tasks = tasks.filter(
+                taskcompletion__child=child,
+                taskcompletion__status='approved'
+            )
+        elif status_filter == 'pending':
+            tasks = tasks.exclude(
+                taskcompletion__child=child,
+                taskcompletion__status__in=['approved', 'rejected']
+            )
+        elif status_filter == 'rejected':
+            tasks = tasks.filter(
+                taskcompletion__child=child,
+                taskcompletion__status='rejected'
+            )
+        return tasks.distinct()
     
     @staticmethod
     def get_mentor_tasks_by_status_date(child, status_filter, date_filter):

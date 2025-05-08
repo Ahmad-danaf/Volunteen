@@ -258,14 +258,14 @@ def rate_redemption_view(request, redemption_id):
     })
     
 @child_subscription_required
-def child_completed_tasks(request):
+def get_reviewed_tasks(request):
     """Retrieve and display all completed tasks for a child with optional date filtering."""
     
     child = Child.objects.select_related("user").get(user=request.user)
     form = DateRangeForm(request.GET or None)
 
     # Retrieve completed tasks
-    task_completions = ChildTaskManager.get_completed_tasks(child).select_related("task").prefetch_related("task__assigned_mentors")
+    task_completions = ChildTaskManager.get_reviewed_tasks(child).select_related("task").prefetch_related("task__assigned_mentors")
 
     # Apply date filter if form is valid
     if form.is_valid():
@@ -275,15 +275,17 @@ def child_completed_tasks(request):
 
     tasks_with_bonus = [
         {
-            'title': task_completion.task.title,
-            'points': task_completion.task.points,
-            'completion_date': task_completion.completion_date,
-            'mentor': ", ".join(mentor.user.username for mentor in task_completion.task.assigned_mentors.all()),
-        }
-        for task_completion in task_completions.order_by('-completion_date')
+        'title': tc.task.title,
+        'points': tc.task.points,
+        'completion_date': tc.completion_date,
+        'mentor': ", ".join(m.user.username for m in tc.task.assigned_mentors.all()),
+        'status': tc.status, 
+        'mentor_feedback': tc.mentor_feedback or "", 
+    }
+    for tc in task_completions.order_by('-completion_date')
     ]
     parent_username = child.parent.user.username if child.parent else 'הורה'
-    return render(request, 'child_completed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
+    return render(request, 'get_reviewed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
 
 @child_subscription_required
 def child_active_list(request):

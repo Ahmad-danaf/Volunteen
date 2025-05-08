@@ -22,7 +22,7 @@ urlpatterns = [
 
     path('landing/', child_views.child_landing, name='child_landing'), 
 
-    path('completed-tasks/', child_views.child_completed_tasks, name='child_completed_tasks'),
+    path('completed-tasks/', child_views.get_reviewed_tasks, name='get_reviewed_tasks'),
     path('tasks/check-in-out/', child_views.task_check_in_out, name='task_check_in_out'),
     path('tasks/<int:task_id>/check-in/', child_views.check_in, name='check_in'),
     path('tasks/<int:task_id>/check-out/', child_views.check_out, name='check_out'),      

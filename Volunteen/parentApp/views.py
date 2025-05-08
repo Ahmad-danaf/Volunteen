@@ -386,6 +386,7 @@ def parent_tasks_view(request):
                     "completionId": completion.id,
                     "childName": completion.child.user.username,
                     "childId": completion.child.id,
+                    "rejectionReason": completion.mentor_feedback or "לא צויין",
                     "rejectedDate": completion.completion_date.strftime("%Y-%m-%d") if completion.completion_date else None
                 }
     

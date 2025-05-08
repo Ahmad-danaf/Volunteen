@@ -2,221 +2,166 @@
 {% load static %}
 
 {% block extra_css %}
-<!-- Custom CSS -->
 <style>
-    /* General Styling */
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-        direction: rtl; /* Right-to-left for Hebrew */
-    }
+  body{font-family:Arial,Helvetica,sans-serif;background:#f8f9fa;direction:rtl}
+  .container{padding:20px}
 
-    .container {
-        padding: 20px;
-    }
+  h1{font-size:2rem;font-weight:700;color:#4CAF50;text-align:center;margin-bottom:20px}
 
-    h1 {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #4CAF50;
-        text-align: center;
-        margin-bottom: 20px;
-    }
+  .filter-section{background:#fff;padding:20px;border-radius:10px;
+                  box-shadow:0 4px 8px rgba(0,0,0,.1);margin-bottom:20px}
+  .filter-section label{font-weight:700;margin-left:10px}
+  .filter-section select{padding:6px 10px;border-radius:5px;border:1px solid #ddd;margin-left:10px}
+  .filter-section button{background:#4CAF50;border:0;padding:6px 18px;border-radius:5px;color:#fff;
+                         cursor:pointer;transition:background .3s}
+  .filter-section button:hover{background:#45a049}
 
-    /* Filter Section Styling */
-    .filter-section {
-        background-color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
+  /* Task cards  */
+  .task-list{list-style:none;padding:0}
+  .task-list li{background:#fff;padding:15px;border-radius:10px;
+                box-shadow:0 4px 8px rgba(0,0,0,.1);margin-bottom:10px;
+                transition:transform .3s,box-shadow .3s}
+  .task-list li:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(0,0,0,.2)}
+  .task-list strong{color:#4CAF50}
 
-    .filter-section label {
-        font-weight: bold;
-        margin-left: 10px;
-    }
+  .task-status{font-weight:700;padding:4px 10px;border-radius:5px;display:inline-block}
+  .task-status.completed{background:#d4edda;color:#155724}
+  .task-status.pending{background:#fff3cd;color:#856404}
+  .task-status.rejected{background:#f8d7da;color:#721c24}
 
-    .filter-section select {
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-        margin-left: 10px;
-    }
+  .feedback-box{background:#f8d7da;border:1px solid #f5c6cb;
+                border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.875rem;color:#721c24}
 
-    .filter-section button {
-        background-color: #4CAF50;
-        border: none;
-        padding: 5px 15px;
-        border-radius: 5px;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .filter-section button:hover {
-        background-color: #45a049;
-    }
-
-    /* Task List Styling */
-    .task-list {
-        list-style-type: none;
-        padding-left: 0;
-    }
-
-    .task-list li {
-        background-color: white;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 10px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .task-list li:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .task-list strong {
-        color: #4CAF50;
-    }
-
-    .task-status {
-        font-weight: bold;
-        padding: 5px 10px;
-        border-radius: 5px;
-        display: inline-block;
-    }
-
-    .task-status.completed {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .task-status.pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-        h1 {
-            font-size: 1.5rem;
-        }
-
-        .filter-section {
-            flex-direction: column;
-        }
-
-        .filter-section select, .filter-section button {
-            width: 100%;
-            margin: 5px 0;
-        }
-    }
+  /* Responsive  */
+  @media(max-width:768px){
+     h1{font-size:1.5rem}
+     .filter-section{flex-direction:column}
+     .filter-section select,.filter-section button{width:100%;margin:5px 0}
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="text-center">מעקב משימות עבור {{ child.user.username }}</h1>
-        </div>
-    </div>
 
-    <!-- Filter Section -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="filter-section">
-                <form method="GET" action="{% url 'parentApp:mentor_task_dashboard' child.id %}">
-                    <label for="status">סטטוס:</label>
-                    <select name="status" id="status">
-                        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>הכל</option>
-                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>הושלם</option>
-                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>ממתין</option>
-                    </select>
+  <!-- Header -->
+  <h1>מעקב משימות עבור {{ child.user.username }}</h1>
 
-                    <label for="date">תאריך:</label>
-                    <select name="date" id="date">
-                        <option value="all" {% if date_filter == 'all' %}selected{% endif %}>הכל</option>
-                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>היום</option>
-                        <option value="this_week" {% if date_filter == 'this_week' %}selected{% endif %}>השבוע</option>
-                        <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>החודש</option>
-                    </select>
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <form method="GET" action="{% url 'parentApp:mentor_task_dashboard' child.id %}">
+      <label for="status">סטטוס:</label>
+      <select name="status" id="status">
+        <option value="all"       {% if status_filter == 'all' %}selected{% endif %}>הכל</option>
+        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>הושלם</option>
+        <option value="pending"   {% if status_filter == 'pending' %}selected{% endif %}>ממתין</option>
+        <option value="rejected"  {% if status_filter == 'rejected' %}selected{% endif %}>נדחו</option>
+      </select>
 
-                    <button type="submit">סנן</button>
-                </form>
-            </div>
-        </div>
-    </div>
+      <label for="date">תאריך:</label>
+      <select name="date" id="date">
+        <option value="all"        {% if date_filter == 'all' %}selected{% endif %}>הכל</option>
+        <option value="today"      {% if date_filter == 'today' %}selected{% endif %}>היום</option>
+        <option value="this_week"  {% if date_filter == 'this_week' %}selected{% endif %}>השבוע</option>
+        <option value="this_month" {% if date_filter == 'this_month' %}selected{% endif %}>החודש</option>
+      </select>
 
-    <!-- Task List -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <ul class="task-list">
-                {% for task in all_tasks %}
-                <li>
-                    <strong>{{ task.title }}</strong>
-                    <p>{{ task.description }}</p>
-                    {% if task.completion_date %}
-                      
-                    <small>תאריך השלמה: {{ task.completion_date|date:"d/m/Y H:i" }}</small>
-                    {% else %}
-                    <small>תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</small>
-                    {% endif %}
-                    
-                    <div class="task-status {% if task.completion_status|lower == 'approved' %}completed{% else %}pending{% endif %}">
-                        {% if task.completion_status|lower == "approved" %}
-                        
-                         הושלם{% else %}ממתין{% endif %}
-                    </div>
-                </li>
-                {% empty %}
-                <li>אין משימות להצגה</li>
-                {% endfor %}
-            </ul>
-            
-        </div>
-    </div>
+      <button type="submit">סנן</button>
+    </form>
+  </div>
 
-    <!-- Back Button -->
-    <div class="row">
-        <div class="col-12 text-center">
-            <a href="{% url 'parentApp:parent_home' %}" class="btn btn-secondary">חזור לדשבורד</a>
-        </div>
-    </div>
+  <!-- Task List -->
+  <ul class="task-list">
+    {% for task in all_tasks %}
+      <li>
+        <strong>{{ task.title }}</strong>
+        <p>{{ task.description }}</p>
+
+        {% if task.completion_date %}
+          <small>תאריך השלמה: {{ task.completion_date|date:"d/m/Y H:i" }}</small>
+        {% else %}
+          <small>תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</small>
+        {% endif %}
+
+        {% comment %} Status badge {% endcomment %}
+        {% with status=task.completion_status|lower %}
+          <div class="task-status
+               {% if status == 'approved' %}completed
+               {% elif status == 'rejected' %}rejected
+               {% else %}pending{% endif %}">
+            {% if status == 'approved' %}הושלם
+            {% elif status == 'rejected' %}נדחה
+            {% else %}ממתין{% endif %}
+          </div>
+        {% endwith %}
+
+        {% if task.completion_status|lower == 'rejected' and task.mentor_feedback %}
+          <div class="feedback-box">
+            <strong>הערת מנטור:</strong> {{ task.mentor_feedback }}
+          </div>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>אין משימות להצגה</li>
+    {% endfor %}
+  </ul>
+
+  <!-- Back Button -->
+  <div class="text-center mt-4">
+    <a href="{% url 'parentApp:parent_home' %}" class="btn btn-secondary">חזור לדשבורד</a>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Custom JavaScript -->
 <script>
-    // Add smooth scroll to anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
+ 
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', e => {
+      e.preventDefault();
+      document
+        .querySelector(anchor.getAttribute('href'))
+        .scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+ 
+  document.addEventListener('DOMContentLoaded', () => {
+    const fadeEls = document.querySelectorAll('.fade-in');
+
+    // start hidden
+    fadeEls.forEach(el => {
+      el.style.opacity = 0;
+      el.style.transform = 'translateY(20px)';
     });
 
-    // Add fade-in animation to elements with the .fade-in class
-    document.addEventListener('DOMContentLoaded', () => {
-        const fadeElements = document.querySelectorAll('.fade-in');
-        fadeElements.forEach(element => {
-            element.style.opacity = 0;
-            element.style.transform = 'translateY(20px)';
+    const io = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = 1;
+            entry.target.style.transform = 'translateY(0)';
+            entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            io.unobserve(entry.target);
+          }
         });
+      },
+      { threshold: 0.1 }
+    );
 
-        setTimeout(() => {
-            fadeElements.forEach(element => {
-                element.style.opacity = 1;
-                element.style.transform = 'translateY(0)';
-            });
-        }, 100);
-    });
+    fadeEls.forEach(el => io.observe(el));
+  });
+
+ 
+  document.addEventListener('click', e => {
+    const badge = e.target.closest('.task-status.rejected');
+    if (!badge) return;
+    const feedbackBox = badge.parentElement.querySelector('.feedback-box');
+    if (feedbackBox) {
+      const isHidden = feedbackBox.style.display === 'none';
+      feedbackBox.style.display = isHidden ? 'block' : 'none';
+    }
+  });
 </script>
 {% endblock %}

@@ -954,24 +954,22 @@
 
       function renderRejectedTasksList() {
         const taskList = document.getElementById("rejectedTaskList");
+      
         if (!allTasks.rejected || allTasks.rejected.length === 0) {
           taskList.innerHTML =
             '<div class="text-center py-8 text-gray-500">אין משימות שנדחו</div>';
           return;
         }
-
+      
         taskList.innerHTML = allTasks.rejected
-          .map(
-            (task) => `
+          .map((task) => `
             <div class="task-card bg-white p-4 rounded-lg shadow relative">
               <div class="flex justify-between items-start">
                 <div>
-                  <h3 class="font-bold">${task.name}</h3>
+                  <h3 class="font-bold text-base">${task.name}</h3>
                   <p class="text-sm text-gray-600 mt-1">${task.description}</p>
                   <div class="flex flex-wrap gap-1 mt-2">
-                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${
-                      task.childName
-                    }</span>
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">${task.childName}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -979,17 +977,21 @@
                   <i class="ri-star-fill text-primary"></i>
                 </div>
               </div>
+      
               <div class="flex justify-between items-center mt-3">
-                <span class="text-sm text-gray-500">נדחה: ${
-                  task.rejectedDate || "N/A"
-                }</span>
-                <span class="text-sm text-red-500">נדחה</span>
+                <span class="text-sm text-gray-500">נדחה: ${task.rejectedDate || "N/A"}</span>
+                <span class="text-sm text-red-500 font-bold">נדחה</span>
               </div>
+      
+              ${task.rejectionReason ? `
+                <div class="mt-3 p-2 bg-red-50 border border-red-300 rounded text-sm text-red-700">
+                  <strong>הערה:</strong> ${task.rejectionReason}
+                </div>
+              ` : ''}
             </div>
-          `
-          )
+          `)
           .join("");
-      }
+      }  
 
       function switchTab(tabName) {
         currentTab = tabName;

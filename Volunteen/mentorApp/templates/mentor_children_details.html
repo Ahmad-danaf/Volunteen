@@ -31,7 +31,8 @@
             <thead>
                 <tr>
                     <th>שם הילד</th>
-                    <th>טינקוינס שנצברו</th> 
+                    <th>טינקוינס שנצברו(סה"כ)</th> 
+                    <th>טינקוינס בארנק</th>
                     <th>משימות שהושלמו</th>
                 </tr>
             </thead>
@@ -40,6 +41,11 @@
                     <tr class="child-row">
                         <td class="child-name">{{ child.user.username }}</td>
                         <td><span class="coin-count"><i class="fas fa-coins"></i> {{ child.task_total_points }}</span></td>
+                        <td>
+                            <span class="coin-count text-green-600 font-semibold">
+                                <i class="fas fa-bolt"></i> {{ child.active_points }}
+                            </span>
+                        </td>
                         <td>
                             <button class="view-tasks-btn" 
                                     data-child-name="{{ child.user.username }}"
