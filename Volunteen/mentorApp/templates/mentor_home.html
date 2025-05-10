@@ -1,140 +1,149 @@
-{% extends 'mentor_base.html' %}
 {% load static %}
-{% block title %}בית חונך{% endblock %}
+<!DOCTYPE html>
 
-{% block content %}
-<style>
-.button-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* מרכז את הכפתורים */
-    margin: 0 auto;
-    width: 100%; /* מוודא שהכפתורים לא יחרגו מהרוחב */
-    max-width: 500px; /* גבול עליון לרוחב */
-}
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volunteen Mentor</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papNM6Qb4K8bIKGMiEwK5MFO0N6umx1N8iBt8n+V0g1LFeSTU1R+blXg1NRw0K5+eYhNqB5sBmXKZrKf5Qk5Kg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-.btn {
-    display: block;
-    width: 90%; /* הכפתורים יתפסו 90% מרוחב הקונטיינר */
-    margin: 10px 0; /* ריווח אנכי בין הכפתורים */
-    padding: 15px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 5px;
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.mentor-btn { 
-    border: solid 4px #ff9800;
-    color: #ff9800;
-    background-color: transparent;
-}
-.mentor-btn:hover {
-    background-color: #ff9800;
-    color: white;
-}
-
-.pink-btn { background-color: #e91e63; }
-.blue-btn { background-color: #2196f3; }
-.green-btn { background-color: #4caf50; }
-.orange-btn { background-color: #ff9800; }
-.purple-btn { background-color: #9c27b0; }
-.yellow-btn { background-color: #ffc107; }
-.red-btn { background-color: #f44336; }
-
-@media only screen and (max-width: 428px) {
-    .btn {
-        font-size: 14px;
-        padding: 12px; 
+  <!-- Tailwind CDN (JIT mode) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config override for Volunteen orange palette and Hebrew fonts
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#fb923c', // orange‑400
+              dark: '#f97316',   // orange‑500
+            }
+          },
+          keyframes: {
+            fadeSlide: {
+              '0%': { opacity: 0, transform: 'translateY(12px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' }
+            }
+          },
+          animation: {
+            fadeSlide: 'fadeSlide 0.6s ease forwards'
+          }
+        }
+      }
     }
-}
+  </script>
 
-.alert {
-    margin-top: 10px;
-    width: 90%;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 5px;
-    padding: 15px;
-    position: relative;
-    text-align: right;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-.alert-success {
-    background-color: #4caf50;
-    color: white;
-    border: solid 2px #388e3c;
-}
+</head>
+<body class="min-h-screen bg-gradient-to-b from-primary-dark via-orange-900 to-black text-white flex flex-col">
 
-.alert-danger {
-    background-color: #f44336;
-    color: white;
-    border: solid 2px #d32f2f;
-}
+  <!-- Header & greeting -->
+  <header class="px-4 pt-6 pb-4 text-center animate-fadeSlide">
+    <h1 class="text-2xl font-bold mb-1">שלום {{ mentor_user_name }} 👋</h1>
+    <p class="text-sm opacity-80">{{ motivation_line }}</p>
 
-.alert-warning {
-    background-color: #ff9800;
-    color: white;
-    border: solid 2px #f57c00;
-}
-
-.alert-info {
-    background-color: #2196f3;
-    color: white;
-    border: solid 2px #1976d2;
-}
-
-.btn-close {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 20px;
-}
-
-</style>
-    <h2 dir="rtl">ברוך הבא, {{ mentor.user.username }}</h2>
-    <div>
-        טינקאוינס זמינים: {{ mentor.available_teencoins }}
+    <!-- Available TeenCoins badge -->
+    <div class="mt-4 flex justify-center">
+      <div class="flex items-center gap-2 bg-primary/20 backdrop-blur rounded-full px-4 py-1 text-sm shadow-md">
+        <i class="fas fa-coins text-yellow-300"></i>
+        <span>טינקואינס זמינים: {{ available_teencoins }}</span>
+      </div>
     </div>
-    {% if messages %}
+  </header>
+
+  <!-- Django dynamic messages -->
+  {% if messages %}
+  <section class="space-y-3 px-4">
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="סגור"></button>
+      <div class="relative bg-primary/30 border border-primary rounded-lg p-3 text-sm flex items-center justify-between shadow-lg animate-fadeSlide">
+        <span>{{ message }}</span>
+        <button type="button" aria-label="סגור" class="text-white/70 hover:text-white" onclick="this.parentElement.remove();">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
     {% endfor %}
+  </section>
   {% endif %}
-    <div class="section" dir="rtl">
-        <a href="{% url 'mentorApp:mentor_add_task' %}" class="btn mentor-btn"><i class="fas fa-plus"></i> הוספת משימה</a>
-        <a href="{% url 'mentorApp:template_list' %}" class="btn mentor-btn"><i class="fas fa-copy"></i> משימות לשכפול</a>
-        <a href="{% url 'mentorApp:mentor_task_list' %}" class="btn mentor-btn"><i class="fas fa-tasks"></i>רשימת משימות</a>
-        <a href="{% url 'mentorApp:mentor_task_images' %}" class="btn mentor-btn">
-            <i class="fas fa-images"></i> אישור משימות
-        </a>        
-        <a href="{% url 'mentorApp:mentor_children_details' %}" class="btn mentor-btn"><i class="fas fa-child"></i> הצג פרטי הילדים</a>
-        <a href="{% url 'mentorApp:bonus_task_selection' %}" class="btn mentor-btn">
-            <i class="fas fa-gift"></i> מתן נקודות בונוס
-        </a>
-        <a href="{% url 'mentorApp:mentor_group_list' %}" class="btn mentor-btn"><i class="fas fa-users"></i> רשימת קבוצות</a>
-        <a href="{% url 'mentorApp:children_performance' %}" class="btn mentor-btn"><i class="fas fa-star"></i>ביצועי ילדים</a>
 
+  <!-- Main action grid -->
+  <main class="flex-1 flex flex-col mt-4">
+    <div id="actionGrid" class="grid grid-cols-2 gap-4 px-4 auto-rows-fr">
+      <!-- Each anchor = action tile -->
+      <a href="{% url 'mentorApp:mentor_add_task' %}" class="mentor-btn tile">
+        <i class="fas fa-plus text-xl"></i>
+        הוספת משימה
+      </a>
+
+      <a href="{% url 'mentorApp:template_list' %}" class="mentor-btn tile">
+        <i class="fas fa-copy text-xl"></i>
+        משימות לשכפול
+      </a>
+
+      <a href="{% url 'mentorApp:mentor_task_list' %}" class="mentor-btn tile">
+        <i class="fas fa-tasks text-xl"></i>
+        רשימת משימות
+      </a>
+
+      <a href="{% url 'mentorApp:mentor_task_images' %}" class="mentor-btn tile">
+        <i class="fas fa-images text-xl"></i>
+        אישור משימות
+      </a>
+
+      <a href="{% url 'mentorApp:mentor_children_details' %}" class="mentor-btn tile">
+        <i class="fas fa-child text-xl"></i>
+        הצג פרטי הילדים
+      </a>
+
+      <a href="{% url 'mentorApp:bonus_task_selection' %}" class="mentor-btn tile">
+        <i class="fas fa-gift text-xl"></i>
+        מתן נקודות בונוס
+      </a>
+
+      <a href="{% url 'mentorApp:mentor_group_list' %}" class="mentor-btn tile">
+        <i class="fas fa-users text-xl"></i>
+        רשימת קבוצות
+      </a>
+
+      <a href="{% url 'mentorApp:children_performance' %}" class="mentor-btn tile">
+        <i class="fas fa-star text-xl"></i>
+        ביצועי ילדים
+      </a>
     </div>
+  </main>
 
+  <!-- Footer -->
+  <footer class="py-4 text-center text-xs opacity-40">
+    © 2025 Volunteen
+  </footer>
 
+  <style>
+    .tile {
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;
+      background-color:rgba(251,146,60,0.25); /* orange */
+      border-radius:1rem;
+      padding:1.75rem 0;
+      text-align:center;
+      font-size:.875rem;
+      box-shadow:0 4px 6px rgba(0,0,0,.3);
+      transition:transform .15s ease, background-color .15s ease;
+      animation: fadeSlide .6s ease forwards;
+    }
+    .tile:hover { background-color:rgba(251,146,60,.35); transform:translateY(-2px); }
+  </style>
 
-{% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/mentor_home.css' %}">
-{% endblock %}
-
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tiles = document.querySelectorAll('#actionGrid .tile');
+      tiles.forEach((tile, i) => {
+        tile.style.animationDelay = `${i * 60}ms`;
+      });
+    });
+  </script>
+</body>
+</html>

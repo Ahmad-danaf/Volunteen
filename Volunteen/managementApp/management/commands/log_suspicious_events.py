@@ -14,7 +14,8 @@ class Command(BaseCommand):
         self.stdout.write("Checking for suspicious activity...")
         
         self.check_redeem_clusters()
-        self.scan_suspicious_tasks()
+        if datetime.today().weekday() == 0:  # 0 = Monday
+            self.scan_suspicious_tasks()
         
         self.stdout.write("###############END OF CHECKING###############")
 

@@ -30,16 +30,40 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django_q.tasks import async_task
 from django.db.models.fields.files import FieldFile
-
+import random
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from childApp.utils.TeenCoinManager import TeenCoinManager
 
-
+MOTIVATION_LINES = [
+    "כל משימה שאתם נותנים – היא צעד לעתיד טוב יותר.",
+    "אתם לא רק מלווים – אתם מעצבים חיים.",
+    "ההשפעה שלכם ניכרת בכל נער ונערה שאתם מדריכים.",
+    "המילים והמעשים שלכם נותנים השראה אמיתית.",
+    "מאחורי כל הצלחה – יש ליווי תומך ואכפתי.",
+    "כל משימה היא הזדמנות לצמיחה – למדריכים ולמתנדבים כאחד.",
+    "הזמן שאתם משקיעים שווה זהב עבור הדור הצעיר.",
+    "אתם מדליקים אור קטן שעושה הבדל גדול.",
+    "אתם הופכים התנדבות לחוויה משמעותית באמת.",
+    "המתנדבים זוכים – בזכות ההכוונה שלכם.",
+    "בזכותכם Volunteen ממשיכה לגדול ולהשפיע.",
+    "כל משימה ב־Volunteen מקרבת אתכם לשינוי אמיתי.",
+    "אתם הלב הפועם של קהילת Volunteen.",
+    "ב־Volunteen, כל ליווי שלכם הופך לרגע בלתי נשכח עבור הילדים.",
+    "ביחד עם Volunteen – יוצרים עתיד של נתינה וצמיחה.",
+    "הילדים ב־Volunteen סומכים עליכם – ואתם לא מאכזבים.",
+    "החיבור בין ליווי אישי ל־Volunteen יוצר קסם אמיתי.",
+    "בכל לחיצה על 'שמור משימה' – אתם משנים עולם קטן של מישהו.",
+    "ההשפעה שלכם ב־Volunteen חזקה יותר ממה שאתם מדמיינים.",
+    "ב־Volunteen, אתם לא רק מלווים – אתם מודל לחיקוי."
+]
 @login_required
 def mentor_home(request):
+    motivation_line = random.choice(MOTIVATION_LINES)
     mentor = get_object_or_404(Mentor, user=request.user)
     context = {
-        'mentor': mentor,
+        'mentor_user_name': mentor,
+        'available_teencoins': mentor.available_teencoins,
+        'motivation_line': motivation_line,
     }
     return render(request, 'mentor_home.html', context)
 

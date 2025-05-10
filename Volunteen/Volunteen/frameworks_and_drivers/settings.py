@@ -196,7 +196,6 @@ if development and not RUNNING_TESTS:
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": lambda request: True,
         "SHOW_COLLAPSED": True,
-        "USE_MODULES": False,  
     }
 
 CSRF_FAILURE_VIEW = 'teenApp.interface_adapters.views.csrf_failure_view'
