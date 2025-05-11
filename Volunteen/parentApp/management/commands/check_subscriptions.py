@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
 from parentApp.models import ChildSubscription  # Adjust the import to match your project structure
+from teenApp.utils.NotificationManager import NotificationManager
 
 class Command(BaseCommand):
     help = (
@@ -28,6 +29,13 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"[SUC] Expired subscription (ID: {sub.id}) for child {sub.child.identifier} &USERNAME: {sub.child.user.username}."
                 )
+                child_name = sub.child.user.username
+                msg = (
+                    f"👋 Subscription ended for {child_name}.\n"
+                    f"The plan expired on {sub.end_date.strftime('%Y-%m-%d')} and was not renewed.\n"
+                    f"Please take action if you'd like to continue."
+                )
+                NotificationManager.send_to_log_group_whatsapp(msg)
             except Exception as e:
                 self.stderr.write(
                     f"[ERROR] Failed to expire subscription (ID: {sub.id}) for child {sub.child.identifier} &USERNAME: {sub.child.user.username}: {e}"

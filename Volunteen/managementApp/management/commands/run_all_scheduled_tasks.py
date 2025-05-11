@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from teenApp.utils.NotificationManager import NotificationManager
+import traceback
 
 class Command(BaseCommand):
     help = "Run all scheduled maintenance tasks for Volunteen"
@@ -21,5 +23,6 @@ class Command(BaseCommand):
                 self.stdout.write(f"[SUCCESS] {description}\n")
             except Exception as e:
                 self.stderr.write(f"[FAILED] {description} -> {str(e)}\n")
-
+                detailed_error = traceback.format_exc()
+                NotificationManager.send_to_log_group_whatsapp(f"Error running task '{description}':\n{detailed_error}")
         self.stdout.write("========== DONE: All Tasks Finished ==========\n")
