@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.child_level_management import calculate_total_points
+from django.utils.translation import gettext_lazy as _
 
 class Medal(models.Model):
     name = models.CharField(max_length=255, verbose_name='Medal Name')
@@ -70,3 +71,33 @@ class Child(models.Model):
         super().save(*args, **kwargs)
         children_group, created = Group.objects.get_or_create(name='Children')
         self.user.groups.add(children_group)
+
+
+class StreakMilestoneAchieved(models.Model):
+    """
+    Records that a child has reached a specific streak milestone (e.g., 10, 20, 30 days).
+    Ensures each milestone is only rewarded once per child.
+    """
+    child = models.ForeignKey(
+        Child,
+        on_delete=models.CASCADE,
+        related_name='streak_milestones',
+        verbose_name=_("Child"),
+    )
+    streak_day = models.PositiveIntegerField(
+        verbose_name=_("Streak Day"),
+        help_text=_("Streak count at which this milestone was achieved."),
+    )
+    achieved_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_("Achieved At"),
+    )
+
+    class Meta:
+        verbose_name = _("Streak Milestone Achieved")
+        verbose_name_plural = _("Streak Milestones Achieved")
+        unique_together = ("child", "streak_day")
+        ordering = ['-achieved_at']
+
+    def __str__(self):
+        return f"{self.child.user.username} - {self.streak_day} days"

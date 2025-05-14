@@ -1,7 +1,7 @@
 from django.db.models import Sum, Case, When, Value, IntegerField, F,Q
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from childApp.models import Child
+from childApp.models import Child, StreakMilestoneAchieved
 from teenApp.entities.TaskCompletion import TaskCompletion
 from managementApp.models import DonationTransaction
 from .child_level_management import calculate_total_points  
@@ -241,27 +241,27 @@ class LeaderboardUtils:
     @staticmethod
     def get_current_streak(child: Child):
         """
-        Retrieves the child's correct streak count based on the last recorded date.
-
-        - If the last streak date is today → return current streak count.
-        - If the last streak date was yesterday → return existing streak count.
-        - If the last streak date was more than 1 day ago → streak resets to 0.
-
-        :param child: The Child instance.
-        :return: The correct streak count.
+        Returns the streak to be displayed:
+        - Uses real streak_count if updated recently
+        - Otherwise, uses the highest milestone as a frozen floor
         """
         today = date.today()
 
+        # Get last awarded milestone
+        last_milestone = (
+            StreakMilestoneAchieved.objects
+            .filter(child=child)
+            .order_by('-streak_day')
+            .values_list('streak_day', flat=True)
+            .first()
+        ) or 0
+
+        # If already updated today then use current
         if child.last_streak_date == today:
-            return child.streak_count  # Streak remains unchanged
-        
-        if child.last_streak_date == today - timedelta(days=1):
-            return child.streak_count  # Continue streak
-        
-        child.streak_count = 0
-        child.save()
-        return 0  # Reset streak (more than 1 day gap)
-    
+            return max(child.streak_count, last_milestone)
+
+        # If missed days then still keep progress, don't reset
+        return max(child.streak_count, last_milestone)
     
     @staticmethod
     def get_top_streaks(institution=None, limit=None):

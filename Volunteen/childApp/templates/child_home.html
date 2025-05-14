@@ -24,23 +24,42 @@
 
 
 
-<div class="avatar-streak-container">
-    <div class="avatar">
-        <img src="{% static 'images/volunteen_logo.ico' %}" alt="Avatar" class="avatar-image">
+<div class="avatar-streak-container redesigned" dir="rtl">
+  <!-- Avatar bubble -->
+  <div class="avatar-badge">
+    <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}"
+         alt="Avatar" class="avatar-image">
+  </div>
+
+  <!-- Streak card -->
+  <div class="streak-card">
+    <div id="lottie-flame" class="flame">
+        <dotlottie-player
+            src="https://lottie.host/5d7eaca0-d62f-478f-a426-f6b79cea57a3/AlRFMEcD5L.lottie"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            ></dotlottie-player>
+
     </div>
 
+    <h2 class="streak-title">🔥 רצף ההתחברויות שלך</h2>
+    <p class="streak-count">
+      <strong id="streak-count">{{ child.streak_count }}</strong>
+      ימים ברצף
+    </p>
 
-    <div class="streak-section">
-        <p>🔥 רצף ההתחברויות שלך: <strong id="streak-count">{{ child.streak_count }}</strong> ימים</p>
-        <button id="streak-button" class="streak-button" onclick="saveStreak()">✅ שמור על הרצף!</button>
-        <div id="fire-animation" class="fire-animation" style="display: none;"></div>
-        <p id="streak-success" style="display:none; color:green;">🎉 כל הכבוד! שמרת על הרצף שלך! 🔥</p>
-    </div>
-    
-    <!-- <div class="streak-info">
-        <p>🔥 רצף יומי: <strong>3 ימים</strong> ברציפות!</p>
-        <small>היכנס כל יום כדי להאריך את הרצף ולזכות בבונוסים!</small>
-    </div> -->
+    <button id="streak-button"
+            class="streak-btn"
+            onclick="saveStreak()">
+      ✅ שמור על הרצף שלך
+    </button>
+
+    <p id="streak-success" class="streak-success">
+      🎉 כל הכבוד! שמרת על הרצף שלך! 🔥
+    </p>
+  </div>
 </div>
 
 <div class="user-info-panel">
@@ -177,8 +196,11 @@
 {% endblock content %}
 
 {% block extra_scripts %}
+<script
+  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+  type="module"
+></script>
 <script>
-
 
 function showSecretCode() {
     document.getElementById('secretCodeModal').style.display = 'block';
@@ -246,25 +268,45 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 function saveStreak() {
-        fetch("{% url 'childApp:update_streak' %}", { 
-            method: 'POST',
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/json"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById("streak-count").innerText = data.streak;
-                document.getElementById("streak-success").style.display = "block";  
-                document.getElementById("streak-button").disabled = true;  
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => console.error("Error:", error));
+    fetch("{% url 'childApp:update_streak' %}", {
+        method: 'POST',
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+    if (data.success) {
+        document.getElementById("streak-count").innerText = data.streak;
+        document.getElementById("streak-success").style.display = "block";
+        document.getElementById("streak-button").disabled = true;
+
+        // logic for next milestone status
+        const message = document.createElement("p");
+        message.style.marginTop = "10px";
+        message.style.fontWeight = "bold";
+        message.style.color = "#333";
+        message.style.fontSize = "0.95rem";
+
+        const daysToNext = 10 - (data.streak % 10);
+        if (data.reward_given) {
+            alert(`🎁 קיבלת בונוס על רצף של ${data.milestone} ימים!`);
+            message.innerText = `התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥`;
+        } else if (daysToNext !== 10) {
+            message.innerText = `עוד ${daysToNext} ימים לבונוס הבא ✨`;
+        }
+
+        const streakSection = document.querySelector(".streak-card");
+        if (streakSection && message.innerText) {
+            streakSection.appendChild(message);
+        }
+    } else {
+        alert(data.message);
     }
+    })
+    .catch(error => console.error("Error:", error));
+}
 function throwConfetti() {
     for (let i = 0; i < 40; i++) {
         createConfettiParticle();
@@ -777,5 +819,159 @@ body {
     padding: 12px 20px;
 
   }
+  .avatar-streak-container.redesigned{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(8px,4vw,20px);
+  margin-block:clamp(12px,6vw,32px);
+  max-width:380px;
+  margin-inline:auto;
+  perspective:1200px;                /* subtle 3-D feel */
+}
+
+/* Avatar bubble */
+.avatar-badge{
+  position:relative;
+  width:96px;height:96px;
+}
+.avatar-badge .avatar-image{
+  width:100%;height:100%;object-fit:cover;
+  border-radius:50%;
+  border:4px solid #fff;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  background:linear-gradient(135deg,#5d22ff 0%,#00d4ff 100%);
+  animation:floatAvatar 4s ease-in-out infinite;
+}
+@keyframes floatAvatar{
+  0%,100%{transform:translateY(0)}
+  50%   {transform:translateY(-6px)}
+}
+
+/* Streak glass-card */
+.streak-card{
+  position:relative;
+  width:100%;
+  padding:28px 22px 32px;
+  border-radius:24px;
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(12px) saturate(120%);
+  box-shadow:0 10px 24px rgba(93,34,255,.18);
+  overflow:hidden;
+  animation:riseIn .6s cubic-bezier(.22,.7,.36,1) both;
+}
+/* animated gradient border */
+.streak-card::before{
+  content:"";
+  position:absolute;inset:0;
+  padding:2px;border-radius:inherit;
+  background:conic-gradient(from var(--angle),
+    #5d22ff,#ff4081,#ff9800,#5d22ff);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:spinBorder 6s linear infinite;
+}
+@keyframes spinBorder{
+  to{--angle:1turn}
+}
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(20px) scale(.95)}
+  to  {opacity:1;transform:translateY(0)    scale(1)}
+}
+
+/* Lottie flame sizing */
+.flame{width:94px;height:94px;margin-inline:auto;margin-bottom:8px}
+
+/* Text styles */
+.streak-title{
+  font-size:1.4rem;
+  margin:0 0 4px;
+  color:#ff5722;font-weight:700;
+}
+.streak-count{
+  font-size:1.9rem;
+  font-weight:600;
+  color:#4caf50;
+  margin:0 0 16px;
+}
+
+/* CTA button */
+.streak-btn{
+  display:inline-block;
+  padding:12px 32px;
+  font-size:1.15rem;
+  font-weight:700;
+  color:#fff;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  border:none;border-radius:32px;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+.streak-btn:hover{transform:translateY(-2px)}
+.streak-btn:active{transform:scale(.96);box-shadow:0 3px 8px rgba(0,0,0,.3)}
+
+/* Success label (hidden by default) */
+.streak-success{
+  display:none;margin-top:14px;
+  color:#43a047;font-weight:700;
+  font-size:1rem;
+  animation:bounceIn .5s ease-out both;
+}
+@keyframes bounceIn{
+  0%  {opacity:0;transform:scale(.6)}
+  60% {opacity:1;transform:scale(1.1)}
+  100%{transform:scale(1)}
+}
+
+/* Mobile fine-tuning */
+@media(max-width:420px){
+  .streak-count{font-size:1.6rem}
+  .streak-btn{font-size:1rem;padding:10px 26px}
+}
+/* ----------  compact Streak variant  ---------- */
+.avatar-badge         {width:72px; height:72px;}          
+.flame                {width:72px; height:72px; margin-bottom:4px;}  
+.streak-card          {padding:20px 18px 24px; max-width:320px;}     
+.streak-title         {font-size:1.2rem;}                 
+.streak-count         {font-size:1.6rem;}                 
+.streak-btn           {font-size:1rem; padding:10px 26px;} 
+/* ----------  MICRO-STREAK  ---------- */
+.avatar-streak-container.redesigned{gap:10px}
+
+.avatar-badge        {width:56px;height:56px}          
+.avatar-image        {border-width:3px}
+
+.flame               {width:56px;height:56px;margin-bottom:2px}
+
+.streak-card{
+  padding:16px 14px 18px;
+  max-width:260px;                   
+  border-radius:18px;
+  box-shadow:0 6px 16px rgba(93,34,255,.15);
+}
+
+.streak-title        {font-size:1rem;margin-bottom:2px}
+.streak-count        {font-size:1.2rem;margin-bottom:10px}
+
+.streak-btn{
+  font-size:.9rem;
+  padding:8px 22px;
+  border-radius:26px;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+@media(max-width:420px){
+  .streak-count{font-size:1.1rem}
+  .streak-btn {font-size:.85rem;padding:7px 18px}
+}
+.streak-card::before{
+  pointer-events:none; 
+}
 </style>
 {% endblock extra_scripts %}

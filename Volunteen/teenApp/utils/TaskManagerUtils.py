@@ -3,8 +3,23 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import Task
 from childApp.models import Child
 from parentApp.models import Parent
-from Volunteen.constants import DEFAULT_INCREASE_LEVEL_TASK
 from django.utils import timezone
+
+DEFAULT_INCREASE_LEVEL_TASK = {
+    'title': 'עלייה ברמה',
+    'description': 'קיבלת נקודות מספיקות כדי לעלות רמה! המשך כך!',
+    'points': 5,
+    'img': 'defaults/LevelUp_Badge_Volunteen.jpg',
+    'deadline': '2025-03-01',
+}
+
+DEFAULT_STREAK_MILESTONE_TASK = {
+    "title": "🎯 בונוס התמדה",
+    "description": "כל הכבוד! הגעת לרצף של {streak_day} ימים וקיבלת תגמול!",
+    "points": 2,
+    "img": "defaults/no-image.png",
+    "deadline": '2025-03-01',  
+}
 class TaskManagerUtils:
     @staticmethod
     def get_assigned_tasks(user):
@@ -142,3 +157,42 @@ class TaskManagerUtils:
         owner.save()
         
         return assignment
+
+
+    @staticmethod
+    def get_or_create_streak_milestone_task(streak_day):
+        """
+        Retrieves or creates the default milestone reward task for the given streak day.
+        """
+        title = f"{DEFAULT_STREAK_MILESTONE_TASK['title']} | יום {streak_day}"
+
+        task, created = Task.objects.get_or_create(
+            title=title,
+            defaults={
+                'description': DEFAULT_STREAK_MILESTONE_TASK['description'].format(streak_day=streak_day),
+                'points': DEFAULT_STREAK_MILESTONE_TASK['points'],
+                'img': DEFAULT_STREAK_MILESTONE_TASK['img'],
+                'deadline': DEFAULT_STREAK_MILESTONE_TASK['deadline'],
+            }
+        )
+        return task
+    
+    @staticmethod
+    def auto_approve_streak_milestone_for_child(child, streak_day):
+        """
+        Automatically assigns and approves a milestone reward task to the child.
+        Used when a child hits a streak milestone like 10, 20, 30 days.
+        """
+        task = TaskManagerUtils.get_or_create_streak_milestone_task(streak_day)
+
+        task_completion, created = TaskCompletion.objects.get_or_create(
+            task=task,
+            child=child,
+        )
+        if created:
+            TaskManagerUtils.assign_task(user=None, task=task, child=child)
+
+        if task_completion.status != 'approved':
+            return TaskManagerUtils.approve_task_completion(user=None, task_completion=task_completion)
+
+        return task_completion

@@ -1,5 +1,6 @@
 from django.shortcuts import render,get_object_or_404,redirect
 from datetime import datetime
+from django.db import transaction
 from django.db.models import Sum, F, Prefetch 
 from django.templatetags.static import static
 from django.contrib.auth.decorators import login_required
@@ -18,7 +19,7 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
-from childApp.models import Child
+from childApp.models import Child,StreakMilestoneAchieved
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
@@ -188,26 +189,64 @@ def donate_coins(request):
 
 @child_subscription_required
 def update_streak(request):
-    """Update the child's daily streak progress if they haven't already checked in today."""
+    """Update the child's streak (no reset, just count days clicked)."""
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request"}, status=400)
 
     child = Child.objects.select_related("user").get(user=request.user)
     today = date.today()
+    STREAK_MILESTONE_STEP = 10
 
     if child.last_streak_date == today:
-        return JsonResponse({"message": "כבר לחצת היום!", "streak": child.streak_count, "success": False})
+        last_milestone = (
+            StreakMilestoneAchieved.objects
+            .filter(child=child)
+            .order_by('-streak_day')
+            .values_list('streak_day', flat=True)
+            .first()
+        ) or 0
 
-    # Update streak count based on the last streak date
-    if child.last_streak_date == today - timedelta(days=1):
-        child.streak_count += 1  # Continue streak
-    else:
-        child.streak_count = 1  # Reset streak
+        return JsonResponse({
+            "message": "כבר לחצת היום!",
+            "streak": max(child.streak_count, last_milestone),
+            "success": False
+        })
 
-    child.last_streak_date = today
-    child.save()
+    with transaction.atomic():
+        if child.last_streak_date != today:
+            child.streak_count += 1
+            child.last_streak_date = today
+            child.save(update_fields=["streak_count", "last_streak_date"])
 
-    return JsonResponse({"message": "🔥 כל הכבוד! שמרת על הרצף!", "streak": child.streak_count, "success": True})
+        reward_given = False
+        milestone_day = child.streak_count
+
+        if milestone_day % STREAK_MILESTONE_STEP == 0:
+            milestone, created = StreakMilestoneAchieved.objects.get_or_create(
+                child=child,
+                streak_day=milestone_day
+            )
+            if created:
+                reward_given = True
+                TaskManagerUtils.auto_approve_streak_milestone_for_child(child, milestone_day)
+
+        last_milestone = (
+            StreakMilestoneAchieved.objects
+            .filter(child=child)
+            .order_by('-streak_day')
+            .values_list('streak_day', flat=True)
+            .first()
+        ) or 0
+
+        visible_streak = max(child.streak_count, last_milestone)
+
+    return JsonResponse({
+        "message": "🔥 כל הכבוד! שמרת על הרצף!",
+        "streak": visible_streak,
+        "milestone": milestone_day if reward_given else None,
+        "reward_given": reward_given,
+        "success": True
+    })
 
 @child_subscription_required
 def top_streaks(request):
