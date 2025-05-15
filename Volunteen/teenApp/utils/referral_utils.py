@@ -1,4 +1,6 @@
 from django.utils import timezone
+from django.db import transaction
+from django.db.models import Q
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
@@ -9,98 +11,93 @@ from teenApp.utils.NotificationManager import NotificationManager
 FRIEND_REFERRAL_TASK_DATA = {
     "title": "חבר מביא חבר!",
     "description": (
-        "כמה חברים תצליח לצרף החודש? כל חבר שמתחיל להתנדב שווה לך נקודות. הזמן עכשיו!"
+        "תביא חבר שיצטרף לוולנטין ותקבל נקודות! כמה חברים תצליח לצרף השבוע?"
     ),
     "points": 10,
     "img": "defaults/friend_referral.png",
     "proof_required": True,
     "send_whatsapp_on_assign": True,
     "is_pinned": True,
-    # how many days the child gets to finish each copy
     "valid_days": 7,
 }
 
-def _clone_task_from_template(template_task, deadline):
+def _get_daily_referral_task(deadline, mentor):
     """
-    Returns a NEW Task cloned from `template_task`, with a fresh deadline.
+    Returns a shared active referral Task if one exists, or creates a new one.
     """
-    new_task = Task.objects.create(
-        title=template_task.title,
-        description=template_task.description,
-        points=template_task.points,
+    today = timezone.localdate()
+    existing = Task.objects.filter(
+        title=FRIEND_REFERRAL_TASK_DATA["title"],
+        deadline__gt=today
+    ).order_by('-deadline').first()
+
+    if existing:
+        if mentor not in existing.assigned_mentors.all():
+            existing.assigned_mentors.add(mentor)
+        return existing
+
+    # Create new task for today
+    task = Task.objects.create(
+        title=FRIEND_REFERRAL_TASK_DATA["title"],
+        description=FRIEND_REFERRAL_TASK_DATA["description"],
+        points=FRIEND_REFERRAL_TASK_DATA["points"],
         deadline=deadline,
-        img=template_task.img,
-        is_pinned=template_task.is_pinned,
-        proof_required=template_task.proof_required,
-        send_whatsapp_on_assign=template_task.send_whatsapp_on_assign,
+        img=FRIEND_REFERRAL_TASK_DATA["img"],
+        proof_required=FRIEND_REFERRAL_TASK_DATA["proof_required"],
+        send_whatsapp_on_assign=FRIEND_REFERRAL_TASK_DATA["send_whatsapp_on_assign"],
+        is_pinned=FRIEND_REFERRAL_TASK_DATA["is_pinned"],
     )
-    new_task.assigned_mentors.set(template_task.assigned_mentors.all())
-    return new_task
+    task.assigned_mentors.add(mentor)
+    return task
 
-def recreate_referral_task_for_child(child):
+def child_needs_new_referral(child):
     """
-    If the child has no *active & uncompleted* friend-referral task,
-    create a fresh copy and assign it. Returns True when a new task
-    is generated, otherwise False.
+    Checks if a child needs a new referral task (either never had one, or last one expired or completed).
     """
-    now = timezone.now()
-    MENTOR = CampaignUtils.get_campaign_mentor()
-    deadline = now.date() + timezone.timedelta(days=FRIEND_REFERRAL_TASK_DATA["valid_days"])
-
+    today = timezone.now().date()
     assignments = TaskAssignment.objects.filter(
         child=child,
         task__title=FRIEND_REFERRAL_TASK_DATA["title"],
         refunded_at__isnull=True,
-        task__deadline__gt=now.date()
+        task__deadline__gt=today,
     )
 
-    completed_task_ids = TaskCompletion.objects.filter(
+    completed_ids = TaskCompletion.objects.filter(
         child=child,
         task__in=assignments.values_list("task_id", flat=True),
-        status="approved"
     ).values_list("task_id", flat=True)
 
-    active_uncompleted_exists = assignments.exclude(
-        task_id__in=completed_task_ids
-    ).exists()
+    return not assignments.exclude(task_id__in=completed_ids).exists()
 
-    if active_uncompleted_exists:
-        return False
+@transaction.atomic
+def recreate_referral_tasks_for_all():
+    """
+    Run daily at 10:00 AM. Creates ONE referral Task for today only if needed,
+    and assigns it to children that have no active & uncompleted referral task.
+    """
+    mentor = CampaignUtils.get_campaign_mentor()
+    today = timezone.now()
+    deadline = today.date() + timezone.timedelta(days=FRIEND_REFERRAL_TASK_DATA["valid_days"])
+
+    eligible_children = [
+        c for c in mentor.children.exclude(id=237).select_related("user__personal_info")
+        if hasattr(c, "subscription") and c.subscription.is_active()
+    ]
 
 
-    template_task = Task.objects.filter(
-        title=FRIEND_REFERRAL_TASK_DATA["title"],
-    ).first()
+    children_to_assign = [c for c in eligible_children if child_needs_new_referral(c)]
 
-    if not template_task:
-        template_task = Task.objects.create(
-            title=FRIEND_REFERRAL_TASK_DATA["title"],
-            description=FRIEND_REFERRAL_TASK_DATA["description"],
-            points=FRIEND_REFERRAL_TASK_DATA["points"],
-            deadline=deadline,
-            img=FRIEND_REFERRAL_TASK_DATA["img"],
-            is_template=False,
-            is_pinned=FRIEND_REFERRAL_TASK_DATA["is_pinned"],
-            proof_required=FRIEND_REFERRAL_TASK_DATA["proof_required"],
-            send_whatsapp_on_assign=FRIEND_REFERRAL_TASK_DATA["send_whatsapp_on_assign"],
-        )
-        template_task.assigned_mentors.add(MENTOR)
+    if not children_to_assign:
+        return "No referral task needed today – all children already have one"
 
-    # Make a NEW copy for this cycle
-    task_copy = _clone_task_from_template(template_task, deadline)
+    task = _get_daily_referral_task(deadline, mentor)
 
-    # 4) Assign it to the child
-    TaskAssignment.objects.create(
-        task=task_copy,
-        child=child,
-        assigned_by=MENTOR.user,
-    )
+    TaskAssignment.objects.bulk_create([
+        TaskAssignment(task=task, child=child, assigned_by=mentor.user)
+        for child in children_to_assign
+    ], ignore_conflicts=True)
 
-    # Notify the child
-    
-
-    if child.user.personal_info.phone_number:
-        msg = (
+    msg_template = (
             "🚀 אתגר חדש מחכה לך: חבר מביא חבר!\n"
             "תן לחברים שלך לגלות את Volunteen – וכשהם מתחילים להתנדב, אתה קוטף את הנקודות 🎯\n"
             "חבר = נקודות 💸  עוד חבר? עוד נקודות! פשוט, כיף, ומשתלם 😎\n"
@@ -110,32 +107,10 @@ def recreate_referral_task_for_child(child):
             "📸 עקבו אחרינו באינסטה:\nhttps://rb.gy/9i3yxf\n\n"
             "בהצלחה! – צוות Volunteen 🧡"
         )
-        NotificationManager.sent_whatsapp(
-            msg=msg,
-            phone=child.user.personal_info.phone_number,
-        )
 
-    return True
+    for child in children_to_assign:
+        phone = getattr(child.user.personal_info, "phone_number", "")
+        if phone:
+            NotificationManager.sent_whatsapp(msg=msg_template, phone=phone)
 
-
-#  Convenience wrapper: process ALL children (for Django-Q schedule)
-def recreate_referral_tasks_for_all():
-    mentor = CampaignUtils.get_campaign_mentor()
-    children = mentor.children.exclude(id=237)
-
-    created = 0
-    for child in children:
-        try:
-            subscription = getattr(child, "subscription", None)
-            if not subscription or not subscription.is_active():
-                continue
-            elif recreate_referral_task_for_child(child):
-                created += 1
-        except Exception as e:
-            print(f"Failed to assign referral task to child {child.id}: {str(e)}")
-            NotificationManager.sent_to_log_group_whatsapp(
-                msg=f"Failed to assign referral task to child {child.id}: {str(e)}",
-                phone=child.user.personal_info.phone_number,
-            )
-
-    return f"Friend-referral tasks created & notified: {created}"
+    return f"Assigned {len(children_to_assign)} children to today's referral task"
