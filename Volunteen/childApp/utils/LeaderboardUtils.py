@@ -241,13 +241,13 @@ class LeaderboardUtils:
     @staticmethod
     def get_current_streak(child: Child):
         """
-        Returns the visible streak count and updates child.streak_count if a reset is needed:
-        - If child missed days, reset to last achieved milestone (or 0)
-        - Otherwise, return current streak_count
+        Returns the visible streak count and resets only if the child missed a full day:
+        - If last streak date is yesterday or today, return real streak_count
+        - Otherwise, reset to last milestone
         """
         today = date.today()
+        yesterday = today - timedelta(days=1)
 
-        # Find the last awarded milestone
         last_milestone = (
             StreakMilestoneAchieved.objects
             .filter(child=child)
@@ -256,11 +256,11 @@ class LeaderboardUtils:
             .first()
         ) or 0
 
-        # If child already clicked today use full count
-        if child.last_streak_date == today:
+        # If the child did their streak today or yesterday then preserve streak
+        if child.last_streak_date in [today, yesterday]:
             return max(child.streak_count, last_milestone)
 
-        # Child missed a day reset to last milestone
+        # Missed a full day then reset to last milestone
         if child.streak_count > last_milestone:
             child.streak_count = last_milestone
             child.save(update_fields=['streak_count'])
