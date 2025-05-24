@@ -1,6 +1,6 @@
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task, TimeWindowRule
 from childApp.models import Child
 from mentorApp.models import Mentor
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
@@ -219,17 +219,17 @@ class MentorTaskUtils(TaskManagerUtils):
 
 
     @staticmethod
-    def create_task_with_assignments_async(mentor_id, children_ids, task_data):
+    def create_task_with_assignments_async(mentor_id, children_ids, task_data,timewindow_data):
         
         try:
             from mentorApp.models import Mentor
             mentor = Mentor.objects.get(id=mentor_id)
-            return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data)
+            return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data,timewindow_data)
         except Exception as e:
             print(f"[FATAL] Task creation failed: {e}")
 
     @staticmethod
-    def create_task_with_assignments(mentor, children_ids, task_data):
+    def create_task_with_assignments(mentor, children_ids, task_data,timewindow_data):
         """
         Assumes all validation is already done.
         Creates the task, assigns children, and optionally sends WhatsApp messages.
@@ -248,7 +248,12 @@ class MentorTaskUtils(TaskManagerUtils):
             new_task = Task.objects.create(**task_data)
             new_task.assigned_mentors.add(mentor)
             new_task.assigned_children.set(assigned_children)
-
+            
+            timewindow_data = timewindow_data or []
+            TimeWindowRule.objects.bulk_create(
+                    TimeWindowRule(task=new_task, **tw) for tw in timewindow_data
+            )
+                
             TaskAssignment.objects.bulk_create(
                 TaskAssignment(task=new_task, child=ch, assigned_by=mentor.user)
                 for ch in assigned_children

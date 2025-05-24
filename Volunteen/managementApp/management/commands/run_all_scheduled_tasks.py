@@ -12,6 +12,8 @@ class Command(BaseCommand):
             ("grant_monthly_parent_points", "Monthly parent top-up"),
             ("check_subscriptions", "Check child subscriptions and expire overdue subscriptions"),
             ('log_suspicious_events',"Log suspicious events"),
+            ('reset_missed_streaks', "Reset child streak count if they missed more than 3 days"),
+            ('send_inactive_reminders', "Send reminders to inactive children"),
         ]
 
         self.stdout.write("========== START: Daily Scheduled Tasks ==========\n")
@@ -24,5 +26,5 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(f"[FAILED] {description} -> {str(e)}\n")
                 detailed_error = traceback.format_exc()
-                NotificationManager.send_to_log_group_whatsapp(f"Error running task '{description}':\n{detailed_error}")
+                NotificationManager.sent_to_log_group_whatsapp(f"Error running task '{description}':\n{detailed_error}")
         self.stdout.write("========== DONE: All Tasks Finished ==========\n")

@@ -36,13 +36,12 @@ class ChildTaskManager:
         - tasks with no refunded assignments
         - annotated with `is_new` from TaskAssignment
         - annotated with latest TaskCompletion status
+        - prefetch related TimeWindowRules
         """
-        # Retrieve only the task IDs that were completed
         completed_task_ids = TaskCompletion.objects.filter(
             child=child, status="approved"
         ).values_list("task_id", flat=True)
 
-        # Subquery to fetch the latest status of the task for the child
         latest_status_subquery = TaskCompletion.objects.filter(
             task=OuterRef("pk"), child=child
         ).values("status")[:1]
@@ -51,9 +50,11 @@ class ChildTaskManager:
             assignments__child=child,
             assignments__refunded_at__isnull=True,
             deadline__gte=timezone.now().date()
-            ).exclude(id__in=completed_task_ids).annotate(
-                is_new=F("assignments__is_new"),
-                status=Subquery(latest_status_subquery)
+        ).exclude(id__in=completed_task_ids).annotate(
+            is_new=F("assignments__is_new"),
+            status=Subquery(latest_status_subquery)
+        ).prefetch_related(
+            "time_window_rules"  
         ).distinct().order_by("-is_pinned", "deadline")
 
         core_tasks = base_qs.filter(campaign__isnull=True)
@@ -240,30 +241,29 @@ class ChildTaskManager:
         Also includes the latest status from TaskCompletion (if exists).
         Only tasks whose assignment has not been refunded are returned.
         """
-        # Get tasks assigned to the child
         assigned_task_ids = TaskAssignment.objects.filter(
             child=child,
             refunded_at__isnull=True
-            ).values_list('task_id', flat=True)
+        ).values_list('task_id', flat=True)
 
-        # Get tasks that are either approved or rejected
         excluded_task_ids = TaskCompletion.objects.filter(
             child=child, status__in=['approved', 'rejected']
         ).values_list('task_id', flat=True)
 
-        # Subquery to fetch the latest status of the task for the child
         latest_status_subquery = TaskCompletion.objects.filter(
             task=OuterRef("pk"), child=child
         ).values("status")[:1]  # Fetch only one latest status
 
-        # Filter tasks: Assigned to the child but not approved or rejected
         unapproved_tasks = Task.objects.filter(
             id__in=assigned_task_ids
         ).exclude(id__in=excluded_task_ids).annotate(
             status=Subquery(latest_status_subquery, output_field=CharField())  # Attach status
+        ).prefetch_related(
+            "time_window_rules" 
         )
 
         return unapproved_tasks
+
     
     
     

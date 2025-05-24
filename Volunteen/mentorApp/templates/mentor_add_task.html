@@ -116,6 +116,19 @@
             align-items: flex-start;
         }
     }
+    /* —— Time-Window —— */
+.tw-card{border:1px solid #ff660088;border-radius:12px;margin-bottom:24px;overflow:hidden;transition:max-height .4s}
+.tw-card.closed .tw-body{display:none}
+.tw-header{background:#fff;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 16px}
+.tw-header h3{margin:0;font-weight:800;color:#ff6600;font-size:1.05rem}
+.tw-toggle{transition:transform .3s}
+.tw-card.closed .tw-toggle{transform:rotate(90deg)}
+.tw-tabs{display:flex;gap:6px;margin:8px 0}
+.tw-tab{padding:5px 12px;border-radius:9999px;border:1px solid #ff660066;font-weight:700;background:#fff;cursor:pointer;transition:.25s}
+.tw-tab.active{background:#ff6600;color:#fff}
+.tw-pane.hidden{display:none}
+.tw-error{color:#dc3545;font-size:.85rem;margin-top:4px}
+
 </style>
 
 <div class="container mt-5 task-form-container" dir="rtl">
@@ -206,6 +219,108 @@
             </div>
         </div>
         
+
+        {# Time-Window Section #}
+        <input type="hidden" id="timewindow_payload" name="timewindow_payload" value="[]">
+
+        <section id="tw-checkin" class="tw-card closed" dir="rtl">
+        <div class="tw-header" onclick="toggleTwCard(this)">
+            <h3>חלון זמן לצ'ק-אין</h3>
+            <span class="tw-toggle">›</span>
+        </div>
+        <div class="tw-body">
+            <nav class="tw-tabs">
+                <button type="button" class="tw-tab active" data-pane="ci-all">כל הימים</button>
+                <button type="button" class="tw-tab" data-pane="ci-weekday">יום בשבוע</button>
+                <button type="button" class="tw-tab" data-pane="ci-date">תאריך ספציפי</button>
+            </nav>
+
+            <div id="ci-all" class="tw-pane"></div>
+
+            <div id="ci-weekday" class="tw-pane hidden">
+                <label>בחר יום</label>
+                <select class="form-select">
+                    <option value="">—</option>
+                    <option value="6">ראשון</option>
+                    <option value="0">שני</option>
+                    <option value="1">שלישי</option>
+                    <option value="2">רביעי</option>
+                    <option value="3">חמישי</option>
+                    <option value="4">שישי</option>
+                    <option value="5">שבת</option>
+                </select>
+            </div>
+
+            <div id="ci-date" class="tw-pane hidden">
+                <label>תאריך</label>
+                <input type="date" class="form-control">
+            </div>
+
+            <div class="row g-2 mt-2">
+                <div class="col">
+                    <label>שעת התחלה</label>
+                    <input type="time" class="form-control" name="ci-start">
+                </div>
+                <div class="col">
+                    <label>שעת סיום</label>
+                    <input type="time" class="form-control" name="ci-end">
+                </div>
+            </div>
+        </div>
+        </section>
+
+        <section id="tw-checkout" class="tw-card closed" dir="rtl">
+        <div class="tw-header" onclick="toggleTwCard(this)">
+            <h3>חלון זמן לצ'ק-אאוט</h3>
+            <span class="tw-toggle">›</span>
+        </div>
+        <div class="tw-body">
+            <nav class="tw-tabs">
+                <button type="button" class="tw-tab active" data-pane="co-all">כל הימים</button>
+                <button type="button" class="tw-tab" data-pane="co-weekday">יום בשבוע</button>
+                <button type="button" class="tw-tab" data-pane="co-date">תאריך ספציפי</button>
+            </nav>
+
+            <div id="co-all" class="tw-pane"></div>
+
+            <div id="co-weekday" class="tw-pane hidden">
+                <label>בחר יום</label>
+                <select class="form-select">
+                    <option value="">—</option>
+                    <option value="6">ראשון</option><option value="0">שני</option>
+                    <option value="1">שלישי</option><option value="2">רביעי</option>
+                    <option value="3">חמישי</option><option value="4">שישי</option>
+                    <option value="5">שבת</option>
+                </select>
+            </div>
+
+            <div id="co-date" class="tw-pane hidden">
+                <label>תאריך</label>
+                <input type="date" class="form-control">
+            </div>
+
+            <div class="row g-2 mt-2">
+                <div class="col">
+                    <label>שעת התחלה</label>
+                    <input type="time" class="form-control" name="co-start">
+                </div>
+                <div class="col">
+                    <label>שעת סיום</label>
+                    <input type="time" class="form-control" name="co-end">
+                </div>
+            </div>
+        </div>
+        </section>
+
+        {% if messages %}
+        {% for m in messages %}
+            {% if "חלון" in m %}
+            <div class="tw-error">{{ m }}</div>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+        {# ===================================================== #}
+
         <div class="mb-3">
             <label for="image" class="form-label">תמונת המשימה</label>
             <input type="file" id="image" name="img" class="form-control">
@@ -244,6 +359,7 @@
                 שלח הודעת WhatsApp לילד כאשר מוקצה המשימה
             </label>
         </div>
+       
 
 
         <button type="submit" class="btn-submit w-100" id="submitBtn">
@@ -464,5 +580,65 @@
     });
     </script>
     
-    
+    <script>
+/* ───── Collapse card ───── */
+function toggleTwCard(head){
+    const card = head.parentElement;
+    card.classList.toggle('closed');
+}
+
+/* ───── Tabs behaviour ───── */
+document.querySelectorAll('.tw-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+      const group = tab.closest('.tw-body');
+      group.querySelectorAll('.tw-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const paneId = tab.dataset.pane;
+      group.querySelectorAll('.tw-pane').forEach(p=>p.classList.add('hidden'));
+      group.querySelector('#'+paneId).classList.remove('hidden');
+
+      /* ניקוי ערכי הטאב שיצאנו ממנו */
+      group.querySelectorAll('.tw-pane.hidden input, .tw-pane.hidden select')
+           .forEach(el=>el.value='');
+  });
+});
+
+/* ───── Build JSON before submit ───── */
+document.querySelector('form').addEventListener('submit', ()=>{
+    const rules=[];
+
+    function grab(cardId, wt){
+        const card=document.getElementById(cardId);
+        if(card.classList.contains('closed')) return;
+
+        const active=card.querySelector('.tw-tab.active').dataset.pane;
+        let specific_date=null,weekday=null;
+        if(active.endsWith('date')){
+            specific_date = card.querySelector('.tw-pane:not(.hidden) input[type=date]').value || null;
+        }else if(active.endsWith('weekday')){
+            weekday = card.querySelector('.tw-pane:not(.hidden) select').value || null;
+        }
+
+        const st = card.querySelector('input[name="'+(wt==='check_in'?'ci-start':'co-start')+'"]').value || null;
+        const et = card.querySelector('input[name="'+(wt==='check_in'?'ci-end':'co-end')+'"]').value || null;
+
+        if(!specific_date && !weekday && !st && !et) return;   // כלום? דלג
+
+        rules.push({
+            window_type: wt,
+            specific_date,
+            weekday: weekday?parseInt(weekday):null,
+            start_time: st,
+            end_time: et
+        });
+    }
+
+    grab('tw-checkin','check_in');
+    grab('tw-checkout','check_out');
+
+    document.getElementById('timewindow_payload').value = JSON.stringify(rules);
+});
+</script>
+
 {% endblock %}

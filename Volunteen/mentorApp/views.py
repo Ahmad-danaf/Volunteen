@@ -8,11 +8,12 @@ from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponseBadRequest
 from mentorApp.models import Mentor,MentorGroup
 from teenApp.entities.task import Task
-from mentorApp.forms import TaskForm,MentorGroupForm
+from mentorApp.forms import TaskForm,MentorGroupForm, validate_timewindow_payload
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
 import json
+from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, F, IntegerField, Value, ExpressionWrapper, Subquery, OuterRef
 from datetime import timedelta
@@ -119,8 +120,16 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             is_duplicate=duplicate,
             is_template=template,
         )
-
-        if form.is_valid():
+        if not form.is_valid():
+            return render(request, "mentor_add_task.html", {
+                "form": form,
+                "timewindow_set": None,           
+                "children": mentor.children.all(),
+                "is_duplicate": duplicate,
+                "available_teencoins": mentor.available_teencoins,
+                "mentor_groups": mentor_groups,
+            })
+        else:
             task_data.update(form.cleaned_data)
 
             assigned_children = task_data.pop("assigned_children", [])
@@ -159,6 +168,19 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             except Exception as exc:
                 print(f"Error saving image: {exc}")
                 task_data["img"] = DEFAULT_IMG
+                
+            raw_payload = request.POST.get("timewindow_payload", "[]")
+            try:
+                timewindow_data = json.loads(raw_payload)
+            except ValueError:
+                messages.error(request, "פורמט חלונות הזמן אינו תקין")
+                return redirect("mentorApp:mentor_add_task")
+
+            try:
+                timewindow_data = validate_timewindow_payload(timewindow_data)
+            except ValidationError as e:
+                messages.error(request, str(e))
+                return redirect("mentorApp:mentor_add_task")
 
             # queue label with deadline + child sig
             label = build_label(
@@ -180,6 +202,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 mentor.id,
                 children_ids,
                 task_data,
+                timewindow_data,
                 q_options={"label": label, "queue_limit": 1},
             )
 
@@ -191,8 +214,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             initial=task_data,
             is_duplicate=duplicate,
             is_template=template,
-        )
-        
+        )     
     return render(
         request,
         "mentor_add_task.html",
@@ -377,21 +399,46 @@ def send_whatsapp_message(request):
 @login_required
 def mentor_task_images(request):
     """
-    Retrieves task completions assigned to the mentor that are in 'pending', 'checked_in', or 'checked_out' status
-    within the last 3 days.
+    Displays task completions assigned to the mentor within the last 3 days,
+    grouped into two categories:
+    1. On-Time (check-in/out within time window or no rule)
+    2. Late (either check-in or check-out was late)
     """
     mentor = get_object_or_404(Mentor, user=request.user)
-    three_days_ago = timezone.now() - timedelta(days=3)  
+    three_days_ago = timezone.now() - timedelta(days=3)
 
-    task_completions = TaskCompletion.objects.filter(
+    completions = TaskCompletion.objects.filter(
         task__assigned_mentors=mentor,
-        status__in=['pending', 'checked_in', 'checked_out'],  
+        status__in=['pending', 'checked_in', 'checked_out'],
         completion_date__gte=three_days_ago
-    )
-    return render(request, 'mentor_task_images.html', {'completions': task_completions})
+    ).select_related('child__user', 'task')
 
+    # Grouped data for frontend
+    on_time = []
+    late = []
 
-@csrf_exempt
+    for comp in completions:
+        is_late_checkin = comp.is_late_checkin
+        is_late_checkout = comp.is_late_checkout
+
+        entry = {
+            "instance": comp,
+            "late_checkin": is_late_checkin,
+            "late_checkout": is_late_checkout,
+        }
+
+        if is_late_checkin or is_late_checkout:
+            late.append(entry)
+        else:
+            on_time.append(entry)
+
+    context = {
+        "on_time_completions": on_time,
+        "late_completions": late,
+    }
+
+    return render(request, "mentor_task_images.html", context)
+
 @login_required
 def review_task(request):
     if request.method == 'POST':
@@ -399,28 +446,53 @@ def review_task(request):
             data = json.loads(request.body)
             task_ids = data.get('task_ids', [])
             action = data.get('action')
+            awarded_coins_input = data.get('awarded_coins')  # optional for partial approval
             feedback = data.get('mentor_feedback', None)
 
             if not task_ids:
                 return JsonResponse({'success': False, 'error': 'לא נבחרו משימות.'})
 
             processed_tasks = 0
+
             for task_id in task_ids:
                 task_completion = get_object_or_404(TaskCompletion, id=task_id)
-                
-                if task_completion.status =='approved' or task_completion.status == 'rejected':
+
+                if task_completion.status in ['approved', 'rejected']:
                     continue
-                
+
                 if action == 'approve':
                     task_completion.status = 'approved'
-                    task_completion.task.approve_task(task_completion.child)
-                    task_completion.remaining_coins = task_completion.task.points+task_completion.bonus_points
+
+                    base_points = task_completion.task.points
+                    bonus_points = task_completion.bonus_points or 0
+
+                    if awarded_coins_input is not None:
+                        # Partial approval flow
+                        try:
+                            awarded_input = int(awarded_coins_input)
+                        except ValueError:
+                            return JsonResponse({'success': False, 'error': 'מספר נקודות לא תקין.'})
+
+                        # Ensure original points don't exceed task limit
+                        original_points = min(base_points, awarded_input)
+                    else:
+                        # Full approval flow
+                        original_points = base_points
+
+                    # Total coins awarded = original points + bonus
+                    total_awarded = original_points + bonus_points
+
+                    task_completion.awarded_coins = total_awarded
+                    task_completion.remaining_coins = total_awarded
+
+                    # Award coins to child
+                    task_completion.child.add_points(total_awarded)
+
                 elif action == 'reject':
                     task_completion.status = 'rejected'
                     task_completion.mentor_feedback = feedback
-                
-                task_completion.save()
 
+                task_completion.save()
                 processed_tasks += 1
 
             return JsonResponse({
@@ -433,7 +505,6 @@ def review_task(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'בקשה לא חוקית.'})
-
 
 
 @login_required

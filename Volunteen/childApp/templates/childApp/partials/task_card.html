@@ -1,4 +1,5 @@
 {% load static %}
+{% load static hebrew_extras %}
 
 <div x-data="{ isOpen: false }" 
      @click="isOpen = !isOpen"
@@ -27,12 +28,19 @@
 
         <!-- Center Column: Title, Deadline, Points -->
         <div class="flex-1 px-2">
-            <h2 class="text-base font-semibold text-gray-800">
+           <h2 class="text-base font-semibold text-gray-800 flex items-center gap-1">
                 {{ task.title }}
+
                 {% if task.is_pinned %}
-                    <span class="pin-icon ml-2" title="משימה מוצמדת">📌</span>
+                    <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                {% endif %}
+
+                {% if task.time_window_rules.all|length > 0 %}
+                    <!-- time window indicator -->
+                    <span class="text-orange-500 text-lg" title="יש חלון זמן">⏰</span>
                 {% endif %}
             </h2>
+
             <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
             <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
         </div>
@@ -98,6 +106,36 @@
         </div>
         
         {% endif %}
+        {% if task.time_window_rules.all|length > 0 %}
+            <div class="bg-orange-50 rounded-lg p-3 space-y-2">
+                <p class="font-medium text-orange-600 flex items-center gap-1 text-sm">
+                ⏰ <span>חלונות זמן</span>
+                </p>
+
+                <ul class="space-y-2">
+                {% for rule in task.time_window_rules.all %}
+                    <li class="bg-white rounded-md p-2 shadow-sm text-sm leading-relaxed space-y-1 rtl:text-right">
+                    <div class="font-semibold">
+                        {% if rule.window_type == "check_in" %}צ'ק-אין{% else %}צ'ק-אאוט{% endif %}
+                    </div>
+
+                    <div>
+                        {% if rule.specific_date %}
+                        📅 רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                        {% elif rule.weekday != None %}
+                        📅 כל יום {{ rule.weekday|hebrew_weekday }}
+                        {% else %}
+                        📅 בכל יום
+                        {% endif %}
+                    </div>
+
+                    <div>🕒 בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}</div>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
         <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold
             {% if task.proof_required %}bg-green-100 text-green-700
             {% else %}bg-gray-100 text-gray-500{% endif %}">

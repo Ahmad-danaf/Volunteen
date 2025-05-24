@@ -61,7 +61,7 @@ def donation_summary_by_category(request):
 
 @donation_manager_required
 def add_spending(request):
-    categories = DonationCategory.objects.filter(is_active=True)
+    categories = DonationCategory.objects.all()
     error_message = None
     success_message = None
 
@@ -93,7 +93,7 @@ def add_spending(request):
                 raise ValueError("הסכום חייב להיות גדול מאפס.")
 
             # Get active category or return 404 if not found
-            category = get_object_or_404(DonationCategory, id=category_id, is_active=True)
+            category = get_object_or_404(DonationCategory, id=category_id)
             shop = get_object_or_404(Shop, id=shop_id) if shop_id else None
             if shop is None:
                 raise ValueError("חנות לא נבחרה.")

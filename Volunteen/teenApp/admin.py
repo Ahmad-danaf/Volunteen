@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task, TimeWindowRule  
 from mentorApp.models import Mentor
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
@@ -38,11 +38,17 @@ class ChildAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'identifier')
     list_filter = ('points',)
 
+class TimeWindowInline(admin.TabularInline):
+    model = TimeWindowRule
+    extra = 0
+    max_num = 2
+    
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'points', 'deadline', 'completed')
     search_fields = ('title',)
     list_filter = ('deadline', 'completed')
+    inlines = [TimeWindowInline]
 
 @admin.register(Mentor)
 class MentorAdmin(admin.ModelAdmin):
@@ -79,3 +85,8 @@ class TaskCompletionAdmin(admin.ModelAdmin):
     actions = [assign_remaining_coins, reset_remaining_coins]
     
     
+@admin.register(TimeWindowRule)
+class TimeWindowRuleAdmin(admin.ModelAdmin):
+    list_display = ('task', 'window_type', 'specific_date', 'weekday', 'start_time', 'end_time')
+    list_filter = ('window_type', 'specific_date', 'weekday')
+    search_fields = ('task__title',)

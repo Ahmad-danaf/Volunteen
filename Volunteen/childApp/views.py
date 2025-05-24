@@ -20,7 +20,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
 from childApp.models import Child,StreakMilestoneAchieved
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task, TimeWindowRule
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
 from teenApp.entities.TaskCompletion import TaskCompletion
@@ -47,7 +47,7 @@ from childApp.decorators import child_subscription_required
 from parentApp.models import ChildSubscription
 from childApp.utils.CampaignUtils import CampaignUtils
 from Volunteen.constants import CAMPAIGN_TIME_LIMIT_MINUTES
-
+from teenApp.utils.TimeWindowUtils import TimeWindowUtils
 def child_landing(request):
     top_children = LeaderboardUtils.get_children_leaderboard(limit=3)
     return render(request, 'child_landing.html', {'top_children': top_children})
@@ -667,7 +667,6 @@ def task_check_in_out(request):
         .filter(deadline__gte=today)
         .order_by('-is_pinned', 'deadline')
     )
-    
     return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})
 
 @child_subscription_required
@@ -687,7 +686,16 @@ def check_in(request, task_id):
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
-        return render(request, 'check_in_exists.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
+        action_label="צ`ק אין"
+        action_url = "childApp:check_in"
+        now=timezone.localtime()
+        rule = TimeWindowUtils.resolve_rule(
+            task=task,
+            window_type=TimeWindowRule.WindowType.CHECK_IN,
+            when=now
+        )
+        is_late_now = TimeWindowUtils.is_late(now, rule)
+        return render(request, 'check_exists.html', {'task': task,'action_label': action_label,'action_url': action_url,'is_late_now': is_late_now,})
 
     return render(request, 'check_in.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
 
@@ -697,6 +705,7 @@ def check_out(request, task_id):
     child = request.user.child
     special_permissions = False
     use_default_image = False
+    replace_image = request.GET.get('replace_image') == 'true'
     if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN:
         special_permissions = True
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
@@ -708,6 +717,18 @@ def check_out(request, task_id):
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if not task_completion or not task_completion.checkin_img:
         return render(request, 'check_in_warning.html')
+    if task_completion and task_completion.checkin_img and not replace_image:
+        action_label="צ`ק אאוט"
+        action_url = "childApp:check_out"
+        now=timezone.localtime()
+        rule = TimeWindowUtils.resolve_rule(
+            task=task,
+            window_type=TimeWindowRule.WindowType.CHECK_OUT,
+            when=now
+        )
+        is_late_now = TimeWindowUtils.is_late(now, rule)
+        return render(request, 'check_exists.html', {'task': task,'action_label': action_label,'action_url': action_url,'is_late_now': is_late_now,})
+
 
     return render(request, 'check_out.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
 

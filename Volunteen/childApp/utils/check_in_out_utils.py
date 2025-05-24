@@ -5,7 +5,9 @@ from django.shortcuts import get_object_or_404
 from childApp.models import Child
 from teenApp.entities.task import Task
 from teenApp.entities.TaskCompletion import TaskCompletion
-
+from teenApp.entities.task import TimeWindowRule
+from teenApp.utils.TimeWindowUtils import TimeWindowUtils
+from django.utils import timezone
 def process_check_in(child_id, task_id, image_data):
     """
     Background task that processes a check-in:
@@ -25,6 +27,11 @@ def process_check_in(child_id, task_id, image_data):
     saved_path = default_storage.save(file_path, content_file)
     task_completion.checkin_img = saved_path
     task_completion.status = 'checked_in'
+    
+    # Determine lateness
+    now = timezone.localtime()
+    task_completion.checkin_at = now
+
     task_completion.save()
     return f"Check-in processed for child {child.user.username} on task {task.title}"
 
@@ -49,5 +56,8 @@ def process_check_out(child_id, task_id, image_data):
     saved_path = default_storage.save(file_path, content_file)
     task_completion.checkout_img = saved_path
     task_completion.status = 'pending'
+    
+    now = timezone.localtime()
+    task_completion.checkout_at = now
     task_completion.save()
     return f"Check-out processed for child {child.user.username} on task {task.title}"

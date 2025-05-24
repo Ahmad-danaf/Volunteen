@@ -16,6 +16,7 @@ class TaskCompletion(models.Model):
     child = models.ForeignKey('childApp.Child', on_delete=models.CASCADE)
     task = models.ForeignKey('teenApp.Task', on_delete=models.CASCADE)
     completion_date = models.DateTimeField(default=timezone.now)
+    awarded_coins = models.PositiveIntegerField(null=True, blank=True)
     bonus_points = models.IntegerField(default=0)
     remaining_coins = models.IntegerField(default=0, help_text="Unredeemed TeenCoins from this task.")
     checkin_img = models.ImageField(upload_to='checkin_images/', null=True, blank=True, verbose_name='Check-In Image')
@@ -23,7 +24,8 @@ class TaskCompletion(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Status')
     mentor_feedback = models.TextField(null=True, blank=True, verbose_name='Mentor Feedback')
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='approved_tasks', null=True, blank=True)
-
+    checkin_at  = models.DateTimeField(null=True, blank=True)
+    checkout_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('child', 'task')  # Ensure that each child can only complete a task once
@@ -48,3 +50,30 @@ class TaskCompletion(models.Model):
         if self.checkout_img and os.path.exists(self.checkout_img.path):
             os.remove(self.checkout_img.path)
         super().delete(*args, **kwargs)
+
+    
+    @property
+    def is_late_checkin(self):
+        if not self.checkin_at:
+            return False
+        from teenApp.utils.TimeWindowUtils import TimeWindowUtils
+        from teenApp.entities.task import TimeWindowRule
+        rule = TimeWindowUtils.resolve_rule(
+            task=self.task,
+            window_type=TimeWindowRule.WindowType.CHECK_IN,
+            when=self.checkin_at
+        )
+        return TimeWindowUtils.is_late(self.checkin_at, rule)
+
+    @property
+    def is_late_checkout(self):
+        if not self.checkout_at:
+            return False
+        from teenApp.utils.TimeWindowUtils import TimeWindowUtils
+        from teenApp.entities.task import TimeWindowRule
+        rule = TimeWindowUtils.resolve_rule(
+            task=self.task,
+            window_type=TimeWindowRule.WindowType.CHECK_OUT,
+            when=self.checkout_at
+        )
+        return TimeWindowUtils.is_late(self.checkout_at, rule)

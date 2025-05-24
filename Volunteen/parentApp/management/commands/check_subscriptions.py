@@ -35,7 +35,7 @@ class Command(BaseCommand):
                     f"The plan expired on {sub.end_date.strftime('%Y-%m-%d')} and was not renewed.\n"
                     f"Please take action if you'd like to continue."
                 )
-                NotificationManager.send_to_log_group_whatsapp(msg)
+                NotificationManager.sent_to_log_group_whatsapp(msg)
             except Exception as e:
                 self.stderr.write(
                     f"[ERROR] Failed to expire subscription (ID: {sub.id}) for child {sub.child.identifier} &USERNAME: {sub.child.user.username}: {e}"

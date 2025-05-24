@@ -54,7 +54,7 @@ class DonationCalculator:
         Optionally filters all figures by a date range.
         """
         summaries = []
-        categories = DonationCategory.objects.filter(is_active=True)
+        categories = DonationCategory.objects.all()
         for category in categories:
             total_donated = DonationCalculator.get_total_donated(category, start_date, end_date)
             total_spent = DonationCalculator.get_total_spent(category, start_date, end_date)
@@ -76,7 +76,7 @@ class DonationCalculator:
             - 'monthly_totals': a list of 12 integers (one per month, January to December)
         """
         monthly_data = {}
-        categories = DonationCategory.objects.filter(is_active=True)
+        categories = DonationCategory.objects.all()
         for category in categories:
             monthly_totals = []
             for month in range(1, 13):

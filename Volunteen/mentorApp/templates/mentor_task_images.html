@@ -1,300 +1,837 @@
-{% extends 'mentor_base.html' %}
-{% load static %}
-{% block title %}אישור משימות{% endblock %}
-
+{% extends 'mentor_primary_base.html' %}
+{% load static %} 
+{% block title%}סקירת משימות{% endblock %} 
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/mentorApp/mentor_task_images.css' %}">
+{% endblock %}
 {% block content %}
-<h1>אישור משימות</h1>
-<div class="responsive-table">
-  <table>
-    <thead>
-      <tr>
-        <th>
-          <input type="checkbox" id="select-all" />
-        </th>
-        <th style="width: 10%;">שם</th>
-        <th style="width: 20%;">משימה</th>
-        <th style="width: 15%;">תאריך משימה</th>
-        <th style="width: 20%;">צ'ק-אין</th>
-        <th style="width: 20%;">צ'ק-אאוט</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for completion in completions %}
-      <tr id="task-row-{{ completion.id }}" 
-      class="{% if completion.status != 'pending' and completion.status != 'checked_in' and completion.status != 'checked_out' %}completed-task{% endif %}">
-          <td>
-          <input
-            type="checkbox"
-            class="select-checkbox"
-            data-id="{{ completion.id }}"
-            {% if completion.status != 'pending' and completion.status != 'checked_in' and completion.status != 'checked_out' %}disabled{% endif %}
-            />
-        </td>
-        <td>{{ completion.child.user.username }}</td>
-        <td>{{ completion.task.title }}</td>
-        <td>{{ completion.task.deadline|date:"d/m/Y" }}</td>
-        <td>
-          {% if completion.checkin_img and completion.checkin_img.url %}
-          <a href="{{ completion.checkin_img.url }}" class="lightbox">
-            <img
-              src="{{ completion.checkin_img.url }}"
-              alt="Check-In Image"
-              class="task-image"
-              loading="lazy"
-            />
-          </a>
-          {% else %}
-          <span>אין</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if completion.checkout_img and completion.checkout_img.url %}
-          <a href="{{ completion.checkout_img.url }}" class="lightbox">
-            <img
-              src="{{ completion.checkout_img.url }}"
-              alt="Check-Out Image"
-              class="task-image"
-              loading="lazy"
-            />
-          </a>
-          {% else %}
-          <span>אין</span>
-          {% endif %}
-        </td>
-        
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<div class="px-4 py-5 md:px-6 lg:px-8 max-w-7xl mx-auto" dir="rtl">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
+      <span class="text-indigo-600">סקירת</span> משימות
+    </h1>
 
-<div class="actions">
-  <button id="approve-selected" class="approve-btn">אשר נבחרים</button>
-  <button id="reject-selected" class="reject-btn">דחה נבחרים</button>
-</div>
+    <!-- Global Actions -->
+    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+      <button
+        id="selectAllBtn"
+        class="btn-primary bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+          />
+        </svg>
+        בחר הכל
+      </button>
 
-<div id="rejectModal" class="modal fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 z-50 hidden">
-  <h3 class="text-lg font-bold mb-4">דחיית משימה</h3>
-  <p class="mb-4">האם אתה בטוח שברצונך לדחות את המשימה? ניתן לספק משוב (אופציונלי):</p>
-  <div class="mb-4">
-    <label class="block text-sm font-medium mb-1">משוב:</label>
-    <textarea id="rejectFeedback" class="w-full p-2 border rounded !rounded-button" rows="3"></textarea>
+      <button
+        id="submitSelectedBtn"
+        disabled
+        class="btn-submit bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+        אישור נבחרים
+      </button>
+
+      <button
+        id="rejectSelectedBtn"
+        disabled
+        class="btn-reject bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+        דחיית נבחרים
+      </button>
+    </div>
   </div>
-  <div class="flex gap-4 mt-6">
-    <button id="closeRejectBtn" type="button" class="flex-1 py-2 px-4 border rounded !rounded-button">ביטול</button>
-    <button id="confirmRejectBtn" type="button" class="flex-1 py-2 px-4 bg-red-500 rounded !rounded-button">דחה משימה</button>
+
+  <!-- Task Status Summary - Now a one-liner -->
+  <div
+    class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-6"
+  >
+    <div class="flex items-center">
+      <div class="p-2 mr-3 rounded-full bg-indigo-100">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-indigo-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div>
+        <div class="text-xs font-medium text-gray-500">בזמן</div>
+        <div class="text-lg font-bold text-indigo-600" id="onTimeCount">
+          {{ on_time_completions|length }}
+        </div>
+      </div>
+    </div>
+
+    <div class="h-10 mx-4 border-r border-gray-200"></div>
+
+    <div class="flex items-center">
+      <div class="p-2 mr-3 rounded-full bg-red-100">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-red-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div>
+        <div class="text-xs font-medium text-gray-500">באיחור</div>
+        <div class="text-lg font-bold text-red-600" id="lateCount">
+          {{ late_completions|length }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- On Time Tasks Section -->
+  <div id="onTimeSection"
+     class="rounded-2xl shadow-xl border border-green-400 overflow-hidden mb-6 bg-white transition-all duration-300">
+
+  <!-- On-Time Header -->
+  <div id="onTimeHeader"
+     class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 via-green-500 to-green-400 text-white cursor-pointer select-none">
+
+    <!-- Title & Count -->
+    <div class="flex items-center gap-2">
+      <!-- Count Badge -->
+      <span class="bg-white text-green-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
+        {{ on_time_completions|length }}
+      </span>
+
+      <!-- Title -->
+      <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
+        משימות בזמן
+      </h2>
+
+
+      <!-- Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="w-5 h-5 text-white opacity-90"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+
+    <!-- Select All + Collapse -->
+    <div class="flex items-center gap-3">
+      <!-- Select All -->
+      <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
+        <input
+          type="checkbox"
+          class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-green-600 bg-white border-white rounded-md selectAllInSection"
+          data-section="ontime"
+        />
+        בחר הכל
+      </label>
+
+      <!-- Collapse Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+           id="onTimeToggleIcon"
+           class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_css %}
-<style>
-  .completed-task {
-    background-color: #f8f9fa;
-    opacity: 0.6;
-  }
 
-  .responsive-table {
-    overflow-x: auto;
-    margin: 1rem 0;
-    -webkit-overflow-scrolling: touch;
-  }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: auto;
-  }
+    <div class="px-5 py-4 bg-gray-50" id="onTimeContent">
+      {% if on_time_completions %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for item in on_time_completions %}
+        <div
+          class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden task-card"
+          data-task-id="{{ item.instance.id }}"
+        >
+          <div class="p-4 border-b">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-5 w-5 text-indigo-600 task-checkbox"
+                  data-task-id="{{ item.instance.id }}"
+                />
+                <span class="ml-3 font-medium text-gray-900"
+                  >{{ item.instance.child.user.username }}</span
+                >
+              </div>
+              <span
+                class="text-xs bg-indigo-100 text-indigo-800 rounded-full px-3 py-1"
+                >משימה: {{ item.instance.task.title }}</span
+              >
+            </div>
+          </div>
 
-  th,
-  td {
-    padding: 0.5rem;
-    text-align: center;
-    border: 1px solid #ddd;
-    font-size: 0.9rem;
-  }
+          <div class="p-4 grid grid-cols-2 gap-3">
+            <!-- Check-in Image -->
+            <div class="relative">
+              <div class="text-xs text-gray-500 mb-1 text-center">כניסה</div>
+              <div
+                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square"
+              >
+                {% if item.instance.checkin_img %}
+                <img
+                  src="{{ item.instance.checkin_img.url }}"
+                  alt="Check-in image"
+                  class="w-full h-full object-cover cursor-pointer view-image"
+                  data-src="{{ item.instance.checkin_img.url }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                {% endif %}
+              </div>
+            </div>
 
-  th {
-    background-color: #f4f4f4;
-  }
+            <!-- Check-out Image -->
+            <div class="relative">
+              <div class="text-xs text-gray-500 mb-1 text-center">יציאה</div>
+              <div
+                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square"
+              >
+                {% if item.instance.checkout_img %}
+                <img
+                  src="{{ item.instance.checkout_img.url }}"
+                  alt="Check-out image"
+                  class="w-full h-full object-cover cursor-pointer view-image"
+                  data-src="{{ item.instance.checkout_img.url }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
 
-  .task-image {
-    max-width: 50px;
-    height: auto;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+          <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 inline-block mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ item.instance.completion_date|date:"d/m/Y" }}
+            </div>
+            <div>
+              <span
+                class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1"
+                >{{ item.instance.task.points }} נקודות</span
+              >
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-10">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          />
+        </svg>
+        <p class="mt-2 text-sm text-gray-500">אין משימות בזמן לסקירה</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 
-  .actions {
-    text-align: center;
-    margin: 1rem 0;
-  }
+  <!-- Late Tasks Section -->
+ <div id="lateSection"
+     class="rounded-2xl shadow-xl border border-red-400 overflow-hidden mb-6 bg-white transition-all duration-300">
 
-  button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 0.5rem;
-  }
+  <!-- Late Header -->
+  <div id="lateHeader"
+       class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-white cursor-pointer select-none">
 
-  .approve-btn {
-    background-color: #28a745;
-    color: white;
-  }
+    <!-- Title & Count -->
+    <div class="flex items-center gap-2">
+      <!-- Count Badge -->
+      <span class="bg-white text-red-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
+        {{ late_completions|length }}
+      </span>
 
-  .reject-btn {
-    background-color: #dc3545;
-    color: white;
-  }
+      <!-- Title -->
+      <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
+        משימות באיחור
+      </h2>
 
-  @media only screen and (max-width: 430px) {
-    .task-image {
-      max-width: 40px;
-    }
+      <!-- Icon (info or exclamation) -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="w-5 h-5 text-white opacity-80"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
 
-    th,
-    td {
-      padding: 0.4rem;
-      font-size: 0.8rem;
-    }
+    <!-- Select All + Collapse -->
+    <div class="flex items-center gap-3">
+      <!-- Select All -->
+      <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
+        <input
+          type="checkbox"
+          class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-red-600 bg-white border-white rounded-md selectAllInSection"
+          data-section="late"
+        />
+        בחר הכל
+      </label>
 
-    .actions {
-      margin: 0.5rem 0;
-    }
+      <!-- Collapse Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg"
+           id="lateToggleIcon"
+           class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </div>
+</div>
 
-    button {
-      font-size: 0.9rem;
-      padding: 0.4rem 0.8rem;
-    }
-  }
 
-  .modal {
-    transition: transform 0.3s ease;
-  }
-  .modal.show {
-    transform: translateY(0);
-  }
-  .hidden {
-    display: none;
-  }
-</style>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Select/Deselect all checkboxes (only enabled ones)
-    const selectAllCheckbox = document.getElementById("select-all");
-    const checkboxes = document.querySelectorAll('.select-checkbox:not([disabled])');
+    <div class="px-5 py-4 bg-gray-50" id="lateContent">
+      {% if late_completions %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for item in late_completions %}
+        <div
+          class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden task-card"
+          data-task-id="{{ item.instance.id }}"
+        >
+          <div class="p-4 border-b">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-5 w-5 text-red-600 task-checkbox"
+                  data-task-id="{{ item.instance.id }}"
+                />
+                <span class="ml-3 font-medium text-gray-900"
+                  >{{ item.instance.child.user.username }}</span
+                >
+              </div>
+              <span
+                class="text-xs bg-red-100 text-red-800 rounded-full px-3 py-1"
+                >משימה: {{ item.instance.task.title }}</span
+              >
+            </div>
+          </div>
 
-    selectAllCheckbox.addEventListener("change", function () {
-      checkboxes.forEach((checkbox) => {
-        if (!checkbox.disabled) {
-          checkbox.checked = this.checked;
-        }
-      });
-    });
+          <div class="p-4 grid grid-cols-2 gap-3">
+            <!-- Check-in Image -->
+            <div class="relative">
+              {% if item.late_checkin %}
+              <div class="late-indicator pulse-alert"></div>
+              {% endif %}
+              <div class="text-xs text-gray-500 mb-1 text-center">
+                כניסה {% if item.late_checkin %}<span
+                  class="text-red-600 font-semibold"
+                  >(באיחור)</span
+                >{% endif %}
+              </div>
+              <div
+                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square {% if item.late_checkin %}border-2 border-red-500{% endif %}"
+              >
+                {% if item.instance.checkin_img %}
+                <img
+                  src="{{ item.instance.checkin_img.url }}"
+                  alt="Check-in image"
+                  class="w-full h-full object-cover cursor-pointer view-image"
+                  data-src="{{ item.instance.checkin_img.url }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                {% endif %}
+              </div>
+            </div>
 
-    // Bulk approve/reject actions
-    document.getElementById("approve-selected").addEventListener("click", function () {
-      handleBulkAction("approve");
-    });
+            <!-- Check-out Image -->
+            <div class="relative">
+              {% if item.late_checkout %}
+              <div class="late-indicator pulse-alert"></div>
+              {% endif %}
+              <div class="text-xs text-gray-500 mb-1 text-center">
+                יציאה {% if item.late_checkout %}<span
+                  class="text-red-600 font-semibold"
+                  >(באיחור)</span
+                >{% endif %}
+              </div>
+              <div
+                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square {% if item.late_checkout %}border-2 border-red-500{% endif %}"
+              >
+                {% if item.instance.checkout_img %}
+                <img
+                  src="{{ item.instance.checkout_img.url }}"
+                  alt="Check-out image"
+                  class="w-full h-full object-cover cursor-pointer view-image"
+                  data-src="{{ item.instance.checkout_img.url }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <div
+                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-10 w-10 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
 
-    document.getElementById("reject-selected").addEventListener("click", function () {
-      const selectedTasks = Array.from(document.querySelectorAll('.select-checkbox'))
-        .filter(checkbox => checkbox.checked && !checkbox.disabled)
-        .map(checkbox => checkbox.getAttribute("data-id"));
+          <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 inline-block mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ item.instance.completion_date|date:"d/m/Y" }}
+            </div>
+            <div>
+              <span
+                class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1"
+                >{{ item.instance.task.points }} נקודות</span
+              >
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-10">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          />
+        </svg>
+        <p class="mt-2 text-sm text-gray-500">אין משימות באיחור לסקירה</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 
-      if (selectedTasks.length === 0) {
-        alert("לא נבחרו משימות.");
-        return;
-      }
-      openRejectModal();
-    });
+<!-- Image Modal -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center hidden"
+  id="imageModal"
+>
+  <div
+    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
+    id="modalBackdrop"
+  ></div>
+  <div
+    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-3xl w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
+    id="modalContent"
+  >
+    <div class="absolute top-0 right-0 p-4">
+      <button
+        type="button"
+        class="text-gray-400 hover:text-gray-500"
+        id="closeModal"
+      >
+        <svg
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
 
-    function openRejectModal() {
-      const modal = document.getElementById("rejectModal");
-      modal.classList.remove("hidden");
-    }
+    <div class="p-6">
+      <div
+        class="w-full aspect-auto max-h-[70vh] flex items-center justify-center"
+      >
+        <img
+          src=""
+          alt="Full size image"
+          id="modalImage"
+          class="max-w-full max-h-[70vh] object-contain"
+        />
+      </div>
+    </div>
+  </div>
+</div>
 
-    document.getElementById("confirmRejectBtn").addEventListener("click", function () {
-      const feedback = document.getElementById("rejectFeedback").value;
-      handleBulkAction("reject", feedback);
-      closeRejectModal();
-    });
-    
-    document.getElementById("closeRejectBtn").addEventListener("click", function () {
-      closeRejectModal();
-    });
+<!-- Approval Modal -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center hidden"
+  id="approvalModal"
+>
+  <div
+    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
+    id="approvalModalBackdrop"
+  ></div>
+  <div
+    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-md w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
+    id="approvalModalContent"
+    dir="rtl"
+  >
+    <div class="p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">אישור משימות</h3>
+      <p class="text-sm text-gray-500 mb-6">האם לאשר את המשימות שנבחרו?</p>
 
-    function closeRejectModal() {
-      const modal = document.getElementById("rejectModal");
-      modal.classList.add("hidden");
-      document.getElementById("rejectFeedback").value = "";
-    }
+      <div class="flex flex-col gap-4">
+        <button
+          type="button"
+          id="fullApprovalBtn"
+          class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none"
+        >
+          <div id="fullApprovalSpinner" class="hidden mr-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            id="fullApprovalIcon"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span id="fullApprovalText">אישור מלא (<span id="maxPointsDisplay">0</span> נקודות)</span>
+        </button>
 
-    function handleBulkAction(action, feedback = null) {
-      const selectedTasks = Array.from(document.querySelectorAll('.select-checkbox'))
-        .filter(checkbox => checkbox.checked && !checkbox.disabled)
-        .map(checkbox => checkbox.getAttribute("data-id"));
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            אישור חלקי (טווח: <span id="minPointsDisplay">0</span>-<span id="maxPointsDisplay2">0</span> נקודות)
+          </label>
+          <div class="mt-1 flex rounded-md shadow-sm">
+            <input
+              type="number"
+              id="partialApprovalInput"
+              min="1"
+              max="100"
+              class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
+              placeholder="מספר נקודות"
+            />
+            <button
+              type="button"
+              id="partialApprovalBtn"
+              class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 rounded-l-md bg-gray-50 text-gray-500 text-sm"
+            >
+              <div id="partialApprovalSpinner" class="hidden mr-2">
+                <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              אישור חלקי
+            </button>
+          </div>
+          <p id="pointsValidationMessage" class="mt-1 text-sm text-red-600 hidden">יש להזין מספר נקודות בטווח המותר</p>
+        </div>
 
-      fetch("{% url 'mentorApp:review_task' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({ task_ids: selectedTasks, action: action, mentor_feedback: feedback }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            selectedTasks.forEach(taskId => {
-              const row = document.getElementById(`task-row-${taskId}`);
-              if (row) {
-                row.remove();
-              }
-            });
-          } else {
-            alert(`שגיאה: ${data.error}`);
-          }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-    // Lightbox functionality
-    const lightboxes = document.querySelectorAll(".lightbox");
-    lightboxes.forEach((link) => {
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        const imgUrl = this.getAttribute("href");
-        const modal = document.createElement("div");
-        modal.style.position = "fixed";
-        modal.style.top = "0";
-        modal.style.left = "0";
-        modal.style.width = "100%";
-        modal.style.height = "100%";
-        modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        modal.style.display = "flex";
-        modal.style.alignItems = "center";
-        modal.style.justifyContent = "center";
-        modal.style.zIndex = "9999";
+        <button
+          type="button"
+          id="cancelApprovalBtn"
+          class="mt-2 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+        >
+          ביטול
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        const img = document.createElement("img");
-        img.src = imgUrl;
-        img.style.maxWidth = "90%";
-        img.style.maxHeight = "90%";
-        img.style.borderRadius = "10px";
+<!-- Rejection Modal -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center hidden"
+  id="rejectionModal"
+>
+  <div
+    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
+    id="rejectionModalBackdrop"
+  ></div>
+  <div
+    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-md w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
+    id="rejectionModalContent"
+    dir="rtl"
+  >
+    <div class="p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">דחיית משימות</h3>
+      <p class="text-sm text-gray-500 mb-4">האם לדחות את המשימות שנבחרו?</p>
 
-        modal.appendChild(img);
-        document.body.appendChild(modal);
+      <div class="mb-4">
+        <label
+          for="rejectionFeedback"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >משוב למשתתף (אופציונלי)</label
+        >
+        <textarea
+          id="rejectionFeedback"
+          rows="3"
+          class="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          placeholder="הסבר מדוע המשימה נדחתה"
+        ></textarea>
+      </div>
 
-        modal.addEventListener("click", function () {
-          document.body.removeChild(modal);
-        });
-      });
-    });
-  });
-</script>
+      <div class="flex flex-col gap-4">
+        <button
+          type="button"
+          id="confirmRejectBtn"
+          class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+        >
+          <div id="rejectSpinner" class="hidden mr-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            id="rejectIcon"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          דחה משימות
+        </button>
+
+        <button
+          type="button"
+          id="cancelRejectBtn"
+          class="mt-2 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+        >
+          ביטול
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div
+  class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50"
+  id="successToast"
+>
+  <div class="flex items-center">
+    <svg
+      class="w-6 h-6 mr-2"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M5 13l4 4L19 7"
+      ></path>
+    </svg>
+    <span id="toastMessage">הפעולה הושלמה בהצלחה!</span>
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div
+  class="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50"
+  id="errorToast"
+>
+  <div class="flex items-center">
+    <svg
+      class="w-6 h-6 mr-2"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M6 18L18 6M6 6l12 12"
+      ></path>
+    </svg>
+    <span id="errorToastMessage">אירעה שגיאה. אנא נסה שוב.</span>
+  </div>
+</div>
+
+<script src="{% static 'js/mentorApp/mentor_task_images.js' %}"></script>
 {% endblock %}

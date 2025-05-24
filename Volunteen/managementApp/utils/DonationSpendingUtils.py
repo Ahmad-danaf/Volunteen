@@ -416,7 +416,7 @@ class DonationSpendingUtils:
             - 'leftover': remaining TeenCoins (donated - allocated).
         """
         results = []
-        categories = DonationCategory.objects.filter(is_active=True)
+        categories = DonationCategory.objects.all()
         for cat in categories:
             leftover = DonationSpendingUtils.get_category_leftover(cat)
             results.append({

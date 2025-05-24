@@ -63,3 +63,46 @@ class Task(models.Model):
         """Mark the task as viewed (not new) for a specific child."""
         self.new_for_children.remove(child)
         self.save()
+        
+
+# • If specific_date is set → rule applies only that calendar day.
+# • Else, if weekday is set → rule recurs every week on that weekday.
+# • Else → rule applies every day.
+class TimeWindowRule(models.Model):
+    class WindowType(models.TextChoices):
+        CHECK_IN  = "check_in",  "Check-in"
+        CHECK_OUT = "check_out", "Check-out"
+
+    task = models.ForeignKey(
+        "teenApp.Task",
+        null=True, blank=True,
+        on_delete=models.CASCADE,
+        related_name="time_window_rules"
+    )
+
+    specific_date = models.DateField(null=True, blank=True)
+    weekday = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    window_type = models.CharField(max_length=10, choices=WindowType.choices)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["task", "window_type"],
+                name="unique_timewindow_per_type_per_task"
+            )
+        ]
+        unique_together = ("task", "specific_date", "weekday", "window_type")
+
+    def __str__(self):
+        scope = (
+            f"date {self.specific_date}"
+            if self.specific_date
+            else f"weekday {self.weekday}"
+            if self.weekday is not None
+            else "all days"
+        )
+        task_part = f"{self.task.title}" if self.task else ""
+        return f"{task_part} • {scope} • {self.get_window_type_display()}"

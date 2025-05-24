@@ -1,9 +1,16 @@
 from django import forms
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task,TimeWindowRule
 from childApp.models import Child
 from mentorApp.models import MentorGroup
 from django.utils.translation import gettext_lazy as _
 from mentorApp.utils.MentorUtils import MentorUtils
+from django.core.exceptions import ValidationError
+from django.utils.dateparse import parse_time, parse_date
+
+HEBREW_WEEKDAYS = (
+    (0, "שני"), (1, "שלישי"), (2, "רביעי"),
+    (3, "חמישי"), (4, "שישי"), (5, "שבת"), (6, "ראשון"),
+)
 
 class TaskForm(forms.ModelForm):
     assigned_children = forms.ModelMultipleChoiceField(
@@ -75,6 +82,58 @@ class TaskForm(forms.ModelForm):
                     self.fields[field].widget.attrs.pop('readonly', None)
                 # Reset the deadline so the mentor must pick a new one
                 self.initial['deadline'] = None
+                
+
+def validate_timewindow_payload(payload):
+    """
+    payload : list[dict] – each dict keys:
+      window_type, specific_date, weekday, start_time, end_time
+    returns the cleaned list (converted types) or raises ValidationError
+    """
+    if not isinstance(payload, list):
+        raise ValidationError("פורמט חלונות הזמן אינו תקין")
+
+    seen = {"check_in": 0, "check_out": 0}
+    cleaned = []
+
+    for row in payload:
+        wt = row.get("window_type")
+        if wt not in ("check_in", "check_out"):
+            raise ValidationError("סוג חלון זמן לא תקין")
+        seen[wt] += 1
+        if seen[wt] > 1:
+            raise ValidationError("ניתן להגדיר חלון אחד בלבד לכל סוג (צ'ק-אין / צ'ק-אאוט)")
+
+        sd  = parse_date( row.get("specific_date") ) if row.get("specific_date") else None
+        wd  = row.get("weekday")
+        wd  = int(wd) if wd not in (None,"") else None
+        st  = parse_time( row.get("start_time") ) if row.get("start_time") else None
+        et  = parse_time( row.get("end_time") ) if row.get("end_time") else None
+
+        # row completely empty? skip
+        if not any([sd, wd, st, et]):
+            continue
+
+        # mutual exclusivity
+        if sd and wd:
+            raise ValidationError("בחר או תאריך ספציפי או יום בשבוע – לא את שניהם.")
+
+        if not (st and et):
+            raise ValidationError("יש למלא גם שעת התחלה וגם שעת סיום.")
+
+        if st >= et:
+            raise ValidationError("שעת הסיום חייבת להיות אחרי שעת ההתחלה.")
+
+        cleaned.append({
+            "window_type": wt,
+            "specific_date": sd,
+            "weekday": wd,
+            "start_time": st,
+            "end_time": et,
+        })
+
+    return cleaned
+
 
 class TaskImageForm(forms.ModelForm):
     class Meta:
