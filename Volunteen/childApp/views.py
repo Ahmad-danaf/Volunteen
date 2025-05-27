@@ -689,12 +689,7 @@ def check_in(request, task_id):
         action_label="צ`ק אין"
         action_url = "childApp:check_in"
         now=timezone.localtime()
-        rule = TimeWindowUtils.resolve_rule(
-            task=task,
-            window_type=TimeWindowRule.WindowType.CHECK_IN,
-            when=now
-        )
-        is_late_now = TimeWindowUtils.is_late(now, rule)
+        is_late_now = TimeWindowUtils.is_late(task,TimeWindowRule.WindowType.CHECK_IN, now)
         return render(request, 'check_exists.html', {'task': task,'action_label': action_label,'action_url': action_url,'is_late_now': is_late_now,})
 
     return render(request, 'check_in.html', {'task': task, 'child': child, 'special_permissions': special_permissions, 'use_default_image': use_default_image})
@@ -717,16 +712,11 @@ def check_out(request, task_id):
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if not task_completion or not task_completion.checkin_img:
         return render(request, 'check_in_warning.html')
-    if task_completion and task_completion.checkin_img and not replace_image:
+    if task_completion and task_completion.checkout_img and not replace_image:
         action_label="צ`ק אאוט"
         action_url = "childApp:check_out"
         now=timezone.localtime()
-        rule = TimeWindowUtils.resolve_rule(
-            task=task,
-            window_type=TimeWindowRule.WindowType.CHECK_OUT,
-            when=now
-        )
-        is_late_now = TimeWindowUtils.is_late(now, rule)
+        is_late_now = TimeWindowUtils.is_late(task,TimeWindowRule.WindowType.CHECK_OUT, now)
         return render(request, 'check_exists.html', {'task': task,'action_label': action_label,'action_url': action_url,'is_late_now': is_late_now,})
 
 

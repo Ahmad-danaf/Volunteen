@@ -65,6 +65,7 @@ def assign_remaining_coins(modeladmin, request, queryset):
     for completion in queryset:
         if completion.task and completion.task.points is not None:
             completion.remaining_coins = completion.task.points + completion.bonus_points
+            completion.awarded_coins=completion.task.points
             completion.save()
             updated += 1
     modeladmin.message_user(request, f"{updated} task completions updated with remaining coins.", messages.SUCCESS)   

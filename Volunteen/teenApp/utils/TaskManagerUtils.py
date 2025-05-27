@@ -61,6 +61,7 @@ class TaskManagerUtils:
         task_completion.approved_by = user
         # Calculate remaining coins as the sum of the task's points and bonus points
         task_completion.remaining_coins = task_completion.task.points + task_completion.bonus_points
+        task_completion.awarded_coins=task_completion.task.points
         task_completion.save()
         
         # Award points to the child

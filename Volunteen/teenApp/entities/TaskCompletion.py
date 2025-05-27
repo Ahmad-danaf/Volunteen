@@ -53,27 +53,27 @@ class TaskCompletion(models.Model):
 
     
     @property
-    def is_late_checkin(self):
+    def is_late_checkin(self) -> bool:
         if not self.checkin_at:
             return False
+
         from teenApp.utils.TimeWindowUtils import TimeWindowUtils
         from teenApp.entities.task import TimeWindowRule
-        rule = TimeWindowUtils.resolve_rule(
+        return TimeWindowUtils.is_late(
             task=self.task,
             window_type=TimeWindowRule.WindowType.CHECK_IN,
-            when=self.checkin_at
+            check_time=self.checkin_at
         )
-        return TimeWindowUtils.is_late(self.checkin_at, rule)
 
     @property
-    def is_late_checkout(self):
+    def is_late_checkout(self) -> bool:
         if not self.checkout_at:
             return False
+
         from teenApp.utils.TimeWindowUtils import TimeWindowUtils
         from teenApp.entities.task import TimeWindowRule
-        rule = TimeWindowUtils.resolve_rule(
+        return TimeWindowUtils.is_late(
             task=self.task,
             window_type=TimeWindowRule.WindowType.CHECK_OUT,
-            when=self.checkout_at
+            check_time=self.checkout_at
         )
-        return TimeWindowUtils.is_late(self.checkout_at, rule)

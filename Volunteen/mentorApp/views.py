@@ -360,6 +360,7 @@ def assign_points(request, task_id):
             
             completed_task = TaskCompletion.objects.get(task=task, child=child)
             completed_task.remaining_coins = completed_task.bonus_points + task.points
+            completed_task.awarded_coins = task.points
             completed_task.save()
         messages.success(request, f"Points successfully assigned for task '{task.title}' to selected children.")
         return redirect('mentorApp:points_assigned_success', task_id=task.id)

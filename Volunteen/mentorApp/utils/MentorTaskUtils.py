@@ -50,6 +50,7 @@ class MentorTaskUtils(TaskManagerUtils):
         # Approve task completion
         task_completion.status = 'approved'
         task_completion.approved_by = mentor.user  # Track which mentor approved it
+        task_completion.awarded_coins = task_completion.task.points
         task_completion.remaining_coins = required_coins
         task_completion.save()
 

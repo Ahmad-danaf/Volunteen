@@ -32,12 +32,13 @@ class TeenCoinManager:
             completion_date__gte=timezone.now() - TeenCoinManager.EXPIRATION_DELTA,
         ).order_by('-completion_date')
         for comp in active_completions:
+            orinal_points = comp.awarded_coins if comp.awarded_coins is not None else comp.task.points
             schedule.append({
                 'task_id': comp.task.id,
                 'task_title': comp.task.title,
                 'remaining_coins': comp.remaining_coins,
                 'completion_date': comp.completion_date,
-                'original_points': comp.task.points,
+                'original_points': orinal_points,
                 'bonus_points': comp.bonus_points,
                 'expires_on': comp.completion_date + TeenCoinManager.EXPIRATION_DELTA
             })

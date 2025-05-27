@@ -371,11 +371,11 @@ fullApprovalBtn.addEventListener("click", async function () {
     }
 
     try {
-    const response = await fetch('{% url "mentorApp:review_task" %}', {
+    const response = await fetch(REVIEW_TASK_URL, {
         method: "POST",
         headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}",
+        "X-CSRFToken": CSRF_TOKEN,
         },
         body: JSON.stringify({
         task_ids: selectedIds,
@@ -428,11 +428,11 @@ partialApprovalBtn.addEventListener("click", async function () {
     }
 
     try {
-    const response = await fetch('{% url "mentorApp:review_task" %}', {
+    const response = await fetch(REVIEW_TASK_URL, {
         method: "POST",
         headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}",
+        "X-CSRFToken": CSRF_TOKEN,
         },
         body: JSON.stringify({
         task_ids: selectedIds,
@@ -476,11 +476,11 @@ confirmRejectBtn.addEventListener("click", async function () {
     }
 
     try {
-    const response = await fetch('{% url "mentorApp:review_task" %}', {
+    const response = await fetch(REVIEW_TASK_URL, {
         method: "POST",
         headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": "{{ csrf_token }}",
+        "X-CSRFToken": CSRF_TOKEN,
         },
         body: JSON.stringify({
         task_ids: selectedIds,

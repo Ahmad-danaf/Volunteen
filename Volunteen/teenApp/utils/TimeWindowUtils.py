@@ -1,91 +1,47 @@
-from datetime import datetime, time
+from datetime import datetime, date
 from typing import Optional
 from django.utils import timezone
-from teenApp.entities.task import Task
-from teenApp.entities.task import TimeWindowRule
-
+from teenApp.entities.task import Task, TimeWindowRule
 
 class TimeWindowUtils:
     """
-    Static utilities to resolve and evaluate TimeWindowRules.
+    Utilities for handling time window validation logic.
     """
 
     @staticmethod
-    def resolve_rule(
-        *,
-        task: Optional[Task],
-        window_type: str,
-        when: Optional[datetime] = None,
-    ) -> Optional[TimeWindowRule]:
+    def get_rule(task: Task, window_type: str) -> Optional[TimeWindowRule]:
         """
-        Returns the most specific rule for a given task and time.
-        Priority:
-            1. task + specific_date
-            2. task + weekday
-            3. task (all days)
-            4. global + specific_date
-            5. global + weekday
-            6. global (all days)
+        Returns the TimeWindowRule for the given task and type, if it exists.
         """
-        when = when or timezone.localtime()
-        today = when.date()
-        weekday = when.weekday()
+        return task.time_window_rules.filter(window_type=window_type).first()
 
-        qs = TimeWindowRule.objects.filter(window_type=window_type)
-
-        # Task + specific_date
-        if task:
-            rule = qs.filter(task=task, specific_date=today).first()
-            if rule:
-                return rule
-
-            rule = qs.filter(task=task, weekday=weekday).first()
-            if rule:
-                return rule
-
-            rule = qs.filter(task=task, specific_date__isnull=True, weekday__isnull=True).first()
-            if rule:
-                return rule
-
-        # Global (no task)
-        rule = qs.filter(task__isnull=True, specific_date=today).first()
-        if rule:
-            return rule
-
-        rule = qs.filter(task__isnull=True, weekday=weekday).first()
-        if rule:
-            return rule
-
-        return qs.filter(task__isnull=True, specific_date__isnull=True, weekday__isnull=True).first()
 
     @staticmethod
-    def is_late(moment: datetime, rule: Optional[TimeWindowRule]) -> bool:
+    def is_late(task: Task, window_type: str, check_time: datetime) -> bool:
         """
-        Returns True if the moment is outside the rule window.
-        Handles scope enforcement:
-            - rule applies ONLY if today matches rule's specific_date or weekday (if set).
+        Determine if a given check_time (check-in or check-out) is late for the task.
         """
-        if rule is None:
-            return False
+        rule = TimeWindowUtils.get_rule(task, window_type)
 
-        today = moment.date()
-        weekday = moment.weekday()
+        if not rule:
+            # No time window rule → allowed anytime until deadline
+            return check_time.date() > task.deadline
 
-        # Rule is scoped to a specific date
-        if rule.specific_date and rule.specific_date != today:
-            return False
+        check_time = timezone.localtime(check_time)
+        check_date = check_time.date()
+        check_weekday = check_date.weekday()
 
-        # Rule is scoped to a weekday
-        if rule.weekday is not None and rule.weekday != weekday:
-            return False
+        # Rule with specific date
+        if rule.specific_date:
+            if check_date != rule.specific_date:
+                return True  # Wrong date
+        # Rule with weekday
+        elif rule.weekday is not None:
+            if check_weekday != rule.weekday:
+                return True  # Wrong weekday
 
-        # Otherwise, compare time window
-        t = moment.time()
-        return not (rule.start_time <= t <= rule.end_time)
+        # Time range check
+        start_dt = datetime.combine(check_date, rule.start_time, tzinfo=check_time.tzinfo)
+        end_dt = datetime.combine(check_date, rule.end_time, tzinfo=check_time.tzinfo)
 
-    @staticmethod
-    def status_label(moment: datetime, rule: Optional[TimeWindowRule]) -> str:
-        """
-        Returns "late" or "on_time".
-        """
-        return "late" if TimeWindowUtils.is_late(moment, rule) else "on_time"
+        return not (start_dt <= check_time <= end_dt)

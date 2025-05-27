@@ -832,6 +832,9 @@
     <span id="errorToastMessage">אירעה שגיאה. אנא נסה שוב.</span>
   </div>
 </div>
-
+<script>
+    const REVIEW_TASK_URL = "{% url 'mentorApp:review_task' %}";
+    const CSRF_TOKEN = "{{ csrf_token }}";
+</script>
 <script src="{% static 'js/mentorApp/mentor_task_images.js' %}"></script>
 {% endblock %}
