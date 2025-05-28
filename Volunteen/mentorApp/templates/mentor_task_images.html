@@ -1,12 +1,12 @@
 {% extends 'mentor_primary_base.html' %}
 {% load static %} 
-{% block title%}סקירת משימות{% endblock %} 
+{% block title %}אישור משימות{% endblock %} 
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/mentorApp/mentor_task_images.css' %}">
 {% endblock %}
 {% block content %}
-<div class="px-4 py-5 md:px-6 lg:px-8 max-w-7xl mx-auto" dir="rtl">
+<div class="w-full px-2 py-5 mx-auto" dir="rtl">
   <!-- Page Header -->
   <div class="flex flex-col md:flex-row justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
@@ -143,188 +143,157 @@
   <div id="onTimeSection"
      class="rounded-2xl shadow-xl border border-green-400 overflow-hidden mb-6 bg-white transition-all duration-300">
 
-  <!-- On-Time Header -->
-  <div id="onTimeHeader"
-     class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 via-green-500 to-green-400 text-white cursor-pointer select-none">
+    <!-- On-Time Header -->
+    <div id="onTimeHeader"
+       class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 via-green-500 to-green-400 text-white cursor-pointer select-none">
 
-    <!-- Title & Count -->
-    <div class="flex items-center gap-2">
-      <!-- Count Badge -->
-      <span class="bg-white text-green-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
-        {{ on_time_completions|length }}
-      </span>
+      <!-- Title & Count -->
+      <div class="flex items-center gap-2">
+        <!-- Count Badge -->
+        <span class="bg-white text-green-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
+          {{ on_time_completions|length }}
+        </span>
 
-      <!-- Title -->
-      <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
-        משימות בזמן
-      </h2>
+        <!-- Title -->
+        <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
+          משימות בזמן
+        </h2>
 
+        <!-- Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-5 h-5 text-white opacity-90"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
 
-      <!-- Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="w-5 h-5 text-white opacity-90"
-           fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M5 13l4 4L19 7" />
-      </svg>
+      <!-- Select All + Collapse -->
+      <div class="flex items-center gap-3">
+        <!-- Select All -->
+        <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
+          <input
+            type="checkbox"
+            class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-green-600 bg-white border-white rounded-md selectAllInSection"
+            data-section="ontime"
+          />
+          בחר הכל
+        </label>
+
+        <!-- Collapse Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+             id="onTimeToggleIcon"
+             class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
 
-    <!-- Select All + Collapse -->
-    <div class="flex items-center gap-3">
-      <!-- Select All -->
-      <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
-        <input
-          type="checkbox"
-          class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-green-600 bg-white border-white rounded-md selectAllInSection"
-          data-section="ontime"
-        />
-        בחר הכל
-      </label>
-
-      <!-- Collapse Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           id="onTimeToggleIcon"
-           class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
-           fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-  </div>
-</div>
-
-
-
-    <div class="px-5 py-4 bg-gray-50" id="onTimeContent">
+    <!-- On-Time Content -->
+    <div class="p-0 sm:p-2 bg-gray-50" id="onTimeContent">
       {% if on_time_completions %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for item in on_time_completions %}
-        <div
-          class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden task-card"
-          data-task-id="{{ item.instance.id }}"
-        >
-          <div class="p-4 border-b">
-            <div class="flex justify-between items-center">
-              <div class="flex items-center">
+      <div class="w-full">
+        <table class="w-full table-fixed divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="w-[5%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span class="sr-only sm:not-sr-only">בחירה</span>
+              </th>
+              <th class="w-[35%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span class="sr-only sm:not-sr-only">שם</span>
+              </th>
+              <th class="w-[25%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                משימה
+              </th>
+              <th class="w-[10%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                תאריך
+              </th>
+              <th class="w-[25%] p-1 sm:p-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                צילומים
+              </th>
+             
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for item in on_time_completions %}
+            <tr class="task-card hover:bg-gray-50 transition-colors duration-150" data-task-id="{{ item.instance.id }}">
+              <td class="p-1 sm:p-2">
                 <input
                   type="checkbox"
-                  class="form-checkbox h-5 w-5 text-indigo-600 task-checkbox"
+                  class="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 task-checkbox"
                   data-task-id="{{ item.instance.id }}"
+                  data-points="{{ item.instance.task.points }}"
                 />
-                <span class="ml-3 font-medium text-gray-900"
-                  >{{ item.instance.child.user.username }}</span
-                >
-              </div>
-              <span
-                class="text-xs bg-indigo-100 text-indigo-800 rounded-full px-3 py-1"
-                >משימה: {{ item.instance.task.title }}</span
-              >
-            </div>
-          </div>
-
-          <div class="p-4 grid grid-cols-2 gap-3">
-            <!-- Check-in Image -->
-            <div class="relative">
-              <div class="text-xs text-gray-500 mb-1 text-center">כניסה</div>
-              <div
-                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square"
-              >
-                {% if item.instance.checkin_img %}
-                <img
-                  src="{{ item.instance.checkin_img.url }}"
-                  alt="Check-in image"
-                  class="w-full h-full object-cover cursor-pointer view-image"
-                  data-src="{{ item.instance.checkin_img.url }}"
-                  loading="lazy"
-                />
-                {% else %}
+              </td>
+              <td class="p-1 sm:p-2">
                 <div
-                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                  class="break-words whitespace-normal text-sm"
+                  onclick="this.classList.toggle('whitespace-normal')"
+                  title="{{ item.instance.child.user.username }}"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  {{ item.instance.child.user.username }}
                 </div>
-                {% endif %}
-              </div>
-            </div>
 
-            <!-- Check-out Image -->
-            <div class="relative">
-              <div class="text-xs text-gray-500 mb-1 text-center">יציאה</div>
-              <div
-                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square"
-              >
-                {% if item.instance.checkout_img %}
-                <img
-                  src="{{ item.instance.checkout_img.url }}"
-                  alt="Check-out image"
-                  class="w-full h-full object-cover cursor-pointer view-image"
-                  data-src="{{ item.instance.checkout_img.url }}"
-                  loading="lazy"
-                />
-                {% else %}
+              </td>
+              <td class="p-1 sm:p-2">
                 <div
-                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                  class="break-words whitespace-normal text-sm"
+                  onclick="this.classList.toggle('whitespace-normal')"
+                  title="{{ item.instance.child.user.username }}"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  {{ item.instance.task.title }} ({{ item.instance.task.points }} 🪙)
                 </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
-            <div class="text-sm text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {{ item.instance.completion_date|date:"d/m/Y" }}
-            </div>
-            <div>
-              <span
-                class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1"
-                >{{ item.instance.task.points }} נקודות</span
-              >
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+              </td>
+              <td class="p-1 sm:p-2 text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
+                {{ item.instance.completion_date|date:"d/m/Y" }}
+              </td>
+              <td class="p-1 sm:p-2">
+                <div class="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+                  <div class="relative h-10 w-10 flex-shrink-0">
+                    {% if item.instance.checkin_img %}
+                    <img 
+                      src="{{ item.instance.checkin_img.url }}" 
+                      alt="Check-in image" 
+                      class="h-full w-full object-cover rounded-md cursor-pointer view-image"
+                      data-src="{{ item.instance.checkin_img.url }}"
+                    />
+                    <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
+                    {% else %}
+                    <div class="h-full w-full flex items-center justify-center bg-gray-100 rounded-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="relative h-10 w-10 flex-shrink-0">
+                    {% if item.instance.checkout_img %}
+                    <img 
+                      src="{{ item.instance.checkout_img.url }}" 
+                      alt="Check-out image" 
+                      class="h-full w-full object-cover rounded-md cursor-pointer view-image"
+                      data-src="{{ item.instance.checkout_img.url }}"
+                    />
+                    <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
+                    {% else %}
+                    <div class="h-full w-full flex items-center justify-center bg-gray-100 rounded-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
       {% else %}
       <div class="text-center py-10">
@@ -349,206 +318,169 @@
   </div>
 
   <!-- Late Tasks Section -->
- <div id="lateSection"
+  <div id="lateSection"
      class="rounded-2xl shadow-xl border border-red-400 overflow-hidden mb-6 bg-white transition-all duration-300">
 
-  <!-- Late Header -->
-  <div id="lateHeader"
+    <!-- Late Header -->
+    <div id="lateHeader"
        class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-white cursor-pointer select-none">
 
-    <!-- Title & Count -->
-    <div class="flex items-center gap-2">
-      <!-- Count Badge -->
-      <span class="bg-white text-red-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
-        {{ late_completions|length }}
-      </span>
+      <!-- Title & Count -->
+      <div class="flex items-center gap-2">
+        <!-- Count Badge -->
+        <span class="bg-white text-red-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
+          {{ late_completions|length }}
+        </span>
 
-      <!-- Title -->
-      <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
-        משימות באיחור
-      </h2>
+        <!-- Title -->
+        <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
+          משימות באיחור
+        </h2>
 
-      <!-- Icon (info or exclamation) -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="w-5 h-5 text-white opacity-80"
-           fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+        <!-- Icon (info or exclamation) -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-5 h-5 text-white opacity-80"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+
+      <!-- Select All + Collapse -->
+      <div class="flex items-center gap-3">
+        <!-- Select All -->
+        <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
+          <input
+            type="checkbox"
+            class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-red-600 bg-white border-white rounded-md selectAllInSection"
+            data-section="late"
+          />
+          בחר הכל
+        </label>
+
+        <!-- Collapse Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg"
+             id="lateToggleIcon"
+             class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </div>
 
-    <!-- Select All + Collapse -->
-    <div class="flex items-center gap-3">
-      <!-- Select All -->
-      <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
-        <input
-          type="checkbox"
-          class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-red-600 bg-white border-white rounded-md selectAllInSection"
-          data-section="late"
-        />
-        בחר הכל
-      </label>
-
-      <!-- Collapse Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg"
-           id="lateToggleIcon"
-           class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
-           fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-  </div>
-</div>
-
-
-
-    <div class="px-5 py-4 bg-gray-50" id="lateContent">
+    <!-- Late Content -->
+    <div class="p-0 sm:p-2 bg-gray-50" id="lateContent">
       {% if late_completions %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for item in late_completions %}
-        <div
-          class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden task-card"
-          data-task-id="{{ item.instance.id }}"
-        >
-          <div class="p-4 border-b">
-            <div class="flex justify-between items-center">
-              <div class="flex items-center">
+      <div class="w-full">
+        <table class="w-full table-fixed divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="w-[5%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span class="sr-only sm:not-sr-only">בחירה</span>
+              </th>
+              <th class="w-[15%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span class="sr-only sm:not-sr-only">שם</span>
+              </th>
+              <th class="w-[25%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                משימה
+              </th>
+              <th class="w-[10%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                תאריך
+              </th>
+              <th class="w-[30%] p-1 sm:p-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                צילומים
+              </th>
+             
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for item in late_completions %}
+            <tr class="task-card hover:bg-gray-50 transition-colors duration-150" data-task-id="{{ item.instance.id }}">
+              <td class="p-1 sm:p-2">
                 <input
                   type="checkbox"
-                  class="form-checkbox h-5 w-5 text-red-600 task-checkbox"
+                  class="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-red-600 task-checkbox"
                   data-task-id="{{ item.instance.id }}"
+                  data-points="{{ item.instance.task.points }}"
                 />
-                <span class="ml-3 font-medium text-gray-900"
-                  >{{ item.instance.child.user.username }}</span
-                >
-              </div>
-              <span
-                class="text-xs bg-red-100 text-red-800 rounded-full px-3 py-1"
-                >משימה: {{ item.instance.task.title }}</span
-              >
-            </div>
-          </div>
-
-          <div class="p-4 grid grid-cols-2 gap-3">
-            <!-- Check-in Image -->
-            <div class="relative">
-              {% if item.late_checkin %}
-              <div class="late-indicator pulse-alert"></div>
-              {% endif %}
-              <div class="text-xs text-gray-500 mb-1 text-center">
-                כניסה {% if item.late_checkin %}<span
-                  class="text-red-600 font-semibold"
-                  >(באיחור)</span
-                >{% endif %}
-              </div>
-              <div
-                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square {% if item.late_checkin %}border-2 border-red-500{% endif %}"
-              >
-                {% if item.instance.checkin_img %}
-                <img
-                  src="{{ item.instance.checkin_img.url }}"
-                  alt="Check-in image"
-                  class="w-full h-full object-cover cursor-pointer view-image"
-                  data-src="{{ item.instance.checkin_img.url }}"
-                  loading="lazy"
-                />
-                {% else %}
+              </td>
+              <td class="p-1 sm:p-2">
                 <div
-                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                  class="break-words whitespace-normal text-sm"
+                  onclick="this.classList.toggle('whitespace-normal')"
+                  title="{{ item.instance.child.user.username }}"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  {{ item.instance.child.user.username }}
                 </div>
-                {% endif %}
-              </div>
-            </div>
 
-            <!-- Check-out Image -->
-            <div class="relative">
-              {% if item.late_checkout %}
-              <div class="late-indicator pulse-alert"></div>
-              {% endif %}
-              <div class="text-xs text-gray-500 mb-1 text-center">
-                יציאה {% if item.late_checkout %}<span
-                  class="text-red-600 font-semibold"
-                  >(באיחור)</span
-                >{% endif %}
-              </div>
-              <div
-                class="image-container rounded-lg overflow-hidden shadow-sm aspect-square {% if item.late_checkout %}border-2 border-red-500{% endif %}"
-              >
-                {% if item.instance.checkout_img %}
-                <img
-                  src="{{ item.instance.checkout_img.url }}"
-                  alt="Check-out image"
-                  class="w-full h-full object-cover cursor-pointer view-image"
-                  data-src="{{ item.instance.checkout_img.url }}"
-                  loading="lazy"
-                />
-                {% else %}
+              </td>
+              <td class="p-1 sm:p-2">
                 <div
-                  class="w-full h-full flex items-center justify-center bg-gray-100"
+                  class="break-words whitespace-normal text-sm"
+                  onclick="this.classList.toggle('whitespace-normal')"
+                  title="{{ item.instance.child.user.username }}"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-10 w-10 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  {{ item.instance.task.title }} ({{ item.instance.task.points }} 🪙)
                 </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
 
-          <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
-            <div class="text-sm text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4 inline-block mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {{ item.instance.completion_date|date:"d/m/Y" }}
-            </div>
-            <div>
-              <span
-                class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1"
-                >{{ item.instance.task.points }} נקודות</span
-              >
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+              </td>
+              <td class="p-1 sm:p-2 text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
+                {{ item.instance.completion_date|date:"d/m/Y" }}
+              </td>
+              <td class="p-1 sm:p-2">
+                <div class="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+                  <div class="relative h-10 w-10 flex-shrink-0">
+                    {% if item.late_checkin %}
+                    <div class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full pulse-alert"></div>
+                    {% endif %}
+                    <div class="{% if item.late_checkin %}border-2 border-red-500{% endif %} h-full w-full rounded-md overflow-hidden">
+                      {% if item.instance.checkin_img %}
+                      <img 
+                        src="{{ item.instance.checkin_img.url }}" 
+                        alt="Check-in image" 
+                        class="h-full w-full object-cover cursor-pointer view-image"
+                        data-src="{{ item.instance.checkin_img.url }}"
+                      />
+                      {% else %}
+                      <div class="h-full w-full flex items-center justify-center bg-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      {% endif %}
+                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
+                    </div>
+                  </div>
+                  <div class="relative h-10 w-10 flex-shrink-0">
+                    {% if item.late_checkout %}
+                    <div class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full pulse-alert"></div>
+                    {% endif %}
+                    <div class="{% if item.late_checkout %}border-2 border-red-500{% endif %} h-full w-full rounded-md overflow-hidden">
+                      {% if item.instance.checkout_img %}
+                      <img 
+                        src="{{ item.instance.checkout_img.url }}" 
+                        alt="Check-out image" 
+                        class="h-full w-full object-cover cursor-pointer view-image"
+                        data-src="{{ item.instance.checkout_img.url }}"
+                      />
+                      {% else %}
+                      <div class="h-full w-full flex items-center justify-center bg-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      {% endif %}
+                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
       {% else %}
       <div class="text-center py-10">
@@ -573,6 +505,7 @@
   </div>
 </div>
 
+<!-- Image Modal and other modal content remains unchanged -->
 <!-- Image Modal -->
 <div
   class="fixed inset-0 z-50 flex items-center justify-center hidden"
@@ -668,7 +601,7 @@
               d="M5 13l4 4L19 7"
             />
           </svg>
-          <span id="fullApprovalText">אישור מלא (<span id="maxPointsDisplay">0</span> נקודות)</span>
+          <span id="fullApprovalText">אישור מלא</span>
         </button>
 
         <div class="relative">
@@ -832,6 +765,7 @@
     <span id="errorToastMessage">אירעה שגיאה. אנא נסה שוב.</span>
   </div>
 </div>
+
 <script>
     const REVIEW_TASK_URL = "{% url 'mentorApp:review_task' %}";
     const CSRF_TOKEN = "{{ csrf_token }}";

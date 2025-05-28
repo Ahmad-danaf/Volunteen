@@ -79,13 +79,11 @@ const taskPointsMap = new Map(); // Map to track task points
 taskCheckboxes.forEach((checkbox) => {
     const taskId = checkbox.getAttribute("data-task-id");
     const taskCard = checkbox.closest('.task-card');
-    const pointsElement = taskCard.querySelector('.bg-green-100.text-green-800');
-    
-    if (pointsElement) {
-    const pointsText = pointsElement.textContent;
-    const points = parseInt(pointsText.match(/\d+/)[0], 10);
+    taskCheckboxes.forEach((checkbox) => {
+    const taskId = checkbox.getAttribute("data-task-id");
+    const points = parseInt(checkbox.getAttribute("data-points"), 10) || 0;
     taskPointsMap.set(taskId, points);
-    }
+});
 });
 
 function updatePointsRange() {
