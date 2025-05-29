@@ -1,5 +1,7 @@
 {% extends 'mentor_primary_base.html' %}
 {% load static %}
+{% load hebrew_extras %}
+
 {% block content %}
 <style>
     .task-table {
@@ -83,6 +85,35 @@
                     <td colspan="3">
                         <b>תיאור:</b> {{ task.description }}<br>
                         <b>פרטים נוספים:</b> {{ task.additional_details }}<br>
+                        {% if task.time_window_rules.all|length > 0 %}
+                            <div class="bg-orange-50 rounded-lg p-3 space-y-2">
+                                <p class="font-medium text-orange-600 flex items-center gap-1 text-sm">
+                                ⏰ <span>חלונות זמן</span>
+                                </p>
+
+                                <ul class="space-y-2">
+                                {% for rule in task.time_window_rules.all %}
+                                    <li class="bg-white rounded-md p-2 shadow-sm text-sm leading-relaxed space-y-1 rtl:text-right">
+                                    <div class="font-semibold">
+                                        {% if rule.window_type == "check_in" %}צ'ק-אין{% else %}צ'ק-אאוט{% endif %}
+                                    </div>
+
+                                    <div>
+                                        {% if rule.specific_date %}
+                                        📅 רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                                        {% elif rule.weekday != None %}
+                                        📅 כל יום {{ rule.weekday|hebrew_weekday }}
+                                        {% else %}
+                                        📅 בכל יום
+                                        {% endif %}
+                                    </div>
+
+                                    <div>🕒 בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}</div>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
                         <b>הילדים שהוקצו למשימה:
                             {% for child in task.assigned_children.all %}
                             <li>{{child.user.username}}</li>

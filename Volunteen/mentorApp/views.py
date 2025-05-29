@@ -7,7 +7,7 @@ from childApp.models import Child
 from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponseBadRequest
 from mentorApp.models import Mentor,MentorGroup
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task, TimeWindowRule
 from mentorApp.forms import TaskForm,MentorGroupForm, validate_timewindow_payload
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
@@ -111,6 +111,17 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 "additional_details": original_task.additional_details,
                 "img": original_task.img,
             }
+        tw_initial = []
+        for r in original_task.time_window_rules.all():
+            tw_initial.append({
+                "window_type":   r.window_type,                                
+                "specific_date": r.specific_date.isoformat() if r.specific_date else None,
+                "weekday":       r.weekday,                                    
+                "start_time":    r.start_time.strftime("%H:%M"),
+                "end_time":      r.end_time.strftime("%H:%M"),
+            })  
+    else:
+        tw_initial = []
 
     if request.method == "POST":
         form = TaskForm(
@@ -128,6 +139,8 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 "is_duplicate": duplicate,
                 "available_teencoins": mentor.available_teencoins,
                 "mentor_groups": mentor_groups,
+                "initial_timewindows": json.dumps(tw_initial, ensure_ascii=False),
+
             })
         else:
             task_data.update(form.cleaned_data)
@@ -224,6 +237,8 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             "is_duplicate": duplicate,
             "available_teencoins": mentor.available_teencoins,
             "mentor_groups": mentor_groups,
+            "initial_timewindows": json.dumps(tw_initial, ensure_ascii=False),
+
         },
     )
 
@@ -231,9 +246,25 @@ def add_task(request, task_id=None, duplicate=False, template=False):
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     mentor = get_object_or_404(Mentor, user=request.user)
+    tw_initial = [
+        {
+            "window_type":   r.window_type,
+            "specific_date": r.specific_date.isoformat() if r.specific_date else None,
+            "weekday":       r.weekday,
+            "start_time":    r.start_time.strftime("%H:%M"),
+            "end_time":      r.end_time.strftime("%H:%M"),
+        }
+        for r in task.time_window_rules.all()
+    ]
     
     if request.method == 'POST':
         form = TaskForm(request.POST, request.FILES, instance=task, mentor=mentor)
+        raw_payload = request.POST.get("timewindow_payload", "[]")
+        try:
+            timewindow_data = validate_timewindow_payload(json.loads(raw_payload))
+        except Exception as e:
+            messages.error(request, f"בעיה בחלונות הזמן: {e}")
+            return redirect("mentorApp:edit_task", task_id=task.id)
         if form.is_valid():
             updated_task = form.save(commit=False)
 
@@ -267,7 +298,11 @@ def edit_task(request, task_id):
                     for completion in completions:
                         completion.delete()
                     TaskAssignment.objects.filter(task=updated_task,child=child).delete()
-
+                    
+                task.time_window_rules.all().delete()               
+                TimeWindowRule.objects.bulk_create(
+                    TimeWindowRule(task=updated_task, **tw) for tw in timewindow_data
+                )
 
                 mentor.available_teencoins -= cost_difference
                 mentor.save()
@@ -285,6 +320,7 @@ def edit_task(request, task_id):
         'form': form,
         'task': task,
         'available_teencoins': mentor.available_teencoins,
+        "initial_timewindows": json.dumps(tw_initial, ensure_ascii=False),
     })
 
 
@@ -294,7 +330,8 @@ def mentor_task_list(request):
     current_date = timezone.now().date()
     mentor = get_object_or_404(Mentor, user=request.user)
     form = DateRangeForm(request.GET or None)
-    tasks = Task.objects.filter(assigned_mentors=mentor, deadline__gte=current_date)
+    tasks = Task.objects.filter(assigned_mentors=mentor, 
+        deadline__gte=current_date).prefetch_related("time_window_rules")
 
     if form.is_valid():
         start_date = form.cleaned_data['start_date']

@@ -581,13 +581,13 @@
     </script>
     
     <script>
-/* ───── Collapse card ───── */
+/*  Collapse card  */
 function toggleTwCard(head){
     const card = head.parentElement;
     card.classList.toggle('closed');
 }
 
-/* ───── Tabs behaviour ───── */
+/*  Tabs behaviour  */
 document.querySelectorAll('.tw-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
       const group = tab.closest('.tw-body');
@@ -598,13 +598,12 @@ document.querySelectorAll('.tw-tab').forEach(tab=>{
       group.querySelectorAll('.tw-pane').forEach(p=>p.classList.add('hidden'));
       group.querySelector('#'+paneId).classList.remove('hidden');
 
-      /* ניקוי ערכי הטאב שיצאנו ממנו */
       group.querySelectorAll('.tw-pane.hidden input, .tw-pane.hidden select')
            .forEach(el=>el.value='');
   });
 });
 
-/* ───── Build JSON before submit ───── */
+/*  Build JSON before submit  */
 document.querySelector('form').addEventListener('submit', ()=>{
     const rules=[];
 
@@ -639,6 +638,40 @@ document.querySelector('form').addEventListener('submit', ()=>{
 
     document.getElementById('timewindow_payload').value = JSON.stringify(rules);
 });
+</script>
+<script>
+const INITIAL_TIMEWINDOWS = JSON.parse('{{ initial_timewindows|default:"[]"|escapejs }}');
+</script>
+<script>
+function fillInitialTW(data){
+  data.forEach(rule=>{
+    const isCI     = rule.window_type === 'check_in';
+    const cardId   = isCI ? 'tw-checkin' : 'tw-checkout';
+    const card     = document.getElementById(cardId);
+
+    
+    card.classList.remove('closed');
+
+    /* pick tab */
+    if (rule.specific_date){
+        card.querySelector('[data-pane$="date"]').click();
+        card.querySelector('.tw-pane:not(.hidden) input[type=date]').value = rule.specific_date;
+    } else if (rule.weekday !== null && rule.weekday !== undefined){
+        card.querySelector('[data-pane$="weekday"]').click();
+        card.querySelector('.tw-pane:not(.hidden) select').value = rule.weekday.toString();
+    } else {
+        card.querySelector('[data-pane$="all"]').click();
+    }
+
+    /* times */
+    const startName = isCI ? 'ci-start' : 'co-start';
+    const endName   = isCI ? 'ci-end'   : 'co-end';
+    card.querySelector(`input[name="${startName}"]`).value = rule.start_time;
+    card.querySelector(`input[name="${endName}"]`).value   = rule.end_time;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=> fillInitialTW(INITIAL_TIMEWINDOWS));
 </script>
 
 {% endblock %}
