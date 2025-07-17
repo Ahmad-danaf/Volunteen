@@ -1,4 +1,3 @@
-from django.contrib import admin
 from shopApp.models import Shop, Reward, Redemption, OpeningHours, Category, RedemptionRequest,Campaign
 from childApp.utils.CampaignUtils import CampaignUtils
 from teenApp.entities.TaskAssignment import TaskAssignment
@@ -7,8 +6,12 @@ import csv
 from Volunteen.constants import CAMPAIGN_TIME_LIMIT_MINUTES
 from django.contrib import admin, messages
 from django.db.models import Q
+from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
+from shopApp.utils.shop_manager import ShopManager
+from childApp.utils.TeenCoinManager import TeenCoinManager
+from django.utils.translation import gettext_lazy as _
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -74,18 +77,66 @@ class OpeningHoursAdmin(admin.ModelAdmin):
     list_select_related = ('shop',)
     list_display_links = ('shop',)
 
-def make_pending(modeladmin, request, queryset):
-    queryset.update(status='pending')
-make_pending.short_description = "Mark selected requests as pending"
-
 @admin.register(RedemptionRequest)
 class RedemptionRequestAdmin(admin.ModelAdmin):
-    list_display = ('child', 'reward', 'status', 'date_requested')
-    search_fields = ('child__user__username', 'reward__title')
-    list_filter = ('status', 'date_requested')
-    list_select_related = ('child', 'reward')
-    list_display_links = ('child', 'reward')
-    actions = [make_pending]
+    """Custom admin with a bulk-approval action."""
+    list_display  = (
+        "id", "child", "reward", "quantity",
+        "points_used", "status", "date_requested",
+    )
+    list_filter   = ("status", "shop")
+    search_fields = ("child__user__username", "reward__title")
+    actions       = ["approve_requests"]
+
+    @admin.action(description=_("Approve selected redemption requests"))
+    def approve_requests(self, request, queryset):
+        approved, failed = 0, 0
+        queryset = queryset.select_related("child", "reward", "shop")
+
+        for req in queryset:
+            if req.status == "approved":
+                failed += 1
+                continue
+
+            child, shop = req.child, req.shop
+            cost = req.quantity * req.reward.points_required
+            bal = TeenCoinManager.get_total_active_teencoins(child)
+            pts = min(bal, cost)          
+
+            try:
+                with transaction.atomic():
+                    # debit whatever the child actually has
+                    if pts:
+                        TeenCoinManager.redeem_teencoins(child, pts)
+
+                    # create redemption with date_redeemed = date_requested
+                    redemption = Redemption.objects.create(
+                        child=child,
+                        reward=req.reward,
+                        quantity=req.quantity,
+                        points_used=pts,
+                        shop=shop,
+                    )
+
+                    # Force overwrite date redeemed after creation
+                    redemption.date_redeemed = req.date_requested
+                    redemption.save(update_fields=["date_redeemed"])
+                    shop.unlock_monthly_points(cost)
+
+                    # mark request approved
+                    req.status = "approved"
+                    req.locked_points = 0
+                    req.save(update_fields=["status", "locked_points"])
+                    approved += 1
+
+            except Exception as exc:
+                self.message_user(request, f"שגיאה בבקשה #{req.pk}: {exc}", level=messages.ERROR)
+                failed += 1
+
+        if approved:
+            self.message_user(request, f"אושרו {approved} בקשות.", level=messages.SUCCESS)
+        if failed:
+            self.message_user(request, f"{failed} בקשות נכשלו או דולגו.", level=messages.WARNING)
     
     
 @admin.action(description="Activate selected campaigns")
