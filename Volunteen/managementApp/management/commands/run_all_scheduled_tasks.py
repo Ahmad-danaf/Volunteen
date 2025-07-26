@@ -14,7 +14,6 @@ class Command(BaseCommand):
             ('log_suspicious_events',"Log suspicious events"),
             ('reset_missed_streaks', "Reset child streak count if they missed more than 3 days"),
             ('send_inactive_reminders', "Send reminders to inactive children"),
-            ("import_volunteen_tasks_for_stuff","Import Volunteen tasks for stuff"),
         ]
 
         self.stdout.write("========== START: Daily Scheduled Tasks ==========\n")

@@ -12,6 +12,15 @@
   <!-- Quick Actions -->
   <div class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-5 animate-slideInUp">
     
+    {% if is_superadmin %}
+      <div class="mb-6 text-left">
+        <a href="{% url 'managementApp:superadmin_dashboard' %}"
+          class="inline-block bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+          ← חזרה ללוח הסופר אדמין
+        </a>
+      </div>
+    {% endif %}
+
     <!-- Start New Campaign -->
     <a href="{% url 'managementApp:create_campaign_step1' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-3xl shadow-lg p-6 flex flex-col justify-between transition transform hover:scale-[1.015]">
       <div>

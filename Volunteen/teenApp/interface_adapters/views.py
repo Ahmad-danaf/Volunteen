@@ -21,10 +21,6 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def home_redirect(request):
     user = request.user
-    # If the user is a superuser, redirect to admin dashboard.
-    if user.is_superuser:
-        return redirect('admin:index')
-    
     user_groups = list(user.groups.values_list('name', flat=True))
     
     if 'Children' in user_groups:
@@ -41,8 +37,13 @@ def home_redirect(request):
         return redirect('managementApp:donation_manager_dashboard')
     elif 'CampaignManager' in user_groups:
         return redirect('managementApp:campaign_manager_home')
-    else:
+    elif 'SuperAdmin' in user_groups:
+        return redirect('managementApp:superadmin_dashboard')
+    elif user.is_superuser:
         return redirect('admin:index')
+    else:
+        return redirect('teenApp:home_redirect')
+    
 
 def default_home(request):
     return HttpResponse("Home")

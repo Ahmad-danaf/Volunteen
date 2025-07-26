@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}לוח סופר-אדמין{% endblock %}</title>
+
+  <!-- Tailwind with Forms/Typo/Aspect plugins -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+
+  <!-- Smooth animations -->
+  <style>
+    .fade-in { animation: fadeIn 0.5s ease-in-out both; }
+    .slide-up { animation: slideUp 0.6s ease-out both; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+      <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+   <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon-iphone-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-touch-icon-ipad-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone-retina-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-touch-icon-ipad-retina-152x152.png' %}">
+  {% block extrahead %}
+  {% endblock %}
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen text-white font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Page wrapper -->
+  <div class="flex flex-col min-h-screen justify-between fade-in">
+
+    <!-- Content area -->
+    <main class="p-4 pb-24 slide-up">
+      {% block content %}
+      <!-- Dynamic content goes here -->
+      {% endblock %}
+    </main>
+
+    <!-- Bottom Navigation Bar (mobile-first) -->
+    <nav class="fixed bottom-0 right-0 left-0 bg-slate-950 bg-opacity-80 backdrop-blur-md shadow-2xl border-t border-slate-800 z-50">
+      <div class="max-w-3xl mx-auto px-4 py-2 flex justify-between items-center text-sm text-slate-300">
+
+        <a href="{% url 'managementApp:superadmin_dashboard' %}" class="flex flex-col items-center space-y-0.5 hover:text-white transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
+          </svg>
+          <span>דשבורד</span>
+        </a>
+
+        <a href="{% url 'managementApp:superadmin_upload_menu' %}" class="flex flex-col items-center space-y-0.5 hover:text-white transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 12v9m0-9l-3 3m3-3l3 3m-3-3V3" />
+          </svg>
+          <span>העלאה</span>
+        </a>
+
+        <a href="{% url 'managementApp:coming_soon' %}" class="flex flex-col items-center space-y-0.5 hover:text-white transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+          <span>מנויים</span>
+        </a>
+
+        <a href="{% url 'teenApp:logout_view' %}" class="flex flex-col items-center space-y-0.5 hover:text-red-400 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-5V7m0 5H3" />
+          </svg>
+          <span>יציאה</span>
+        </a>
+      </div>
+    </nav>
+
+  </div>
+
+  {% block scripts %}
+  {% endblock %}
+</body>
+</html>

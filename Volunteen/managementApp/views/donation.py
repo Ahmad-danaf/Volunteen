@@ -20,6 +20,9 @@ from managementApp.forms.donation_forms import SimulateSpendForm
 
 @donation_manager_required
 def donation_manager_dashboard(request):
+    user=request.user
+    user_groups = list(user.groups.values_list('name', flat=True))
+    is_superadmin = 'SuperAdmin' in user_groups
     current_year = timezone.now().year
     # Overall stats
     total_donated = DonationCalculator.get_total_donated()
@@ -46,6 +49,7 @@ def donation_manager_dashboard(request):
         'monthly_donations': json.dumps(monthly_donations),
         'monthly_spendings': json.dumps(monthly_spendings),
         'current_date': timezone.now().strftime('%A, %d %B %Y'),
+        'is_superadmin': is_superadmin,
     }
     
     return render(request, 'donation/donation_dashboard.html', context)

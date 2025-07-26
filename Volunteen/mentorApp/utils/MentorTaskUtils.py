@@ -13,6 +13,46 @@ from django_q.tasks import async_task
 from teenApp.utils.NotificationManager import NotificationManager
 import hashlib
 from childApp.utils.TeenCoinManager import  TeenCoinManager
+import random
+
+WHATSAPP_SHORT_MESSAGES = [
+    # Hebrew only
+    "קפוץ לבדוק מה מחכה לך 😎 ⭐ שווה: {points} Teencoins",
+    "המשימה הבאה עליך! ✌️ אולי תאהב את: {title} ⭐ שווה: {points} Teencoins",
+    "היי אגדה 💥 בדקת כבר את זה? ⭐ שווה: {points} Teencoins",
+    "טוב נו… מגיע לך משהו שווה 😏 ⭐ שווה: {points} Teencoins",
+    "מה אומרים על המשימה החדשה? {title} 😏 ⭐ שווה: {points} Teencoins",
+    "אחשלי תראה איזה אתגר יפה ✨ {title} ⭐ שווה: {points} Teencoins",
+    "מי שפותח ראשון – מרוויח 😜 ⭐ שווה: {points} Teencoins",
+    "יאללה תקפוץ! חבל לפספס את זה ⭐ שווה: {points} Teencoins",
+    "יש פה משימה בדיוק בשבילך 🤙 ⭐ שווה: {points} Teencoins",
+    "הגיע הזמן להרים ת’כפפה 👊 {title} ⭐ שווה: {points} Teencoins",
+    "תבדוק מה הביאו לך היום 🎁 ⭐ שווה: {points} Teencoins",
+    "אין מצב שלא תאהב את {title} 😉 ⭐ שווה: {points} Teencoins",
+    "הזדמנות לתפוס עוד נקודות! ⭐ שווה: {points} Teencoins",
+    "פותחים משימה – צוברים טינקוין 💸 ⭐ שווה: {points} Teencoins",
+    "עוד משימה שעושה טוב ללב 💛 ⭐ שווה: {points} Teencoins",
+
+    # Arabic only 
+    "افتح وشوف شو فيه ✨ ⭐ شغل: {points} Teencoins",
+    "شو رأيك بـ {title}؟ شكله حلو 🔥 ⭐ {points} Teencoins",
+    "يلّا يا نجم! مهمة جديدة نزلت ⭐ {points} Teencoins",
+    "أشي مرتب نازللك، شوفه ⭐ {points} Teencoins",
+    "لو كنت محلك، بفتح فوراً 😏 ⭐ {points} Teencoins",
+    "صراحة هاي المهمة غير شكل: {title} ⭐ {points} Teencoins",
+    "يلا بدنا نشوف الهمة 👊 ⭐ {points} Teencoins",
+    "تحدي جديد؟ بنفع نجرب ⭐ {points} Teencoins",
+    "شو بتحكي عن {title}؟ حماس! ⭐ {points} Teencoins",
+    "تعال شوف، يمكن يعجبك ⭐ {points} Teencoins",
+    "بتحب تكسب؟ جرب هاي المهمة ⭐ {points} Teencoins",
+    "منك إلك… مهمة بتستاهل ⭐ {points} Teencoins"
+]
+MAIN_LINK = "📲 https://www.volunteen.site/child/home/"
+EXTRA_LINKS = [
+    "📸 עקבו באינסטה: https://rb.gy/9i3yxf",
+    "👇 הצטרפו לוואטסאפ: http://bit.ly/3EXVxLL"
+]
+
 class MentorTaskUtils(TaskManagerUtils):
 
     @staticmethod
@@ -268,20 +308,16 @@ class MentorTaskUtils(TaskManagerUtils):
                 if not phone or not subscription or not subscription.is_active():
                     continue
                 try:
-                    NotificationManager.sent_whatsapp(
-                        f"היי {child.user.username} 😎\n"
-                        f"קיבלת משימה חדשה! 📣\n\n"
-                        f"📝 משימה: *{new_task.title}*\n"
-                        f"📅 עד מתי? {new_task.deadline:%d/%m/%Y}\n"
-                        f"⭐ שווה: {new_task.points} Teencoins\n\n"
-                        f"📲 כל הפרטים כאן: https://www.volunteen.site/child/home/\n"
-                        f"👇 הולך להיות מעניין בוואטסאפ… באים? 😉\nhttp://bit.ly/3EXVxLL\n"
-                        f"📸 עקבו אחרינו באינסטה:\nhttps://rb.gy/9i3yxf\n\n"
-                        f"בהצלחה! – צוות Volunteen 🧡",
-                        phone,
-                    )
+                    template = random.choice(WHATSAPP_SHORT_MESSAGES)
+                    if "{title}" in template:
+                        message = template.format(points=new_task.points, title=new_task.title)
+                    else:
+                        message = template.format(points=new_task.points)
+                    message += f"\n{MAIN_LINK}\n{random.choice(EXTRA_LINKS)}"
+                    NotificationManager.sent_whatsapp(message, phone)
                 except Exception as exc:
                     print(f"Failed to send WhatsApp message: {exc}")
+                
 
         return new_task
     

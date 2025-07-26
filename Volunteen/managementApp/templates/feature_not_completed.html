@@ -1,162 +1,400 @@
-{% extends 'donation/donation_base.html' %}
-
-{% block title %}الميزة غير مكتملة{% endblock %}
-
-{% block extra_css %}
-<style>
-    .feature-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 85vh;
-        padding: 1.5rem;
-        text-align: center;
-        color: #333;
-    }
-
-    .illustration {
-        width: 70%;
-        max-width: 300px;
-        margin-bottom: 2rem;
-        animation: float 6s ease-in-out infinite;
-    }
-
-    .feature-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #ff9800;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease forwards;
-    }
-
-    .feature-message {
-        font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.8s 0.2s ease forwards;
-    }
-
-    .back-button {
-        background: #ff9800;
-        color: white;
-        border: none;
-        padding: 0.8rem 2rem;
-        border-radius: 50px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-        transition: all 0.3s ease;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.8s 0.4s ease forwards;
-    }
-
-    .back-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 7px 20px rgba(255, 152, 0, 0.4);
-    }
-
-    .back-button:active {
-        transform: translateY(-1px);
-    }
-
-    @keyframes float {
-        0% {
-            transform: translateY(0px);
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الميزة غير مكتملة</title>
+    <!-- Lordicon CDN -->
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <!-- Google Fonts for Arabic -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-light: #ff9800;
+            --primary-dark: #ffc107;
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --card-light: #ffffff;
+            --card-dark: #1e1e1e;
+            --text-light: #333;
+            --text-dark: #e4e4e4;
+            --shadow-light: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        50% {
-            transform: translateY(-15px);
-        }
-        100% {
-            transform: translateY(0px);
-        }
-    }
 
-    @keyframes fadeInUp {
-        to {
-            opacity: 1;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            transition: background 0.5s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #232526 0%, #2d2f31 100%);
+        }
+
+        .feature-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+            width: 100%;
+            background: var(--card-light);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-light);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
             transform: translateY(0);
+            transition: var(--transition);
         }
-    }
 
-    .shine {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .shine::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.3) 50%,
-            rgba(255, 255, 255, 0) 100%
-        );
-        transform: rotate(30deg);
-        animation: shine 3s infinite;
-    }
-
-    @keyframes shine {
-        0% {
-            transform: rotate(30deg) translateX(-100%);
+        .dark-mode .feature-container {
+            background: var(--card-dark);
+            box-shadow: var(--shadow-dark);
         }
-        20%, 100% {
-            transform: rotate(30deg) translateX(100%);
+
+        .feature-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-light), #ff5722);
+            border-radius: 24px 24px 0 0;
         }
-    }
 
-    /* Dark mode support */
-    .dark-mode .feature-container {
-        color: #e4e4e4;
-        background-color: #1e1e1e;
-    }
+        .dark-mode .feature-container::before {
+            background: linear-gradient(90deg, var(--primary-dark), #ff9800);
+        }
 
-    .dark-mode .feature-title {
-        color: #ffc107;
-    }
+        .illustration-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 1rem auto 2rem;
+            perspective: 1000px;
+        }
 
-    .dark-mode .back-button {
-        background: #ffc107;
-        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
-    }
+        .illustration-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
 
-    .dark-mode .back-button:hover {
-        box-shadow: 0 7px 20px rgba(255, 193, 7, 0.4);
-    }
+        .illustration {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            backface-visibility: hidden;
+        }
 
-    /* Animation for context message if present */
-    .context-message {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        background: rgba(255, 152, 0, 0.1);
-        border-radius: 8px;
-        font-size: 0.9rem;
-        line-height: 1.5;
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.8s 0.6s ease forwards;
-    }
+        .feature-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary-light);
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
 
-    .dark-mode .context-message {
-        background: rgba(255, 193, 7, 0.1);
-    }
-</style>
-{% endblock %}
+        .dark-mode .feature-title {
+            color: var(--primary-dark);
+        }
 
-{% block content %}
+        .feature-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--primary-light);
+            border-radius: 3px;
+        }
+
+        .dark-mode .feature-title::after {
+            background: var(--primary-dark);
+        }
+
+        .feature-message {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+            color: var(--text-light);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s 0.2s ease forwards;
+        }
+
+        .dark-mode .feature-message {
+            color: var(--text-dark);
+        }
+
+        .back-button {
+            position: relative;
+            background: linear-gradient(45deg, var(--primary-light), #ff5722);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 1;
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s 0.4s ease forwards;
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .back-button {
+            background: linear-gradient(45deg, var(--primary-dark), #ff9800);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+        }
+
+        .back-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 152, 0, 0.6);
+        }
+
+        .dark-mode .back-button:hover {
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
+        }
+
+        .back-button:active {
+            transform: translateY(-2px);
+        }
+
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+
+        .back-button:hover::before {
+            left: 100%;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .dark-mode .theme-toggle {
+            background: rgba(30, 30, 30, 0.9);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+            color: #555;
+            transition: var(--transition);
+        }
+
+        .dark-mode .theme-toggle i {
+            color: #ffc107;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        .feature-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--primary-light), #ff5722);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .dark-mode .feature-badge {
+            background: linear-gradient(45deg, var(--primary-dark), #ff9800);
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+        }
+        
+        .progress-indicator {
+            width: 100%;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+        
+        .dark-mode .progress-text {
+            color: var(--text-dark);
+        }
+        
+        .progress-bar-container {
+            width: 80%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .dark-mode .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 65%;
+            background: linear-gradient(90deg, var(--primary-light), #ff5722);
+            border-radius: 3px;
+            animation: progress 2.5s ease-in-out infinite;
+        }
+        
+        .dark-mode .progress-bar {
+            background: linear-gradient(90deg, var(--primary-dark), #ff9800);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotateY(0deg);
+            }
+            50% {
+                transform: translateY(-15px) rotateY(5deg);
+            }
+            100% {
+                transform: translateY(0) rotateY(0deg);
+            }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes progress {
+            0% {
+                width: 40%;
+            }
+            50% {
+                width: 80%;
+            }
+            100% {
+                width: 40%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .feature-container {
+                padding: 1.8rem;
+            }
+            
+            .illustration-container {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .feature-title {
+                font-size: 1.7rem;
+            }
+            
+            .feature-message {
+                font-size: 1rem;
+            }
+            
+            .back-button {
+                padding: 0.9rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
 <div class="feature-container">
-    <img src="https://cdn.lordicon.com/lupuorrc.json" class="illustration" alt="Feature Coming Soon">
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <div class="feature-badge">قيد التطوير</div>
+    
+    <div class="illustration-container">
+        <div class="illustration-inner">
+            <lord-icon
+                src="https://cdn.lordicon.com/lupuorrc.json"
+                trigger="loop"
+                colors="primary:#ff9800,secondary:#ffc107"
+                style="width:100%;height:100%">
+            </lord-icon>
+        </div>
+    </div>
     
     <h1 class="feature-title">هذه الميزة قيد التطوير</h1>
     
@@ -164,45 +402,61 @@
         نعتذر عن أي تقصير قد بدر منا في التطبيق، فالكمال لله وحده، ونحن بشر نصيب أحيانًا ونخطئ أحيانًا أخرى، ونسعى دائمًا لتقديم الأفضل لكم. شكراً لتفهمكم ودعمكم المستمر.
     </p>
     
-    {% if message %}
-    <div class="context-message">
-        {{ message }}
+    <div class="progress-indicator">
+        <div class="progress-text">جاري العمل على هذه الميزة</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
     </div>
-    {% endif %}
     
-    <button onclick="window.history.back()" class="back-button shine">العودة</button>
+    <button onclick="window.history.back()" class="back-button">
+        <i class="fas fa-arrow-right"></i> العودة
+    </button>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-    // Load interactive animation
-    document.addEventListener('DOMContentLoaded', function() {
-        // Replace static image with Lordicon animated icon if available
-        const script = document.createElement('script');
-        script.src = "https://cdn.lordicon.com/lordicon.js";
-        document.head.appendChild(script);
-        
-        script.onload = function() {
-            const illustration = document.querySelector('.illustration');
-            const lordIcon = document.createElement('lord-icon');
-            
-            lordIcon.setAttribute('src', 'https://cdn.lordicon.com/lupuorrc.json');
-            lordIcon.setAttribute('trigger', 'loop');
-            lordIcon.setAttribute('colors', 'primary:#ff9800,secondary:#ffc107');
-            lordIcon.setAttribute('style', 'width:250px;height:250px');
-            
-            illustration.parentNode.replaceChild(lordIcon, illustration);
-        };
-
-        // Check for dark mode
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set initial theme based on system preference
         const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
         if (prefersDarkScheme.matches) {
             document.body.classList.add('dark-mode');
+            document.querySelector('.theme-toggle i').className = 'fas fa-sun';
         }
-
-        // Add smooth scroll behavior
+        
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            
+            const icon = this.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        });
+        
+        // Smooth scrolling
         document.documentElement.style.scrollBehavior = 'smooth';
+        
+        // Add subtle hover effect to the card
+        const featureContainer = document.querySelector('.feature-container');
+        featureContainer.addEventListener('mousemove', function(e) {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            this.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        
+        featureContainer.addEventListener('mouseenter', function() {
+            this.style.transition = 'none';
+        });
+        
+        featureContainer.addEventListener('mouseleave', function() {
+            this.style.transition = 'transform 0.5s ease';
+            this.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
     });
 </script>
-{% endblock %}
+
+</body>
+</html>

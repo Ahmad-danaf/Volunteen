@@ -167,6 +167,15 @@
         <p>יתרה נותרה</p>
       </div>
     </div>
+    {% if is_superadmin %}
+  <div style="text-align: left; margin: 15px 20px;">
+    <a href="{% url 'managementApp:superadmin_dashboard' %}"
+       style="display: inline-block; background-color: #d32f2f; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: bold; text-decoration: none;">
+      ← חזרה ללוח הסופר אדמין
+    </a>
+  </div>
+{% endif %}
+
   </header>
 
   <!-- Main Action Cards Grid -->

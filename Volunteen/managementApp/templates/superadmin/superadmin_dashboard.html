@@ -1,0 +1,114 @@
+{% extends "superadmin/superadmin_base.html" %}
+
+{% block title %}ניהול ראשי - סופר אדמין{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-4">
+
+  <!-- 🔥 Welcome Header -->
+  <div class="mb-6 text-right">
+    <h1 class="text-3xl font-bold text-white mb-2 animate-fade-in">ברוך הבא ללוח הניהול הראשי</h1>
+    <p class="text-slate-300 text-sm">כאן ניתן לנהל משתמשים, לצפות במנויים, להעלות קבצים ועוד</p>
+  </div>
+
+  <!-- 🧱 Superadmin Core -->
+  <h2 class="text-xl font-semibold text-white mb-3 text-right">כלי ליבה לסופר אדמין</h2>
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 text-right animate-slide-up">
+    
+    <a href="{% url 'managementApp:superadmin_upload_menu' %}"
+       class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4v16m8-8H4" />
+      </svg>
+      <span class="text-white font-medium text-sm">העלאת משתמשים</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5.121 17.804A7.963 7.963 0 0112 16c1.657 0 3.182.506 4.379 1.362M12 12a4 4 0 100-8 4 4 0 000 8zM20 12v7M4 12v7" />
+      </svg>
+      <span class="text-white font-medium text-sm">ניהול משתמשים</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 20h5v-2a4 4 0 00-5-4M9 20H4v-2a4 4 0 015-4M12 12a4 4 0 100-8 4 4 0 000 8z" />
+      </svg>
+      <span class="text-white font-medium text-sm">רשימת ילדים</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 8h10M7 12h4m1 8a9 9 0 110-18 9 9 0 010 18z" />
+      </svg>
+      <span class="text-white font-medium text-sm">ניהול מנויים</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 3v18h18M9 17v-6M15 17V7" />
+      </svg>
+      <span class="text-white font-medium text-sm">ניתוח נתונים</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a9 9 0 10-18 0v6a2 2 0 002 2z" />
+      </svg>
+      <span class="text-white font-medium text-sm">הרשאות</span>
+    </a>
+
+    <a href="{% url 'managementApp:coming_soon' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-teal-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 00-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m1 0v1a3 3 0 006 0v-1" />
+      </svg>
+      <span class="text-white font-medium text-sm">התראות</span>
+    </a>
+
+  </div>
+
+  <!-- Divider -->
+  <div class="my-10 border-t border-white/10"></div>
+
+  <!-- 🎯 Campaigns & Donations Zone -->
+  <h2 class="text-xl font-semibold text-white mb-3 text-right">אזור מנהלים</h2>
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 text-right">
+    
+    <!-- Campaign Manager -->
+    <a href="{% url 'managementApp:campaign_manager_home' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 17l-4-4-4 4m8-10l-4 4-4-4" />
+      </svg>
+      <span class="text-white font-medium text-sm">ניהול קמפיינים</span>
+    </a>
+
+    <!-- Donation Manager -->
+    <a href="{% url 'managementApp:donation_manager_dashboard' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.8"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 8c-1.657 0-3 1.343-3 3 0 2.25 3 5 3 5s3-2.75 3-5c0-1.657-1.343-3-3-3zm0-6a9 9 0 100 18 9 9 0 000-18z" />
+      </svg>
+      <span class="text-white font-medium text-sm">דשבורד תרומות</span>
+    </a>
+
+    <!-- Django Admin Panel -->
+    <a href="{% url 'admin:index' %}" class="bg-white/5 border border-white/10 backdrop-blur-lg shadow-xl p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:scale-105 transition-all">
+      <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" stroke-width="1.8"
+          viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
+      </svg>
+      <span class="text-white font-medium text-sm">פאנל ניהול Django</span>
+    </a>
+
+  </div>
+
+</div>
+{% endblock %}

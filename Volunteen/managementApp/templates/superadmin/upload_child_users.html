@@ -1,0 +1,176 @@
+{% extends "superadmin/superadmin_base.html" %}
+
+{% block title %}העלאת משתמשים חדשים{% endblock %}
+{% block extrahead %}
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/10 animate-fade-in">
+
+  <!-- Title -->
+  <h1 class="text-2xl font-bold text-white mb-4 text-right">העלאת משתמשים (CSV)</h1>
+
+  <!-- Helper -->
+  <div x-data="{ open: false }" class="mt-4">
+    <button @click="open=!open"
+            class="w-full text-right text-indigo-300 font-semibold flex justify-between items-center hover:text-white transition">
+      <span>📘 הנחיות לקובץ ה-CSV</span>
+      <svg :class="{'rotate-180':open}" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+
+    <div x-show="open" x-transition class="bg-slate-900/60 backdrop-blur-sm mt-3 p-4 rounded-xl text-sm text-white space-y-3">
+
+      <!-- Required cols -->
+      <p class="text-yellow-300 font-semibold">עמודות חובה:</p>
+      <ul class="list-disc list-inside space-y-1 text-right">
+        <li><b class="text-indigo-300">username</b> – ייחודי.</li>
+        <li>
+          <b class="text-indigo-300">password</b> – חובה.
+          מומלץ להפיק סיסמה בטור&nbsp;<u>נפרד</u> עם נוסחת Google Sheets, ואז להעתיק-הדבק “Paste values” לטור <code>password</code>:
+          <!-- Formula with copy btn -->
+          <div x-data="{copied:false}" class="relative mt-1">
+          <pre
+          class="bg-slate-800 p-2 pr-12 rounded-md font-mono text-xs overflow-x-auto text-lime-300 select-all"
+          style="max-height: 3em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
+          title="=ARRAYFORMULA(CONCATENATE(CHAR(RANDBETWEEN(48,57)), CHAR(RANDBETWEEN(65,90)), ...))"
+        >
+        =ARRAYFORMULA(CONCATENATE(CHAR(RANDBETWEEN(48,57)), CHAR(RANDBETWEEN(65,90)), CHAR(RANDBETWEEN(97,122)), ...)
+        </pre>
+
+            <button @click="navigator.clipboard.writeText(`=ARRAY_CONSTRAIN( ARRAYFORMULA(CHAR(RANDBETWEEN(48,122))), 10, 1)`);copied=true;setTimeout(()=>copied=false,1500)"
+                    class="absolute top-1 right-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-2 py-0.5 rounded">
+              <span x-show="!copied">📋 העתק</span>
+              <span x-show="copied"  class="text-green-300">✔️</span>
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Optional cols -->
+      <p class="text-yellow-300 font-semibold mt-3">עמודות רשות:</p>
+      <ul class="list-disc list-inside space-y-1 text-right">
+        <li><b class="text-indigo-300">mentor</b> – שם-משתמש של מנטור קיים.</li>
+        <li><b class="text-indigo-300">institution</b> – שם מוסד.</li>
+        <li><b class="text-indigo-300">city</b> – ברירת-מחדל TLV אם ריק.</li>
+        <li><b class="text-indigo-300">identifier / secret_code</b> – לא חובה; המערכת תיצור אוטומטית.</li>
+      </ul>
+
+      <!-- Subscription cols -->
+      <div class="border-t border-slate-700 pt-3 space-y-1">
+        <p class="text-orange-300 font-semibold">נתוני מנוי (נוצר רק אם כל החמישה קיימים):</p>
+        <ul class="list-disc list-inside text-right space-y-1">
+          <li><code>payment_method</code> (CASH / CREDIT)</li>
+          <li><code>plan</code> (MONTHLY / YEARLY)</li>
+          <li><code>start_date</code> (‎MM/DD/YYYY)</li>
+          <li><code>end_date</code> (‎MM/DD/YYYY או ריק – יחושב)</li>
+          <li><code>auto_renew</code> (TRUE / FALSE)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- 📤 Upload Form -->
+  <form x-data="{loading:false}" @submit="loading=true" method="post" enctype="multipart/form-data" class="space-y-4 mt-6">
+    {% csrf_token %}
+
+    <label class="block text-sm text-white text-right mb-1">בחר קובץ CSV:</label>
+    <input type="file" name="csv_file" accept=".csv" required
+          class="w-full bg-slate-900 text-white rounded-lg px-3 py-2 file:bg-indigo-600 file:text-white file:px-4 file:py-2 focus:ring-2 focus:ring-indigo-500 transition"/>
+
+    <!-- כפתור עם מצב טעינה -->
+    <button
+        :disabled="loading"
+        class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-2 rounded-lg font-semibold text-white shadow-lg
+              hover:scale-[1.02] transition flex items-center justify-center gap-2"
+        :class="{'opacity-60 cursor-not-allowed': loading}">
+        <!-- Spinner -->
+        <svg x-show="loading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" class="opacity-25" />
+            <path d="M4 12a8 8 0 018-8" class="opacity-75" />
+        </svg>
+
+        <span x-text="loading ? 'מעלה...' : 'העלאה והוספת משתמשים'"></span>
+    </button>
+  </form>
+
+
+  <!-- Results -->
+  {% if logs %}
+  <!-- 📊 תוצאות סיכום -->
+<div class="mt-10 mb-6">
+  <h2 class="text-lg font-semibold text-white mb-2 text-right">📊 תוצאות סיכום</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-white text-sm">
+
+    <div class="bg-white/10 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_rows }}</p>
+      <p>סה"כ שורות</p>
+    </div>
+
+    <div class="bg-green-700/40 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_created_children }}</p>
+      <p>ילדים שנוצרו</p>
+    </div>
+
+    <div class="bg-yellow-600/40 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_skipped_children }}</p>
+      <p>ילדים שדולגו</p>
+    </div>
+
+    <div class="bg-blue-600/40 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_created_subscriptions }}</p>
+      <p>מנויים חדשים</p>
+    </div>
+
+    <div class="bg-purple-600/40 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_updated_subscriptions }}</p>
+      <p>מנויים שעודכנו</p>
+    </div>
+
+    <div class="bg-slate-700/40 rounded-xl p-3 shadow-inner text-center">
+      <p class="text-xl font-bold">{{ summary.total_non_provided_subscriptions }}</p>
+      <p>ללא מנוי</p>
+    </div>
+  </div>
+</div>
+
+  <div class="mt-10">
+    <h2 class="text-lg font-semibold text-white mb-2 text-right">תוצאות העלאה</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-right bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+        <thead class="bg-slate-700 text-slate-200">
+          <tr>
+            <th class="px-4 py-2">#</th>
+            <th class="px-4 py-2">שם משתמש</th>
+            <th class="px-4 py-2">סטטוס</th>
+            <th class="px-4 py-2">מזהה בשימוש</th>
+            <th class="px-4 py-2">מנוי</th>
+            <th class="px-4 py-2">אזהרות</th>
+            <th class="px-4 py-2">שגיאות</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="{% if log.status|slice:':2' == '❌' %}bg-red-900/40{% elif log.status|slice:':2' == '⚠️' %}bg-yellow-800/30{% else %}bg-green-900/20{% endif %} border-b border-slate-700">
+            <td class="px-4 py-2 font-semibold">{{ log.row }}</td>
+            <td class="px-4 py-2">{{ log.username }}</td>
+            <td class="px-4 py-2 font-bold">{{ log.status }}</td>
+            <td class="px-4 py-2">{{ log.used_identifier|default:"—" }}</td>
+            <td class="px-4 py-2">{{ log.subscription_action|default:"—" }}</td>
+            <td class="px-4 py-2">
+              {% for w in log.warnings %}⚠️ {{ w }}<br>{% empty %}—{% endfor %}
+            </td>
+            <td class="px-4 py-2 text-red-300">
+              {% for e in log.errors %}❌ {{ e }}<br>{% empty %}—{% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

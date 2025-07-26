@@ -21,7 +21,10 @@ from datetime import date, datetime
 
 @campaign_manager_required
 def campaign_manager_home(request):
-    return render(request, "campaign/manager_home.html")
+    user=request.user
+    user_groups = list(user.groups.values_list('name', flat=True))
+    is_superadmin = 'SuperAdmin' in user_groups
+    return render(request, "campaign/manager_home.html", {'is_superadmin': is_superadmin})
 
 @campaign_manager_required
 def campaign_list(request):

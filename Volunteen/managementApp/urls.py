@@ -28,7 +28,12 @@ urlpatterns = [
     path("campaign/approvals/", views.campaign_approvals_panel, name="campaign_approvals_panel"),
     path("campaign/<int:campaign_id>/participants/", views.track_campaign_participants, name="track_campaign_participants"),
     path("campaign/<int:campaign_id>/remove_child/<int:child_id>/", views.remove_child_from_campaign, name="remove_child_from_campaign"),
-    
-    
+
+    ################SUPER ADMIN#####################
+    path('superadmin/dashboard/', views.superadmin_dashboard, name='superadmin_dashboard'),
+    path('superadmin/upload/', views.upload_menu_view, name='superadmin_upload_menu'),
+    path('superadmin/upload/children/', views.upload_children_csv, name='upload_children_csv'),
+    path("volunteen/coming-soon/", views.coming_soon, name="coming_soon"),
+
     
 ]
