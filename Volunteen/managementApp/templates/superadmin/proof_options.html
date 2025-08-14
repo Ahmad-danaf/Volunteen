@@ -189,7 +189,7 @@
    <div class="fixed inset-x-0 z-50 pointer-events-none"
      style="bottom: calc(env(safe-area-inset-bottom) + var(--bottom-nav-h,64px) + 10px);">
   <div class="max-w-xl mx-auto px-4 pb-2 pointer-events-auto">
-    <div class="glass rounded-2xl shadow-elev border border-white/50 p-3 animate-inUp">=
+    <div class="glass rounded-2xl shadow-elev border border-white/50 p-3 animate-inUp">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 text-white grid place-items-center animate-floaty">
@@ -440,10 +440,10 @@
         });
         updateSubmitState();
         showToast("נקבעה הגדרה מתקדמת", "success");
-      } catch(e) 
+      } catch(e) { console.error("Failed to parse proof options:", e); }
     });
   });
-  
+
   // Only "none" preset
   const presetOnlyBtn = document.querySelector(".presetOnlyBtn");
   if (presetOnlyBtn) {
