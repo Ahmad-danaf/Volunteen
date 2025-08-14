@@ -1,6 +1,16 @@
 from django.db import models
 from django.utils import timezone
 from teenApp.entities.TaskCompletion import TaskCompletion
+
+
+class TaskProofRequirement(models.TextChoices):
+    CAMERA_ONLY = "camera", "העלאת תמונה מהמצלמה בלבד"
+    CAMERA_OR_GALLERY = "gallery", "תמונה מהמצלמה או הגלריה"
+    AUTO_ACCEPT_CHECKIN = "auto_checkin", "מאושר אוטומטית אחרי Check-in"
+    AUTO_ACCEPT_CHECKOUT = "auto_checkout", "מאושר אוטומטית אחרי Check-out"
+    NO_PROOF_REQUIRED = "none", "ללא צורך בהעלאת תמונה  "
+
+
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name='Title')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)
@@ -23,6 +33,13 @@ class Task(models.Model):
         default=True,
         verbose_name="Send WhatsApp notification when task is assigned",
         help_text="If checked, an automatic WhatsApp message will be sent to the user when a task is assigned to them"
+    )
+    proof_requirement = models.CharField(
+        max_length=20,
+        choices=TaskProofRequirement.choices,
+        default=TaskProofRequirement.CAMERA_ONLY,
+        verbose_name="דרישת הוכחה",
+        help_text="בחר את סוג ההוכחה הנדרשת מהחניך",
     )
     def __str__(self):
         return self.title

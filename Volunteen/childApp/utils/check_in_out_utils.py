@@ -3,7 +3,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from childApp.models import Child
-from teenApp.entities.task import Task
+from teenApp.entities.task import Task, TaskProofRequirement
 from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import TimeWindowRule
 from teenApp.utils.TimeWindowUtils import TimeWindowUtils
@@ -19,19 +19,27 @@ def process_check_in(child_id, task_id, image_data):
     task = get_object_or_404(Task, id=task_id)
     task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
 
-    # Define the file path and create a ContentFile from the image bytes
+    # save the check-in image
     file_path = f'checkin_images/{child.id}_{task.id}_checkin.jpg'
     content_file = ContentFile(image_data, name=f'{child.id}_{task.id}_checkin.jpg')
-
-    # Save the image and update the task_completion record
     saved_path = default_storage.save(file_path, content_file)
     task_completion.checkin_img = saved_path
-    task_completion.status = 'checked_in'
     
     # Determine lateness
     now = timezone.localtime()
     task_completion.checkin_at = now
-
+    
+    if task.proof_requirement == TaskProofRequirement.AUTO_ACCEPT_CHECKIN:
+        task_completion.status = 'approved'
+        base_points = task.points
+        bonus_points = task_completion.bonus_points or 0
+        total = base_points + bonus_points
+        task_completion.awarded_coins = total
+        task_completion.remaining_coins = total
+        child.add_points(total)
+    else:
+        task_completion.status = 'checked_in'
+    
     task_completion.save()
     return f"Check-in processed for child {child.user.username} on task {task.title}"
 
@@ -52,12 +60,22 @@ def process_check_out(child_id, task_id, image_data):
 
     file_path = f'checkout_images/{child.id}_{task.id}_checkout.jpg'
     content_file = ContentFile(image_data, name=f'{child.id}_{task.id}_checkout.jpg')
-
     saved_path = default_storage.save(file_path, content_file)
     task_completion.checkout_img = saved_path
-    task_completion.status = 'pending'
     
     now = timezone.localtime()
     task_completion.checkout_at = now
+    
+    if task.proof_requirement == TaskProofRequirement.AUTO_ACCEPT_CHECKOUT:
+        task_completion.status = 'approved'
+        base_points = task.points
+        bonus_points = task_completion.bonus_points or 0
+        total = base_points + bonus_points
+        task_completion.awarded_coins = total
+        task_completion.remaining_coins = total
+        child.add_points(total)
+    else:
+        task_completion.status = 'pending'  
+    
     task_completion.save()
     return f"Check-out processed for child {child.user.username} on task {task.title}"

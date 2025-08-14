@@ -20,7 +20,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
 from childApp.models import Child,StreakMilestoneAchieved
-from teenApp.entities.task import Task, TimeWindowRule
+from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
 from teenApp.entities.TaskCompletion import TaskCompletion
@@ -660,14 +660,25 @@ def task_check_in_out(request):
     child = request.user.child
     today = timezone.now().date()
     CampaignUtils.expire_campaign_reservations()
-    # Retrieve assigned tasks that are not completed
+
     assigned_tasks = (
         ChildTaskManager
         .get_unresolved_tasks_for_child(child)
         .filter(deadline__gte=today)
         .order_by('-is_pinned', 'deadline')
     )
-    return render(request, 'task_check_in_out.html', {'tasks': assigned_tasks})
+
+    tab_definitions = [
+        {"label": "עדיין לא התחלתי", "value": "not_started"},
+        {"label": "התחלתי (עם צ'ק-אין)", "value": "checked_in"},
+        {"label": "סיימתי (עם צ'ק-אאוט)", "value": "checked_out"},
+    ]
+
+    return render(request, 'task_check_in_out.html', {
+        'tasks': assigned_tasks,
+        'tabs': tab_definitions,
+    })
+
 
 @child_subscription_required
 def check_in(request, task_id):
@@ -675,13 +686,13 @@ def check_in(request, task_id):
     child = request.user.child
     special_permissions = False
     use_default_image = False
-    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN:
-        special_permissions = True
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
     replace_image = request.GET.get('replace_image') == 'true'
-    if not task.proof_required:
+    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN or task.proof_requirement == TaskProofRequirement.CAMERA_OR_GALLERY:
+        special_permissions = True
+    if task.proof_requirement in [TaskProofRequirement.AUTO_ACCEPT_CHECKIN, TaskProofRequirement.NO_PROOF_REQUIRED, TaskProofRequirement.AUTO_ACCEPT_CHECKOUT]:
         use_default_image = True
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
@@ -701,12 +712,12 @@ def check_out(request, task_id):
     special_permissions = False
     use_default_image = False
     replace_image = request.GET.get('replace_image') == 'true'
-    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN:
+    if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN or task.proof_requirement == TaskProofRequirement.CAMERA_OR_GALLERY:
         special_permissions = True
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
         use_default_image = True
     task = get_object_or_404(Task, id=task_id)
-    if not task.proof_required:
+    if task.proof_requirement in [TaskProofRequirement.AUTO_ACCEPT_CHECKOUT, TaskProofRequirement.AUTO_ACCEPT_CHECKOUT, TaskProofRequirement.NO_PROOF_REQUIRED]:
         use_default_image = True
     # Ensure the task was checked in before allowing check-out
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()

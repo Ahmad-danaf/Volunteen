@@ -1,5 +1,6 @@
 from django import forms
 from teenApp.entities.task import Task,TimeWindowRule
+from teenApp.entities import TaskProofRequirement
 from childApp.models import Child
 from mentorApp.models import MentorGroup
 from django.utils.translation import gettext_lazy as _
@@ -25,7 +26,7 @@ class TaskForm(forms.ModelForm):
         fields = [
             'title', 'description', 'points', 'deadline', 
             'img', 'additional_details', 'assigned_children', 'is_template', 'is_pinned',
-            'proof_required', 'send_whatsapp_on_assign'
+            'proof_requirement', 'send_whatsapp_on_assign'
         ]       
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
@@ -36,15 +37,13 @@ class TaskForm(forms.ModelForm):
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),
             'is_template': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_pinned': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'proof_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'proof_requirement': forms.Select(attrs={'class': 'form-select'}),
             'send_whatsapp_on_assign': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
-            # Accept extra flags to control duplication and template creation behavior
             self.mentor = kwargs.pop('mentor', None)
             self.is_duplicate = kwargs.pop('is_duplicate', False)
-            # is_template flag is now just used to mark the task, not to modify field behavior
             self.is_template = kwargs.pop('is_template', False)
             super(TaskForm, self).__init__(*args, **kwargs)
             
@@ -58,7 +57,9 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_children'].help_text = 'בחר את הילדים שיקבלו את המשימה'
             self.fields['is_template'].help_text = 'סמן אם ברצונך לשמור כתבנית לשימוש עתידי'
             self.fields['is_pinned'].help_text = 'הפעל את האופציה אם ברצונך להעדיף משימה זו ולהציג אותה בצורה בולטת בראש הרשימה.'
-            self.fields['proof_required'].help_text = 'אם מסומן, הילד יצטרך להעלות תמונת הוכחה (צ׳ק אין). אם לא, תתווסף תמונה אוטומטית.'
+            self.fields['proof_requirement'].help_text = (
+            "בחר את סוג ההוכחה – חלק מהאפשרויות עשויות להיות חסומות לפי ההרשאות שלך."
+            )
             self.fields['send_whatsapp_on_assign'].help_text = 'אם מסומן, תישלח הודעת WhatsApp כאשר מוקצת המשימה לילד'
 
             self.fields['title'].label = 'כותרת'
@@ -70,12 +71,39 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_children'].label = 'הקצאת ילדים'
             self.fields['is_template'].label = 'שמור כתבנית'
             self.fields['is_pinned'].label = 'מועדפת'
-            self.fields['proof_required'].label = 'עם תמונת הוכחה'
+            self.fields['proof_requirement'].label = 'דרישת הוכחה'
             self.fields['send_whatsapp_on_assign'].label = 'שלח WhatsApp בעת ההקצאה'
 
             if self.mentor:
                 self.fields['assigned_children'].queryset = self.mentor.children.all()
+                
+            # show only allowed choices for this mentor
+            allowed = []
+            for val, label in TaskProofRequirement.choices:
+                if not self.mentor or self.mentor.can_use_proof_option(val):
+                    allowed.append((val, label))
 
+            # hard fallback: if somehow nothing remains, at least show base options
+            if not allowed:
+                allowed = [
+                    (TaskProofRequirement.CAMERA_ONLY, TaskProofRequirement.CAMERA_ONLY.label),
+                    (TaskProofRequirement.CAMERA_OR_GALLERY, TaskProofRequirement.CAMERA_OR_GALLERY.label),
+                ]
+            self.fields['proof_requirement'].choices = allowed
+            
+            self.lock_special = False 
+            current_value = None
+            if self.instance and getattr(self.instance, "pk", None):
+                current_value = self.instance.proof_requirement
+
+            if current_value and (self.mentor and not self.mentor.can_use_proof_option(current_value)):
+                if current_value not in [v for v, _ in allowed]:
+                    # prepend current choice so it's visible
+                    label = dict(TaskProofRequirement.choices).get(current_value, current_value)
+                    allowed = [(current_value, f"{label} (קיים במשימה)") ] + allowed
+                self.lock_special = True
+
+            self.fields['proof_requirement'].choices = allowed
             # When duplicating a task, allow editing key fields and reset the deadline.
             if self.is_duplicate:
                 for field in ['title', 'description', 'points']:
@@ -83,7 +111,16 @@ class TaskForm(forms.ModelForm):
                 # Reset the deadline so the mentor must pick a new one
                 self.initial['deadline'] = None
                 
+            if not self.initial.get('proof_requirement') and self.fields['proof_requirement'].choices:
+                self.initial['proof_requirement'] = self.fields['proof_requirement'].choices[0][0]
 
+    
+    def clean_proof_requirement(self):
+        val = self.cleaned_data['proof_requirement']
+        if self.mentor and not self.mentor.can_use_proof_option(val):
+            raise forms.ValidationError("אין לך הרשאה לבחור אפשרות זו.")
+        return val
+    
 def validate_timewindow_payload(payload):
     """
     payload : list[dict] – each dict keys:

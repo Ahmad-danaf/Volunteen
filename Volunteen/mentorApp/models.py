@@ -3,12 +3,21 @@ from django.contrib.auth.models import User, Group
 from childApp.models import Child
 from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import Task
+from django.contrib.postgres.fields import ArrayField
+from teenApp.entities import TaskProofRequirement
 class Mentor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Mentor User")
 
     # Available Teencoins for the mentor (balance for assigning tasks)
     available_teencoins = models.IntegerField(default=0, verbose_name="Available Teencoins")
-
+    allowed_proof_options = ArrayField(
+        base_field=models.CharField(max_length=20, choices=TaskProofRequirement.choices),
+        default=list,  # [] = no special privileges
+        blank=True,
+        help_text="which proof options are allowed for this mentor",
+    )
+    
+    
     def __str__(self):
         return self.user.username
 
@@ -68,6 +77,13 @@ class Mentor(models.Model):
                 task_completion.status = 'rejected'
                 task_completion.mentor_feedback = feedback
                 task_completion.save()
+                
+    def can_use_proof_option(self, value: str) -> bool:
+        # always allow the safe base types (camera/gallery)
+        if value in (TaskProofRequirement.CAMERA_ONLY, TaskProofRequirement.CAMERA_OR_GALLERY):
+            return True
+        # special options require explicit permission
+        return value in (self.allowed_proof_options or [])
 
     def save(self, *args, **kwargs):
         """

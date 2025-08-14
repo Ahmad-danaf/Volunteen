@@ -1,6 +1,6 @@
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from teenApp.entities.task import Task, TimeWindowRule
+from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
 from childApp.models import Child
 from mentorApp.models import Mentor
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
@@ -276,6 +276,7 @@ class MentorTaskUtils(TaskManagerUtils):
         Creates the task, assigns children, and optionally sends WhatsApp messages.
         """
         task_data.setdefault("description", "")
+        task_data.setdefault("proof_requirement", TaskProofRequirement.CAMERA_ONLY)
         task_data.pop("assigned_children", None)
 
         assigned_children = Child.objects.filter(id__in=children_ids)

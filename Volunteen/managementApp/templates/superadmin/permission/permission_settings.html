@@ -1,0 +1,125 @@
+{% extends "superadmin/superadmin_base.html" %}
+{% load static %}
+
+{% block extra_head %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Heebo","system-ui","ui-sans-serif"] },
+          colors: {
+            brand: {50:"#f6f7ff",100:"#eceeff",200:"#dadcff",300:"#b8beff",400:"#969dff",500:"#6c74ff",600:"#5057ee",700:"#3f45c6",800:"#30369a",900:"#282e7c"},
+          },
+          boxShadow: {
+            elev:"0 12px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.18)",
+            soft:"0 10px 20px rgba(0,0,0,.06)",
+          },
+          keyframes: {
+            inUp:{'0%':{opacity:0,transform:'translateY(10px)'},'100%':{opacity:1,transform:'translateY(0)'}},
+            floaty:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-3px)'}},
+            pingSoft:{'0%':{boxShadow:'0 0 0 0 rgba(108,116,255,.28)'},'100%':{boxShadow:'0 0 0 18px rgba(108,116,255,0)'}}
+          },
+          animation:{ inUp:'inUp .35s ease both', floaty:'floaty 3s ease-in-out infinite', pingSoft:'pingSoft 1.6s ease-out infinite' }
+        }
+      },
+      darkMode:'class'
+    }
+  </script>
+  <style>
+    .grad-header{
+      background:
+        radial-gradient(1100px 420px at 90% -120px, rgba(108,116,255,.22), rgba(108,116,255,0)),
+        linear-gradient(90deg, #6c74ff 0%, #8f98ff 50%, #b8beff 100%);
+    }
+    .glass{background:rgba(255,255,255,.7);backdrop-filter:blur(6px)}
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[100dvh] bg-gradient-to-b from-brand-50 to-white text-gray-900 overflow-x-hidden" dir="rtl">
+
+  <header class="grad-header text-white pb-5 pt-7 px-4 sticky top-0 z-30 shadow-elev">
+    <div class="max-w-xl mx-auto">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-extrabold tracking-tight">הרשאות</h1>
+        <span class="text-[12px] bg-white/15 px-2 py-1 rounded-lg backdrop-blur-sm">סופר־אדמין</span>
+      </div>
+      <p class="text-sm mt-1 opacity-90">בחר/י איזור הרשאות לניהול.</p>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 py-5">
+
+    <section class="space-y-3">
+      <a href="{% url 'managementApp:superadmin_proof_options' %}"
+         class="block bg-white rounded-2xl border border-brand-100 shadow-soft p-4 active:scale-[.99] transition animate-inUp">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-400 text-white grid place-items-center shadow-elev animate-floaty">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 7h8M8 12h8M8 17h5"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-extrabold truncate">ניהול אפשרויות הוכחה</h2>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">פעיל</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-0.5">הוספה/הסרה גורפת של אפשרויות הוכחה למנטורים.</p>
+          </div>
+          <div class="text-brand-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m9 18 6-6-6-6"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+
+      <a href="{% url 'managementApp:coming_soon' %}"
+         class="block bg-white rounded-2xl border border-gray-200 shadow-soft p-4 active:scale-[.99] transition animate-inUp"
+         style="animation-delay: .05s">
+        <div class="flex items-center gap-3">
+          <div class="relative w-11 h-11 rounded-2xl bg-gray-200 text-gray-600 grid place-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+            <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-brand-500 animate-pingSoft"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-extrabold truncate">חסימת ילדים מרכישה</h2>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">בקרוב</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-0.5">ניהול חסימות רכישה נקודתיות או גורפות לילדים.</p>
+          </div>
+          <div class="text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m9 18 6-6-6-6"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </section>
+
+    <section class="mt-5">
+      <div class="glass rounded-2xl p-3 border border-white/60 shadow-elev">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 text-white grid place-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm font-bold">עוד הרשאות בדרך</div>
+            <div class="text-xs text-gray-600">דפים חדשים יופיעו כאן ברגע שיתווספו.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 from django import template
+
 register = template.Library()
 
 @register.filter
@@ -9,5 +10,7 @@ def hebrew_weekday(value):
     names = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]
     try:
         return names[int(value)]
-    except (ValueError, IndexError):
+    except (TypeError, ValueError, IndexError):
         return ""
+    except Exception as e:
+        return "-"

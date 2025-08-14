@@ -2,7 +2,9 @@ from django.contrib import admin, messages
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
-from teenApp.entities.task import Task, TimeWindowRule  
+from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
+from django.utils.translation import gettext_lazy as _
+from django import forms
 from mentorApp.models import Mentor
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
@@ -50,10 +52,52 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ('deadline', 'completed')
     inlines = [TimeWindowInline]
 
+class MentorAdminForm(forms.ModelForm):
+    proof_options = forms.MultipleChoiceField(
+        choices=TaskProofRequirement.choices,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label=_("Allowed Proof Options"),
+        help_text=_("Select which proof options this mentor can assign to tasks")
+    )
+
+    class Meta:
+        model = Mentor
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.initial['proof_options'] = self.instance.allowed_proof_options
+
+    def save(self, commit=True):
+        mentor = super().save(commit=False)
+        mentor.allowed_proof_options = self.cleaned_data.get('proof_options', [])
+        if commit:
+            mentor.save()
+        return mentor
+
 @admin.register(Mentor)
 class MentorAdmin(admin.ModelAdmin):
-    list_display = ('user',)
+    form = MentorAdminForm
+    list_display = ('user', 'available_teencoins', 'get_proof_options')
+    search_fields = ('user__username', 'user__email')
+    raw_id_fields = ('user',)
 
+    def get_proof_options(self, obj):
+        return ", ".join([dict(TaskProofRequirement.choices).get(opt, opt) for opt in obj.allowed_proof_options])
+    get_proof_options.short_description = _("Allowed Proof Options")
+
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'available_teencoins')
+        }),
+        (_("Advanced Permissions"), {
+            'fields': ('proof_options',),
+            'classes': ('collapse', 'wide'),
+            'description': _("These settings control special permissions for this mentor")
+        }),
+    )
 @admin.register(TaskAssignment)
 class TaskAssignmentAdmin(admin.ModelAdmin):
     list_display = ('task', 'child', 'assigned_by', 'is_new', 'assigned_at', 'refunded_at')

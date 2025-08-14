@@ -1,557 +1,430 @@
+{% extends 'child_base.html' %}
 {% load hebrew_extras %}
-{% load static %}
-<!DOCTYPE html>
-<html lang="he">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משימות לביצוע</title>
-    <style>
-        .task-list {
-            max-width: 90%;
-            margin: 1rem auto;
-            padding: 0 0.5rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+{% load task_filters %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .gradient-bg {
+        background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #fb923c 100%);
+    }
+    
+    .glass-effect {
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .task-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateZ(0);
+    }
+    
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(251, 146, 60, 0.1), 0 10px 10px -5px rgba(251, 146, 60, 0.04);
+    }
+    
+    .tab-indicator {
+        background: linear-gradient(90deg, #fb923c, #f97316);
+        border-radius: 9999px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .badge-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
         }
-
-        .task-list h1 {
-            color: #FF5722;
-            text-align: center;
-            margin: 1.5rem 0;
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+        50% {
+            opacity: .8;
+            transform: scale(1.05);
         }
+    }
+    
+    .expand-enter {
+        max-height: 0;
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    
+    .expand-enter-active {
+        max-height: 500px;
+        opacity: 1;
+        transform: scaleY(1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .floating-action {
+        background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+        box-shadow: 0 10px 15px -3px rgba(251, 146, 60, 0.3), 0 4px 6px -2px rgba(251, 146, 60, 0.05);
+    }
+    
+    .floating-action:hover {
+        box-shadow: 0 20px 25px -5px rgba(251, 146, 60, 0.4), 0 10px 10px -5px rgba(251, 146, 60, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .sticky-tabs {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        backdrop-filter: blur(20px);
+        background: rgba(255, 247, 237, 0.95);
+    }
+    
+    .empty-state {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.05) 0%, rgba(249, 115, 22, 0.05) 100%);
+    }
+</style>
+{% endblock %}
 
-        .task-list h1::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 3px;
-            background: #2196F3;
-            margin: 0.8rem auto;
-            border-radius: 2px;
-        }
-
-        .task-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .task-list li {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #ececec;
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .task-title {
-            font-size: 1.3rem;
-            color: #1a1a1a;
-            font-weight: 600;
-            line-height: 1.4;
-            padding: 0 0.5rem;
-            cursor: pointer;
-        }
-
-        .task-image {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-        }
-
-        .task-details {
-            display: none;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f8f8;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 0.8rem;
-            width: 100%;
-        }
-
-        .button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            border: none;
-            flex: 1;
-            -webkit-tap-highlight-color: transparent;
-            font-size: 1rem;
-        }
-
-        .button:active {
-            transform: scale(0.97);
-            opacity: 0.9;
-        }
-
-        .button[href*="check_in"] {
-            background: #2196F3;
-            color: white;
-            box-shadow: 0 3px 12px rgba(33, 150, 243, 0.25);
-        }
-
-        .button[href*="check_out"] {
-            background: #FF5722;
-            color: white;
-            box-shadow: 0 3px 12px rgba(255, 87, 34, 0.25);
-        }
-
-        .empty-message {
-            text-align: center;
-            padding: 2rem;
-            background: #f8f8f8;
-            border-radius: 14px;
-            color: #FF5722;
-            font-size: 1.2rem;
-            margin: 2rem;
-            border: 2px dashed #FFCCBC;
-            font-weight: 500;
-        }
-
-        .home-button {
-            display: inline-block;
-            background: #fd940b;
-            color: white;
-            text-decoration: none;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Tab Styling */
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            margin: 1.5rem 0;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f1f1f1;
-        }
-        
-        .tab-button {
-            background: #f1f1f1;
-            border: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            flex-grow: 1;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: 0.3s;
-            color: #333;
-            outline: none;
-        }
-        
-        .tab-button:hover {
-            background-color: #ddd;
-        }
-        
-        .tab-button.active {
-            background-color: #2196F3;
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-            width: 100%;
-            padding: 0.5rem 0;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .tab-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #FF5722;
-            color: white;
-            border-radius: 50%;
-            margin-right: 5px;
-            width: 20px;
-            height: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .pinned-task {
-            background-color: #fff8e1 !important;
-            border: 2px solid #ffcc00 !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-        }
-        
-        .pin-icon {
-            margin-right: 8px;
-            font-size: 1.2rem;
-            vertical-align: middle;
-        }
-
-        @media only screen and (max-width: 430px) {
-            .task-list h1 {
-                font-size: 2rem;
-                margin: 1.2rem 0;
-            }
-
-            .task-title {
-                font-size: 1.2rem;
-            }
-
-            .button {
-                font-size: 0.9rem;
-                padding: 0.9rem;
-            }
-            
-            .tab-button {
-                padding: 10px 12px;
-                font-size: 0.9rem;
-            }
-        }
-
-        @media only screen and (max-width: 390px) {
-            .task-list h1 {
-                font-size: 1.8rem;
-            }
-
-            .empty-message {
-                font-size: 1.1rem;
-                padding: 1.5rem;
-            }
-
-            .home-button {
-                font-size: 0.9rem;
-                padding: 0.8rem 1.5rem;
-            }
-        }
-        .time-icon {
-    margin-right: 6px;
-    font-size: 1.1rem;
-    vertical-align: middle;
-}
-
-.time-window-list {
-    background:#fff3e0;
-    border-radius:8px;
-    padding:0.8rem;
-    margin-top:0.8rem;
-    font-size:0.95rem;
-    line-height:1.5;
-}
-.time-window-list ul {
-    list-style:none;
-    margin:0;
-    padding:0;
-}
-.time-window-list li::before {
-    content:"• ";
-    color:#ff9800;
-}
-.time-window-list li {
-    margin-bottom: 1rem;
-    padding: 0.8rem;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 2px rgba(0,0,0,0.05);
-}
-.time-window-list div {
-    margin-bottom: 4px;
-}
-
-    </style>
-</head>
-<body>
-    <div class="task-list">
-        <h1>משימות לביצוע</h1>
-        <div style="text-align: center;">
-            <a href="{% url 'childApp:child_home' %}" class="home-button">חזרה לדף הבית</a>
-        </div>
-        
-        <!-- Tab Navigation -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'no-checkin')">
-                עדיין לא התחלתי
-                <span class="tab-badge" id="no-checkin-count">0</span>
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'with-checkin')">
-                התחלתי (עם צ'ק-אין)
-                <span class="tab-badge" id="with-checkin-count">0</span>
-            </button>
-            <button class="tab-button" onclick="openTab(event, 'with-checkout')">
-                סיימתי (עם צ'ק-אאוט)
-                <span class="tab-badge" id="with-checkout-count">0</span>
-            </button>
-        </div>
-        
-        <!-- Tab Content: No Check-in -->
-        <div id="no-checkin" class="tab-content active">
-            <ul>
-                {% for task in tasks %}
-                    {% if not task.status %}
-                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
-                        {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
-                        {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
-                            {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
-                            {% endif %}
-                             {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
-                            {% endif %}
-
-                            {{ task.title }}
-                        </div>
-                        <div id="details-{{ task.id }}" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
-                            {% if task.additional_details %}
-                              <p><strong>פרטים נוספים:</strong> {{ task.additional_details }}</p>
-                            {% endif %}
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
-                            <span class="status-badge">
-                                {% if task.proof_required %}
-                                    ✔️ עם תמונה
-                                {% else %}
-                                    ❌ בלי תמונה
-                                {% endif %}
-                            </span>
-                            {% if task.time_window_rules.all|length > 0 %}
-
-                                <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
-                                    <ul>
-                                    {% for rule in task.time_window_rules.all %}
-                                        <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
-                                            {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
-                                            {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
-                                            {% else %}
-                                                בכל יום
-                                            {% endif %}
-                                            – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                            <div class="button-group">
-                                <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין</a>
-                            </div>
-                        </div>
-                    </li>
-                    {% endif %}
-                {% empty %}
-                    <div class="empty-message">! אין משימות ממתינות</div>
-                {% endfor %}
-            </ul>
-        </div>
-        
-        <!-- Tab Content: With Check-in only -->
-        <div id="with-checkin" class="tab-content">
-            <ul>
-                {% for task in tasks %}
-                    {% if task.status == 'checked_in' %}
-                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
-                        {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
-                        {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
-                            {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
-                            {% endif %}
-                            {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
-                            {% endif %}
-                            {{ task.title }}
-                        </div>
-                        <div id="details-{{ task.id }}-checkin" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
-                            <span class="status-badge">
-                                {% if task.proof_required %}
-                                    ✔️ עם תמונה
-                                {% else %}
-                                    ❌ בלי תמונה
-                                {% endif %}
-                            </span>
-                             {% if task.time_window_rules.all|length > 0 %}
-                                <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
-                                    <ul>
-                                    {% for rule in task.time_window_rules.all %}
-                                        <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
-                                            {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
-                                            {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
-                                            {% else %}
-                                                בכל יום
-                                            {% endif %}
-                                            – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                            <div class="button-group">
-                                <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין מחדש</a>
-                                <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט</a>
-                            </div>
-                        </div>
-                    </li>
-                    {% endif %}
-                {% empty %}
-                    <div class="empty-message">! אין משימות עם צ'ק-אין בלבד</div>
-                {% endfor %}
-            </ul>
-        </div>
-        
-        <!-- Tab Content: With Check-out -->
-        <div id="with-checkout" class="tab-content">
-            <ul>
-                {% for task in tasks %}
-                    {% if task.status == 'checked_out' or task.status == 'pending' %}
-                    <li class="{% if task.is_pinned %}pinned-task{% endif %}">
-                        {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
-                        {% endif %}
-                        <div class="task-title" onclick="toggleDetails({{ task.id }})">
-                            {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
-                            {% endif %}
-                             {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
-                            {% endif %}
-                            {{ task.title }}
-                        </div>
-                        <div id="details-{{ task.id }}-checkout" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
-                            <p><strong>סטטוס:</strong> {% if task.status == "pending" or task.status == "checked_out" %}ממתין לאישור{% else %}הושלם{% endif %}</p>
-                            <span class="status-badge">
-                            {% if task.proof_required %}
-                                ✔️ עם תמונה
-                            {% else %}
-                                ❌ בלי תמונה
-                            {% endif %}
-                            </span>
-                             {% if task.time_window_rules.all|length > 0 %}
-                                <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
-                                    <ul>
-                                    {% for rule in task.time_window_rules.all %}
-                                        <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
-                                            {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
-                                            {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
-                                            {% else %}
-                                                בכל יום
-                                            {% endif %}
-                                            – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-
-                            <div class="button-group">
-                                <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט מחדש</a>
-                            </div>
-                        </div>
-                    </li>
-                    {% endif %}
-                {% empty %}
-                    <div class="empty-message">! אין משימות שהושלמו</div>
-                {% endfor %}
-            </ul>
+{% block content %}
+<div class="min-h-screen gradient-bg" dir="rtl">
+    <!-- Header -->
+    <div class="px-4 pt-8 pb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">המשימות שלי</h1>
+                <p class="text-gray-600 font-medium">נהל את המשימות שלך בקלות ויעילות</p>
+            </div>
+            <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <span class="text-2xl">🎯</span>
+            </div>
         </div>
     </div>
-    <script>
-        function toggleDetails(taskId) {
-            const details = document.getElementById(`details-${taskId}`);
-            if (details) {
-                if (details.style.display === "none" || details.style.display === "") {
-                    details.style.display = "block";
-                } else {
-                    details.style.display = "none";
-                }
-                return;
-            }
+
+    <!-- Tabs Navigation -->
+    <div class="sticky-tabs px-4 py-3 border-b border-orange-100">
+        <div class="flex space-x-1 bg-white rounded-2xl p-1 shadow-sm">
+            <button onclick="switchTab('not_started')" 
+                    class="tab-btn flex-1 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 relative"
+                    id="tab-not_started">
+                עדיין לא התחלתי
+                <span class="badge-pulse bg-orange-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center mr-2" 
+                      id="badge-not_started">{{ tasks|filter_by_status:"not_started"|length }}</span>
+            </button>
             
-            const checkinDetails = document.getElementById(`details-${taskId}-checkin`);
-            if (checkinDetails) {
-                if (checkinDetails.style.display === "none" || checkinDetails.style.display === "") {
-                    checkinDetails.style.display = "block";
-                } else {
-                    checkinDetails.style.display = "none";
-                }
-                return;
-            }
+            <button onclick="switchTab('checked_in')" 
+                    class="tab-btn flex-1 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 relative"
+                    id="tab-checked_in">
+                התחלתי (עם צ'ק-אין)
+                <span class="badge-pulse bg-blue-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center mr-2" 
+                      id="badge-checked_in">{{ tasks|filter_by_status:"checked_in"|length }}</span>
+            </button>
             
-            const checkoutDetails = document.getElementById(`details-${taskId}-checkout`);
-            if (checkoutDetails) {
-                if (checkoutDetails.style.display === "none" || checkoutDetails.style.display === "") {
-                    checkoutDetails.style.display = "block";
-                } else {
-                    checkoutDetails.style.display = "none";
-                }
-            }
-        }
-        
-        function openTab(evt, tabName) {
-            const tabContents = document.getElementsByClassName("tab-content");
-            for (const content of tabContents) {
-                content.classList.remove("active");
-            }
-            
-            const tabButtons = document.getElementsByClassName("tab-button");
-            for (const button of tabButtons) {
-                button.classList.remove("active");
-            }
-            
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-        
-        // Initialize tab counters
-        document.addEventListener('DOMContentLoaded', function() {
-            const noCheckinCount = document.querySelectorAll('#no-checkin ul li').length;
-            document.getElementById('no-checkin-count').textContent = noCheckinCount;
-            
-            const withCheckinCount = document.querySelectorAll('#with-checkin ul li').length;
-            document.getElementById('with-checkin-count').textContent = withCheckinCount;
-            
-            const withCheckoutCount = document.querySelectorAll('#with-checkout ul li').length;
-            document.getElementById('with-checkout-count').textContent = withCheckoutCount;
+            <button onclick="switchTab('pending')" 
+                    class="tab-btn flex-1 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 relative"
+                    id="tab-pending">
+                סיימתי (עם צ'ק-אאוט)
+                <span class="badge-pulse bg-green-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center mr-2" 
+                      id="badge-pending">{{ tasks|filter_by_status:"pending"|length }}</span>
+            </button>
+        </div>
+        <div class="tab-indicator absolute bottom-0 h-1 transition-all duration-300" id="tab-indicator"></div>
+    </div>
+
+    <!-- Task Lists -->
+    <div class="px-4 py-6">
+        <!-- Not Started Tasks -->
+        <div id="tasks-not_started" class="tab-content">
+            {% for task in tasks|filter_by_status:"not_started" %}
+                <div class="task-card glass-effect rounded-3xl p-6 mb-4 border border-orange-100">
+                    <!-- Task Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                {% if task.is_pinned %}
+                                    <span class="text-orange-500 text-lg ml-2">📌</span>
+                                {% endif %}
+                                {% if task.time_window_rules.all|length > 0 %}
+                                    <span class="text-blue-500 text-lg ml-2">⏰</span>
+                                {% endif %}
+                                <h3 class="text-xl font-bold text-gray-900">{{ task.title }}</h3>
+                            </div>
+                            
+                            <p class="text-gray-600 mb-3 leading-relaxed">{{ task.description }}</p>
+                            
+                            <!-- Task Meta -->
+                            <div class="flex items-center space-x-4 text-sm">
+                                {% if task.deadline %}
+                                    <span class="flex items-center text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                                        🕒 {{ task.deadline|date:"d/m/Y" }}
+                                    </span>
+                                {% endif %}
+                                
+                                <!-- Proof Requirement Badge -->
+                                <span class="flex items-center bg-gray-100 px-3 py-1 rounded-full text-gray-700">
+                                    {% if task.proof_requirement == "camera" %}
+                                        📷 העלאה מהמצלמה
+                                    {% elif task.proof_requirement == "gallery" %}
+                                        🖼️ מהמצלמה או הגלריה
+                                    {% elif task.proof_requirement == "auto_checkin" %}
+                                        ✅ אוטומטי בצ'ק-אין
+                                    {% elif task.proof_requirement == "auto_checkout" %}
+                                        ✅ אוטומטי בצ'ק-אאוט
+                                    {% elif task.proof_requirement == "none" %}
+                                        ❌ אין צורך בהעלאה
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Expand Toggle -->
+                        <button onclick="toggleExpand('{{ task.id }}')" 
+                                class="text-gray-400 hover:text-orange-500 transition-colors duration-200">
+                            <svg class="w-6 h-6 transform transition-transform duration-200" id="arrow-{{ task.id }}">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Task Image (shown prominently since it's important) -->
+                    {% if task.img %}
+                        <div class="mb-4">
+                            <img src="{{ task.img.url }}" alt="תמונת משימה" 
+                                 class="w-32 h-32 object-cover rounded-2xl shadow-md mx-auto">
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Expandable Content -->
+                    <div id="details-{{ task.id }}" class="expand-enter overflow-hidden">
+                        <!-- Time Window Rules -->
+                        {% if task.time_window_rules.all|length > 0 %}
+                            <div class="bg-blue-50 rounded-2xl p-4 mb-4">
+                                <div class="time-window-list">
+                                    <h4 class="font-semibold text-blue-900 mb-3 flex items-center">
+                                        <span class="text-lg ml-2">⏰</span>
+                                        חלונות זמן:
+                                    </h4>
+                                    <ul class="space-y-3">
+                                    {% for rule in task.time_window_rules.all %}
+                                        <li class="bg-white rounded-xl p-3 border border-blue-100">
+                                            <div class="font-medium text-blue-800 mb-1">
+                                                {% if rule.window_type == "check_in" %}
+                                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">צ'ק-אין</span>
+                                                {% else %}
+                                                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">צ'ק-אאוט</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-blue-700 text-sm">
+                                                {% if rule.specific_date %}
+                                                    📅 רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                                                {% elif rule.weekday != None %}
+                                                    📆 כל יום {{ rule.weekday|hebrew_weekday }}
+                                                {% else %}
+                                                    🗓️ בכל יום
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-blue-600 text-sm mt-1">
+                                                🕐 בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <div class="mt-4 pt-4 border-t border-orange-100">
+                        <a href="{% url 'childApp:check_in' task.id %}" 
+                           class="floating-action w-full py-4 px-6 text-white font-semibold rounded-2xl transition-all duration-300 flex items-center justify-center">
+                            <span class="text-lg ml-2">✨</span>
+                            צ'ק-אין
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state rounded-3xl p-12 text-center">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">כל הכבוד!</h3>
+                    <p class="text-gray-500">אין משימות חדשות להתחיל</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Checked In Tasks -->
+        <div id="tasks-checked_in" class="tab-content hidden">
+            {% for task in tasks|filter_by_status:"checked_in" %}
+                <div class="task-card glass-effect rounded-3xl p-6 mb-4 border border-blue-100">
+                    <!-- Similar structure but with blue theme and different actions -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                {% if task.is_pinned %}
+                                    <span class="text-blue-500 text-lg ml-2">📌</span>
+                                {% endif %}
+                                {% if task.time_window_rules.all|length > 0 %}
+                                    <span class="text-blue-500 text-lg ml-2">⏰</span>
+                                {% endif %}
+                                <h3 class="text-xl font-bold text-gray-900">{{ task.title }}</h3>
+                                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full mr-2">בביצוע</span>
+                            </div>
+                            
+                            <p class="text-gray-600 mb-3 leading-relaxed">{{ task.description }}</p>
+                            
+                            <div class="flex items-center space-x-4 text-sm">
+                                {% if task.deadline %}
+                                    <span class="flex items-center text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                                        🕒 {{ task.deadline|date:"d/m/Y" }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <button onclick="toggleExpand('{{ task.id }}')" 
+                                class="text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                            <svg class="w-6 h-6 transform transition-transform duration-200" id="arrow-{{ task.id }}">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="mt-4 pt-4 border-t border-blue-100 flex space-x-3">
+                        <a href="{% url 'childApp:check_in' task.id %}" 
+                           class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-3 px-4 rounded-xl font-semibold transition-colors duration-200 text-center">
+                            צ'ק-אין מחדש
+                        </a>
+                        <a href="{% url 'childApp:check_out' task.id %}" 
+                           class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 text-center">
+                            צ'ק-אאוט
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state rounded-3xl p-12 text-center">
+                    <div class="text-6xl mb-4">💼</div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">אין משימות פעילות</h3>
+                    <p class="text-gray-500">התחל משימה חדשה כדי לראות אותה כאן</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Completed Tasks -->
+        <div id="tasks-pending" class="tab-content hidden">
+            {% for task in tasks|filter_by_status:"pending" %}
+                <div class="task-card glass-effect rounded-3xl p-6 mb-4 border border-green-100">
+                    <!-- Similar structure but with green theme -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <span class="text-green-500 text-lg ml-2">✅</span>
+                                <h3 class="text-xl font-bold text-gray-900">{{ task.title }}</h3>
+                                <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full mr-2">הושלם</span>
+                            </div>
+                            
+                            <p class="text-gray-600 mb-3 leading-relaxed">{{ task.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-green-100">
+                        <a href="{% url 'childApp:check_out' task.id %}" 
+                           class="w-full bg-green-100 hover:bg-green-200 text-green-700 py-3 px-4 rounded-xl font-semibold transition-colors duration-200 text-center block">
+                            צ'ק-אאוט מחדש
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state rounded-3xl p-12 text-center">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">עדיין אין משימות שהושלמו</h3>
+                    <p class="text-gray-500">המשימות שתסיים יופיעו כאן</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTab = 'not_started';
+
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Show selected tab content with animation
+    const targetContent = document.getElementById(`tasks-${tabName}`);
+    targetContent.classList.remove('hidden');
+    targetContent.style.opacity = '0';
+    targetContent.style.transform = 'translateY(10px)';
+    
+    setTimeout(() => {
+        targetContent.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        targetContent.style.opacity = '1';
+        targetContent.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+        btn.classList.add('text-gray-600', 'hover:text-gray-900');
+    });
+    
+    const activeTab = document.getElementById(`tab-${tabName}`);
+    activeTab.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+    activeTab.classList.remove('text-gray-600', 'hover:text-gray-900');
+    
+    currentTab = tabName;
+}
+
+function toggleExpand(taskId) {
+    const details = document.getElementById(`details-${taskId}`);
+    const arrow = document.getElementById(`arrow-${taskId}`);
+    
+    if (details.classList.contains('expand-enter')) {
+        // Expand
+        details.classList.remove('expand-enter');
+        details.classList.add('expand-enter-active');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        // Collapse
+        details.classList.add('expand-enter');
+        details.classList.remove('expand-enter-active');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Initialize with first tab active
+document.addEventListener('DOMContentLoaded', function() {
+    switchTab('not_started');
+    
+    // Add smooth scrolling for better UX
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Animate badges on load
+    setTimeout(() => {
+        document.querySelectorAll('[class*="badge-pulse"]').forEach(badge => {
+            badge.classList.add('badge-pulse');
         });
-    </script>
-</body>
-</html>
+    }, 500);
+});
+
+// Handle tab persistence on page refresh
+if (localStorage.getItem('activeTab')) {
+    switchTab(localStorage.getItem('activeTab'));
+}
+
+// Save active tab
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const tabName = e.target.id.replace('tab-', '');
+        localStorage.setItem('activeTab', tabName);
+    });
+});
+</script>
+{% endblock %}

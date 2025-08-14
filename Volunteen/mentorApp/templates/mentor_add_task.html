@@ -344,13 +344,31 @@
             <input type="checkbox" id="is_pinned" name="is_pinned" {% if form.is_pinned.value %}checked{% endif %}>
             <label for="is_pinned" class="form-label">נעץ משימה זו בראש רשימת המשימות של הילדים לצורך הדגשה</label>
         </div>
-       <div class="mb-3">
-            <input type="checkbox" id="proof_required" name="proof_required"
-                {% if form.proof_required.value or form.proof_required.value is None %}checked{% endif %}>
-            <label for="proof_required" class="form-label">האם נדרשת תמונת צ'ק אין מהילד?</label>
+
+        <div class="mb-3">
+        <label for="id_proof_requirement" class="form-label d-block">דרישת הוכחה</label>
+
+        <select id="id_proof_requirement"
+                name="{{ form.proof_requirement.name }}"
+                class="form-select">
+            {% for val, label in form.proof_requirement.field.choices %}
+            <option value="{{ val }}"
+                {% if form.proof_requirement.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                {% if val == "camera" %}📷 {% elif val == "gallery" %}🖼️ {% elif val == "auto_checkin" %}✅ {% elif val == "auto_checkout" %}✅ {% elif val == "none" %}❌ {% endif %}
+                {{ label }}
+            </option>
+            {% endfor %}
+        </select>
+
+        {% if form.proof_requirement.errors %}
+            <div class="invalid-feedback d-block">
+            {{ form.proof_requirement.errors|striptags }}
+            </div>
+        {% endif %}
+
+        <div id="proof-hint" class="form-text mt-2">
         </div>
-
-
+        </div>
         <!--Send WhatsApp Notification -->
        <div class="mb-3">
             <input type="checkbox" id="send_whatsapp_on_assign" name="send_whatsapp_on_assign"
@@ -673,5 +691,47 @@ function fillInitialTW(data){
 
 document.addEventListener('DOMContentLoaded', ()=> fillInitialTW(INITIAL_TIMEWINDOWS));
 </script>
+<script>
+  (function () {
+    const meta = {
+      "camera": {
+        icon: "📷",
+        title: "העלאה מהמצלמה",
+        hint: "חובה לצלם ולצרף תמונה מתוך המצלמה."
+      },
+      "gallery": {
+        icon: "🖼️",
+        title: "העלאה מהמצלמה או הגלריה",
+        hint: "אפשר לצלם עכשיו או לבחור מהגלריה."
+      },
+      "auto_checkin": {
+        icon: "✅",
+        title: "אישור אוטומטי בצ'ק‑אין (ללא תמונה)",
+        hint: "המשימה תאושר אוטומטית לאחר צ'ק‑אין."
+      },
+      "auto_checkout": {
+        icon: "✅",
+        title: "אישור אוטומטי בצ'ק‑אאוט (ללא תמונה)",
+        hint: "המשימה תאושר אוטומטית לאחר צ'ק‑אאוט."
+      },
+      "none": {
+        icon: "❌",
+        title: "אין צורך בהעלאת תמונה",
+        hint: "אין צורך בהעלאת תמונה כלל."
+      }
+    };
 
+    const select = document.getElementById("id_proof_requirement");
+    const hint   = document.getElementById("proof-hint");
+
+    function renderHint(value) {
+      const m = meta[value];
+      if (!m) { hint.textContent = ""; return; }
+      hint.innerHTML = `${m.icon} <strong>${m.title}</strong> — ${m.hint}`;
+    }
+
+    select.addEventListener("change", () => renderHint(select.value));
+    renderHint(select.value); // init
+  })();
+</script>
 {% endblock %}

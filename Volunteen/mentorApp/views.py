@@ -110,6 +110,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
                 "deadline": None,
                 "additional_details": original_task.additional_details,
                 "img": original_task.img,
+                "proof_requirement": original_task.proof_requirement,
             }
         tw_initial = []
         for r in original_task.time_window_rules.all():
@@ -152,7 +153,7 @@ def add_task(request, task_id=None, duplicate=False, template=False):
             uploaded_img = task_data.get("img")
 
             try:
-                # existing logic ↓
+                # existing logic 
                 if duplicate and isinstance(uploaded_img, FieldFile):
                     task_data["img"] = uploaded_img.name
 
