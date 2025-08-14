@@ -712,11 +712,11 @@ def check_out(request, task_id):
     special_permissions = False
     use_default_image = False
     replace_image = request.GET.get('replace_image') == 'true'
+    task = get_object_or_404(Task, id=task_id)
     if child.user.username in SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN or task.proof_requirement == TaskProofRequirement.CAMERA_OR_GALLERY:
         special_permissions = True
     if child.user.username in CHILDREN_REQUIRE_DEFAULT_IMAGE:
         use_default_image = True
-    task = get_object_or_404(Task, id=task_id)
     if task.proof_requirement in [TaskProofRequirement.AUTO_ACCEPT_CHECKOUT, TaskProofRequirement.AUTO_ACCEPT_CHECKOUT, TaskProofRequirement.NO_PROOF_REQUIRED]:
         use_default_image = True
     # Ensure the task was checked in before allowing check-out
