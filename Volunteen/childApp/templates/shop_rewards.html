@@ -6,6 +6,14 @@
 <!-- Container to center content and add padding -->
 <div class="redeem-container">
 
+  <!-- Global ban banner -->
+  {% if purchase_ban.is_banned %}
+    <div class="ban-banner" role="alert" aria-live="polite" style="background:#ffeaea;border:1px solid #e74c3c;color:#c0392b;padding:.75rem 1rem;border-radius:12px;margin-bottom:12px;font-weight:700;display:flex;gap:.5rem;align-items:center;">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{ purchase_ban.note }}</span>
+    </div>
+  {% endif %}
+
   <!-- Page Heading -->
   <h2 class="page-title">בקשת מימוש טינקוינס</h2>
 
@@ -13,7 +21,7 @@
   <form dir="rtl" method="post" id="redeem-form">
       {% csrf_token %}
       
-          <!-- Daily Limits & TeenCoins Summary -->
+      <!-- Daily Limits & TeenCoins Summary -->
       <div class="limit-box">
         <h3>מגבלות יומיות</h3>
         <div class="limit-values">
@@ -26,9 +34,8 @@
             טינקואינס זמינים: <span id="available-teencoins">{{ available_teencoins }}</span>
           </span>
         </div>
-        <p class="limit-remark">זכרו: אפשר לממש פרסים רק ב‑{{ MAX_SHOPS_PER_DAY }} חנויות ביום</p>
+        <p class="limit-remark">זכרו: אפשר לממש פרסים רק ב-{{ MAX_SHOPS_PER_DAY }} חנויות ביום</p>
       </div>
-
 
       <!-- Rewards Grid -->
       <div class="rewards-grid">
@@ -66,7 +73,15 @@
       <!-- Action Buttons -->
       <div class="action-buttons">
           <button type="button" class="btn cancel-btn" onclick="cancelRequest()">ביטול בקשה</button>
-          <button type="button" id="submit-request-btn" class="btn submit-btn" onclick="submitRequest()">שלח בקשת פרס</button>
+          <button
+            type="button"
+            id="submit-request-btn"
+            class="btn submit-btn"
+            onclick="submitRequest()"
+            {% if purchase_ban.is_banned %}disabled aria-disabled="true" title="{{ purchase_ban.note }}"{% endif %}
+          >
+            שלח בקשת פרס
+          </button>
       </div>
 
       <!-- Hidden Fields -->
@@ -80,6 +95,10 @@
 <audio id="coinJingle" src="{% static 'audio/coin-jingle.mp3' %}" preload="auto"></audio>
 
 <script>
+  // Ban flags from server
+  const IS_BANNED = {{ purchase_ban.is_banned|yesno:"true,false" }};
+  const BAN_NOTE = {% if purchase_ban.is_banned %}"{{ purchase_ban.note|escapejs }}"{% else %}""{% endif %};
+
   // Initial daily-limit & TeenCoin values from the server
   let initialRemainingRewards = parseInt('{{ remaining_rewards }}') || 0;
   let initialTeencoins = parseInt('{{ available_teencoins }}') || 0;
@@ -87,14 +106,12 @@
   // Array to hold the user's current selections
   let selectedRewards = [];
 
-  // Play the coin jingle sound
   function playCoinSound() {
       const coinAudio = document.getElementById('coinJingle');
       coinAudio.currentTime = 0;
       coinAudio.play().catch(err => console.warn("Audio play prevented:", err));
   }
 
-  // Update the quantity of a given reward and recalc limits
   function updateQuantity(rewardId, action) {
       let quantitySpan = document.getElementById('quantity-' + rewardId);
       let quantity = parseInt(quantitySpan.textContent);
@@ -103,42 +120,32 @@
       let rewardCard = document.querySelector(`[data-reward-id='${rewardId}']`);
       let rewardCost = parseInt(rewardCard.getAttribute("data-points"));
 
-      // Find if the reward is already selected
       let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
 
-      // Adjust quantity based on action
       if (action === 'buy') {
           if (canAddReward(rewardCost)) {
               quantity += 1;
               updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
-              playCoinSound(); // Play sound on plus
+              playCoinSound();
           }
       } else if (action === 'sell' && quantity > 0) {
           quantity -= 1;
           updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost);
-          playCoinSound(); // Play sound on minus as well
+          playCoinSound();
       }
 
-      // Update quantity display
       quantitySpan.textContent = quantity;
-
-      // Recalculate and update limits
       recalcLimits();
-
-      // Check if limits are exceeded and update button state accordingly
       updateButtonState(addButton, feedbackMessage);
   }
 
-  // Update the selected rewards array
   function updateSelectedRewards(rewardId, rewardCard, quantity, rewardCost) {
       let rewardIndex = selectedRewards.findIndex(r => r.reward_id === rewardId);
       let title = rewardCard.querySelector('.reward-title').textContent;
 
       if (rewardIndex !== -1) {
           selectedRewards[rewardIndex].quantity = quantity;
-          if (quantity === 0) {
-              selectedRewards.splice(rewardIndex, 1);
-          }
+          if (quantity === 0) selectedRewards.splice(rewardIndex, 1);
       } else if (quantity > 0) {
           selectedRewards.push({
               reward_id: rewardId,
@@ -147,11 +154,9 @@
               points: rewardCost
           });
       }
-
       updateReceipt();
   }
 
-  // Check if the user can add one more unit of reward based on limits
   function canAddReward(rewardCost) {
       let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
       let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
@@ -159,11 +164,9 @@
       return totalQuantity < initialRemainingRewards && (totalPoints + rewardCost) <= initialTeencoins;
   }
 
-  // Update the receipt display with the current rewards selected
   function updateReceipt() {
       let receipt = document.getElementById('receipt');
       receipt.innerHTML = '';
-
       selectedRewards.forEach(reward => {
           let li = document.createElement('li');
           li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} טינקוינס`;
@@ -173,7 +176,6 @@
       });
   }
 
-  // Recalculate and update the top daily-limit and available-teencoins display
   function recalcLimits() {
       let totalQuantity = selectedRewards.reduce((sum, r) => sum + r.quantity, 0);
       let totalPoints = selectedRewards.reduce((sum, r) => sum + (r.quantity * r.points), 0);
@@ -214,11 +216,16 @@
   }
 
   function getShopIdFromURL() {
-      let pathParts = window.location.pathname.split("/");
-      return pathParts[pathParts.indexOf("shop") + 1]; 
+      const parts = window.location.pathname.split("/");
+      return parts[parts.indexOf("shop") + 1];
   }
 
   function submitRequest() {
+      if (IS_BANNED) {
+          showErrorMessage(BAN_NOTE || "הקנייה חסומה כרגע.");
+          return;
+      }
+
       if (selectedRewards.length === 0) {
           alert("אנא בחר לפחות פרס אחד.");
           return;
@@ -232,7 +239,7 @@
 
       let shopId = getShopIdFromURL(); 
       let formData = {
-          shop_id: shopId, 
+          shop_id: shopId,
           selected_rewards: selectedRewards
       };
 
@@ -267,7 +274,6 @@
       });
   }
 
-  // Show success and error messages
   function showSuccessMessage(message) {
       let successDiv = document.createElement("div");
       successDiv.classList.add("success-message");
@@ -290,7 +296,6 @@
       }, 5000);
   }
 
-  // Cancel the request
   function cancelRequest() {
       fetch("{% url 'childApp:cancel_request' %}", {
           method: 'POST',
@@ -303,6 +308,15 @@
           }
       });
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const submitBtn = document.getElementById('submit-request-btn');
+    if (IS_BANNED && submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-disabled', 'true');
+      if (!submitBtn.title) submitBtn.title = BAN_NOTE || "הקנייה חסומה כרגע.";
+    }
+  });
 </script>
 
 <style>

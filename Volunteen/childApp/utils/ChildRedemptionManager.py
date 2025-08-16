@@ -1,7 +1,9 @@
 from django.utils.timezone import now, timedelta
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from shopApp.models import Redemption, Shop, RedemptionRequest
 from django.shortcuts import get_object_or_404
+from childApp.models import BanScope,DEFAULT_BAN_NOTES,ChildBan
+from django.utils import timezone
 
 class ChildRedemptionManager:
 
@@ -84,5 +86,33 @@ class ChildRedemptionManager:
             child=child
         ).exclude(status="approved").order_by("-date_requested")
     
-    
+    @staticmethod
+    def active_purchase_ban(child, at=None):
+        """
+        Return the active purchase-ban record for this child (PURCHASE or ALL).
+        Returns None if no ban is active.
+        """
+        now = at or timezone.now()
+        return (
+            ChildBan.objects
+            .filter(
+                child=child,
+                scope__in=[BanScope.PURCHASE, BanScope.ALL],
+                revoked_at__isnull=True,
+                starts_at__lte=now,
+            )
+            .filter(Q(ends_at__isnull=True) | Q(ends_at__gte=now))
+            .order_by("-created_at")
+            .first()
+        )
 
+    @staticmethod
+    def is_banned_for_purchases(child, at=None) -> bool:
+        """Return True if the child currently has an active purchase ban."""
+        return ChildRedemptionManager.active_purchase_ban(child, at=at) is not None
+
+    @staticmethod
+    def get_ban_note(child, at=None) -> str:
+        """Return the note_child of the active purchase ban (or '')."""
+        ban = ChildRedemptionManager.active_purchase_ban(child, at=at)
+        return ban.note_child if ban else ""

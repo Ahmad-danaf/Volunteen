@@ -13,6 +13,9 @@
       --secondary: #4ECDC4;
       --dark: #2D3436;
       --light: #F9F9F9;
+      --danger:#e74c3c;        
+      --danger-700:#c0392b;    
+      --danger-bg:#ffeaea;     
     }
     * {
       box-sizing: border-box;
@@ -207,7 +210,29 @@
     }
     
     
-    
+    .ban-banner{
+      background:var(--danger-bg);
+      color:var(--danger-700);
+      border:1px solid var(--danger);
+      padding:.75rem 1rem;
+      margin:.75rem 1rem 0;
+      border-radius:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      box-shadow:0 6px 20px rgba(231,76,60,.12);
+    }
+    .ban-banner i{color:var(--danger-700);}
+
+    .shop-card.banned{
+      border:2px solid var(--danger);
+      box-shadow:0 10px 26px rgba(231,76,60,.18);
+    }
+    .shop-card.banned .shop-overlay{
+      background:linear-gradient(180deg,rgba(231,76,60,0.0) 0%,rgba(231,76,60,.45) 100%);
+    }
+    .buy-btn.banned{ background:var(--danger-700) !important; }
     
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -231,44 +256,48 @@
       </select>
       <a href="{% url 'teenApp:logout_view' %}">🚪</a>
     </div>
+    {% if purchase_ban.is_banned %}
+  <div class="ban-banner" role="alert" aria-live="polite">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>{{ purchase_ban.note }}</span>
+  </div>
+{% endif %}
+
   </header>
 
   <main class="shop-grid">
     {% for shop in shops %}
-      <div class="shop-card {% if not shop.can_redeem or not shop.is_open %}unclickable{% endif %}" 
-           data-city="{{ shop.city }}" 
-           data-categories="{{ shop.categories|join:',' }}">
-           <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
+      <div
+        class="shop-card {% if not shop.can_redeem or not shop.is_open %}unclickable{% endif %} {% if shop.reason == 'banned' %}banned{% endif %}"
+        data-city="{{ shop.city }}"
+        data-categories="{{ shop.categories|join:',' }}"
+      >
+        <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
+          <!-- Info Icon - Top Right -->
+          <a href="{% url 'childApp:shop_detail' shop.id %}" class="shop-info-icon" title="פרטים נוספים על החנות" aria-label="פרטים נוספים על {{ shop.name }}">
+            <i class="fa-solid fa-circle-info"></i>
+          </a>
 
-            <!-- Info Icon - Top Right -->
-            <a href="{% url 'childApp:shop_detail' shop.id %}" class="shop-info-icon" title="פרטים נוספים על החנות">
-              <i class="fa-solid fa-circle-info"></i>
+          <!-- Shop Status - Top Left -->
+          <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}" style="position: absolute; top: 1rem; left: 1rem;">
+            {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
+          </div>
 
-            </a>
-         
-          
-            <!-- Shop Status - Top Left -->
-            <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}" style="position: absolute; top: 1rem; left: 1rem;">
-              {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
-            </div>
-          
-            <!-- Overlay with Shop Info -->
-            <div class="shop-overlay">
-              <div class="shop-info">
-                <h2>{{ shop.name }}</h2>
-                <div class="shop-meta">
-                  <span>
-                    {% for code, name in available_cities %}
-                      {% if code == shop.city %}{{ name }}{% endif %}
-                    {% endfor %}
-                  </span> • 
-                  <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
-                </div>
+          <!-- Overlay with Shop Info -->
+          <div class="shop-overlay">
+            <div class="shop-info">
+              <h2>{{ shop.name }}</h2>
+              <div class="shop-meta">
+                <span>
+                  {% for code, name in available_cities %}
+                    {% if code == shop.city %}{{ name }}{% endif %}
+                  {% endfor %}
+                </span> •
+                <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
               </div>
             </div>
-          
           </div>
-          
+        </div>
         <a href="{% url 'childApp:shop_rewards' shop.id %}">
           <button class="buy-btn"
                   {% if not shop.can_redeem or not shop.is_open %}disabled{% endif %}>
@@ -278,7 +307,9 @@
 
         {% if not shop.can_redeem %}
           <div class="disabled-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:0.5rem 1rem;border-radius:15px;font-size:0.9rem;z-index:2;">
-            {% if shop.reason == "no_rewards_available" %}
+            {% if shop.reason == "banned" %}
+              חנות זו אינה זמינה כרגע עקב איסור רכישה
+            {% elif shop.reason == "no_rewards_available" %}
               אין פרסים זמינים
             {% elif shop.reason == "max_shops_reached" %}
               הגעת למגבלת חנויות

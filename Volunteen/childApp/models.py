@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User, Group
 from Volunteen.constants import AVAILABLE_CITIES
 from childApp.utils.child_level_management import calculate_total_points
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 class Medal(models.Model):
     name = models.CharField(max_length=255, verbose_name='Medal Name')
@@ -101,3 +103,62 @@ class StreakMilestoneAchieved(models.Model):
 
     def __str__(self):
         return f"{self.child.user.username} - {self.streak_day} days"
+    
+    
+class BanScope(models.TextChoices):
+    PURCHASE = "purchase", "Shop purchases"
+    CAMPAIGN = "campaign", "Campaign join/benefits"
+    ALL      = "all", "All restricted actions"
+    
+DEFAULT_BAN_NOTES = {
+    BanScope.PURCHASE: "החשבון שלך כרגע חסום לביצוע רכישות",
+    BanScope.CAMPAIGN: "החשבון שלך כרגע חסום מהשתתפות בקמפיינים",
+    BanScope.ALL: "החשבון שלך חסום לפעולה זו",
+}
+
+class ChildBan(models.Model):
+    child       = models.ForeignKey("childApp.Child", on_delete=models.CASCADE, related_name="ban_records")
+    scope       = models.CharField(max_length=24, choices=BanScope.choices, default=BanScope.PURCHASE)
+    starts_at   = models.DateTimeField(default=timezone.now)
+    ends_at     = models.DateTimeField(null=True, blank=True)  # null = indefinite
+    # Visible to child/parent (keep short).
+    note_child  = models.CharField(max_length=140, blank=True,default=DEFAULT_BAN_NOTES[BanScope.PURCHASE])
+    # Internal note for staff/superadmin
+    note_staff  = models.TextField(blank=True)
+    severity    = models.CharField(max_length=16, default="hard")    # soft/hard
+    created_by  = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name="bans_created")
+    created_at  = models.DateTimeField(auto_now_add=True)
+    revoked_at  = models.DateTimeField(null=True, blank=True)
+    revoked_by  = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="bans_revoked"
+    )
+    revoke_reason = models.TextField(blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["child", "scope"]),
+            models.Index(fields=["ends_at"]),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        status = "active" if self.is_active else "inactive"
+        return f"Ban({self.child_id}, {self.scope}, {status})"
+
+    @property
+    def is_active(self) -> bool:
+        if self.revoked_at is not None:
+            return False
+        now = timezone.now()
+        if self.starts_at and now < self.starts_at:
+            return False
+        if self.ends_at and now > self.ends_at:
+            return False
+        return True
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.ends_at and self.ends_at <= self.starts_at:
+            raise ValidationError("ends_at must be after starts_at.")

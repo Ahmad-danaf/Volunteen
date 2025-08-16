@@ -19,7 +19,7 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
-from childApp.models import Child,StreakMilestoneAchieved
+from childApp.models import Child,StreakMilestoneAchieved, ChildBan,BanScope,DEFAULT_BAN_NOTES
 from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
 from teenApp.entities.TaskAssignment import TaskAssignment
 from shopApp.models import Redemption, Shop, Reward, Category,RedemptionRequest,Campaign
@@ -374,7 +374,9 @@ def rewards_view(request):
     child_city = child.city or ''
     available_categories = Category.objects.all().values("code", "name")
     today = localdate()
-
+    active_ban = ChildRedemptionManager.active_purchase_ban(child)
+    is_banned = active_ban is not None
+    ban_note = active_ban.note_child if active_ban else ""
     # Approved redemptions today (finalized redemptions)
     redeemed_shop_ids = set(
         Redemption.objects.filter(child=child, date_redeemed__date=today)
@@ -420,7 +422,11 @@ def rewards_view(request):
         shop_limit_reached = (len(shops_used_today) >= MAX_SHOPS_PER_DAY) and (not shop_used)
 
         # Decide overall redeemability with a reason flag.
-        if not can_redeem_points:
+        if is_banned:
+            can_redeem = False
+            reason = "banned"
+            disabled_note = ban_note 
+        elif not can_redeem_points:
             can_redeem = False
             reason = "no_rewards_available"  # Shop reached its monthly point cap (or has no visible rewards)
         elif shop_limit_reached:
@@ -442,6 +448,7 @@ def rewards_view(request):
             'can_redeem': can_redeem,
             'reason': reason,
             'img_url': shop.img.url if shop.img else '',
+            'disabled_note': disabled_note if is_banned else "",
         })
 
     categories_list = [{'code': cat['code'], 'name': cat['name']} for cat in available_categories]
@@ -451,6 +458,10 @@ def rewards_view(request):
         'child_city': child_city,
         'available_cities': AVAILABLE_CITIES,
         'categories_list': categories_list,
+        'purchase_ban': {
+            'is_banned': is_banned,
+            'note': ban_note,
+        },
     }
     return render(request, 'shop_list.html', context)
 
@@ -507,8 +518,11 @@ def shop_rewards_view(request, shop_id):
     """
     ShopManager.expire_old_requests()
     child = get_object_or_404(Child, user=request.user)
+    active_ban = ChildRedemptionManager.active_purchase_ban(child)
+    is_banned_for_purchases = active_ban is not None
+    ban_note = active_ban.note_child if is_banned_for_purchases else ""
+    
     shop = get_object_or_404(Shop, id=shop_id, is_active=True)
-
     # Retrieve all visible rewards for this shop using the utility method
     rewards = ShopManager.get_all_visible_rewards(shop_id)
 
@@ -537,7 +551,11 @@ def shop_rewards_view(request, shop_id):
         "rewards": rewards,
         "remaining_rewards": remaining_rewards,
         "available_teencoins": available_teencoins,
-        "MAX_SHOPS_PER_DAY":MAX_SHOPS_PER_DAY
+        "MAX_SHOPS_PER_DAY":MAX_SHOPS_PER_DAY,
+        "purchase_ban": {
+            "is_banned": is_banned_for_purchases,
+            "note": ban_note,
+        },
     }
     return render(request, 'shop_rewards.html', context)
 
@@ -567,7 +585,12 @@ def submit_redemption_request(request):
         if validation_result["status"] == "error":
             return JsonResponse(validation_result)
 
-        
+        active_ban = ChildRedemptionManager.active_purchase_ban(child)
+        if active_ban:
+            return JsonResponse(
+                {"status": "error", "message": active_ban.note_child, "reason": "banned"},
+                status=403
+            )
         total_points_needed = sum(item['quantity'] * item['points'] for item in selected_rewards)
 
         # Lock shop's monthly points immediately
