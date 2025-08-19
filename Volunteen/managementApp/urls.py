@@ -35,5 +35,7 @@ urlpatterns = [
     path('superadmin/upload/children/', views.upload_children_csv, name='upload_children_csv'),
     path("volunteen/coming-soon/", views.coming_soon, name="coming_soon"),
     path("superadmin/proof-options/", views.SuperadminProofOptionsView.as_view(), name="superadmin_proof_options"),
-]
+    path("superadmin/bans/", views.SuperadminBansDashboardView.as_view(), name="superadmin_bans_dashboard"),
+    path("superadmin/bans/create/", views.SuperadminBanCreateView.as_view(), name="superadmin_bans_create"),
 
+]

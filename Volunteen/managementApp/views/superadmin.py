@@ -5,12 +5,17 @@ from django.views import View
 from typing import List
 from django.utils.decorators import method_decorator
 from django.db import transaction
- 
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.urls import reverse
+from django.utils.dateparse import parse_datetime
+
 from managementApp.forms.superAdmin import ProofBulkForm
 from institutionApp.models import Institution
 from mentorApp.models import Mentor
+from childApp.models import Child, ChildBan,BanScope,DEFAULT_BAN_NOTES
 from teenApp.entities import TaskProofRequirement
-from managementApp.utils.superadmin_utils import SuperAdminUtility
+from managementApp.utils.superadmin import *
 from managementApp.decorators import superadmin_required
 
 @superadmin_required
@@ -58,7 +63,7 @@ def upload_children_csv(request):
             messages.error(request, "Please upload a valid CSV file.")
             return redirect("managementApp:upload_children_csv")
 
-        rows = SuperAdminUtility.parse_csv(csv_file)
+        rows = UserCreationUtility.parse_csv(csv_file)
         logs = []
         total_rows = 0
         total_created_children = 0
@@ -68,7 +73,7 @@ def upload_children_csv(request):
         total_non_provided_subscriptions = 0
         for i, row in enumerate(rows, start=2):
             total_rows += 1
-            success, log = SuperAdminUtility.create_child_from_row(row)
+            success, log = UserCreationUtility.create_child_from_row(row)
             log["row"] = i-1
             logs.append(log)
             
@@ -193,3 +198,162 @@ class SuperadminProofOptionsView(View):
 
         messages.success(request, f"בוצע בהצלחה: עודכנו {updated} מנטורים.")
         return redirect("managementApp:superadmin_proof_options")
+    
+    
+@method_decorator(superadmin_required, name="dispatch")
+class SuperadminBansDashboardView(View):
+    template_name = "superadmin/ban/bans_dashboard.html"
+
+    def get(self, request):
+        now = timezone.now()
+
+        active_bans = BanQueryUtils.list_active_bans(at=now)
+        active_children_rows = BanQueryUtils.children_with_active_bans(at=now)
+
+        kpis = {
+            "total_active_bans": len(active_bans),
+            "total_active_children": len(active_children_rows),
+            "total_bans_all_time": BanQueryUtils.all_bans_qs().count(),
+            "unique_children_all_time": BanQueryUtils.all_bans_qs().values("child_id").distinct().count(),
+        }
+
+        paginator = Paginator(active_children_rows, 15)
+        page_obj = paginator.get_page(request.GET.get("page") or 1)
+
+        context = {
+            "now": now,
+            "kpis": kpis,
+            "page_obj": page_obj,               
+            "top_days": BanAnalytics.top_by_total_days(limit=10, at=now),
+            "top_bans": BanAnalytics.top_by_bans_count(limit=10, at=now),
+        }
+        return render(request, self.template_name, context)
+    
+    
+@method_decorator(superadmin_required, name="dispatch")
+class SuperadminBanCreateView(View):
+    template_name = "superadmin/ban/bans_create.html"
+
+    def get(self, request):
+        children_qs = (
+            Child.objects.select_related("user")
+            .order_by("user__username")
+        )
+        context = {
+            "now": timezone.localtime(),
+            "children":  prepare_child_data(children_qs),
+            "scope_choices": [
+                (BanScope.PURCHASE, "רכישות"),
+                (BanScope.CAMPAIGN, "קמפיינים"),
+                (BanScope.ALL, "הכול"),
+            ],
+            "severity_choices": [("soft", "רך"), ("hard", "חמור")],
+            "preset_choices": [
+                ("1", "1 יום"),
+                ("3", "3 ימים"),
+                ("7", "7 ימים"),
+                ("14", "14 ימים"),
+                ("30", "30 ימים"),
+                ("eod_il", "עד סוף היום"),
+                ("indefinite", "ללא הגבלת זמן"),
+            ],
+            "default_notes": {
+                str(BanScope.PURCHASE): DEFAULT_BAN_NOTES[BanScope.PURCHASE],
+                str(BanScope.CAMPAIGN): DEFAULT_BAN_NOTES[BanScope.CAMPAIGN],
+                str(BanScope.ALL): DEFAULT_BAN_NOTES[BanScope.ALL],
+            },
+        }
+        return render(request, self.template_name, context)
+
+    @transaction.atomic
+    def post(self, request):
+        child_ids = (request.POST.get("child_ids") or "").strip()
+        scope     = request.POST.get("scope")
+        severity  = (request.POST.get("severity") or "hard").strip() or "hard"
+        starts_raw= (request.POST.get("starts_at") or "").strip()
+        ends_raw  = (request.POST.get("ends_at") or "").strip()
+        note_child= (request.POST.get("note_child") or "").strip()
+        note_staff= (request.POST.get("note_staff") or "").strip()
+        
+        try:
+            child_ids_list = [int(x) for x in child_ids.split(",") if x]
+        except Exception:
+            child_ids_list = []
+
+        if not child_ids_list:
+            messages.error(request, "יש לבחור לפחות ילד אחד.")
+            return redirect(reverse("managementApp:superadmin_bans_create"))
+
+        valid_scopes = {choice[0] for choice in BanScope.choices}
+        if scope not in valid_scopes:
+            scope = BanScope.PURCHASE
+
+        if severity not in {"hard", "soft"}:
+            severity = "hard"
+
+        def _parse_any(dt_str: str):
+            dt = None
+            try:
+                dt = timezone.datetime.fromisoformat(dt_str)
+            except Exception:
+                dt = parse_datetime(dt_str)
+            if dt is None:
+                return None
+            if timezone.is_naive(dt):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
+            return dt
+
+        starts_at = _parse_any(starts_raw)
+        if not starts_at:
+            messages.error(request, "תאריך התחלה לא תקין.")
+            return redirect(reverse("managementApp:superadmin_bans_create"))
+
+        ends_at = None
+        if ends_raw:
+            ends_at = _parse_any(ends_raw)
+            if not ends_at:
+                messages.error(request, "תאריך סיום לא תקין.")
+                return redirect(reverse("managementApp:superadmin_bans_create"))
+
+        if ends_at and ends_at <= starts_at:
+            messages.error(request, "תאריך הסיום חייב להיות אחרי תאריך ההתחלה.")
+            return redirect(reverse("managementApp:superadmin_bans_create"))
+
+        child_ids_set = set(child_ids_list)
+        child_usernames = {
+            c.id: c.user.username
+            for c in Child.objects.filter(id__in=child_ids_set).select_related("user").only("id", "user__username")
+        }
+        active_same_scope_ids = UserCreationUtility.ids_with_active_ban_in_scope(child_ids_set, scope)
+        created = 0
+        skipped = []
+
+        for cid in child_ids_set:
+            if cid in active_same_scope_ids:
+                skipped.append(child_usernames.get(cid, str(cid)))
+                continue
+
+            create_kwargs = dict(
+                child_id=cid,
+                scope=scope,
+                starts_at=starts_at,
+                ends_at=ends_at,          
+                note_staff=note_staff,
+                severity=severity,
+                created_by=request.user,
+            )
+            if note_child: 
+                create_kwargs["note_child"] = note_child
+
+            ChildBan.objects.create(**create_kwargs)
+            created += 1
+
+        if created:
+            messages.success(request, f"חסימות נוצרו בהצלחה: {created}")
+        if skipped:
+            sample = "، ".join(skipped[:5])
+            more = len(skipped) - 5
+            suffix = f" ועוד {more}…" if more > 0 else ""
+            messages.warning(request, f"דלגנו על חסימות עבור: {sample}{suffix} — קיימת כבר חסימה פעילה לאותו תחום.")
+
+        return redirect(reverse("managementApp:superadmin_bans_dashboard"))

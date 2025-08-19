@@ -3,11 +3,12 @@ import io
 from random import randint
 from typing import List, Dict, Tuple, Optional
 from django.contrib.auth.models import User
-from childApp.models import Child
+from childApp.models import Child,BanScope, ChildBan
 from mentorApp.models import Mentor
 from institutionApp.models import Institution
 from parentApp.models import ChildSubscription
 from django.db import transaction
+from django.db.models import Q
 import datetime
 from django.utils import timezone
 
@@ -20,7 +21,7 @@ def _parse_date(date_str: str) -> Optional[datetime.date]:
     return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()
 
 
-class SuperAdminUtility:
+class UserCreationUtility:
     @staticmethod
     def get_next_free_identifier() -> str:
         """
@@ -76,9 +77,9 @@ class SuperAdminUtility:
                 raise ValueError("Username and password are required.")
 
             raw_id = row.get("identifier", "").strip()
-            identifier = raw_id.zfill(5) if raw_id else SuperAdminUtility.get_next_free_identifier()
+            identifier = raw_id.zfill(5) if raw_id else UserCreationUtility.get_next_free_identifier()
             secret_code = (row.get("secret_code", "").strip()
-                        or SuperAdminUtility.generate_secret_code())
+                        or UserCreationUtility.generate_secret_code())
             mentor_un = row.get("mentor", "").strip()
             inst_name = row.get("institution", "").strip()
             city      = row.get("city", "").strip() or "TLV"
@@ -167,3 +168,38 @@ class SuperAdminUtility:
             log["status"] = "❌ Error"
             log["errors"].append(str(e))
             return False, log
+
+    @staticmethod
+    def has_active_ban_in_scope(child_id: int, scope: str, at=None) -> bool:
+        """
+        Returns True if the child currently has an ACTIVE ban in the given scope.
+        Active = not revoked, starts_at <= at, and (ends_at is null OR ends_at >= at).
+        """
+        now = at or timezone.now()
+        return ChildBan.objects.filter(
+            child_id=child_id,
+            scope=scope,
+            revoked_at__isnull=True,
+            starts_at__lte=now
+        ).filter(
+            Q(ends_at__isnull=True) | Q(ends_at__gte=now)
+        ).exists()
+
+    @staticmethod
+    def ids_with_active_ban_in_scope(child_ids: set[int], scope: str, at=None) -> set[int]:
+        """
+        Bulk helper: returns the subset of child_ids that currently have an ACTIVE ban in scope.
+        """
+        if not child_ids:
+            return set()
+        now = at or timezone.now()
+        return set(
+            ChildBan.objects.filter(
+                child_id__in=child_ids,
+                scope=scope,
+                revoked_at__isnull=True,
+                starts_at__lte=now
+            ).filter(
+                Q(ends_at__isnull=True) | Q(ends_at__gte=now)
+            ).values_list("child_id", flat=True)
+        )

@@ -1,0 +1,216 @@
+{% extends "superadmin/superadmin_base.html" %}
+{% load static %}
+{% block title %}דשבורד חסימות{% endblock %}
+
+{% block extrahead %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.7); }
+    .grad { background: linear-gradient(135deg, #ff8a65 0%, #f44336 40%, #e53935 100%); }
+    .pulse-shadow { box-shadow: 0 10px 25px rgba(229,57,53,.25); }
+    .soft { box-shadow: 0 8px 30px rgba(0,0,0,.08); }
+    .card { border-radius: 1.25rem; }
+    .fade-in { animation: fade .5s ease-out both; }
+    .pop { animation: pop .35s ease-out both; }
+    .glow { box-shadow: 0 0 0 0 rgba(244,67,54,.6); animation: pulse 2.2s ease-out infinite; }
+    @keyframes fade { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+    @keyframes pop  { 0%{transform:scale(.98)} 100%{transform:scale(1)} }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(244,67,54,.55)} 70%{box-shadow:0 0 0 18px rgba(244,67,54,0)} 100%{box-shadow:0 0 0 0 rgba(244,67,54,0)} }
+    .acc-content { transition: grid-template-rows .3s ease, opacity .25s ease; }
+    .acc-content[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+    .acc-content[data-open="false"] { grid-template-rows: 0fr; opacity: .0; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[100dvh] bg-gradient-to-b from-rose-50 via-white to-white" dir="rtl">
+  <div class="max-w-2xl mx-auto px-4 pt-4 pb-24">
+
+    <header class="sticky top-0 z-10 -mx-4 px-4 pt-3 pb-4 bg-gradient-to-b from-white/95 to-white/70 backdrop-blur">
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+            <div class="rounded-xl px-4 py-3 text-sm font-bold fade-in
+                        {% if message.tags == 'success' %} bg-green-50 text-green-700 border border-green-200
+                        {% elif message.tags == 'error' %} bg-red-50 text-red-700 border border-red-200
+                        {% elif message.tags == 'warning' %} bg-yellow-50 text-yellow-800 border border-yellow-200
+                        {% else %} bg-blue-50 text-blue-700 border border-blue-200 {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-extrabold tracking-tight text-zinc-900">דשבורד חסימות</h1>
+        <a href="{% url 'managementApp:superadmin_bans_create' %}"
+           class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-bold text-white grad glow pulse-shadow active:scale-[.98]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="1.8" d="M12 4v16m8-8H4"/></svg>
+          הוסף חסימה
+        </a>
+      </div>
+    </header>
+
+    <section class="mt-3 grid grid-cols-2 gap-3">
+      <div class="card soft p-4 bg-white fade-in">
+        <div class="text-xs text-zinc-500">חסימות פעילות</div>
+       <div class="mt-1 text-3xl font-extrabold text-zinc-900">{{ kpis.total_active_bans }}</div>
+        <div class="mt-2 h-1.5 rounded-full bg-rose-100 overflow-hidden"><div class="h-full bg-rose-500 w-[78%]"></div></div>
+      </div>
+      <div class="card soft p-4 bg-white fade-in" style="animation-delay:.05s">
+        <div class="text-xs text-zinc-500">ילדים חסומים עכשיו</div>
+        <div class="mt-1 text-3xl font-extrabold text-zinc-900">{{ kpis.total_active_children }}</div>
+        <div class="mt-2 h-1.5 rounded-full bg-orange-100 overflow-hidden"><div class="h-full bg-orange-500 w-[64%]"></div></div>
+      </div>
+      <div class="card soft p-4 bg-white fade-in" style="animation-delay:.1s">
+        <div class="text-xs text-zinc-500">סה״כ חסימות (אי פעם)</div>
+        <div class="mt-1 text-2xl font-extrabold text-zinc-900">{{ kpis.total_bans_all_time }}</div>
+      </div>
+      <div class="card soft p-4 bg-white fade-in" style="animation-delay:.15s">
+        <div class="text-xs text-zinc-500">ילדים ייחודיים (אי פעם)</div>
+        <div class="mt-1 text-2xl font-extrabold text-zinc-900">{{ kpis.unique_children_all_time }}</div>
+      </div>
+    </section>
+
+    <section class="mt-5">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-extrabold text-zinc-900">ילדים חסומים עכשיו</h2>
+        <span class="text-xs px-2 py-1 rounded-full bg-zinc-900 text-white">{{ page_obj.paginator.count }}</span>
+      </div>
+
+      {% if page_obj.object_list %}
+      <ul class="mt-3 space-y-3">
+        {% for row in page_obj.object_list %}
+        <li class="card bg-white soft p-0 overflow-hidden pop">
+          <button type="button"
+                  class="w-full px-4 py-3 flex items-center justify-between"
+                  data-acc-toggle="acc-{{ forloop.counter }}">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 grid place-items-center text-zinc-700 text-sm font-bold">
+                {{ row.child.user.username|first|upper }}
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-zinc-900">{{ row.child.user.username }}</div>
+                <div class="text-xs text-zinc-500">סוגי חסימה: {{ row.active_scopes|join:", " }} · {{ row.total_active_scopes }}</div>
+              </div>
+            </div>
+            <svg class="w-5 h-5 text-zinc-400 transition-transform" data-acc-icon="acc-{{ forloop.counter }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="1.6" d="M6 9l6 6 6-6"/></svg>
+          </button>
+
+          <div class="px-4 acc-content grid bg-zinc-50/60" id="acc-{{ forloop.counter }}" data-open="false">
+            <div class="overflow-hidden">
+              <div class="pt-2 pb-4 grid gap-3">
+                {% for ban in row.active_bans %}
+                <div class="rounded-xl border border-zinc-200 bg-white p-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[13px] font-bold text-rose-600 uppercase tracking-wide">{{ ban.scope }}</span>
+                    <span class="text-[11px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">{{ ban.severity }}</span>
+                  </div>
+                  <div class="mt-2 grid grid-cols-2 gap-2 text-[13px] text-zinc-700">
+                    <div>
+                      <div class="text-zinc-400 text-[11px]">התחלה</div>
+                      <div dir="ltr">{{ ban.starts_at }}</div>
+                    </div>
+                    <div>
+                      <div class="text-zinc-400 text-[11px]">סיום</div>
+                      <div dir="ltr">{% if ban.ends_at %}{{ ban.ends_at }}{% else %}ללא הגבלת זמן{% endif %}</div>
+                    </div>
+                  </div>
+                  <div class="mt-2 text-[13px] text-zinc-600 line-clamp-3">{{ ban.note_child }}</div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="mt-4 flex items-center justify-between text-sm">
+        <div class="text-zinc-500">עמוד {{ page_obj.number }} מתוך {{ page_obj.paginator.num_pages }}</div>
+        <div class="flex gap-2">
+          {% if page_obj.has_previous %}
+            <a class="px-3 py-1 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 active:scale-[.98]" href="?page={{ page_obj.previous_page_number }}">הקודם</a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a class="px-3 py-1 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 active:scale-[.98]" href="?page={{ page_obj.next_page_number }}">הבא</a>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="mt-3 card bg-white soft p-4 text-zinc-500 text-sm">אין ילדים חסומים כרגע.</div>
+      {% endif %}
+    </section>
+
+    <section class="mt-8 space-y-4">
+      <h2 class="text-lg font-extrabold text-zinc-900">טבלאות מובילות</h2>
+
+      <div class="card soft bg-white p-0 overflow-hidden">
+        <div class="px-4 py-3 border-b border-zinc-100 font-bold text-zinc-900">Top — סך ימי חסימה</div>
+        <table class="min-w-full text-sm">
+          <thead class="bg-zinc-50 text-zinc-500">
+          <tr>
+            <th class="text-right p-3 font-medium">ילד</th>
+            <th class="text-right p-3 font-medium">ימי חסימה</th>
+            <th class="text-right p-3 font-medium"># חסימות</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for child, total_days, bans_count in top_days %}
+            <tr class="border-t border-zinc-100 hover:bg-zinc-50/60">
+              <td class="p-3 font-medium text-zinc-900">{{ child.user.username }}</td>
+              <td class="p-3 text-zinc-900">{{ total_days|floatformat:1 }}</td>
+              <td class="p-3 text-zinc-900">{{ bans_count }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="p-3 text-zinc-500" colspan="3">אין נתונים.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card soft bg-white p-0 overflow-hidden">
+        <div class="px-4 py-3 border-b border-zinc-100 font-bold text-zinc-900">Top — מספר חסימות</div>
+        <table class="min-w-full text-sm">
+          <thead class="bg-zinc-50 text-zinc-500">
+          <tr>
+            <th class="text-right p-3 font-medium">ילד</th>
+            <th class="text-right p-3 font-medium"># חסימות</th>
+            <th class="text-right p-3 font-medium">ימי חסימה</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for child, bans_count, total_days in top_bans %}
+            <tr class="border-t border-zinc-100 hover:bg-zinc-50/60">
+              <td class="p-3 font-medium text-zinc-900">{{ child.user.username }}</td>
+              <td class="p-3 text-zinc-900">{{ bans_count }}</td>
+              <td class="p-3 text-zinc-900">{{ total_days|floatformat:1 }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="p-3 text-zinc-500" colspan="3">אין נתונים.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <a href="{% url 'managementApp:coming_soon' %}"
+       class="fixed bottom-4 right-4 left-4 mx-auto max-w-2xl block text-center rounded-2xl grad text-white font-extrabold py-3 shadow-lg active:scale-[.98]">
+      הוסף חסימה לילד
+    </a>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-acc-toggle]').forEach(btn=>{
+    const id = btn.getAttribute('data-acc-toggle');
+    const panel = document.getElementById(id);
+    const icon = document.querySelector(`[data-acc-icon="${id}"]`);
+    btn.addEventListener('click', ()=>{
+      const open = panel.getAttribute('data-open') === 'true';
+      panel.setAttribute('data-open', String(!open));
+      icon && icon.classList.toggle('rotate-180');
+    });
+  });
+</script>
+{% endblock %}
