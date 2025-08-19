@@ -270,7 +270,7 @@ class MentorTaskUtils(TaskManagerUtils):
             print(f"[FATAL] Task creation failed: {e}")
 
     @staticmethod
-    def create_task_with_assignments(mentor, children_ids, task_data,timewindow_data):
+    def create_task_with_assignments(mentor, children_ids, task_data,timewindow_data= None):
         """
         Assumes all validation is already done.
         Creates the task, assigns children, and optionally sends WhatsApp messages.
