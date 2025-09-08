@@ -136,6 +136,8 @@
 
 {% block extra_js %}
 <script>
+  const shopId = "{{ shop_id }}";
+  const shopPublicId = "{{ public_id }}";
   // Toast notification system
   function showToast(message, type = "error") {
     const toast = document.createElement("div");
@@ -222,7 +224,7 @@
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}",
       },
-      body: JSON.stringify({ request_id: reqId, action: action }),
+      body: JSON.stringify({ request_id: reqId, action: action, "shop-id": shopId, "shop-public-id": shopPublicId }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -333,7 +335,7 @@
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}",
       },
-      body: JSON.stringify({ request_ids: requestIds, action: action }),
+      body: JSON.stringify({ request_ids: requestIds, action: action, "shop-id": shopId, "shop-public-id": shopPublicId }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -449,7 +451,7 @@
         "Content-Type": "application/json",
         "X-CSRFToken": "{{ csrf_token }}",
       },
-      body: JSON.stringify({ request_ids: requestIds }),
+      body: JSON.stringify({ request_ids: requestIds, "shop-id": shopId, "shop-public-id": shopPublicId }),
     })
       .then((response) => response.json())
       .then((data) => {

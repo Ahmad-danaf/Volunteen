@@ -147,14 +147,13 @@ def opening_hours_view(request):
     })
     
     
-@login_required
-def pending_redemption_requests(request):
+def pending_redemption_requests(request, public_id):
     """
     Retrieves today's pending redemption requests for the current shop,
     groups them by child, and aggregates totals for each child.
     """
     ShopManager.expire_old_requests()
-    shop = get_object_or_404(Shop, user=request.user)
+    shop = get_object_or_404(Shop, public_id=public_id)
     today = localdate()
 
     requests_qs = RedemptionRequest.objects.filter(
@@ -183,11 +182,12 @@ def pending_redemption_requests(request):
     context = {
         'aggregated_requests': aggregated,
         'today': today,
-        'expiration_time': REDEMPTION_REQUEST_EXPIRATION_MINUTES
+        'expiration_time': REDEMPTION_REQUEST_EXPIRATION_MINUTES,
+        "public_id": public_id,
+        "shop_id": shop.id,
     }
     return render(request, 'pending_requests.html', context)
 
-@login_required
 @require_POST
 def process_request(request):
     """
@@ -200,7 +200,9 @@ def process_request(request):
         data = json.loads(request.body)
         req_id = data.get('request_id')
         action = data.get('action')
-
+        shop_id = int(data.get('shop-id', 0))
+        if shop_id == 0:
+            return JsonResponse({"status": "error", "message": "Invalid shop ID."}, status=400)
         if not req_id or action not in ["approve", "reject"]:
             return JsonResponse({"status": "error", "message": "Invalid parameters."}, status=400)
 
@@ -208,7 +210,7 @@ def process_request(request):
         redemption_req = get_object_or_404(RedemptionRequest, id=req_id, status='pending')
         
         # Ensure the request belongs to the current shop.
-        shop = get_object_or_404(Shop, user=request.user)
+        shop = get_object_or_404(Shop, id=shop_id)
         if redemption_req.shop != shop:
             return JsonResponse({"status": "error", "message": "Unauthorized access."}, status=403)
         
@@ -240,7 +242,6 @@ def process_request(request):
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
-@login_required
 @require_POST
 def batch_process_requests(request):
     """
@@ -253,11 +254,14 @@ def batch_process_requests(request):
         data = json.loads(request.body)
         request_ids = data.get('request_ids')
         action = data.get('action')
+        shop_id = int(data.get('shop-id', 0))
+        if shop_id == 0:
+            return JsonResponse({"status": "error", "message": "Invalid shop ID."}, status=400)
         if not request_ids or not isinstance(request_ids, list) or action not in ["approve", "reject"]:
             return JsonResponse({"status": "error", "message": "Invalid parameters."}, status=400)
 
         # Get the current shop.
-        shop = get_object_or_404(Shop, user=request.user)
+        shop = get_object_or_404(Shop, id=shop_id)
 
         # Get all pending requests with the given IDs, ensuring they belong to the current shop.
         pending_requests = RedemptionRequest.objects.filter(id__in=request_ids, shop=shop, status='pending').filter(date_requested__date=localdate())
@@ -297,7 +301,6 @@ def batch_process_requests(request):
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
-@login_required
 @require_POST
 def approve_all_pending_requests(request):
     """
@@ -310,12 +313,14 @@ def approve_all_pending_requests(request):
         data = json.loads(request.body)
         request_ids = data.get("request_ids", [])  
         action = data.get("action", "approve")     # default to 'approve'
-        
+        shop_id = int(data.get("shop-id", 0))
+        if shop_id == 0:
+            return JsonResponse({"status": "error", "message": "Invalid shop ID."}, status=400)
         # Must be "approve" for this flow
         if action != "approve":
             return JsonResponse({"status": "error", "message": "Invalid action."}, status=400)
-        
-        shop = get_object_or_404(Shop, user=request.user)
+
+        shop = get_object_or_404(Shop, id=shop_id)
         
         # If no request_ids provided, you could default to all pending requests for the shop
         if request_ids:

@@ -53,7 +53,7 @@ def copy_sunday_hours(modeladmin, request, queryset):
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
     inlines = [OpeningHoursInline]
-    list_display = ('name', 'city', 'get_category_names', 'is_active', is_open_now)
+    list_display = ('name', 'city', 'get_category_names', 'is_active', 'public_id', is_open_now)
     list_filter = ('city', 'categories', 'is_active')
     search_fields = ('name',)
     actions = [activate_shops, deactivate_shops, copy_sunday_hours]

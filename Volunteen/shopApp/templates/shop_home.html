@@ -24,6 +24,42 @@
         height: 100px;
         object-fit: cover;
     }
+.main-cta-btn {
+  background: linear-gradient(135deg, #ff7b00, #ff5100); /* strong orange gradient */
+  color: #fff !important;
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 6px 15px rgba(255, 81, 0, 0.4);
+  transition: all 0.25s ease-in-out;
+  text-align: center;
+}
+
+.main-cta-btn:hover,
+.main-cta-btn:focus {
+  background: linear-gradient(135deg, #ff5100, #ff7b00);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(255, 81, 0, 0.5);
+  text-decoration: none;
+  color: #fff;
+}
+
+.main-cta-btn i {
+  margin-left: 8px;
+  font-size: 1.3rem;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 81, 0, 0.6); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 81, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 81, 0, 0); }
+}
+.main-cta-btn {
+  animation: pulse-glow 2s infinite;
+}
+
 </style>
 {% endblock %}
 {% block content %}
@@ -58,10 +94,11 @@ header {
 
         <div class="section mt-4">
             <h3>בקשות מימוש בהמתנה</h3>
-            <a href="{% url 'shopApp:pending_redemption_requests' %}" class="btn blue-btn btn-block">
-                <i class="fas fa-gift"></i> בקשות מימוש בהמתנה</a>
+            <a href="{% url 'shopApp:pending_redemption_requests' shop.public_id %}"
+                class="btn main-cta-btn btn-block">
+                <i class="fas fa-gift"></i> בקשות מימוש בהמתנה
+            </a>
         </div>
-
         <div class="section mt-4">
             <h3>מידע על טינקוינס</h3>
             <p>

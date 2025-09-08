@@ -1,9 +1,11 @@
 
 from django.db import models
 from django.contrib.auth.models import User, Group
-from Volunteen.constants import AVAILABLE_CITIES,SHOP_CATEGORIES
+import uuid
 from django.utils.timezone import now
 from django.utils import timezone
+
+from Volunteen.constants import AVAILABLE_CITIES,SHOP_CATEGORIES
 from .rewards import Redemption
 
 class Category(models.Model):
@@ -22,6 +24,13 @@ class Category(models.Model):
 class Shop(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, unique=True)
+    public_id = models.UUIDField(
+        #unique=True, #temp for backfill script
+        null=True,  #temp for backfill script
+        db_index=True,
+        editable=False,
+        default=uuid.uuid4,
+    )
     max_points = models.IntegerField(default=1000, verbose_name='Max Points')
     img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True)
     city = models.CharField(
@@ -45,6 +54,11 @@ class Shop(models.Model):
         shops_group, created = Group.objects.get_or_create(name='Shops')
         self.user.groups.add(shops_group)
         
+    def rotate_public_id(self):
+        """Force-generate a new UUID (only when explicitly called)."""
+        self.public_id = uuid.uuid4()
+        self.save(update_fields=["public_id"])
+        
     def average_service_rating(self):
         ratings = Redemption.objects.filter(shop=self, service_rating__isnull=False).values_list('service_rating', flat=True)
         return round(sum(ratings) / len(ratings), 1) if ratings else None
@@ -52,11 +66,6 @@ class Shop(models.Model):
     def average_reward_rating(self):
         ratings = Redemption.objects.filter(shop=self, reward_rating__isnull=False).values_list('reward_rating', flat=True)
         return round(sum(ratings) / len(ratings), 1) if ratings else None
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        shops_group, created = Group.objects.get_or_create(name='Shops')
-        self.user.groups.add(shops_group)
 
     def get_category_names(self):
         """Returns a comma-separated string of category names"""
