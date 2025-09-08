@@ -1,6 +1,6 @@
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
-from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
+from teenApp.entities import Task, TimeWindowRule,TaskProofRequirement,RecurringRun
 from childApp.models import Child
 from mentorApp.models import Mentor
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
@@ -270,40 +270,104 @@ class MentorTaskUtils(TaskManagerUtils):
             print(f"[FATAL] Task creation failed: {e}")
 
     @staticmethod
-    def create_task_with_assignments(mentor, children_ids, task_data,timewindow_data= None):
+    def create_task_with_assignments(
+        mentor=None,
+        children_ids=None,
+        task_data=None,
+        timewindow_data=None,
+        *,
+        template_task=None,
+        assigned_mentors=None,
+        assigned_children=None,
+        extra_task_data=None,
+        recurrence_run: RecurringRun = None,
+        deduct_coins: bool = True,
+    ):
         """
-        Assumes all validation is already done.
-        Creates the task, assigns children, and optionally sends WhatsApp messages.
+        Dual-mode task creation:
+        - Manual (mentor, children_ids, task_data, timewindow_data)
+        - Recurring (template_task, assigned_mentors, assigned_children, extra_task_data, recurrence_run)
         """
-        task_data.setdefault("description", "")
-        task_data.setdefault("proof_requirement", TaskProofRequirement.CAMERA_ONLY)
-        task_data.pop("assigned_children", None)
+        if template_task:
+            # Recurring mode
+            task_data = {
+                "title": template_task.title,
+                "description": template_task.description or "",
+                "points": template_task.points,
+                "proof_requirement": template_task.proof_requirement,
+                "created_by": template_task.created_by,
+                "source_template": template_task,
+                **(extra_task_data or {}),
+            }
+            assigned_mentors = assigned_mentors or list(template_task.assigned_mentors.all())
+            assigned_children = assigned_children or list(template_task.assigned_children.all())
+            return MentorTaskUtils._create_task_core(
+                mentors=assigned_mentors,
+                children=assigned_children,
+                task_data=task_data,
+                timewindow_data=timewindow_data or [],
+                assigned_by_user=template_task.created_by,
+                recurrence_run=recurrence_run,
+                deduct_coins=deduct_coins
+            )
+        else:
+            # Manual mode
+            task_data = task_data or {}
+            task_data.setdefault("description", "")
+            task_data.setdefault("proof_requirement", TaskProofRequirement.CAMERA_ONLY)
+            task_data.pop("assigned_children", None)
 
-        assigned_children = Child.objects.filter(id__in=children_ids)
-        total_cost = task_data.get("points", 0) * assigned_children.count()
+            children = list(Child.objects.filter(id__in=children_ids))
+            return MentorTaskUtils._create_task_core(
+                mentors=[mentor],
+                children=children,
+                task_data=task_data,
+                timewindow_data=timewindow_data or [],
+                assigned_by_user=mentor.user,
+                recurrence_run=None,
+                deduct_coins=True  # always deduct manually
+            )
+
+    @staticmethod
+    def _create_task_core(
+        mentors,
+        children,
+        task_data,
+        timewindow_data,
+        assigned_by_user,
+        recurrence_run: RecurringRun = None,
+        deduct_coins: bool = True,
+    ):
+        total_cost = task_data.get("points", 0) * len(children)
 
         with transaction.atomic():
-            mentor = Mentor.objects.select_for_update().get(id=mentor.id)
-            mentor.available_teencoins =max(0, mentor.available_teencoins - total_cost)
-            mentor.save()
-            
+            for mentor in mentors:
+                mentor = Mentor.objects.select_for_update().get(id=mentor.id)
+                if deduct_coins:
+                    mentor.available_teencoins = max(0, mentor.available_teencoins - total_cost)
+                    mentor.save()
+
             new_task = Task.objects.create(**task_data)
-            new_task.assigned_mentors.add(mentor)
-            new_task.assigned_children.set(assigned_children)
-            
-            timewindow_data = timewindow_data or []
+            new_task.assigned_mentors.add(*mentors)
+            new_task.assigned_children.set(children)
+
+            if recurrence_run:
+                new_task.generated_by = recurrence_run
+                new_task.save(update_fields=["generated_by"])
+
             TimeWindowRule.objects.bulk_create(
-                    TimeWindowRule(task=new_task, **tw) for tw in timewindow_data
+                TimeWindowRule(task=new_task, **tw) for tw in timewindow_data
             )
-                
+
             TaskAssignment.objects.bulk_create(
-                TaskAssignment(task=new_task, child=ch, assigned_by=mentor.user)
-                for ch in assigned_children
+                TaskAssignment(task=new_task, child=ch, assigned_by=assigned_by_user)
+                for ch in children
             )
-
-
+        
         if new_task.send_whatsapp_on_assign:
-            for child in assigned_children.select_related("user__personal_info", "subscription"):
+            child_ids = [c.id for c in children]
+            children_qs = Child.objects.filter(id__in=child_ids).select_related("user__personal_info", "subscription")
+            for child in children_qs:
                 phone = getattr(child.user.personal_info, "phone_number", None)
                 subscription = getattr(child, "subscription", None)
                 if not phone or not subscription or not subscription.is_active():
@@ -318,10 +382,8 @@ class MentorTaskUtils(TaskManagerUtils):
                     NotificationManager.sent_whatsapp(message, phone)
                 except Exception as exc:
                     print(f"Failed to send WhatsApp message: {exc}")
-                
 
         return new_task
-    
     
     @staticmethod
     def get_template_tasks(mentor, search_query=''):
@@ -399,3 +461,5 @@ class MentorTaskUtils(TaskManagerUtils):
             return TaskCompletion.objects.none()
         
         return TaskCompletion.objects.filter(task=task, status='approved')
+    
+    

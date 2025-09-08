@@ -23,6 +23,10 @@ class Task(models.Model):
     assigned_mentors = models.ManyToManyField('mentorApp.Mentor', related_name='assigned_tasks', blank=True, verbose_name='Assigned Mentors')
     completed_date = models.DateTimeField(null=True, blank=True, verbose_name='Completed Date', help_text='The date when the task was completed')
     is_template=models.BooleanField(default=False, verbose_name='Template', help_text='Mark as a template for future duplication')
+    source_template = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances",
+        help_text="If this task was duplicated from a template, point to it."
+    )
     is_pinned = models.BooleanField(default=False, verbose_name='Pinned', help_text='Pin this task to highlight it for mentors and children')
     campaign = models.ForeignKey(
         "shopApp.Campaign", null=True, blank=True,
@@ -41,6 +45,7 @@ class Task(models.Model):
         verbose_name="דרישת הוכחה",
         help_text="בחר את סוג ההוכחה הנדרשת מהחניך",
     )
+    
     def __str__(self):
         return self.title
 

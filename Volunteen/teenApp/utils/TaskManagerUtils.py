@@ -1,9 +1,13 @@
+from django.utils import timezone
+from typing import Optional, Dict, Any
+from django.db import transaction
+from datetime import date
+
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import Task
 from childApp.models import Child
 from parentApp.models import Parent
-from django.utils import timezone
 
 DEFAULT_INCREASE_LEVEL_TASK = {
     'title': 'עלייה ברמה',
@@ -197,3 +201,10 @@ class TaskManagerUtils:
             return TaskManagerUtils.approve_task_completion(user=None, task_completion=task_completion)
 
         return task_completion
+    
+    
+    @staticmethod
+    def is_task_assigned_to_any_mentor(task: Task) -> bool:
+        """Returns True if the task is assigned to at least one mentor."""
+        return task.assigned_mentors.exists()
+    

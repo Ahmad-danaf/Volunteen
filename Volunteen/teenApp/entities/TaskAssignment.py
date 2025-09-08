@@ -8,5 +8,17 @@ class TaskAssignment(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True, verbose_name="Assigned At")
     refunded_at = models.DateTimeField(null=True, blank=True)
 
+    scheduled_for = models.DateField(null=True, blank=True)  # occurrence date
+    generated_by  = models.ForeignKey(
+        "teenApp.RecurringRun", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["child", "scheduled_for", "generated_by"],
+                name="uniq_child_day_by_run"
+            ),
+        ]
+
     def __str__(self):
         return f"Task: {self.task.title}, Child: {self.child.user.username}"
