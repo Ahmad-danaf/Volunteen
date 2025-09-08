@@ -25,11 +25,10 @@ class Shop(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, unique=True)
     public_id = models.UUIDField(
-        #unique=True, #temp for backfill script
-        null=True,  #temp for backfill script
-        db_index=True,
-        editable=False,
         default=uuid.uuid4,
+        editable=False,
+        unique=True, 
+        db_index=True,
     )
     max_points = models.IntegerField(default=1000, verbose_name='Max Points')
     img = models.ImageField("Image", upload_to='media/images/', null=True, blank=True)
