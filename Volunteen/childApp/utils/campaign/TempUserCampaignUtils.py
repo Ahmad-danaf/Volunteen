@@ -24,17 +24,18 @@ WELCOME_NEW_CHILD_MSG = """أهلاً وسهلاً بك يا {name} في عال�
 
 📸 تابعونا عالإنستا: https://rb.gy/9i3yxf
 
-👇 انضموا لجروب الواتساب: http://bit.ly/3EXVxLL
+👇 انضموا لجروب الواتساب: http://bit.ly/484hQf1
 """
 
 THANKS_REFERRER_MSG = """شكراً من القلب!🧡
-صاحبك "{name}" انضم لعيلة Volunteen من خلالك 🤝
-كل عمل خيري بعمله صاحبك ✨ بميزان حسناتك إنت 🙌
+تم انضمام {name} لعائلة Volunteen 🤝
+كل عمل خيري بعمله ✨ بميزان حسناتك إنت 🙌
 أنت بتساعدنا نكبر ونقوّي المجتمع سوا 💪🌍
 
 🎉 وكجائزة لك: حصلت على 5 TeenCoins 💰🪙
 استمر بالتأثير الجميل! 🌟🚀
 """
+
 
 class TempUserCampaignUtils:
 
@@ -145,7 +146,8 @@ class TempUserCampaignUtils:
                         referred_child=child,
                         referrer=referrer
                     )
-                    NotificationManager.sent_whatsapp(THANKS_REFERRER_MSG.format(name=referrer.user.username), referrer.user.personal_info.phone_number)
+                    first_name = referrer.user.username.split("_")[0]
+                    NotificationManager.sent_whatsapp(THANKS_REFERRER_MSG.format(name=first_name), referrer.user.personal_info.phone_number)
         except Exception as e:
             pass
 

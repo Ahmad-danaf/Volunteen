@@ -50,7 +50,7 @@ WHATSAPP_SHORT_MESSAGES = [
 MAIN_LINK = "📲 https://www.volunteen.site/child/home/"
 EXTRA_LINKS = [
     "📸 עקבו באינסטה: https://rb.gy/9i3yxf",
-    "👇 הצטרפו לוואטסאפ: http://bit.ly/3EXVxLL"
+    "👇 הצטרפו לוואטסאפ: http://bit.ly/484hQf1"
 ]
 
 class MentorTaskUtils(TaskManagerUtils):
