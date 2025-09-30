@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from childApp.models import Child
-from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
+from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement, TaskGroup
 from django.utils.translation import gettext_lazy as _
 from django import forms
 from mentorApp.models import Mentor
@@ -45,12 +45,40 @@ class TimeWindowInline(admin.TabularInline):
     extra = 0
     max_num = 2
     
+@admin.register(TaskGroup)
+class TaskGroupAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "is_active", "created_at")
+    list_filter  = ("is_active",)
+    search_fields = ("name", "slug")
+    prepopulated_fields = {"slug": ("name",)}
+    
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'points', 'deadline', 'completed')
     search_fields = ('title',)
-    list_filter = ('deadline', 'completed')
+    list_filter = ("deadline", "completed", "groups")
     inlines = [TimeWindowInline]
+    actions = ["add_to_starter_pack"]
+
+    def add_to_starter_pack(self, request, queryset):
+        try:
+            group = TaskGroup.objects.get(slug="Starter Pack")
+        except TaskGroup.DoesNotExist:
+            self.message_user(request, "❌ TaskGroup 'Starter Pack' not found. Create it first!", messages.ERROR)
+            return
+
+        count = 0
+        for task in queryset:
+            if group not in task.groups.all():
+                task.groups.add(group)
+                count += 1
+        self.message_user(
+            request,
+            f"✅ {count} task(s) were added to the Starter Pack group.",
+            messages.SUCCESS,
+        )
+
+    add_to_starter_pack.short_description = "➕ Add selected tasks to Starter Pack group"
 
 class MentorAdminForm(forms.ModelForm):
     proof_options = forms.MultipleChoiceField(

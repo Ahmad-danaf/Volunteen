@@ -1,0 +1,125 @@
+{% extends "superadmin/superadmin_base.html" %}
+
+{% block title %}דשבורד הפניות{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-4 space-y-6">
+
+  <!-- 🔥 Page Header -->
+  <header class="space-y-2 text-right">
+    <h1 class="text-2xl font-bold text-white">דשבורד הפניות</h1>
+    <p class="text-slate-300 text-sm">מעקב מלא אחרי כל ההפניות שנעשו במערכת</p>
+  </header>
+
+  <!-- 🔍 Filters -->
+  <form class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end" method="get">
+    <div>
+      <label class="block text-sm mb-1">חיפוש</label>
+      <input name="q" value="{{ filters.q }}" class="w-full rounded-xl border border-white/10 bg-white/10 p-2 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-v-blue" placeholder="שם/מזהה/טלפון" />
+    </div>
+    <div>
+      <label class="block text-sm mb-1">עיר</label>
+      <input name="city" value="{{ filters.city }}" class="w-full rounded-xl border border-white/10 bg-white/10 p-2 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-v-blue" placeholder="TLV / ..."/>
+    </div>
+    <div>
+      <label class="block text-sm mb-1">מתאריך</label>
+      <input type="date" name="date_from" value="{{ filters.date_from }}" class="w-full rounded-xl border border-white/10 bg-white/10 p-2 text-white outline-none focus:ring-2 focus:ring-v-blue" />
+    </div>
+    <div>
+      <label class="block text-sm mb-1">עד תאריך</label>
+      <input type="date" name="date_to" value="{{ filters.date_to }}" class="w-full rounded-xl border border-white/10 bg-white/10 p-2 text-white outline-none focus:ring-2 focus:ring-v-blue" />
+    </div>
+    <div class="flex gap-2">
+      <button class="w-full rounded-xl bg-gradient-to-l from-v-orange to-v-blue p-2 font-medium">סנן</button>
+      <a class="w-full rounded-xl border border-white/20 p-2 text-center" href="?">נקה</a>
+    </div>
+  </form>
+
+  <!-- 📅 Quick Date Buttons -->
+  <div class="flex flex-wrap gap-2 text-sm text-right">
+    <a href="?date_from={{ today|date:'Y-m-d' }}" class="px-3 py-1 rounded-xl border border-white/20 bg-white/5 hover:bg-v-blue/30 transition">היום</a>
+    <a href="?date_from={{ week_start|date:'Y-m-d' }}" class="px-3 py-1 rounded-xl border border-white/20 bg-white/5 hover:bg-v-blue/30 transition">השבוע</a>
+    <a href="?date_from={{ month_start|date:'Y-m-d' }}" class="px-3 py-1 rounded-xl border border-white/20 bg-white/5 hover:bg-v-blue/30 transition">החודש</a>
+    <a href="?date_from={{ year_start|date:'Y-m-d' }}" class="px-3 py-1 rounded-xl border border-white/20 bg-white/5 hover:bg-v-blue/30 transition">השנה</a>
+  </div>
+
+  <!-- 📊 KPIs -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-right">
+      <div class="text-white/60 text-sm">סה״כ הפניות</div>
+      <div class="text-2xl font-semibold">{{ kpis.total_referrals }}</div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-right">
+      <div class="text-white/60 text-sm">מפנים ייחודיים</div>
+      <div class="text-2xl font-semibold">{{ kpis.unique_referrers }}</div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-right">
+      <div class="text-white/60 text-sm">ילדים מופנים</div>
+      <div class="text-2xl font-semibold">{{ kpis.unique_referred_children }}</div>
+    </div>
+  </section>
+
+  <!-- 👑 Top Referrers -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <h3 class="font-semibold mb-3 text-right">מובילי הפניות</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-right">
+        <thead class="text-white/70 border-b border-white/10">
+          <tr>
+            <th class="py-2">שם</th>
+            <th class="py-2">מזהה</th>
+            <th class="py-2">עיר</th>
+            <th class="py-2">#</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in top_referrers %}
+          <tr class="border-b border-white/5">
+            <td class="py-2">{{ r.referrer__user__username }} </td>
+            <td class="py-2">{{ r.referrer__identifier }}</td>
+            <td class="py-2">{{ r.referrer__city }}</td>
+            <td class="py-2 font-medium">{{ r.referrals_count }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="py-3 text-white/60">אין נתונים</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 📝 Latest Referrals -->
+  <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <h3 class="font-semibold mb-3 text-right">הפניות אחרונות</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-right">
+        <thead class="text-white/70 border-b border-white/10">
+          <tr>
+            <th class="py-2">תאריך</th>
+            <th class="py-2">נרשם</th>
+            <th class="py-2">מזהה נרשם</th>
+            <th class="py-2">מפנה</th>
+            <th class="py-2">מזהה מפנה</th>
+            <th class="py-2">עיר</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in page_obj.object_list %}
+          <tr class="border-b border-white/5">
+            <td class="py-2">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="py-2">{{ r.referred_child.user.username }}</td>
+            <td class="py-2">{{ r.referred_child.identifier }}</td>
+            <td class="py-2">{{ r.referrer.user.username }}</td>
+            <td class="py-2">{{ r.referrer.identifier }}</td>
+            <td class="py-2">{{ r.referred_child.city }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="py-3 text-white/60">אין נתונים</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

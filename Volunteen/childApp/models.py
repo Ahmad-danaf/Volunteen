@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User, Group
@@ -37,6 +38,8 @@ class Child(models.Model):
         null=True,
     )
     campaign_ban_until = models.DateTimeField(null=True, blank=True)
+    is_temp_user = models.BooleanField(default=False)
+    trial_end = models.DateField(null=True, blank=True)
     @property
     def level(self):
         return (calculate_total_points(self) // 100) + 1
@@ -44,6 +47,23 @@ class Child(models.Model):
     @property
     def phone_number(self):
         return self.user.personal_info.phone_number if hasattr(self.user, 'personal_info') else None
+    
+    def has_active_trial(self) -> bool:
+        return self.trial_end and self.trial_end >= timezone.now().date()
+    
+    def start_trial(self, days: int = 7) -> bool:
+        """
+        Start a trial if not already active. 
+        Returns True if started, False if already had one.
+        """
+        if self.trial_end:
+            return False
+        self.trial_end = timezone.now().date() + timedelta(days=days)
+        self.save(update_fields=["trial_end"])
+        return True
+    
+    def has_trial_ended(self) -> bool:
+        return self.trial_end and self.trial_end < timezone.now().date()
 
     def add_points(self, points):
         """
@@ -74,6 +94,37 @@ class Child(models.Model):
         children_group, created = Group.objects.get_or_create(name='Children')
         self.user.groups.add(children_group)
 
+
+class ChildReferral(models.Model):
+    referred_child = models.ForeignKey(
+        "childApp.Child",
+        on_delete=models.CASCADE,
+        related_name="referrals_received",
+        db_index=True,
+    )
+    referrer = models.ForeignKey(
+        "childApp.Child",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="referrals_made",
+        db_index=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Child Referral"
+        verbose_name_plural = "Child Referrals"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["referred_child"], name="unique_referral_per_child"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["referrer", "created_at"], name="ref_by_date_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.referred_child} referred by {self.referrer or 'unknown'}"
 
 class StreakMilestoneAchieved(models.Model):
     """

@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.templatetags.static import static
 from django.utils.timezone import now
 from django.utils import timezone
+from django.urls import reverse
 from teenApp.interface_adapters.forms import DateRangeForm,DateRangeCityForm,CityDateRangeForm
 import json
 from datetime import datetime, date, timedelta
@@ -17,6 +18,7 @@ from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
 from childApp.models import Child,StreakMilestoneAchieved, ChildBan,BanScope,DEFAULT_BAN_NOTES
@@ -42,6 +44,7 @@ from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
 from childApp.utils.check_in_out_utils import process_check_in, process_check_out
 from childApp.utils.child_level_management import calculate_total_points
+from childApp.utils.campaign.TempUserCampaignUtils import TempUserCampaignUtils
 from managementApp.models import DonationCategory, DonationTransaction
 from childApp.decorators import child_subscription_required
 from parentApp.models import ChildSubscription
@@ -56,8 +59,24 @@ def child_landing(request):
 def inactive_home(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     active_points = TeenCoinManager.get_total_active_teencoins(child)
+    context = {
+            "child": child,
+            "active_points": active_points,
+            "can_start_trial": (
+                not child.has_active_trial() and not child.trial_end
+            ),
+        }
+    return render(request, "childApp/inactive_home.html", context)
 
-    return render(request, 'childApp/inactive_home.html', {'child': child,'active_points':active_points})
+@login_required
+def start_trial(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    if child.start_trial():
+        messages.success(request, _("קיבלת 7 ימים ניסיון חינם 🎉"))
+        return redirect("childApp:child_home")
+    else:
+        messages.error(request, _("כבר השתמשת בניסיון שלך 😢"))
+    return redirect("childApp:inactive_home", child_id=child.id)
 
 @login_required
 def child_home(request):
@@ -106,11 +125,15 @@ def child_home(request):
     progress_to_next_level = calculate_progress(child,total_points)
 
     LeaderboardUtils.get_current_streak(child)
+    referral_url = request.build_absolute_uri(
+        reverse("childApp:child_signup")
+    ) + f"?ref_child={child.identifier}"
     return render(request, 'child_home.html', {
         'child': child,
         'active_points': active_points,
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
+        'referral_url': referral_url,
         'level_name': LEVELS[child.level],
         'level': child.level,
         'progress_percent': progress_to_next_level,
@@ -994,3 +1017,43 @@ def leave_campaign_view(request, pk):
         messages.error(request, f"שגיאה בעת ההסרה מהקמפיין: {str(e)}")
 
     return redirect("childApp:child-campaign-detail", pk=pk)
+
+
+@login_required
+def child_invite_qr(request):
+    """
+    Display a personal invite page with a QR code
+    linking to the signup URL that includes this child's identifier.
+    """
+    child = get_object_or_404(Child, user=request.user)
+    referral_url = request.build_absolute_uri(
+        reverse("childApp:child_signup")
+    ) + f"?ref_child={child.identifier}"
+
+    context = {
+        "child": child,
+        "referral_url": referral_url,
+    }
+    return render(request, "childApp/signup/invite_qr.html", context)
+
+
+def child_signup(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name", "").strip()
+        password = request.POST.get("password", "")
+        phone = request.POST.get("phone", "").strip()
+        phone_confirm = request.POST.get("phone_confirm", "").strip()
+        parent_approval = request.POST.get("parent_approval") == "on"
+        ref_child_identifier = request.GET.get("ref_child")
+        child, err = TempUserCampaignUtils.register_and_login(
+            request, full_name, phone, phone_confirm, password, parent_approval,
+            ref_child_identifier=ref_child_identifier  
+        )
+        if err:
+            messages.error(request, err)
+        else:
+            messages.success(request, "נרשמת בהצלחה! נוצר לך חשבון זמני.")
+            return redirect("childApp:child_home")
+
+
+    return render(request, "childApp/signup/temp_signup.html")

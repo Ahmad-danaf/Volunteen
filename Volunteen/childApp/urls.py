@@ -5,6 +5,7 @@ app_name='childApp'
 
 urlpatterns = [
     path('inactive/<int:child_id>/', child_views.inactive_home, name='inactive_home'),
+    path("inactive/<int:child_id>/trial/", child_views.start_trial, name="start_trial"),
     path('home/', child_views.child_home, name='child_home'),  # Child home page
     
     path('redemption-history/', child_views.child_redemption_history, name='child_redemption_history'),
@@ -41,4 +42,7 @@ urlpatterns = [
     path("campaigns/<int:pk>/", child_views.CampaignDetailView.as_view(), name="child-campaign-detail"),
     path("campaigns/<int:pk>/join", child_views.join_campaign_view, name="child-campaign-join"),
     path("campaigns/<int:pk>/leave", child_views.leave_campaign_view, name="child-campaign-leave"),
+
+    path('user-campaign/signup/', child_views.child_signup, name='child_signup'),
+    path("invite-qr/",child_views.child_invite_qr,name="child_invite_qr"),
 ]

@@ -135,6 +135,18 @@
     <a class="cta-button" target="_blank" href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20">
         ✨ לחדש מנוי ✨
     </a>
+    {% if can_start_trial %}
+      <form action="{% url 'childApp:start_trial' child.id %}" method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="cta-button" style="background-color:#4caf50;">
+          🚀 התחל תקופת ניסיון ל־7 ימים 🚀
+        </button>
+      </form>
+    {% elif child.has_active_trial %}
+      <div class="subheader" style="margin-top:20px;">
+        🎉 הניסיון שלך בתוקף עד {{ child.trial_end }}
+      </div>
+    {% endif %}
 
 
     <!-- Additional Navigation Buttons -->

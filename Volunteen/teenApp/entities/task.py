@@ -10,7 +10,17 @@ class TaskProofRequirement(models.TextChoices):
     AUTO_ACCEPT_CHECKOUT = "auto_checkout", "מאושר אוטומטית אחרי Check-out"
     NO_PROOF_REQUIRED = "none", "ללא צורך בהעלאת תמונה  "
 
+class TaskGroup(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    slug = models.SlugField(max_length=140, unique=True, db_index=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ["name"]
 
+    def __str__(self):
+        return self.name
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name='Title')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)
@@ -41,6 +51,13 @@ class Task(models.Model):
         verbose_name="דרישת הוכחה",
         help_text="בחר את סוג ההוכחה הנדרשת מהחניך",
     )
+    groups = models.ManyToManyField(
+        "teenApp.TaskGroup",
+        related_name="tasks",
+        blank=True,
+        help_text="Attach this task to one or more logical groups (e.g., 'for-new-users')."
+    )
+    created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     def __str__(self):
         return self.title
 

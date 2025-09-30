@@ -87,15 +87,28 @@
     <span class="progress-bar-text">{{ progress_percent|floatformat:0 }}%</span>
 </div>
 
-<button onclick="showSecretCode()" class="secret-code-button">
-    <i class="fas fa-key"></i> הצג קוד סודי
-</button>
-<div id="secretCodeModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <p><strong>קוד סודי שלי: </strong> {{ child.secret_code }}</p>
-    </div>
+<div class="qr-center-row">
+  <button type="button" class="secret-code-button" onclick="openQRModal()">
+    <i class="fas fa-qrcode" aria-hidden="true"></i>
+    הצג קוד QR 📱
+  </button>
 </div>
+
+<!-- QR Modal -->
+<div id="qrModal" class="qr-modal" aria-hidden="true" role="dialog" aria-labelledby="qrModalTitle">
+  <div class="qr-modal__content">
+    <button class="qr-modal__close" type="button" aria-label="סגור" onclick="closeQRModal()">&times;</button>
+    <h3 id="qrModalTitle" class="qr-modal__title">סרקו את הקוד והצטרפו למשחק! 🎮</h3>
+
+    <img
+      src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data={{ referral_url|urlencode }}"
+      alt="קוד QR להזמנה"
+      class="qr-modal__img"
+      width="280" height="280"
+    />
+  </div>
+</div>
+
 
 {% if new_tasks_count > 0 %}
 <div id="newTaskNotification" class="notification">
@@ -152,7 +165,10 @@
         <i class="fas fa-donate"></i>
         <span>קיר התרומות</span>
     </a>
-    
+    <a href="{% url 'childApp:child_invite_qr' %}" class="nav-button" style="background-color: #ff7a18;">
+        <i class="fas fa-user-friends"></i>
+        <span>הזמן חברים</span>
+    </a>
     <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-map-marker-alt"></i>
         <span>צ'ק אין/אאוט</span>
@@ -335,6 +351,26 @@ function getRandomColor() {
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 }
+</script>
+<script>
+function openQRModal(){
+  var m=document.getElementById('qrModal');
+  if(m) m.style.display='block';
+}
+function closeQRModal(){
+  var m=document.getElementById('qrModal');
+  if(m) m.style.display='none';
+}
+// close on backdrop click
+document.addEventListener('click',function(e){
+  var m=document.getElementById('qrModal');
+  if(!m) return;
+  if(e.target===m) closeQRModal();
+});
+// close on ESC
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeQRModal();
+});
 </script>
 
 <style>
@@ -973,5 +1009,35 @@ body {
 .streak-card::before{
   pointer-events:none; 
 }
+/* Button centered */
+.qr-btn{
+  display:inline-flex;align-items:center;gap:.5rem;justify-content:center;
+  background:#ff7a18;color:#fff;border:0;border-radius:12px;
+  padding:.65rem 1rem;font-weight:700;cursor:pointer;
+
+}
+
+/* Modal backdrop */
+.qr-modal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000
+}
+
+/* Modal card */
+.qr-modal__content{
+  position:relative;width:92vw;max-width:420px;margin:8vh auto 0;
+  background:#fff;border-radius:16px;padding:16px 16px 20px;
+  box-shadow:0 20px 50px rgba(0,0,0,.28);text-align:center
+}
+
+/* Close button */
+.qr-modal__close{
+  position:absolute;top:8px;left:12px;background:transparent;border:0;
+  font-size:26px;line-height:1;cursor:pointer;color:#666
+}
+
+.qr-modal__title{margin:4px 0 10px;color:#222;font-size:1.05rem}
+.qr-modal__img{display:block;margin:0 auto;border-radius:12px}
+
 </style>
+
 {% endblock extra_scripts %}

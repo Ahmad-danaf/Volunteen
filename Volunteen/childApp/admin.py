@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Medal, StreakMilestoneAchieved,ChildBan
+from .models import Medal, StreakMilestoneAchieved,ChildBan,ChildReferral
 from django.utils import timezone
 from django.db import models
 
@@ -103,3 +103,10 @@ class ChildBanAdmin(admin.ModelAdmin):
         if not obj.pk:  # New ban being created
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
+        
+        
+@admin.register(ChildReferral)
+class ChildReferralAdmin(admin.ModelAdmin):
+    list_display = ("referred_child", "referrer", "created_at")
+    search_fields = ("referred_child__name", "referrer__name")  # adjust field names as needed
+    list_filter = ("created_at",)

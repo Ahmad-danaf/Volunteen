@@ -1,19 +1,24 @@
+import csv
+from datetime import datetime, timedelta
+from typing import List
+
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from managementApp.decorators import superadmin_required
+from django.http import HttpResponse
 from django.views import View
-from typing import List
 from django.utils.decorators import method_decorator
 from django.db import transaction
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.utils.timezone import localdate
 from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 
 from managementApp.forms.superAdmin import ProofBulkForm
 from institutionApp.models import Institution
 from mentorApp.models import Mentor
-from childApp.models import Child, ChildBan,BanScope,DEFAULT_BAN_NOTES
+from childApp.models import Child, ChildBan,BanScope,DEFAULT_BAN_NOTES,ChildReferral
 from teenApp.entities import TaskProofRequirement
 from managementApp.utils.superadmin import *
 from managementApp.decorators import superadmin_required
@@ -357,3 +362,92 @@ class SuperadminBanCreateView(View):
             messages.warning(request, f"דלגנו על חסימות עבור: {sample}{suffix} — קיימת כבר חסימה פעילה לאותו תחום.")
 
         return redirect(reverse("managementApp:superadmin_bans_dashboard"))
+    
+    
+@method_decorator(superadmin_required, name="dispatch")
+class SuperadminReferralDashboardView(View):
+    template_name = "superadmin/referrals/dashboard.html"
+
+    def get(self, request):
+        # filters
+        q          = (request.GET.get("q") or "").strip()
+        city       = (request.GET.get("city") or "").strip()
+        date_from  = (request.GET.get("date_from") or "").strip()
+        date_to    = (request.GET.get("date_to") or "").strip()
+
+        df = datetime.fromisoformat(date_from) if date_from else None
+        dt = datetime.fromisoformat(date_to) if date_to else None
+
+        qs = ReferralQueryUtils.filtered_qs(date_from=df, date_to=dt, city=city, q=q)
+
+        kpis = ReferralQueryUtils.kpis(qs)
+        top_referrers = ReferralQueryUtils.top_referrers(qs, limit=20)
+        timeseries = ReferralQueryUtils.timeseries_by_day(qs)
+        city_breakdown = ReferralQueryUtils.city_breakdown(qs)
+
+        # latest referrals (paginated)
+        paginator = Paginator(qs, 20)
+        page_obj = paginator.get_page(request.GET.get("page") or 1)
+        today = localdate()
+        week_start = today - timedelta(days=today.weekday())  # Monday
+        month_start = today.replace(day=1)
+        year_start = today.replace(month=1, day=1)
+        context = {
+            "filters": {
+                "q": q, "city": city,
+                "date_from": date_from, "date_to": date_to,
+            },
+            "kpis": kpis,
+            "top_referrers": list(top_referrers),
+            "timeseries": list(timeseries),
+            "city_breakdown": list(city_breakdown),
+            "page_obj": page_obj,
+            "today": today,
+            "week_start": week_start,
+            "month_start": month_start,
+            "year_start": year_start,
+        }
+        return render(request, self.template_name, context)
+
+
+@method_decorator(superadmin_required, name="dispatch")
+class SuperadminReferralCSVExportView(View):
+    """
+    Exports the current filtered result-set as CSV
+    Columns: created_at, referred_child_identifier, referrer_identifier, referred_child_name, referrer_name, city
+    """
+    def get(self, request):
+        q          = (request.GET.get("q") or "").strip()
+        city       = (request.GET.get("city") or "").strip()
+        date_from  = (request.GET.get("date_from") or "").strip()
+        date_to    = (request.GET.get("date_to") or "").strip()
+
+        df = datetime.fromisoformat(date_from) if date_from else None
+        dt = datetime.fromisoformat(date_to) if date_to else None
+
+        qs = ReferralQueryUtils.filtered_qs(date_from=df, date_to=dt, city=city, q=q)
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = "attachment; filename=volunteen_referrals.csv"
+        writer = csv.writer(response)
+        writer.writerow([
+            "created_at",
+            "referred_child_identifier",
+            "referred_child_name",
+            "referrer_identifier",
+            "referrer_name",
+            "referred_city",
+        ])
+
+        for r in qs.iterator():
+            rc = r.referred_child
+            rf = r.referrer
+            writer.writerow([
+                r.created_at.isoformat(timespec="seconds"),
+                getattr(rc, "identifier", ""),
+                f"{getattr(rc.user, 'first_name', '')} {getattr(rc.user, 'last_name', '')}".strip(),
+                getattr(rf, "identifier", "") if rf else "",
+                (f"{getattr(rf.user, 'first_name', '')} {getattr(rf.user, 'last_name', '')}".strip() if rf else ""),
+                getattr(rc, "city", ""),
+            ])
+        return response

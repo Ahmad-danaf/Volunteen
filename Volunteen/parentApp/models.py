@@ -87,14 +87,25 @@ class ChildSubscription(models.Model):
         Check if the subscription is currently active
         and not past its end_date.
         """
+        if self.child.has_active_trial():
+            return True
         if self.status != ChildSubscription.Status.ACTIVE:
             return False
         return self.end_date >= timezone.now().date()
     def days_left(self) -> int:
         """
-        How many days remain until end_date?
+        How many days remain until end_date or trial_end?
         """
-        return (self.end_date - timezone.now().date()).days
+        today = timezone.now().date()
+        # If child has active trial
+        if self.child.has_active_trial():
+            return (self.child.trial_end - today).days
+
+        # If regular subscription
+        if self.status == ChildSubscription.Status.ACTIVE:
+            return (self.end_date - today).days
+
+        return 0
 
     def can_show_expiration_warning(self, days_threshold: int = 7) -> bool:
         """

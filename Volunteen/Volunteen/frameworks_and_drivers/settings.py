@@ -100,7 +100,7 @@ template_name='two_factor/login.html'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'teenApp', 'templates')],  # נתיב לתיקיית התבניות
+        'DIRS': [os.path.join(BASE_DIR, 'teenApp', 'templates')],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -165,7 +165,13 @@ USE_I18N = True
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1','https://www.volunteen.site', 'http://localhost']
 
+# Sessions config
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year in seconds
+SESSION_SAVE_EVERY_REQUEST = True
 
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 

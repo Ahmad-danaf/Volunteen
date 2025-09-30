@@ -37,5 +37,7 @@ urlpatterns = [
     path("superadmin/proof-options/", views.SuperadminProofOptionsView.as_view(), name="superadmin_proof_options"),
     path("superadmin/bans/", views.SuperadminBansDashboardView.as_view(), name="superadmin_bans_dashboard"),
     path("superadmin/bans/create/", views.SuperadminBanCreateView.as_view(), name="superadmin_bans_create"),
+    path("superadmin/referrals/", views.SuperadminReferralDashboardView.as_view(),name="superadmin_referrals_dashboard"),
+    path("superadmin/referrals/export.csv", views.SuperadminReferralCSVExportView.as_view(),name="superadmin_referrals_export"),
 
 ]
