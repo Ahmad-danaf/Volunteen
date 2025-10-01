@@ -42,6 +42,7 @@ from childApp.utils.child_task_manager import ChildTaskManager
 from childApp.utils.ChildRedemptionManager import ChildRedemptionManager
 from childApp.utils.LeaderboardUtils import LeaderboardUtils
 from teenApp.utils.TaskManagerUtils import TaskManagerUtils
+from teenApp.utils.NotificationManager import NotificationManager
 from childApp.utils.check_in_out_utils import process_check_in, process_check_out
 from childApp.utils.child_level_management import calculate_total_points
 from childApp.utils.campaign.TempUserCampaignUtils import TempUserCampaignUtils
@@ -1038,22 +1039,71 @@ def child_invite_qr(request):
 
 
 def child_signup(request):
+    ctx = {
+        "full_name": "",
+        "phone": "",
+        "phone_confirm": "",
+        "parent_approval": False,
+        "code_step": False,
+        "cooldown_seconds": 60,
+    }
+
     if request.method == "POST":
         full_name = request.POST.get("full_name", "").strip()
         password = request.POST.get("password", "")
         phone = request.POST.get("phone", "").strip()
         phone_confirm = request.POST.get("phone_confirm", "").strip()
         parent_approval = request.POST.get("parent_approval") == "on"
+        verification_code = request.POST.get("verification_code", "").strip()
         ref_child_identifier = request.GET.get("ref_child")
+        resend = request.POST.get("resend") == "1"
+        step_two_flag = request.POST.get("code_step") #"1" in step 2
+        ctx.update({
+            "full_name": full_name,
+            "phone": phone,
+            "phone_confirm": phone_confirm,
+            "parent_approval": parent_approval,
+            "password": password,
+        })
+
+        if resend:
+            ok, msg = TempUserCampaignUtils.precheck(full_name, phone, phone_confirm, password, parent_approval)
+            if not ok:
+                messages.error(request, msg)
+                return render(request, "childApp/signup/temp_signup.html", ctx)
+
+            NotificationManager.send_verification_code(phone)
+            messages.info(request, "שלחנו שוב קוד אימות ב־WhatsApp 📲")
+            ctx["code_step"] = True
+            return render(request, "childApp/signup/temp_signup.html", ctx)
+
+        if not verification_code and not step_two_flag:
+            ok, msg = TempUserCampaignUtils.precheck(full_name, phone, phone_confirm, password, parent_approval)
+            if not ok:
+                messages.error(request, msg)
+                return render(request, "childApp/signup/temp_signup.html", ctx)
+
+            NotificationManager.send_verification_code(phone)
+            messages.info(request, "קוד אימות נשלח אליך ב־WhatsApp 📲")
+            ctx["code_step"] = True
+            return render(request, "childApp/signup/temp_signup.html", ctx)
+
+        if not NotificationManager.verify_code(phone, verification_code):
+            messages.error(request, "קוד האימות שגוי או שפג תוקפו ❌")
+            ctx["code_step"] = True
+            return render(request, "childApp/signup/temp_signup.html", ctx)
+
         child, err = TempUserCampaignUtils.register_and_login(
             request, full_name, phone, phone_confirm, password, parent_approval,
-            ref_child_identifier=ref_child_identifier  
+            ref_child_identifier=ref_child_identifier
         )
         if err:
             messages.error(request, err)
-        else:
-            messages.success(request, "נרשמת בהצלחה! נוצר לך חשבון זמני.")
-            return redirect("childApp:child_home")
+            ctx["code_step"] = True 
+            return render(request, "childApp/signup/temp_signup.html", ctx)
 
+        messages.success(request, "נרשמת בהצלחה! נוצר לך חשבון זמני ✅")
+        return redirect("childApp:child_home")
 
-    return render(request, "childApp/signup/temp_signup.html")
+    # GET
+    return render(request, "childApp/signup/temp_signup.html", ctx)

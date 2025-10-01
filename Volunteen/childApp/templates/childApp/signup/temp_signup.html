@@ -28,55 +28,23 @@
     }
   }
 </script>
-<!-- Custom styles for RTL and additional effects -->
 <style>
-  /* Gradient backgrounds */
   .gradient-orange-blue {
     background: linear-gradient(135deg, #ff7a18 0%, #ffab6b 50%, #1a7cf0 100%);
   }
-  
-  .gradient-orange {
-    background: linear-gradient(135deg, #ff7a18 0%, #ffab6b 100%);
-  }
-  
-  /* Glassmorphism effect */
   .glass {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
-  
-  /* Animated background shapes */
-  .shape-1 {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background: linear-gradient(45deg, rgba(255, 122, 24, 0.3), rgba(26, 124, 240, 0.2));
-    border-radius: 50%;
-    filter: blur(40px);
+  .shape-1, .shape-2 {
+    position: absolute; border-radius: 50%; filter: blur(40px);
     animation: float 4s ease-in-out infinite;
   }
-  
-  .shape-2 {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    background: linear-gradient(45deg, rgba(26, 124, 240, 0.3), rgba(255, 171, 107, 0.2));
-    border-radius: 50%;
-    filter: blur(40px);
-    animation: float 4s ease-in-out infinite reverse;
-  }
-  
-  /* Input focus effects */
-  .input-glow:focus {
-    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.2), 0 0 20px rgba(255, 122, 24, 0.1);
-  }
-  
-  /* Checkbox custom styling */
-  .custom-checkbox:checked {
-    background-color: #ff7a18;
-    border-color: #ff7a18;
-  }
+  .shape-1 { width: 200px; height: 200px; background: linear-gradient(45deg, rgba(255,122,24,.3), rgba(26,124,240,.2)); }
+  .shape-2 { width: 150px; height: 150px; background: linear-gradient(45deg, rgba(26,124,240,.3), rgba(255,171,107,.2)); animation-direction: reverse; }
+  .input-glow:focus { box-shadow: 0 0 0 3px rgba(255,122,24,.2), 0 0 20px rgba(255,122,24,.1); }
+  .custom-checkbox:checked { background-color: #ff7a18; border-color: #ff7a18; }
 </style>
 {% endblock %}
 
@@ -84,203 +52,204 @@
 
 {% block content %}
 <div lang="he" dir="rtl" class="min-h-screen gradient-orange-blue relative overflow-hidden">
-  <!-- Animated background shapes -->
   <div class="shape-1 top-10 left-10"></div>
   <div class="shape-2 bottom-20 right-10"></div>
-  <div class="shape-1 top-1/2 right-1/3 animation-delay-2000"></div>
-  
+  <div class="shape-1 top-1/2 right-1/3"></div>
+
   <div class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
-    <!-- Logo/Hero Section -->
-    <div class="mb-8 text-center animate-fade-in">
+    <!-- Hero -->
+    <div class="mb-8 text-center">
       <div class="inline-flex items-center justify-center w-20 h-20 mb-4 bg-white rounded-full shadow-lg animate-float">
         <span class="text-4xl">🌟</span>
       </div>
       <h1 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">Volunteen</h1>
       <p class="text-xl text-white/90 font-medium">הצטרף לקהילה שלנו! 🚀</p>
     </div>
-    
-    <!-- Messages Display -->
+
+    <!-- Django Messages -->
     {% if messages %}
     <div class="w-full max-w-md mb-4 space-y-2">
       {% for message in messages %}
       <div x-data="{ show: true }" x-show="show" x-transition
-           class="glass rounded-xl p-4 shadow-lg border border-white/20 
-                  {% if message.tags == 'error' %}bg-red-50/90 text-red-700 border-red-200/50
-                  {% elif message.tags == 'success' %}bg-green-50/90 text-green-700 border-green-200/50
-                  {% else %}bg-blue-50/90 text-blue-700 border-blue-200/50{% endif %}">
+           class="glass rounded-xl p-4 shadow-lg border
+           {% if message.tags == 'error' %} bg-red-50/90 text-red-700 border-red-200/50
+           {% elif message.tags == 'success' %} bg-green-50/90 text-green-700 border-green-200/50
+           {% else %} bg-blue-50/90 text-blue-700 border-blue-200/50 {% endif %}">
         <div class="flex items-center justify-between">
           <span class="flex-1">{{ message }}</span>
-          <button @click="show = false" class="mr-2 text-xl hover:opacity-70 transition-opacity">×</button>
+          <button @click="show = false" class="mr-2 text-xl hover:opacity-70">×</button>
         </div>
       </div>
       {% endfor %}
     </div>
     {% endif %}
-    
-    <!-- Signup Form -->
+
+    <!-- Form -->
     <div class="w-full max-w-md">
-      <form method="POST" action="" x-data="{ 
-        fullName: '{{ request.POST.full_name|default:'' }}',
-        password: '',
-        phone: '{{ request.POST.phone|default:'' }}',
-        phoneConfirm: '{{ request.POST.phone_confirm|default:'' }}',
-        parentApproval: false,
-        showPassword: false,
-        phoneMatch: true,
-        checkPhoneMatch() {
-          this.phoneMatch = this.phone === '' || this.phoneConfirm === '' || this.phone === this.phoneConfirm;
-        }
-      }" class="glass rounded-2xl p-6 shadow-2xl border border-white/30">
+      <form method="POST" action=""
+            x-data="signupState({
+              initialFullName: '{{ full_name|default_if_none:''|escapejs }}',
+              initialPhone: '{{ phone|default_if_none:''|escapejs }}',
+              initialPhoneConfirm: '{{ phone_confirm|default_if_none:''|escapejs }}',
+              initialParentApproval: {{ parent_approval|yesno:"true,false" }},
+              initialPassword: '{{ password|default_if_none:''|escapejs }}',
+              stepTwo: {{ code_step|yesno:"true,false" }},
+              cooldownDefault: {{ cooldown_seconds|default:60 }}
+            })"
+            class="glass rounded-2xl p-6 shadow-2xl border border-white/30">
+
         {% csrf_token %}
-        
-        <!-- Full Name Field -->
-        <div class="mb-6">
-          <label for="full_name" class="block text-gray-700 font-bold mb-2 text-sm">
-            שם מלא 
-            <span class="text-volunteen-orange">*</span>
-          </label>
-          <div class="relative">
-            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl">👤</span>
-            <input 
-              type="text" 
-              id="full_name" 
-              name="full_name" 
-              x-model="fullName"
-              required 
-              placeholder="הכנס את שמך המלא"
-              class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange 
-                     input-glow transition-all duration-300 text-gray-700 bg-white/80"
-            />
+
+        <!-- STEP 1 (only before code is sent) -->
+        <template x-if="!stepTwo">
+          <div>
+            <!-- Full Name -->
+            <div class="mb-6">
+              <label for="full_name" class="block text-gray-700 font-bold mb-2 text-sm">
+                שם מלא <span class="text-volunteen-orange">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">👤</span>
+                <input type="text" id="full_name" name="full_name" x-model="fullName" required
+                       placeholder="הכנס את שמך המלא"
+                       class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-6">
+              <label for="password" class="block text-gray-700 font-bold mb-2 text-sm">
+                סיסמה <span class="text-volunteen-orange">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">🔐</span>
+                <input :type="showPassword ? 'text' : 'password'" id="password" name="password" x-model="password" required
+                       placeholder="בחר סיסמה חזקה"
+                       class="w-full pr-12 pl-12 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
+                <button type="button" @click="showPassword = !showPassword"
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                  <span x-text="showPassword ? '👁️' : '👁️‍🗨️'"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="mb-6">
+              <label for="phone" class="block text-gray-700 font-bold mb-2 text-sm">
+                מספר טלפון <span class="text-volunteen-orange">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">📱</span>
+                <input type="tel" id="phone" name="phone" x-model="phone" @input="checkPhoneMatch()" required
+                       placeholder="0501234567" pattern="\d{10}"
+                       class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
+              </div>
+            </div>
+
+            <!-- Phone Confirm -->
+            <div class="mb-6">
+              <label for="phone_confirm" class="block text-gray-700 font-bold mb-2 text-sm">
+                אימות מספר טלפון <span class="text-volunteen-orange">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">✅</span>
+                <input type="tel" id="phone_confirm" name="phone_confirm" x-model="phoneConfirm" @input="checkPhoneMatch()" required
+                       placeholder="הכנס שוב את מספר הטלפון" pattern="\d{10}"
+                       :class="{'border-red-400': !phoneMatch && phoneConfirm !== ''}"
+                       class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
+              </div>
+              <p x-show="!phoneMatch && phoneConfirm !== ''" x-transition class="text-red-500 text-sm mt-1">המספרים אינם תואמים</p>
+            </div>
+
+            <!-- Parent Approval -->
+            <div class="mb-8">
+              <label class="flex items-center cursor-pointer group">
+                <input type="checkbox" id="parent_approval" name="parent_approval" x-model="parentApproval" required
+                       class="custom-checkbox w-5 h-5 rounded border-2 border-gray-300 text-volunteen-orange focus:ring-volunteen-orange focus:ring-2 ml-3" />
+                <span class="text-gray-700 text-sm group-hover:text-gray-900 transition-colors">
+                  אני מאשר/ת שקיבלתי את הסכמת ההורים שלי
+                  <a href="https://drive.google.com/file/d/1X9wvdsyQE6amNxqKOC1k805hZvK4DyuX/view?usp=sharing"
+                     class="text-volunteen-blue hover:underline font-bold">(קרא את ההסכם)</a>
+                </span>
+              </label>
+            </div>
           </div>
-        </div>
-        
-        <!-- Password Field -->
-        <div class="mb-6">
-          <label for="password" class="block text-gray-700 font-bold mb-2 text-sm">
-            סיסמה 
-            <span class="text-volunteen-orange">*</span>
-          </label>
-          <div class="relative">
-            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl">🔐</span>
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password" 
-              name="password" 
-              x-model="password"
-              required 
-              placeholder="בחר סיסמה חזקה"
-              class="w-full pr-12 pl-12 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange 
-                     input-glow transition-all duration-300 text-gray-700 bg-white/80"
-            />
-            <button type="button" @click="showPassword = !showPassword" 
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
-              <span x-text="showPassword ? '👁️' : '👁️‍🗨️'"></span>
-            </button>
+        </template>
+
+        <!-- STEP 2 (after code is sent) -->
+        <template x-if="stepTwo">
+          <div>
+            <!-- hidden step marker -->
+            <input type="hidden" name="code_step" value="1">
+            <!-- carry-over values -->
+            <input type="hidden" name="full_name" :value="fullName">
+            <input type="hidden" name="password" :value="password">
+            <input type="hidden" name="phone" :value="phone">
+            <input type="hidden" name="phone_confirm" :value="phoneConfirm">
+            <input type="hidden" name="parent_approval" :value="parentApproval ? 'on' : ''">
+
+            <!-- review card -->
+            <div class="mb-6 glass rounded-xl p-4 border border-white/30">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <div class="text-sm text-gray-500">שם מלא</div>
+                  <div class="font-semibold text-gray-800" x-text="fullName"></div>
+                </div>
+                <div class="text-left">
+                  <div class="text-sm text-gray-500">טלפון</div>
+                  <div class="font-semibold text-gray-800"
+                       x-text="phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3')"></div>
+                </div>
+              </div>
+              <div class="mt-2 text-sm text-gray-600">✅ אישור הורים התקבל</div>
+
+          
+            </div>
+
+            <!-- verification code -->
+            <div class="mb-6">
+              <label for="verification_code" class="block text-gray-700 font-bold mb-2 text-sm">
+                קוד אימות שנשלח ב־WhatsApp <span class="text-volunteen-orange">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">💬</span>
+                <input type="text" inputmode="numeric" pattern="\d{4,8}"
+                       id="verification_code" name="verification_code" x-model="verificationCode"
+                       :required="stepTwo" :disabled="!stepTwo"
+                       placeholder="הכנס את הקוד שקיבלת (6 ספרות)"
+                       class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <!-- Phone Field -->
-        <div class="mb-6">
-          <label for="phone" class="block text-gray-700 font-bold mb-2 text-sm">
-            מספר טלפון 
-            <span class="text-volunteen-orange">*</span>
-          </label>
-          <div class="relative">
-            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl">📱</span>
-            <input 
-              type="tel" 
-              id="phone" 
-              name="phone" 
-              x-model="phone"
-              @input="checkPhoneMatch()"
-              required 
-              placeholder="0501234567"
-              pattern="\d{10}"
-              class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange 
-                     input-glow transition-all duration-300 text-gray-700 bg-white/80"
-            />
-          </div>
-        </div>
-        
-        <!-- Phone Confirmation Field -->
-        <div class="mb-6">
-          <label for="phone_confirm" class="block text-gray-700 font-bold mb-2 text-sm">
-            אימות מספר טלפון 
-            <span class="text-volunteen-orange">*</span>
-          </label>
-          <div class="relative">
-            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl">✅</span>
-            <input 
-              type="tel" 
-              id="phone_confirm" 
-              name="phone_confirm" 
-              x-model="phoneConfirm"
-              @input="checkPhoneMatch()"
-              required 
-              placeholder="הכנס שוב את מספר הטלפון"
-              pattern="\d{10}"
-              :class="{'border-red-400': !phoneMatch && phoneConfirm !== ''}"
-              class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange 
-                     input-glow transition-all duration-300 text-gray-700 bg-white/80"
-            />
-          </div>
-          <p x-show="!phoneMatch && phoneConfirm !== ''" 
-             x-transition
-             class="text-red-500 text-sm mt-1">המספרים אינם תואמים</p>
-        </div>
-        
-        <!-- Parent Approval Checkbox -->
-        <div class="mb-8">
-          <label class="flex items-center cursor-pointer group">
-            <input 
-              type="checkbox" 
-              id="parent_approval" 
-              name="parent_approval"
-              x-model="parentApproval"
-              required
-              class="custom-checkbox w-5 h-5 rounded border-2 border-gray-300 text-volunteen-orange 
-                     focus:ring-volunteen-orange focus:ring-2 ml-3"
-            />
-            <span class="text-gray-700 text-sm group-hover:text-gray-900 transition-colors">
-              אני מאשר/ת שקיבלתי את הסכמת ההורים שלי
-              <a href="https://drive.google.com/file/d/1X9wvdsyQE6amNxqKOC1k805hZvK4DyuX/view?usp=sharing" class="text-volunteen-blue hover:underline font-bold">
-                (קרא את ההסכם)
-              </a>
-            </span>
-          </label>
-        </div>
-        
-        <!-- Submit Button -->
-        <button 
-          type="submit"
-          :disabled="!phoneMatch || !parentApproval"
-          :class="{'opacity-50 cursor-not-allowed': !phoneMatch || !parentApproval}"
-          class="w-full py-4 gradient-orange-blue text-white font-bold text-lg rounded-xl 
-                 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 
-                 disabled:transform-none disabled:hover:shadow-lg"
-        >
+        </template>
+
+        <!-- Primary CTA -->
+        <button type="submit"
+                :disabled="!canSubmit"
+                :class="{'opacity-50 cursor-not-allowed': !canSubmit}"
+                class="w-full py-4 gradient-orange-blue text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:transform-none">
           <span class="flex items-center justify-center">
-            הירשם עכשיו
+            <span x-text="stepTwo ? 'סיום הרשמה' : 'שלח קוד אימות'"></span>
             <span class="mr-2 text-2xl animate-pulse-slow">🎉</span>
           </span>
         </button>
       </form>
-      
-      <!-- Login Link -->
+
+      <!-- Login link -->
       <div class="text-center mt-6">
         <p class="text-white/90">
-          כבר רשום? 
-          <a href="{% url 'teenApp:login' %}" 
+          כבר רשום?
+          <a href="{% url 'teenApp:login' %}"
              class="text-white font-bold hover:text-volunteen-blue-light transition-colors underline">
             התחבר כאן
           </a>
         </p>
       </div>
-      
-      <!-- Fun Footer Elements -->
+
+      <!-- Fun footer -->
       <div class="flex justify-center mt-8 space-x-4 space-x-reverse">
         <span class="text-3xl animate-float" style="animation-delay: 0s">🌈</span>
-        <span class="text-3xl animate-float" style="animation-delay: 0.5s">✨</span>
+        <span class="text-3xl animate-float" style="animation-delay: .5s">✨</span>
         <span class="text-3xl animate-float" style="animation-delay: 1s">🎈</span>
         <span class="text-3xl animate-float" style="animation-delay: 1.5s">🌟</span>
       </div>
@@ -288,66 +257,85 @@
   </div>
 </div>
 
+<!-- Client-side helpers -->
 <script>
-  // Form validation and prechecks
+  // Minimal progressive enhancement: enforce phone format on step 1 only
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
-    const phoneInput = document.getElementById('phone');
-    const phoneConfirmInput = document.getElementById('phone_confirm');
-    
-    // enforce digits only and max length 10
-    function enforcePhoneFormat(e) {
-      let value = e.target.value.replace(/\D/g, ''); // keep only digits
-      value = value.slice(0, 10); // max 10 digits
-      e.target.value = value;
-    }
 
-    phoneInput.addEventListener('input', enforcePhoneFormat);
-    phoneConfirmInput.addEventListener('input', enforcePhoneFormat);
-    
-    // Form submission prechecks
     form.addEventListener('submit', function(e) {
-      const fullName = document.getElementById('full_name').value.trim();
-      const hasTwoNames= fullName.split(/\s+/).filter(Boolean).length >= 2;
-      const password = document.getElementById('password').value;
-      const phone = phoneInput.value;
-      const phoneConfirm = phoneConfirmInput.value;
-      const parentApproval = document.getElementById('parent_approval').checked;
-      
-      // Validate full name
-      if (fullName.length < 2) {
-        e.preventDefault();
-        alert('נא להכניס שם מלא תקין');
-        return false;
-      }
+      // If step 2 marker exists, skip step 1 checks
+      if (form.querySelector('input[name="code_step"]')) return;
 
-      if (!hasTwoNames) {
-        e.preventDefault();
-        alert('נא להכניס שם פרטי ושם משפחה');
-        return false;
-      }
-      
-      // Validate password
-      if (password.length < 6) {
-        e.preventDefault();
-        alert('הסיסמה חייבת להכיל לפחות 6 תווים');
-        return false;
-      }
-      
-      // Validate phone match
-      if (phone !== phoneConfirm) {
-        e.preventDefault();
-        alert('מספרי הטלפון אינם תואמים');
-        return false;
-      }
-      
-      // Validate parent approval
-      if (!parentApproval) {
-        e.preventDefault();
-        alert('יש לאשר קבלת הסכמת הורים');
-        return false;
-      }
+      const fullNameEl = document.getElementById('full_name');
+      const phoneEl = document.getElementById('phone');
+      const phoneConfirmEl = document.getElementById('phone_confirm');
+      const parentEl = document.getElementById('parent_approval');
+      const password = document.getElementById('password')?.value || '';
+
+      const fullName = (fullNameEl?.value || '').trim();
+      const hasTwoNames = fullName.split(/\s+/).filter(Boolean).length >= 2;
+      const phone = phoneEl?.value || '';
+      const phoneConfirm = phoneConfirmEl?.value || '';
+      const parentApproval = parentEl?.checked;
+
+      if (fullName.length < 2) { e.preventDefault(); alert('נא להכניס שם מלא תקין'); return; }
+      if (!hasTwoNames) { e.preventDefault(); alert('נא להכניס שם פרטי ושם משפחה'); return; }
+      if (password.length < 6) { e.preventDefault(); alert('הסיסמה חייבת להכיל לפחות 6 תווים'); return; }
+      if (phone !== phoneConfirm) { e.preventDefault(); alert('מספרי הטלפון אינם תואמים'); return; }
+      if (!parentApproval) { e.preventDefault(); alert('יש לאשר קבלת הסכמת הורים'); return; }
     });
   });
+
+  function signupState({ initialFullName, initialPhone, initialPhoneConfirm, initialParentApproval, initialPassword, stepTwo, cooldownDefault }) {
+    return {
+      // state
+      fullName: initialFullName || '',
+      phone: initialPhone || '',
+      phoneConfirm: initialPhoneConfirm || '',
+      parentApproval: !!initialParentApproval,
+      password: initialPassword || '',
+      showPassword: false,
+      phoneMatch: true,
+      stepTwo: !!stepTwo,
+      verificationCode: '',
+      cooldownDefault: Number(cooldownDefault || 60),
+      cooldown: Number(cooldownDefault || 60),
+
+      // computed
+      get canSubmit() {
+        if (!this.stepTwo) {
+          return (
+            this.fullName.trim().split(/\s+/).filter(Boolean).length >= 2 &&
+            this.password.length >= 6 &&
+            this.phoneMatch && this.phone.length === 10 &&
+            this.parentApproval
+          );
+        }
+        return this.verificationCode.trim().length >= 4;
+      },
+
+      // methods
+      checkPhoneMatch() {
+        this.phone = (this.phone || '').replace(/\D/g, '').slice(0, 10);
+        this.phoneConfirm = (this.phoneConfirm || '').replace(/\D/g, '').slice(0, 10);
+        this.phoneMatch = !this.phone || !this.phoneConfirm || this.phone === this.phoneConfirm;
+      },
+      tickTimer() {
+        if (!this.stepTwo || this.cooldown <= 0) return;
+        this.cooldown -= 1;
+        if (this.cooldown > 0) setTimeout(() => this.tickTimer(), 1000);
+      },
+      prepareResend() {
+        if (this.cooldown === 0) {
+          this.cooldown = this.cooldownDefault;
+          setTimeout(() => this.tickTimer(), 1000);
+        }
+      },
+      init() {
+        if (this.stepTwo) setTimeout(() => this.tickTimer(), 1000);
+      }
+    }
+  }
 </script>
 {% endblock %}

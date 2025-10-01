@@ -58,8 +58,47 @@ class Child(models.Model):
         """
         if self.trial_end:
             return False
+        from managementApp.utils.CampaignManagerUtils import CampaignManagerUtils
+        from childApp.utils.campaign.TempUserCampaignUtils import TempUserCampaignUtils
+        from teenApp.utils.NotificationManager import NotificationManager
+        
         self.trial_end = timezone.now().date() + timedelta(days=days)
-        self.save(update_fields=["trial_end"])
+        campaign_mentor = CampaignManagerUtils.get_campaign_mentor()
+        self.mentors.clear()
+        self.mentors.add(campaign_mentor)
+        campaign_institution = CampaignManagerUtils.get_campaign_institution()
+        self.institution = campaign_institution
+        self.save(update_fields=["trial_end", "institution"])
+        
+        WELCOME_BACK_TRIAL_CHILD_MSG = """🔥 رجعت لعالم Volunteen من جديد! 🧡✨
+            جاهز تبدأ رحلة جديدة مليانة تحديات، جوائز 🎁، وإنجازات 💪
+
+            معانا الخير ممتع أكتر 😋
+            يلا اجمع TeenCoins 💰 وخلّي كل يوم قصة نجاح جديدة 🚀
+
+            🏠 صفحتك الشخصية: https://www.volunteen.site/child/home/
+
+            📸 تابعونا عالإنستا: https://rb.gy/9i3yxf
+
+            👇 انضموا لجروب الواتساب: http://bit.ly/484hQf1
+            """
+        if self.phone_number:
+            NotificationManager.sent_whatsapp(
+                WELCOME_BACK_TRIAL_CHILD_MSG,
+                self.phone_number
+            )
+        try:
+            from mentorApp.models import MentorGroup
+            DEFAULT_MENTOR_CAMPAIGN_GROUP_NAME = "משתמשים חוזרים"
+            mentor_group = MentorGroup.objects.filter(
+                name=DEFAULT_MENTOR_CAMPAIGN_GROUP_NAME,
+                mentor=campaign_mentor,
+            ).first()
+            if mentor_group:
+                mentor_group.children.add(self)
+        except Exception as e:
+            pass
+        TempUserCampaignUtils.enqueue_assign_live_tasks(self.id, campaign_mentor.user.id)
         return True
     
     def has_trial_ended(self) -> bool:

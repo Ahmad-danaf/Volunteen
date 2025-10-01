@@ -35,6 +35,7 @@ CHILDREN_REQUIRE_DEFAULT_IMAGE = {"מחמד_חלילי","الطفل_إبراهي
 SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN={"נור_גוראב","أحمد_دنف","آدم_تكروري"}  # the children who have special permissions to upload images in the check in/out page
 
 CAMPAIGN_MENTOR_USERNAME = "אדם_תכרורי" # the username of the campaign mentor
+CAMPAIGN_INSTITUTION_NAME = "المحمدية"   # the institution name of the campaign
 CAMPAIGN_TIME_LIMIT_MINUTES = 1440 # the time limit for the campaign in minutes
 CAMPAIGN_BAN_DURATION_HOURS = 1 # the duration of the campaign ban in hours
 

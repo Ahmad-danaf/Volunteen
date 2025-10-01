@@ -3,7 +3,8 @@ from teenApp.entities.task import Task
 from datetime import date
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from mentorApp.models import Mentor
-from Volunteen.constants import CAMPAIGN_MENTOR_USERNAME
+from institutionApp.models import Institution
+from Volunteen.constants import CAMPAIGN_MENTOR_USERNAME, CAMPAIGN_INSTITUTION_NAME
 
 class CampaignManagerUtils:
     
@@ -21,6 +22,17 @@ class CampaignManagerUtils:
                                                     "is_active": False})
         mentor, _ = Mentor.objects.get_or_create(user=user)
         return mentor
+    
+    @staticmethod
+    def get_campaign_institution() -> Institution:
+        """
+        Return (and lazily create, if missing) the Institution used for campaign tasks.
+        """
+        institution, _ = Institution.objects.get_or_create(
+            name=CAMPAIGN_INSTITUTION_NAME,
+            defaults={"address": ""}
+        )
+        return institution
 
 
     @staticmethod

@@ -1,7 +1,9 @@
 import smtplib
 import os
 import requests
+import random
 
+from django.core.cache import cache
 from dotenv import load_dotenv
 load_dotenv()
 URL = "https://7103.api.greenapi.com/waInstance7103140551/sendMessage/"+os.getenv("GREEN_API","default-api-key")
@@ -54,3 +56,33 @@ class NotificationManager:
     @staticmethod
     def valid_phone(phone: str):
         return len(phone) == 10 and phone[0] == '0'
+    
+    
+    @staticmethod
+    def _generate_code(length: int = 6) -> str:
+        """Generate a numeric code (default: 6 digits)."""
+        return ''.join(str(random.randint(0, 9)) for _ in range(length))
+
+    @staticmethod
+    def send_verification_code(phone: str, expire_seconds: int = 300) -> None:
+        """
+        Generate + send a verification code via WhatsApp.
+        Stores it in Django cache for `expire_seconds` (default: 5 min).
+        """
+        code = NotificationManager._generate_code()
+        cache.set(f"phone_verif:{phone}", code, timeout=expire_seconds)
+        print(f"Debug: sent code {code} to {phone}")  # for debugging
+        NotificationManager.sent_whatsapp(
+            f"👋 קוד האימות שלך ל-Volunteen הוא: {code}\n"
+            f"הקוד תקף ל-{expire_seconds // 60} דקות.",
+            phone
+        )
+
+    @staticmethod
+    def verify_code(phone: str, code: str) -> bool:
+        """
+        Check if the provided code matches the cached one.
+        """
+        stored = cache.get(f"phone_verif:{phone}")
+        print(f"Debug: verifying code {code} for {phone}, stored: {stored}")  # for debugging
+        return stored is not None and stored == code

@@ -1,177 +1,279 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>חוויה עם חיוך – חזור עכשיו!</title>
-  <!-- Google Font for modern Hebrew-friendly typography -->
-  <link href="https://fonts.googleapis.com/css?family=Assistant:400,700&display=swap" rel="stylesheet">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  <style>
-    /* Global Reset & Base Styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Assistant', sans-serif;
-      background: linear-gradient(135deg, #09203f, #537895);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-      color: #fff;
-      text-align: center;
-      direction: rtl;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    /* Main Container */
-    .container {
-      background: rgba(0, 0, 0, 0.55);
-      border-radius: 15px;
-      padding: 30px;
-      margin: auto;
-      max-width: 500px;
-      animation: fadeIn 2s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    /* Headline & Text */
-    .header {
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      animation: slideIn 1s ease-out;
-    }
-    @keyframes slideIn {
-      from { transform: translateX(50px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    .subheader {
-      font-size: 1.2rem;
-      margin-bottom: 25px;
-      line-height: 1.4;
-    }
-    /* Call-to-Action Button */
-    .cta-button {
-      display: inline-block;
-      padding: 15px 30px;
-      background-color: #ff4081;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.3rem;
-      color: #fff;
-      text-decoration: none;
-      margin-bottom: 30px;
-      transition: transform 0.3s ease, background-color 0.3s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    .cta-button:hover {
-      transform: scale(1.05);
-      background-color: #ff6a9a;
-    }
-    /* Navigation Buttons Section */
-    .nav-buttons {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .nav-button {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      text-decoration: none;
-      color: #fff;
-      font-size: 1.1rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 1s ease;
-    }
-    .nav-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-    .nav-button i {
-      font-size: 1.8rem;
-      margin-bottom: 5px;
-    }
-    /* Responsive adjustments */
-    @media (max-width: 480px) {
-      .header { font-size: 2rem; }
-      .subheader { font-size: 1rem; }
-      .cta-button { font-size: 1.1rem; padding: 12px 24px; }
-      .nav-button { width: 75px; height: 75px; font-size: 1rem; }
-      .nav-button i { font-size: 1.5rem; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-        {% if not child %}
-        <div class="header">היי גיבור 🦸, כולם המשיכו במשימות... ואתה?</div>
-    {% else %}
-        <div class="header rtl-text">
-          <span class="username">{{ child.user.username }}, </span>
-          <span class="message">כולם ממשיכים במשימות... ואתה? 😢</span>
-        </div>
-    {% endif %}
-    <div class="subheader">
-        המנוי שלך הסתיים ⏳ – חזור עכשיו ותחזור ליהנות ממשימות, פרסים ואתגרים 🎯🎁
-    </div>
-    <!-- Call-to-Action to Rejoin via WhatsApp -->
-    <a class="cta-button" target="_blank" href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20">
-        ✨ לחדש מנוי ✨
-    </a>
-    {% if can_start_trial %}
-      <form action="{% url 'childApp:start_trial' child.id %}" method="post" style="margin-top: 20px;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Volunteen</title>
+    <!-- Google Font for modern Hebrew-friendly typography -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Assistant:400,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <style>
+      /* Global Reset & Base Styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Assistant", sans-serif;
+        background: linear-gradient(135deg, #09203f, #537895);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: #fff;
+        text-align: center;
+        direction: rtl;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      /* Main Container */
+      .container {
+        background: rgba(0, 0, 0, 0.55);
+        border-radius: 15px;
+        padding: 30px;
+        margin: auto;
+        max-width: 500px;
+        animation: fadeIn 2s ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      /* Headline & Text */
+      .header {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        animation: slideIn 1s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .subheader {
+        font-size: 1.2rem;
+        margin-bottom: 25px;
+        line-height: 1.4;
+      }
+      /* Call-to-Action Button */
+      .cta-button {
+        display: inline-block;
+        padding: 15px 30px;
+        background-color: #ff4081;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.3rem;
+        color: #fff;
+        text-decoration: none;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .cta-button:hover {
+        transform: scale(1.05);
+        background-color: #ff6a9a;
+      }
+      /* Navigation Buttons Section */
+      .nav-buttons {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .nav-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        text-decoration: none;
+        color: #fff;
+        font-size: 1.1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease;
+      }
+      .nav-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
+      .nav-button i {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+      }
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        .header {
+          font-size: 2rem;
+        }
+        .subheader {
+          font-size: 1rem;
+        }
+        .cta-button {
+          font-size: 1.1rem;
+          padding: 12px 24px;
+        }
+        .nav-button {
+          width: 75px;
+          height: 75px;
+          font-size: 1rem;
+        }
+        .nav-button i {
+          font-size: 1.5rem;
+        }
+      }
+      .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .cta-button i {
+        margin-left: 8px;
+      }
+
+      .cash-btn {
+        background-color: #ff9800;
+      }
+      .cash-btn:hover {
+        background-color: #ffb74d;
+      }
+
+      .credit-btn {
+        background-color: #3f51b5;
+      }
+      .credit-btn:hover {
+        background-color: #5c6bc0;
+      }
+
+      @media (max-width: 480px) {
+        .cta-buttons {
+          flex-direction: column;
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      {% if not child %}
+      <div class="header">היי גיבור 🦸, כולם המשיכו במשימות... ואתה?</div>
+      {% else %}
+      <div class="header rtl-text">
+        <span class="username">{{ child.user.username }}, </span>
+        <span class="message">כולם ממשיכים במשימות... ואתה? 😢</span>
+      </div>
+      {% endif %}
+      <div class="subheader">
+        המנוי שלך הסתיים ⏳ – חזור עכשיו ותחזור ליהנות ממשימות, פרסים ואתגרים
+        🎯🎁
+      </div>
+      <!-- Call-to-Action to Rejoin -->
+      <div class="cta-buttons">
+        <!-- Cash Button -->
+        <a
+          class="cta-button cash-btn"
+          target="_blank"
+          href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20"
+        >
+          <i class="fas fa-shekel-sign"></i> תשלום במזומן
+        </a>
+
+        <!-- Credit Card Button -->
+        <a class="cta-button credit-btn" href="#">
+          <i class="fas fa-credit-card"></i> תשלום בכרטיס אשראי
+        </a>
+      </div>
+      <!-- Trial Section -->
+      {% if can_start_trial %}
+      <form
+        action="{% url 'childApp:start_trial' child.id %}"
+        method="post"
+        style="margin-top: 20px"
+      >
         {% csrf_token %}
-        <button type="submit" class="cta-button" style="background-color:#4caf50;">
+        <button
+          type="submit"
+          class="cta-button"
+          style="background-color: #4caf50"
+        >
           🚀 התחל תקופת ניסיון ל־7 ימים 🚀
         </button>
       </form>
-    {% elif child.has_active_trial %}
-      <div class="subheader" style="margin-top:20px;">
+      {% elif child.has_active_trial %}
+      <div class="subheader" style="margin-top: 20px">
         🎉 הניסיון שלך בתוקף עד {{ child.trial_end }}
       </div>
-    {% endif %}
+      {% endif %}
 
-
-    <!-- Additional Navigation Buttons -->
-    <div class="user-teencoins">
-      <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
-      <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+      <!-- Additional Navigation Buttons -->
+      <div class="user-teencoins">
+        <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em"></i>
+        <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+      </div>
+      <div class="nav-buttons">
+        <a
+          href="{% url 'childApp:reward' %}"
+          class="nav-button"
+          style="background-color: #ff4081"
+        >
+          <i class="fas fa-gift"></i>
+          <span>רשימת פרסים</span>
+        </a>
+        <a
+          href="{% url 'childApp:child_not_approved_requests' %}"
+          class="nav-button"
+          style="background-color: #ff5722"
+        >
+          <i class="fas fa-clock"></i>
+          <span>בקשות בתהליך</span>
+        </a>
+        <a
+          href="{% url 'childApp:donate_coins' %}"
+          class="nav-button"
+          style="background-color: #8bc34a"
+        >
+          <i class="fas fa-hand-holding-heart"></i>
+          <span>צדקה</span>
+        </a>
+        <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>יציאה</span>
+        </a>
+      </div>
     </div>
-    <div class="nav-buttons">
-      <a href="{% url 'childApp:reward' %}" class="nav-button" style="background-color: #ff4081;">
-        <i class="fas fa-gift"></i>
-        <span>רשימת פרסים</span>
-      </a>
-      <a href="{% url 'childApp:child_not_approved_requests' %}" class="nav-button" style="background-color: #ff5722;">
-        <i class="fas fa-clock"></i>
-        <span>בקשות בתהליך</span>
-      </a>
-      <a href="{% url 'childApp:donate_coins' %}" class="nav-button" style="background-color: #8bc34a;">
-        <i class="fas fa-hand-holding-heart"></i>
-        <span>צדקה</span>
-      </a>
-      <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>יציאה</span>
-      </a>
-    </div>
-  </div>
-</body>
+  </body>
 </html>

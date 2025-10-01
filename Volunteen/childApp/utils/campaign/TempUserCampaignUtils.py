@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth import get_user_model, login
 from django.db import transaction
+from django_q.tasks import async_task  
 
 from childApp.models import Child,ChildReferral
 from parentApp.models import ChildSubscription
@@ -21,6 +22,8 @@ WELCOME_NEW_CHILD_MSG = """أهلاً وسهلاً بك يا {name} في عال�
 معانا بـVolunteen، الخير إله طعم تاني 😋
 بتاخد جوائز 🎁 وهدايا 🎉 على كل عمل طيب 💪
 يلاااااا اجمع TeenCoins 💰 وسابق الكل عالخير! 🧡🔥
+
+🏠 صفحتك الشخصية: https://www.volunteen.site/child/home/
 
 📸 تابعونا عالإنستا: https://rb.gy/9i3yxf
 
@@ -135,7 +138,10 @@ class TempUserCampaignUtils:
         TempUserCampaignUtils._ensure_trial_subscription(child)
 
         mentor = CampaignManagerUtils.get_campaign_mentor()
+        institution = CampaignManagerUtils.get_campaign_institution()
         child.mentors.add(mentor)
+        child.institution = institution
+        child.save()
         TempUserCampaignUtils._add_child_to_mentor_group(child, mentor)
         
         try:
@@ -154,6 +160,7 @@ class TempUserCampaignUtils:
         if request is not None:
             login(request, user)
         NotificationManager.sent_whatsapp(WELCOME_NEW_CHILD_MSG.format(name=user.first_name), phone)
+        TempUserCampaignUtils.enqueue_assign_live_tasks(child.id,mentor.user.id)
         return child, None
 
     # ---------- Internals ----------
@@ -267,5 +274,47 @@ class TempUserCampaignUtils:
                 "start_date", "end_date", "notes", "canceled_at",
                 "updated_at",
             ])
+            
+            
+    @staticmethod
+    def enqueue_assign_live_tasks(child_id: int, assigned_by_id: int | None = None):
+        """
+        Enqueue an async job to attach all live tasks to a new child.
+        """
+        try:
+            async_task("childApp.utils.campaign.TempUserCampaignUtils.TempUserCampaignUtils._assign_live_tasks", child_id, assigned_by_id)
+        except Exception as e:
+            pass
+
+    @staticmethod
+    def _assign_live_tasks(child_id: int, assigned_by_id: int | None = None):
+        """
+        Background job: assign all live (not expired) tasks to the given child.
+        """
+        from teenApp.entities import Task, TaskAssignment
+        try:
+            child = Child.objects.get(id=child_id)
+        except Child.DoesNotExist:
+            return
+
+        assigned_by = None
+        if assigned_by_id:
+            try:
+                assigned_by = User.objects.get(id=assigned_by_id)
+            except User.DoesNotExist:
+                pass
+
+        today = timezone.now().date()
+        live_tasks = Task.objects.filter(deadline__gte=today)
+
+        for task in live_tasks:
+            if not task.assigned_children.filter(id=child.id).exists():
+                task.assigned_children.add(child)
+                
+            TaskAssignment.objects.get_or_create(
+                task=task,
+                child=child,
+                defaults={"assigned_by": assigned_by},
+            )
 
 
