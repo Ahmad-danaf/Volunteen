@@ -264,8 +264,24 @@
     const form = document.querySelector('form');
 
     form.addEventListener('submit', function(e) {
+      if (form.dataset.submitting === '1') { e.preventDefault(); return; }
+
       // If step 2 marker exists, skip step 1 checks
-      if (form.querySelector('input[name="code_step"]')) return;
+      if (form.querySelector('input[name="code_step"]')) {
+        // Passed lightweight check -> mark submitting & lock buttons
+        form.dataset.submitting = '1';
+        const submitButtons = form.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach(btn => {
+          btn.disabled = true;
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+          const label = btn.querySelector('[x-text]') || btn;
+          if (label && !btn.dataset.originalText) {
+            btn.dataset.originalText = label.textContent;
+            label.textContent = 'מעבד...';
+          }
+        });
+        return;
+      }
 
       const fullNameEl = document.getElementById('full_name');
       const phoneEl = document.getElementById('phone');
@@ -284,6 +300,19 @@
       if (password.length < 6) { e.preventDefault(); alert('הסיסמה חייבת להכיל לפחות 6 תווים'); return; }
       if (phone !== phoneConfirm) { e.preventDefault(); alert('מספרי הטלפון אינם תואמים'); return; }
       if (!parentApproval) { e.preventDefault(); alert('יש לאשר קבלת הסכמת הורים'); return; }
+
+      // === New: If we reached here, validation passed -> lock form to prevent double submit ===
+      form.dataset.submitting = '1';
+      const submitButtons = form.querySelectorAll('button[type="submit"]');
+      submitButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        const label = btn.querySelector('[x-text]') || btn;
+        if (label && !btn.dataset.originalText) {
+          btn.dataset.originalText = label.textContent;
+          label.textContent = 'מעבד...';
+        }
+      });
     });
   });
 

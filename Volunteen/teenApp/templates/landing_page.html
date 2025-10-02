@@ -339,6 +339,64 @@
                 left: 10px;
             }
         }
+       .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .hero .hero-cta {
+            background: #fff;
+            color: #ff5722;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+        }
+        .hero .hero-cta:hover {
+            background: #ffcc80;
+        }
+
+        .hero .hero-cta-child {
+            background: #ff5722;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+            display: inline-block;
+        }
+        .hero .hero-cta-child:hover {
+            background: #ff784e;
+        }
+        .hero .hero-cta-child {
+        background: linear-gradient(135deg, #1a7cf0, #6ba3f5); 
+        color: #fff;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.3s ease;
+        display: inline-block;
+        box-shadow: 0 4px 12px rgba(26, 124, 240, 0.4); 
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero .hero-cta-child:hover {
+        background: linear-gradient(135deg, #155ec0, #1a7cf0);
+        box-shadow: 0 6px 16px rgba(26, 124, 240, 0.55);
+        transform: scale(1.05);
+    }
     </style>
 </head>
 <body>
@@ -348,45 +406,30 @@
         <h1>ברוכים הבאים ל-Volunteen</h1>
         <p>הפלטפורמה שמחברת בני נוער להזדמנויות התנדבות ומעודדת מעורבות קהילתית.<br>
            באמצעות שיתוף פעולה עם עסקים מקומיים.</p>
-        <a href="{% url 'teenApp:home_redirect' %}" class="hero-cta">כניסה</a>
-    </section>
-
-<section class="categories-section" id="categories">
-    <p class="category-intro">
-        לחצו על הקטגוריה הרלוונטית ותעברו לעמוד שמתאים לכם 😎
-    </p>
-    
-    <div class="category-buttons">
-        <a href="{% url 'childApp:child_landing' %}">🎈 ילדים - הצטרפו, עשו מעשים טובים וקבלו תגמולים!</a>
-        <a href="{% url 'parentApp:parent_landing' %}">👨‍👩‍👧‍👦 הורים - תמכו בילדיכם במסע ההתנדבותי שלהם!</a>
-        <a href="{% url 'shopApp:shop_landing' %}">🍽️ עסקים - שתפו פעולה ותגמלו את בני הנוער במתנות והטבות!</a>
-        <a href="{% url 'institutionApp:institution_landing' %}">🏫 מוסדות - הצטרפו לקהילה חינוכית שמטפחת ערכים של נתינה!</a>
-    </div>
-</section>
-
-    <!-- <section class="register-section" id="register">
-        <h2>הרשמה מהירה</h2>
-        <div class="register-form">
-            <form id="quick-register-form" method="POST" onsubmit="return sendForm(event);">
-                {% csrf_token %}
-                <input type="text" name="full_name" placeholder="שם מלא" required>
-                <input type="tel" name="phone" placeholder="טלפון" required>
-                <select name="user_type" required>
-                    <option value="" disabled selected>אני מצטרף כ...</option>
-                    <option value="child">נער/ה</option>
-                    <option value="parent">הורה</option>
-                    <option value="restaurant">עסק</option>
-                    <option value="restaurant">מנטור</option>
-                    <option value="institution">מוסד</option>
-                </select>
-                <button type="submit">יאללה, בואו נתחיל!</button>
-            </form>
-            <div class="form-success" id="form-success-msg">
-            </div>
+        
+        <div class="hero-buttons">
+            <!-- login/enter button -->
+            <a href="{% url 'teenApp:home_redirect' %}" class="hero-cta">כניסה</a>
+            
+            <!-- child signup CTA -->
+            <a href="{% url 'childApp:child_signup' %}" class="hero-cta-child">
+                👉 🎮 התחילו עכשיו – 7 ימי ניסיון חינם!
+            </a>
         </div>
     </section>
- -->
 
+    <section class="categories-section" id="categories">
+        <p class="category-intro">
+            לחצו על הקטגוריה הרלוונטית ותעברו לעמוד שמתאים לכם 😎
+        </p>
+        
+        <div class="category-buttons">
+            <a href="{% url 'childApp:child_landing' %}">🎈 ילדים - הצטרפו, עשו מעשים טובים וקבלו תגמולים!</a>
+            <a href="{% url 'parentApp:parent_landing' %}">👨‍👩‍👧‍👦 הורים - תמכו בילדיכם במסע ההתנדבותי שלהם!</a>
+            <a href="{% url 'shopApp:shop_landing' %}">🍽️ עסקים - שתפו פעולה ותגמלו את בני הנוער במתנות והטבות!</a>
+            <a href="{% url 'institutionApp:institution_landing' %}">🏫 מוסדות - הצטרפו לקהילה חינוכית שמטפחת ערכים של נתינה!</a>
+        </div>
+    </section>
 
     <section class="about-us">
         <h2>מי אנחנו?</h2>

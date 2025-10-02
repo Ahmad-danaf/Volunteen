@@ -71,7 +71,6 @@ class NotificationManager:
         """
         code = NotificationManager._generate_code()
         cache.set(f"phone_verif:{phone}", code, timeout=expire_seconds)
-        print(f"Debug: sent code {code} to {phone}")  # for debugging
         NotificationManager.sent_whatsapp(
             f"👋 קוד האימות שלך ל-Volunteen הוא: {code}\n"
             f"הקוד תקף ל-{expire_seconds // 60} דקות.",
@@ -84,5 +83,4 @@ class NotificationManager:
         Check if the provided code matches the cached one.
         """
         stored = cache.get(f"phone_verif:{phone}")
-        print(f"Debug: verifying code {code} for {phone}, stored: {stored}")  # for debugging
         return stored is not None and stored == code
