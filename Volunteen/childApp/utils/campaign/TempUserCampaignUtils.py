@@ -1,7 +1,9 @@
 import re
 from datetime import timedelta
 from django.utils import timezone
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model,login
+from django.conf import settings
+
 from django.db import transaction
 from django_q.tasks import async_task  
 
@@ -158,8 +160,7 @@ class TempUserCampaignUtils:
             pass
 
         if request is not None:
-            login(request, user)
-        NotificationManager.sent_whatsapp(WELCOME_NEW_CHILD_MSG.format(name=user.first_name), phone)
+            login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
         TempUserCampaignUtils.enqueue_assign_live_tasks(child.id,mentor.user.id)
         return child, None
 
