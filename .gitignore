@@ -57,6 +57,6 @@ db.sqlite3
 db.json
 */db.json
 adjusted_backup.json
-
+local-dev
 volunteen_env/
 logs/*

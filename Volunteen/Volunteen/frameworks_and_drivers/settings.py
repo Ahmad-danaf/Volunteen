@@ -29,9 +29,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 development = os.getenv("DEVELOPMENT","False") == "True"
 DEBUG = development
-ALLOWED_HOSTS = ['volunteen.site', 'www.volunteen.site', 'localhost', '127.0.0.1', '51.21.38.172',"Volunteen.pythonanywhere.com","*"]
 if development:
+    ALLOWED_HOSTS = ["*"]
     INTERNAL_IPS = ["127.0.0.1"]
+else:
+    ALLOWED_HOSTS = [
+        "volunteen.site",
+        "www.volunteen.site",
+        "webapp-2339327.pythonanywhere.com",
+        "volunteen.pythonanywhere.com",
+    ]
+
 
 
 # Application definition
@@ -74,6 +82,10 @@ LOGIN_URL = 'teenApp:login'
 LOGIN_REDIRECT_URL = 'teenApp:home_redirect'
 LOGOUT_REDIRECT_URL = 'teenApp:landing_page'
 
+AUTHENTICATION_BACKENDS = [
+    "Volunteen.auth_backends.username_or_phone.UsernameOrPhoneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 
 # reCAPTCHA keys 
@@ -171,7 +183,13 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1','https://www.volunteen.site', 'http://localhost']
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.volunteen.site',
+    'https://volunteen.site',
+    'http://127.0.0.1',
+    'http://localhost',
+]
+
 
 # Sessions config
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
