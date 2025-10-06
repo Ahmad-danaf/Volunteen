@@ -29,16 +29,42 @@ class NotificationManager:
 
     @staticmethod
     def sent_whatsapp(msg: str, phone: str):
-        payload = {
-        "chatId": "972"+phone[1:]+"@c.us", 
-        "message": msg, 
-        "linkPreview": True
-        }
-        headers = {
-        'Content-Type': 'application/json'
-        }
+        if not NotificationManager.valid_phone(phone):
+            print(f"[WARN] Invalid phone number: {phone}")
+            return False
 
-        response = requests.post(URL, json=payload, headers=headers)
+        payload = {
+            "chatId": f"972{phone[1:]}@c.us",
+            "message": msg,
+            "linkPreview": True
+        }
+        headers = {'Content-Type': 'application/json'}
+
+        try:
+            response = requests.post(
+                URL,
+                json=payload,
+                headers=headers,
+                timeout=(5, 10)  # (connect_timeout, read_timeout)
+            )
+
+            if response.status_code == 200:
+                print(f"[OK] WhatsApp sent to {phone}")
+                return True
+            else:
+                print(f"[FAIL] WhatsApp to {phone} → {response.status_code}: {response.text}")
+                return False
+
+        except requests.exceptions.Timeout:
+            print(f"[TIMEOUT] WhatsApp send timeout for {phone}")
+            return False
+
+        except requests.exceptions.RequestException as e:
+            print(f"[ERROR] WhatsApp send failed for {phone}: {e}")
+            return False
+        except Exception as e:
+            print(f"[ERROR] Unexpected error for {phone}: {e}")
+            return False
      
     @staticmethod   
     def sent_to_log_group_whatsapp(msg: str):

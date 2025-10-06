@@ -248,8 +248,10 @@ Q_CLUSTER = {
     'name': 'volunteen_qcluster',
     'workers': 6,   # number of workers
     'recycle': 300,  
-    'timeout': 30,  
-    'retry': 120,  
+    'timeout': 60,
+    'ack_failures': True,
+    'max_attempts': 1,
+    'retry': 90,  
     'queue_limit': 100, 
     'bulk': 10,  
     'poll': 0.3,  

@@ -1,19 +1,23 @@
-from teenApp.entities.TaskAssignment import TaskAssignment
-from teenApp.entities.TaskCompletion import TaskCompletion
-from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
-from childApp.models import Child
-from mentorApp.models import Mentor
-from teenApp.utils.TaskManagerUtils import TaskManagerUtils
+import hashlib
+import random
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
+
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q, Sum, F, IntegerField, Prefetch
-from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
-from dateutil.relativedelta import relativedelta
 from django_q.tasks import async_task
+
 from teenApp.utils.NotificationManager import NotificationManager
-import hashlib
+from Volunteen.constants import TEEN_COINS_EXPIRATION_MONTHS
+from childApp.models import Child
 from childApp.utils.TeenCoinManager import  TeenCoinManager
-import random
+from teenApp.entities.TaskAssignment import TaskAssignment
+from teenApp.entities.TaskCompletion import TaskCompletion
+from teenApp.entities.task import Task, TimeWindowRule,TaskProofRequirement
+from teenApp.utils.TaskManagerUtils import TaskManagerUtils
+from mentorApp.models import Mentor
+
 
 WHATSAPP_SHORT_MESSAGES = [
     # Hebrew only
@@ -278,10 +282,18 @@ class MentorTaskUtils(TaskManagerUtils):
         task_data.setdefault("description", "")
         task_data.setdefault("proof_requirement", TaskProofRequirement.CAMERA_ONLY)
         task_data.pop("assigned_children", None)
-
+        new_task = None
         assigned_children = Child.objects.filter(id__in=children_ids)
         total_cost = task_data.get("points", 0) * assigned_children.count()
-
+        recent_task_exists = Task.objects.filter(
+            title=task_data.get("title"),
+            assigned_mentors=mentor,
+            created_at__gte=timezone.now() - timedelta(seconds=60)
+        ).exists()
+        if recent_task_exists:
+            print(f"[SKIP] Duplicate prevention: mentor {mentor.id} already created '{task_data.get('title')}' recently.")
+            return None
+        
         with transaction.atomic():
             mentor = Mentor.objects.select_for_update().get(id=mentor.id)
             mentor.available_teencoins =max(0, mentor.available_teencoins - total_cost)
@@ -301,25 +313,23 @@ class MentorTaskUtils(TaskManagerUtils):
                 for ch in assigned_children
             )
 
-
-        if new_task.send_whatsapp_on_assign:
-            for child in assigned_children.select_related("user__personal_info", "subscription"):
-                phone = getattr(child.user.personal_info, "phone_number", None)
-                subscription = getattr(child, "subscription", None)
-                if not phone or not subscription or not subscription.is_active():
-                    continue
-                try:
-                    template = random.choice(WHATSAPP_SHORT_MESSAGES)
-                    if "{title}" in template:
-                        message = template.format(points=new_task.points, title=new_task.title)
-                    else:
-                        message = template.format(points=new_task.points)
-                    message += f"\n{MAIN_LINK}\n{random.choice(EXTRA_LINKS)}"
-                    NotificationManager.sent_whatsapp(message, phone)
-                except Exception as exc:
-                    print(f"Failed to send WhatsApp message: {exc}")
+        if new_task and new_task.send_whatsapp_on_assign:
+                for child in assigned_children.select_related("user__personal_info", "subscription"):
+                    phone = getattr(child.user.personal_info, "phone_number", None)
+                    subscription = getattr(child, "subscription", None)
+                    if not phone or not subscription or not subscription.is_active():
+                        continue
+                    try:
+                        template = random.choice(WHATSAPP_SHORT_MESSAGES)
+                        if "{title}" in template:
+                            message = template.format(points=new_task.points, title=new_task.title)
+                        else:
+                            message = template.format(points=new_task.points)
+                        message += f"\n{MAIN_LINK}\n{random.choice(EXTRA_LINKS)}"
+                        NotificationManager.sent_whatsapp(message, phone)
+                    except Exception as exc:
+                        print(f"Failed to send WhatsApp message: {exc}")
                 
-
         return new_task
     
     
