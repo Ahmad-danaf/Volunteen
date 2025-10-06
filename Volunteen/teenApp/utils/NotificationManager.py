@@ -49,7 +49,6 @@ class NotificationManager:
             )
 
             if response.status_code == 200:
-                print(f"[OK] WhatsApp sent to {phone}")
                 return True
             else:
                 print(f"[FAIL] WhatsApp to {phone} → {response.status_code}: {response.text}")

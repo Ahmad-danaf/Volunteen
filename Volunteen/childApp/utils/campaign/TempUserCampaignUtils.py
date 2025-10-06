@@ -37,7 +37,7 @@ THANKS_REFERRER_MSG = """شكراً من القلب!🧡
 كل عمل خيري بعمله ✨ بميزان حسناتك إنت 🙌
 أنت بتساعدنا نكبر ونقوّي المجتمع سوا 💪🌍
 
-🎉 وكجائزة لك: حصلت على 5 TeenCoins 💰🪙
+🎉 وكجائزة لك: تحصل على 5 TeenCoins 💰🪙 **فقط إذا قام {name} بشراء شيء مع Volunteen**.
 استمر بالتأثير الجميل! 🌟🚀
 """
 
@@ -154,14 +154,14 @@ class TempUserCampaignUtils:
                         referred_child=child,
                         referrer=referrer
                     )
-                    first_name = referrer.user.username.split("_")[0]
-                    NotificationManager.sent_whatsapp(THANKS_REFERRER_MSG.format(name=first_name), referrer.user.personal_info.phone_number)
+                    NotificationManager.sent_whatsapp(THANKS_REFERRER_MSG.format(name=child.user.first_name), referrer.user.personal_info.phone_number)
         except Exception as e:
             pass
 
         if request is not None:
             login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
         TempUserCampaignUtils.enqueue_assign_live_tasks(child.id,mentor.user.id)
+        NotificationManager.sent_whatsapp(WELCOME_NEW_CHILD_MSG.format(name=child.user.first_name), phone)
         return child, None
 
     # ---------- Internals ----------

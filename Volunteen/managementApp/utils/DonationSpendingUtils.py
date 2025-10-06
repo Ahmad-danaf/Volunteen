@@ -6,6 +6,7 @@ from managementApp.models import (
     SpendingAllocation,
 )
 from django.db import transaction
+from django_q.tasks import async_task
 from shopApp.models import Shop
 from shopApp.utils.shop_manager import ShopManager
 from django.utils import timezone
@@ -182,6 +183,27 @@ class DonationSpendingUtils:
         # Save pointer for next time
         category.last_selected_child_id = last_child_used
         category.save(update_fields=["last_selected_child"])
+        
+        selected_child_ids = (
+            SpendingAllocation.objects
+            .filter(spending=spending)
+            .values_list("transaction__child_id", flat=True)
+            .distinct()
+        )
+        try:
+            transaction.on_commit(lambda: async_task(
+                "managementApp.tasks.donation_thx_notifications.send_donation_thank_you_messages",
+                list(selected_child_ids),
+                spending.id,
+                q_options={
+                    "timeout": 900,
+                    "max_attempts": 1,
+                    "group": f"donation_thx_{spending.id}",
+                    "ack_failures": True,
+                }
+            ))
+        except Exception as e:
+            print(f"Failed to queue thank-you notification task: {e}")
 
         return spending
     
