@@ -272,6 +272,7 @@ class MentorTaskUtils(TaskManagerUtils):
             return MentorTaskUtils.create_task_with_assignments(mentor, children_ids, task_data,timewindow_data)
         except Exception as e:
             print(f"[FATAL] Task creation failed: {e}")
+            return None
 
     @staticmethod
     def create_task_with_assignments(mentor, children_ids, task_data,timewindow_data= None):
@@ -279,11 +280,16 @@ class MentorTaskUtils(TaskManagerUtils):
         Assumes all validation is already done.
         Creates the task, assigns children, and optionally sends WhatsApp messages.
         """
+        task_data = dict(task_data)
         task_data.setdefault("description", "")
         task_data.setdefault("proof_requirement", TaskProofRequirement.CAMERA_ONLY)
         task_data.pop("assigned_children", None)
         new_task = None
         assigned_children = Child.objects.filter(id__in=children_ids)
+        if not assigned_children.exists():
+            print(f"[SKIP] No valid children to assign for mentor {mentor.id}.")
+            return None
+        
         total_cost = task_data.get("points", 0) * assigned_children.count()
         recent_task_exists = Task.objects.filter(
             title=task_data.get("title"),
@@ -296,8 +302,10 @@ class MentorTaskUtils(TaskManagerUtils):
         
         with transaction.atomic():
             mentor = Mentor.objects.select_for_update().get(id=mentor.id)
-            mentor.available_teencoins =max(0, mentor.available_teencoins - total_cost)
-            mentor.save()
+            deduct_coins = task_data.pop("_deduct_coins", True)
+            if deduct_coins:
+                mentor.available_teencoins = max(0, mentor.available_teencoins - total_cost)
+                mentor.save(update_fields=["available_teencoins"])
             
             new_task = Task.objects.create(**task_data)
             new_task.assigned_mentors.add(mentor)

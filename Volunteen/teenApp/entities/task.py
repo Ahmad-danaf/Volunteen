@@ -57,6 +57,14 @@ class Task(models.Model):
         blank=True,
         help_text="Attach this task to one or more logical groups (e.g., 'for-new-users')."
     )
+    source_template = models.ForeignKey(
+        "self",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="instances",
+        help_text="If this task was duplicated from a template, point to it.",
+        db_index=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     def __str__(self):
         return self.title

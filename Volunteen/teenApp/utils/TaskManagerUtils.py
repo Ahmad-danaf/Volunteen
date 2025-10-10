@@ -197,3 +197,8 @@ class TaskManagerUtils:
             return TaskManagerUtils.approve_task_completion(user=None, task_completion=task_completion)
 
         return task_completion
+    
+    @staticmethod
+    def is_task_assigned_to_any_mentor(task: Task) -> bool:
+        """Returns True if the task is assigned to at least one mentor."""
+        return task.assigned_mentors.exists()
