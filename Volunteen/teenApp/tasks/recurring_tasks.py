@@ -121,3 +121,14 @@ class RecurringTaskUtils:
             except Exception as e:
                 RecurringTaskUtils._log_run(template, now.date(), RecurringRun.Status.ERROR, str(e))
                 print(f"[RecurringTaskUtils] ERROR creating from {template.id}: {e}")
+
+
+    @staticmethod
+    def recreate_due_tasks_longrun():
+        """
+        Wrapper that calls the recurring-task engine with an extended timeout.
+        """
+        async_task(
+            RecurringTaskUtils.recreate_due_tasks,
+            q_options={"timeout": 300},  # 5 minutes timeout
+        )

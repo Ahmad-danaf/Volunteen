@@ -23,7 +23,7 @@ class TaskRecurrence(models.Model):
     )
 
     # ---- Schedule definition ----
-    frequency     = models.CharField(max_length=16, choices=Frequency.choices)
+    frequency = models.CharField(max_length=16, choices=Frequency.choices)
     interval_days = models.PositiveIntegerField(
         null=True, blank=True,
         help_text="Used only when frequency=every_x_days (>=1).",
@@ -39,13 +39,13 @@ class TaskRecurrence(models.Model):
 
     run_time_local = models.TimeField(
         default=dtime(8, 0),
-        help_text="Time of day to run (Israel local time). Default 08:00.",
+        help_text="Time of day to run (Jerusalem local time). Default 08:00.",
     )
     start_date = models.DateField()
-    end_date   = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     # ---- Control ----
-    is_active   = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     last_run_at = models.DateTimeField(null=True, blank=True)
     next_run_at = models.DateTimeField(db_index=True, null=True, blank=True)
 
