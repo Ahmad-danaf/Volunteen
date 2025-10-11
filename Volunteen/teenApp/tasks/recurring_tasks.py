@@ -6,6 +6,7 @@ from django_q.tasks import async_task
 from teenApp.entities import TimeWindowRule,TaskRecurrence, RecurringRun, Frequency
 from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 
+QUIET_HOURS=(22, 8)  # 10 PM to 8 AM
 
 class RecurringTaskUtils:
     """Handles auto-creation of recurring task instances."""
@@ -128,6 +129,12 @@ class RecurringTaskUtils:
         """
         Wrapper that calls the recurring-task engine with an extended timeout.
         """
+        now=timezone.localtime()
+        current_hour=now.hour
+        if QUIET_HOURS[0] <= current_hour or current_hour < QUIET_HOURS[1]:
+            print(f"[INFO][SKIP] Skipping recurring creation at {now.strftime('%H:%M')} (quiet hours).")
+            return
+        
         async_task(
             RecurringTaskUtils.recreate_due_tasks,
             q_options={"timeout": 300},  # 5 minutes timeout
