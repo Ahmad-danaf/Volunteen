@@ -148,6 +148,9 @@ class ChildReferral(models.Model):
         related_name="referrals_made",
         db_index=True,
     )
+    rewarded_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    reward_amount = models.IntegerField(default=0)
+    trial_extended_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
