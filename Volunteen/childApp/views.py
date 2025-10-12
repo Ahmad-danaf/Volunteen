@@ -34,7 +34,7 @@ from collections import defaultdict
 from Volunteen.constants import (
     AVAILABLE_CITIES, MAX_REWARDS_PER_DAY,POINTS_PER_LEVEL,LEVELS,SPECIAL_UPLOAD_PERMISSIONS_FOR_CHILDREN,
     CHILDREN_REQUIRE_DEFAULT_IMAGE,REDEMPTION_REQUEST_EXPIRATION_MINUTES,
-    MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES,CAMPAIGN_BAN_DURATION_HOURS
+    MAX_SHOPS_PER_DAY,CAMPAIGN_TIME_LIMIT_MINUTES,CAMPAIGN_BAN_DURATION_HOURS,TALLY_REDEMPTION_FORM_URL
 )
 from childApp.utils.TeenCoinManager import TeenCoinManager
 from shopApp.utils.shop_manager import ShopManager
@@ -621,11 +621,12 @@ def submit_redemption_request(request):
         shop.lock_monthly_points(total_points_needed)
 
         now_ts = timezone.now()
+        created_request_ids = []
         for reward_data in selected_rewards:
             reward = get_object_or_404(Reward, id=reward_data['reward_id'])
             req_points = reward_data['quantity'] * reward.points_required
 
-            RedemptionRequest.objects.create(
+            redemption_request = RedemptionRequest.objects.create(
                 child=child,
                 shop=reward.shop,
                 reward=reward,
@@ -636,7 +637,24 @@ def submit_redemption_request(request):
                 status="pending"
             )
 
-        return JsonResponse({"status": "success", "message": "בקשת המימוש נשלחה בהצלחה!"})
+            created_request_ids.append(str(redemption_request.id))
+
+        hidden_fields = {
+            "shop_id": str(shop.id),
+            "shop_name": shop.name,
+            "redemption_req": ",".join(created_request_ids),
+        }
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "message": "בקשת המימוש נשלחה בהצלחה!",
+                "tally_form": {
+                    "url": TALLY_REDEMPTION_FORM_URL,
+                    "hidden_fields": hidden_fields,
+                },
+            }
+        )
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": f"שגיאה: {str(e)}"}, status=500)

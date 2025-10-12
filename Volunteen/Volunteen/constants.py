@@ -141,3 +141,6 @@ LEVELS = {
     99: "תהילה",
     100: "אלוף"
 }
+
+
+TALLY_REDEMPTION_FORM_URL = "https://tally.so/r/mJQrA4"

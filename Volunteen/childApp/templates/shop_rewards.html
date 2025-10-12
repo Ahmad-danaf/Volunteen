@@ -221,58 +221,100 @@
   }
 
   function submitRequest() {
-      if (IS_BANNED) {
-          showErrorMessage(BAN_NOTE || "הקנייה חסומה כרגע.");
-          return;
-      }
-
-      if (selectedRewards.length === 0) {
-          alert("אנא בחר לפחות פרס אחד.");
-          return;
-      }
-
-      let submitBtn = document.getElementById('submit-request-btn');
-      let originalHTML = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="loading-spinner"></span> שולח בקשה...';
-
-      let shopId = getShopIdFromURL(); 
-      let formData = {
-          shop_id: shopId,
-          selected_rewards: selectedRewards
-      };
-
-      fetch("{% url 'childApp:submit_redemption_request' %}", {
-          method: "POST",
-          body: JSON.stringify(formData),
-          headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": getCSRFToken()
-          }
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (data.status === "success") {
-              showSuccessMessage(data.message);
-              selectedRewards = [];
-              updateReceipt();
-              recalcLimits();
-              setTimeout(() => {
-                  window.location.href = "{% url 'childApp:child_home' %}";
-              }, 500);
-          } else {
-              showErrorMessage(data.message);
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = originalHTML;
-          }
-      })
-      .catch(error => {
-          console.error("Error:", error);
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalHTML;
-      });
+  if (IS_BANNED) {
+    showErrorMessage(BAN_NOTE || "הקנייה חסומה כרגע.");
+    return;
   }
+
+  if (selectedRewards.length === 0) {
+    alert("אנא בחר לפחות פרס אחד.");
+    return;
+  }
+
+  const submitBtn = document.getElementById('submit-request-btn');
+  const cancelBtn = document.querySelector('.cancel-btn');
+  const originalSubmitHTML = submitBtn.innerHTML;
+  const originalCancelHTML = cancelBtn.innerHTML;
+
+  // Disable both buttons and show loader
+  submitBtn.disabled = true;
+  cancelBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="loading-spinner"></span> שולח בקשה...';
+  cancelBtn.innerHTML = '<span class="loading-spinner"></span>';
+
+  const shopId = getShopIdFromURL();
+  const formData = {
+    shop_id: shopId,
+    selected_rewards: selectedRewards
+  };
+
+  fetch("{% url 'childApp:submit_redemption_request' %}", {
+    method: "POST",
+    body: JSON.stringify(formData),
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken()
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === "success") {
+      // Success: Show message and open Tally
+      showSuccessMessage(data.message);
+
+      if (data.tally_form && data.tally_form.url) {
+        openTallyForm(data.tally_form.url, data.tally_form.hidden_fields);
+      }
+
+      // Redirect after short delay
+      setTimeout(() => {
+        window.location.href = "{% url 'childApp:child_home' %}";
+      }, 1200);
+    } else {
+      showErrorMessage(data.message || "שגיאה בבקשה.");
+      submitBtn.disabled = false;
+      cancelBtn.disabled = false;
+      submitBtn.innerHTML = originalSubmitHTML;
+      cancelBtn.innerHTML = originalCancelHTML;
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    showErrorMessage("שגיאה לא צפויה. נסה שוב מאוחר יותר.");
+    submitBtn.disabled = false;
+    cancelBtn.disabled = false;
+    submitBtn.innerHTML = originalSubmitHTML;
+    cancelBtn.innerHTML = originalCancelHTML;
+  });
+}
+function openTallyForm(url, hiddenFields) {
+  // Create a hidden form that submits to Tally in a popup
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = url;
+  form.target = "tallyPopup";
+
+  for (const [key, value] of Object.entries(hiddenFields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = key;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  document.body.appendChild(form);
+
+  // Open Tally popup first, then submit the form
+  const popup = window.open("", "tallyPopup", "width=500,height=700,scrollbars=yes,resizable=yes");
+  if (popup) {
+    form.submit();
+  } else {
+    console.warn("Popup blocked — please allow popups for this site.");
+    showErrorMessage("אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה.");
+  }
+
+  document.body.removeChild(form);
+}
 
   function showSuccessMessage(message) {
       let successDiv = document.createElement("div");
