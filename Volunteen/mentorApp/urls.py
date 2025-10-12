@@ -19,6 +19,7 @@ urlpatterns = [
     path('review_task/', views.review_task, name='review_task'),
     path('templates/', views.template_list, name='template_list'),
     path('templates/remove/<int:task_id>/', views.remove_from_templates, name='remove_from_templates'),
+    path("template/<int:task_id>/create_recurrence/", views.create_recurrence, name="create_task_recurrence"),
     path('bonus/', views.bonus_task_selection, name='bonus_task_selection'),
     path('bonus/<int:task_id>/', views.bonus_children_selection, name='bonus_children_selection'),
     path('bonus/assign/<int:task_id>/', views.assign_bonus_multi, name='assign_bonus_multi'),

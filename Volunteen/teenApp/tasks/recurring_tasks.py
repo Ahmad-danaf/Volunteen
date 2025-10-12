@@ -7,7 +7,7 @@ from teenApp.entities import TimeWindowRule,TaskRecurrence, RecurringRun, Freque
 from mentorApp.utils.MentorTaskUtils import MentorTaskUtils
 
 QUIET_HOURS=(22, 8)  # 10 PM to 8 AM
-
+NIGHT_HOUR_THRESHOLD = 20
 class RecurringTaskUtils:
     """Handles auto-creation of recurring task instances."""
 
@@ -31,6 +31,9 @@ class RecurringTaskUtils:
         """
         today = timezone.localdate()
         if recurrence.frequency == Frequency.DAILY:
+            run_hour = recurrence.run_time_local.hour if recurrence.run_time_local else 8
+            if run_hour >= NIGHT_HOUR_THRESHOLD:
+                return today + timedelta(days=1)
             return today
         elif recurrence.frequency == Frequency.EVERY_X_DAYS:
             interval = recurrence.interval_days or 1

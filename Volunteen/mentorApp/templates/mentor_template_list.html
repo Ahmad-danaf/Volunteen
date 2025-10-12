@@ -24,6 +24,17 @@
         color: white !important;
     }
     
+    .btn-outline-secondary {
+        color: #6c757d !important; 
+        border-color: #6c757d !important;
+        background-color: white !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6c757d !important;
+        color: white !important;
+    }
+    
 </style>
 {% endblock %}
 {% block content %}
@@ -80,6 +91,18 @@
                                 <span class="d-inline d-md-none ms-1">שכפל</span>
                                 <!-- Longer label for medium and up -->
                                 <span class="d-none d-md-inline ms-1">שכפל משימה</span>
+                                <span></span>
+                                </a>
+
+                                <!-- Edit Button -->
+                                <a href="{% url 'mentorApp:edit_task' task.id %}" 
+                                class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                                style="color: #6c757d; border-color: #6c757d;">
+                                <i class="fas fa-edit"></i>
+                                <!-- Short label for small screens -->
+                                <span class="d-inline d-md-none ms-1">ערוך</span>
+                                <!-- Longer label for medium and up -->
+                                <span class="d-none d-md-inline ms-1">ערוך משימה</span>
                                 </a>
 
                                 <!-- Remove Button -->
