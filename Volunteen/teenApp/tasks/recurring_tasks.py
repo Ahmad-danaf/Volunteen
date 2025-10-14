@@ -23,13 +23,14 @@ class RecurringTaskUtils:
     @staticmethod
     def _get_new_deadline(recurrence: TaskRecurrence) -> timezone.datetime.date:
         """
-        Compute a new deadline date based on recurrence frequency.
-        - DAILY → today
-        - EVERY_X_DAYS → today + (interval_days - 1)
-        - WEEKLY → today + 7
-        - MONTHLY → today + 30 (approximation)
+        Compute the next deadline date for a recurring task.
+        - If deadline_offset_days is set → use it.
+        - Else use frequency logic with intelligent weekly adjustment.
         """
         today = timezone.localdate()
+        if recurrence.deadline_offset_days is not None:
+            return today + timedelta(days=recurrence.deadline_offset_days)
+        
         if recurrence.frequency == Frequency.DAILY:
             run_hour = recurrence.run_time_local.hour if recurrence.run_time_local else 8
             if run_hour >= NIGHT_HOUR_THRESHOLD:
@@ -39,7 +40,17 @@ class RecurringTaskUtils:
             interval = recurrence.interval_days or 1
             return today + timedelta(days=interval - 1)
         elif recurrence.frequency == Frequency.WEEKLY:
-            return today + timedelta(days=7)
+            weekdays = recurrence.by_weekday or []
+            if weekdays:
+                now_weekday = today.weekday()
+                days_ahead = min(
+                    ((d - now_weekday) % 7) or 7
+                    for d in weekdays
+                    if d != now_weekday
+                )
+                next_day = today + timedelta(days=days_ahead)
+                return next_day - timedelta(days=1)
+            return today + timedelta(days=6)  
         elif recurrence.frequency == Frequency.MONTHLY:
             return today + timedelta(days=30)
         return today + timedelta(days=1)

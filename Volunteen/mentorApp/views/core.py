@@ -13,7 +13,7 @@ from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
 from django.utils import timezone
 import json
-from datetime import time
+from datetime import datetime, time
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, F, IntegerField, Value, ExpressionWrapper, Subquery, OuterRef
@@ -562,47 +562,6 @@ def template_list(request):
     }
     return render(request, 'mentor_template_list.html', context)
     
-
-@login_required
-@require_POST
-def create_recurrence(request, task_id):
-    mentor = request.user.mentor
-    task = get_object_or_404(Task, id=task_id, assigned_mentors=mentor, is_template=True)
-    if hasattr(task, "recurrence"):
-        return JsonResponse({"success": False, "message": "כבר קיימת משימה חוזרת לתבנית זו."}, status=400)
-    
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-    except Exception as e:
-        return JsonResponse({"success": False, "message": f"שגיאת JSON ({e})"}, status=400)
-
-    frequency = data.get("frequency", Frequency.DAILY)
-    run_time_str = data.get("run_time_local", "10:00")
-    interval_days = data.get("interval_days")
-    by_weekday = data.get("by_weekday", [])
-    day_of_month = data.get("day_of_month")
-    try:
-        hours, minutes = map(int, run_time_str.split(":"))
-        run_time = time(hours, minutes)
-    except Exception as e:
-        run_time=time(10, 0)
-
-    rec = TaskRecurrence.objects.create(
-        task=task,
-        frequency=frequency,
-        interval_days=interval_days if frequency == Frequency.EVERY_X_DAYS else None,
-        by_weekday=by_weekday if frequency == Frequency.WEEKLY else [],
-        day_of_month=day_of_month if frequency == Frequency.MONTHLY else None,
-        run_time_local=run_time,
-        start_date=timezone.localdate(),
-        is_active=True,
-    )
-
-    return JsonResponse({
-        "success": True,
-        "message": f"המשימה נוספה כחוזרת ({rec.get_frequency_display()})",
-        "recurrence_id": rec.id,
-    })
     
 @login_required
 def remove_from_templates(request, task_id):

@@ -1,153 +1,397 @@
 {% load static %}
 <!DOCTYPE html>
-
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Volunteen Mentor</title>
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papNM6Qb4K8bIKGMiEwK5MFO0N6umx1N8iBt8n+V0g1LFeSTU1R+blXg1NRw0K5+eYhNqB5sBmXKZrKf5Qk5Kg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דף הבית - מנטור</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
 
-  <!-- Tailwind CDN (JIT mode) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Tailwind config override for Volunteen orange palette and Hebrew fonts
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-          colors: {
-            primary: {
-              DEFAULT: '#fb923c', // orange‑400
-              dark: '#f97316',   // orange‑500
-            }
-          },
-          keyframes: {
-            fadeSlide: {
-              '0%': { opacity: 0, transform: 'translateY(12px)' },
-              '100%': { opacity: 1, transform: 'translateY(0)' }
-            }
-          },
-          animation: {
-            fadeSlide: 'fadeSlide 0.6s ease forwards'
-          }
+    <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon-iphone-60x60.png' %}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{% static 'images/apple-touch-icon-ipad-76x76.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone-retina-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-touch-icon-ipad-retina-152x152.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Heebo', sans-serif;
         }
-      }
-    }
-  </script>
-
-
+        
+        /* Orange & Blue gradient background animation */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #f97316, #fb923c, #3b82f6, #60a5fa);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Card hover effect */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-hover:active {
+            transform: scale(0.95);
+        }
+        
+        /* Shimmer effect */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Coin pulse animation */
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(249, 115, 22, 0.8);
+            }
+        }
+        
+        .coin-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        /* Fade in animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        
+        /* Icon background gradient - Orange theme */
+        .icon-gradient {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        }
+        
+        /* Orange gradient variations */
+        .orange-gradient-1 {
+            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+        }
+        
+        .orange-gradient-2 {
+            background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+        }
+        
+        .blue-gradient-1 {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .blue-gradient-2 {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
+        
+        .orange-blue-gradient {
+            background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
+        }
+        
+        /* Message toast animation */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .message-toast {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(249, 115, 22, 0.5);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(249, 115, 22, 0.7);
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-primary-dark via-orange-900 to-black text-white flex flex-col">
-
-  <!-- Header & greeting -->
-  <header class="px-4 pt-6 pb-4 text-center animate-fadeSlide">
-    <h1 class="text-2xl font-bold mb-1">שלום {{ mentor_user_name }} 👋</h1>
-    <p class="text-sm opacity-80">{{ motivation_line }}</p>
-
-    <!-- Available TeenCoins badge -->
-    <div class="mt-4 flex justify-center">
-      <div class="flex items-center gap-2 bg-primary/20 backdrop-blur rounded-full px-4 py-1 text-sm shadow-md">
-        <i class="fas fa-coins text-yellow-300"></i>
-        <span>טינקואינס זמינים: {{ available_teencoins }}</span>
-      </div>
+<body class="gradient-bg min-h-screen overflow-x-hidden">
+    <!-- Messages Toast -->
+    {% if messages %}
+    <div class="fixed top-4 left-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="message-toast glass rounded-2xl p-4 text-white shadow-2xl">
+            <p class="text-sm font-medium">{{ message }}</p>
+        </div>
+        {% endfor %}
     </div>
-  </header>
+    {% endif %}
 
-  <!-- Django dynamic messages -->
-  {% if messages %}
-  <section class="space-y-3 px-4">
-    {% for message in messages %}
-      <div class="relative bg-primary/30 border border-primary rounded-lg p-3 text-sm flex items-center justify-between shadow-lg animate-fadeSlide">
-        <span>{{ message }}</span>
-        <button type="button" aria-label="סגור" class="text-white/70 hover:text-white" onclick="this.parentElement.remove();">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    {% endfor %}
-  </section>
-  {% endif %}
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-6 max-w-md">
+        
+        <!-- Header Section -->
+        <header class="fade-in-up delay-1 mb-8">
+            <div class="glass rounded-3xl p-6 shadow-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white mb-1">
+                            שלום, {{ mentor_user_name }}
+                        </h1>
+                        <p class="text-white/80 text-sm">{{ motivation_line }}</p>
+                    </div>
+                    <div class="w-16 h-16 rounded-full icon-gradient flex items-center justify-center shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- TeenCoins Display -->
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-4 coin-glow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-white/90">סך נקודות זמינות</p>
+                            <p class="text-3xl font-bold text-white mt-1">{{ available_teencoins }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-  <!-- Main action grid -->
-  <main class="flex-1 flex flex-col mt-4">
-    <div id="actionGrid" class="grid grid-cols-2 gap-4 px-4 auto-rows-fr">
-      <!-- Each anchor = action tile -->
-      <a href="{% url 'mentorApp:mentor_add_task' %}" class="mentor-btn tile">
-        <i class="fas fa-plus text-xl"></i>
-        הוספת משימה
-      </a>
+        <!-- Quick Actions Grid -->
+        <section class="fade-in-up delay-2 mb-6">
+            <h2 class="text-white text-xl font-bold mb-4 px-2">פעולות מהירות</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Approve Tasks Card -->
+                <a href="{% url 'mentorApp:mentor_task_images' %}" class="card-hover glass rounded-3xl p-6 shadow-xl block group">
+                    <div class="blue-gradient-1 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-1">אישור משימות</h3>
+                    <p class="text-white/70 text-xs">בדוק והאשר</p>
+                </a>
 
-      <a href="{% url 'mentorApp:template_list' %}" class="mentor-btn tile">
-        <i class="fas fa-copy text-xl"></i>
-        משימות לשכפול
-      </a>
+                <!-- Template Tasks Card -->
+                <a href="{% url 'mentorApp:template_list' %}" class="card-hover glass rounded-3xl p-6 shadow-xl block group">
+                    <div class="orange-gradient-1 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-1">משימות לשכפול</h3>
+                    <p class="text-white/70 text-xs">תבניות מוכנות</p>
+                </a>
 
-      <a href="{% url 'mentorApp:mentor_task_list' %}" class="mentor-btn tile">
-        <i class="fas fa-tasks text-xl"></i>
-        רשימת משימות
-      </a>
+                <!-- Recurring Tasks Card -->
+                <a href="{% url 'mentorApp:recurrence_dashboard' %}" class="card-hover glass rounded-3xl p-6 shadow-xl block group">
+                    <div class="blue-gradient-2 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-1">משימות חוזרות</h3>
+                    <p class="text-white/70 text-xs">משימות קבועות</p>
+                </a>
 
-      <a href="{% url 'mentorApp:mentor_task_images' %}" class="mentor-btn tile">
-        <i class="fas fa-images text-xl"></i>
-        אישור משימות
-      </a>
+                <!-- Bonus Points Card -->
+                <a href="{% url 'mentorApp:bonus_task_selection' %}" class="card-hover glass rounded-3xl p-6 shadow-xl block group">
+                    <div class="orange-gradient-2 w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-1">מתן נקודות בונוס</h3>
+                    <p class="text-white/70 text-xs">תגמול מיוחד</p>
+                </a>
+            </div>
+        </section>
 
-      <a href="{% url 'mentorApp:mentor_children_details' %}" class="mentor-btn tile">
-        <i class="fas fa-child text-xl"></i>
-        הצג פרטי הילדים
-      </a>
+        <!-- Management Section -->
+        <section class="fade-in-up delay-3 mb-6">
+            <h2 class="text-white text-xl font-bold mb-4 px-2">ניהול</h2>
+            <div class="glass rounded-3xl shadow-xl overflow-hidden">
+                <a href="{% url 'mentorApp:mentor_add_task' %}" class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
+                    <div class="orange-gradient-1 w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold text-base">הוספת משימה</h3>
+                        <p class="text-white/60 text-xs mt-0.5">צור משימה חדשה</p>
+                    </div>
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
 
-      <a href="{% url 'mentorApp:bonus_task_selection' %}" class="mentor-btn tile">
-        <i class="fas fa-gift text-xl"></i>
-        מתן נקודות בונוס
-      </a>
+                <a href="{% url 'mentorApp:mentor_task_list' %}" class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
+                    <div class="blue-gradient-1 w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold text-base">רשימת משימות</h3>
+                        <p class="text-white/60 text-xs mt-0.5">נהל את כל המשימות</p>
+                    </div>
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
 
-      <a href="{% url 'mentorApp:mentor_group_list' %}" class="mentor-btn tile">
-        <i class="fas fa-users text-xl"></i>
-        רשימת קבוצות
-      </a>
+                <a href="{% url 'mentorApp:mentor_children_details' %}" class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
+                    <div class="orange-blue-gradient w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold text-base">הצג פרטי הילדים</h3>
+                        <p class="text-white/60 text-xs mt-0.5">מידע מלא</p>
+                    </div>
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
 
-      <a href="{% url 'mentorApp:children_performance' %}" class="mentor-btn tile">
-        <i class="fas fa-star text-xl"></i>
-        ביצועי ילדים
-      </a>
-       <a href="{% url 'teenApp:logout_view' %}" class="mentor-btn tile">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>יציאה</span>
-      </a>
+                <a href="{% url 'mentorApp:mentor_group_list' %}" class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
+                    <div class="blue-gradient-2 w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold text-base">רשימת קבוצות</h3>
+                        <p class="text-white/60 text-xs mt-0.5">ניהול קבוצות</p>
+                    </div>
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+
+                <a href="{% url 'mentorApp:children_performance' %}" class="flex items-center p-5 active:bg-white/10 transition-colors">
+                    <div class="orange-gradient-2 w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-white font-semibold text-base">ביצועי ילדים</h3>
+                        <p class="text-white/60 text-xs mt-0.5">סטטיסטיקות</p>
+                    </div>
+                    <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Logout Button -->
+        <div class="fade-in-up delay-4 mb-8">
+            <a href="{% url 'teenApp:logout_view' %}" class="glass rounded-3xl p-5 shadow-xl flex items-center justify-center active:scale-95 transition-transform">
+                <svg class="w-6 h-6 text-white ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                <span class="text-white font-semibold text-lg">יציאה</span>
+            </a>
+        </div>
+
     </div>
-  </main>
 
-  <!-- Footer -->
-  <footer class="py-4 text-center text-xs opacity-40">
-    © 2025 Volunteen
-  </footer>
+    <script>
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.message-toast');
+            messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s, transform 0.5s';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
 
-  <style>
-    .tile {
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;
-      background-color:rgba(251,146,60,0.25); /* orange */
-      border-radius:1rem;
-      padding:1.75rem 0;
-      text-align:center;
-      font-size:.875rem;
-      box-shadow:0 4px 6px rgba(0,0,0,.3);
-      transition:transform .15s ease, background-color .15s ease;
-      animation: fadeSlide .6s ease forwards;
-    }
-    .tile:hover { background-color:rgba(251,146,60,.35); transform:translateY(-2px); }
-  </style>
+        // Add haptic feedback simulation on card taps 
+        document.querySelectorAll('.card-hover, a').forEach(el => {
+            el.addEventListener('touchstart', function() {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+            });
+        });
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const tiles = document.querySelectorAll('#actionGrid .tile');
-      tiles.forEach((tile, i) => {
-        tile.style.animationDelay = `${i * 60}ms`;
-      });
-    });
-  </script>
+        // Parallax effect on scroll
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            const header = document.querySelector('header');
+            if (header) {
+                const offset = currentScroll * 0.5;
+                header.style.transform = `translateY(${offset}px)`;
+            }
+            lastScroll = currentScroll;
+        });
+    </script>
 </body>
 </html>

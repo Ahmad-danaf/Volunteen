@@ -236,7 +236,7 @@ class TaskRecurrenceAdmin(admin.ModelAdmin):
             'fields': ('task', 'frequency', 'is_active')
         }),
         (_("Schedule Settings"), {
-            'fields': ('interval_days', 'by_weekday', 'day_of_month', 'run_time_local'),
+            'fields': ('interval_days', 'by_weekday', 'day_of_month', 'run_time_local', 'deadline_offset_days'),
             'classes': ('collapse',),
             'description': _("Configure based on frequency type")
         }),

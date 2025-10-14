@@ -24,6 +24,11 @@ class TaskRecurrence(models.Model):
 
     # ---- Schedule definition ----
     frequency = models.CharField(max_length=16, choices=Frequency.choices)
+    deadline_offset_days = models.PositiveSmallIntegerField(
+    null=True, blank=True,
+    help_text="Optional fixed offset (in days) to add to each generated deadline. "
+                "If not set, the system auto-calculates a non-duplicate date for weekly recurrences."
+    )
     interval_days = models.PositiveIntegerField(
         null=True, blank=True,
         help_text="Used only when frequency=every_x_days (>=1).",
