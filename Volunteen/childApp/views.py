@@ -616,8 +616,6 @@ def submit_redemption_request(request):
                 status=403
             )
         total_points_needed = sum(item['quantity'] * item['points'] for item in selected_rewards)
-
-        # Lock shop's monthly points immediately
         shop.lock_monthly_points(total_points_needed)
 
         now_ts = timezone.now()
@@ -625,7 +623,6 @@ def submit_redemption_request(request):
         for reward_data in selected_rewards:
             reward = get_object_or_404(Reward, id=reward_data['reward_id'])
             req_points = reward_data['quantity'] * reward.points_required
-
             redemption_request = RedemptionRequest.objects.create(
                 child=child,
                 shop=reward.shop,
@@ -636,7 +633,6 @@ def submit_redemption_request(request):
                 locked_at=now_ts,
                 status="pending"
             )
-
             created_request_ids.append(str(redemption_request.id))
 
         hidden_fields = {

@@ -288,32 +288,24 @@
   });
 }
 function openTallyForm(url, hiddenFields) {
-  // Create a hidden form that submits to Tally in a popup
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = url;
-  form.target = "tallyPopup";
-
-  for (const [key, value] of Object.entries(hiddenFields)) {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = key;
-    input.value = value;
-    form.appendChild(input);
+  try {
+    const queryString = new URLSearchParams(hiddenFields).toString();
+    const fullUrl = `${url}?${queryString}`;
+    const popup = window.open(
+      fullUrl,
+      "tallyPopup",
+      "width=500,height=700,scrollbars=yes,resizable=yes"
+    );
+    if (!popup) {
+      console.warn("Popup blocked — please allow popups for this site.");
+      showErrorMessage("אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה.");
+    } else {
+      popup.focus();
+    }
+  } catch (error) {
+    console.error("Error opening Tally form:", error);
+    showErrorMessage("שגיאה בפתיחת הטופס, נסה שוב מאוחר יותר.");
   }
-
-  document.body.appendChild(form);
-
-  // Open Tally popup first, then submit the form
-  const popup = window.open("", "tallyPopup", "width=500,height=700,scrollbars=yes,resizable=yes");
-  if (popup) {
-    form.submit();
-  } else {
-    console.warn("Popup blocked — please allow popups for this site.");
-    showErrorMessage("אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה.");
-  }
-
-  document.body.removeChild(form);
 }
 
   function showSuccessMessage(message) {
