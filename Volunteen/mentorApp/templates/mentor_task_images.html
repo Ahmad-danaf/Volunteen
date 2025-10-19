@@ -5,7 +5,6 @@
 {% block title %}סקירת הוכחות משימה{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
   .animate-in { animation: fadeIn .25s ease-out both; }
   .animate-up { animation: slideUp .25s ease-out both; }
@@ -20,52 +19,81 @@
 
   .skeleton { background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%); background-size:400% 100%; animation: shimmer 1.2s ease-in-out infinite; }
   @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
+  #groupedView, #flatView { transition: opacity .3s ease; }
+.hidden { opacity: 0; pointer-events: none; }
+
 </style>
+<script>
+  tailwind.config = {
+    important: true
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
 {% endblock %}
 
 {% block content %}
 <section class="min-h-screen bg-gray-50 pb-24" dir="rtl">
-  <header id="stickyHeader" class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200 transition-shadow">
-    <div class="px-4 pt-3 pb-2 flex items-center justify-between">
-      <h1 class="text-xl font-extrabold tracking-tight text-gray-900">סקירת הוכחות</h1>
-      <div class="text-xs text-gray-600">
-        <span id="selectedCounter" class="font-semibold">נבחרו: 0</span>
-      </div>
+  <header id="stickyHeader"
+        class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200 transition-shadow">
+
+  <!-- ===== Title & Counter ===== -->
+  <div class="px-4 pt-3 pb-2 flex items-center justify-between">
+    <h1 class="text-xl font-extrabold tracking-tight text-gray-900">סקירת הוכחות</h1>
+    <div class="text-xs text-gray-600">
+      <span id="selectedCounter" class="font-semibold">נבחרו: 0</span>
+    </div>
+  </div>
+
+  <!-- ===== Bulk Action Buttons  ===== -->
+  <div class="px-3 pb-2 flex justify-between gap-2">
+    <button class="flex-1 tap bg-green-600 text-white py-2 rounded-2xl text-sm font-semibold shadow hover:bg-green-700 transition"
+            onclick="openApproveModal('full')">✅ אשר</button>
+
+    <button class="flex-1 tap bg-amber-500 text-white py-2 rounded-2xl text-sm font-semibold shadow hover:bg-amber-600 transition"
+            onclick="openApproveModal('partial')">⚖️ אשר חלקית</button>
+
+    <button class="flex-1 tap bg-red-600 text-white py-2 rounded-2xl text-sm font-semibold shadow hover:bg-red-700 transition"
+            onclick="openRejectModal()">❌ דחה</button>
+  </div>
+
+  <!-- ===== Secondary Controls ===== -->
+  <!-- Secondary action buttons -->
+<div class="px-4 pb-2 flex items-center justify-between gap-2 text-sm font-semibold">
+  <button onclick="toggleSelectAll()"
+          class="tap flex-1 bg-blue-50 text-blue-700 border border-blue-200 py-2 rounded-xl shadow-sm
+                 hover:bg-blue-100 active:scale-[0.97] transition-all">
+    בחר הכול
+  </button>
+
+  <button id="viewToggleBtn"
+          onclick="toggleViewMode()"
+          class="tap flex-1 bg-indigo-50 text-indigo-700 border border-indigo-200 py-2 rounded-xl shadow-sm
+                 hover:bg-indigo-100 active:scale-[0.97] transition-all">
+    הצג רשימה שטוחה
+  </button>
+</div>
+
+
+  <!-- ===== Tabs ===== -->
+  <div class="px-4 pb-3">
+    <div class="grid grid-cols-2 gap-2">
+      <button id="tabOnTime"
+              class="tap tab-btn bg-blue-600 text-white rounded-2xl py-2 text-sm font-semibold shadow"
+              data-target="#panelOnTime">בזמן</button>
+      <button id="tabLate"
+              class="tap tab-btn bg-gray-100 text-gray-700 rounded-2xl py-2 text-sm font-semibold"
+              data-target="#panelLate">מאוחר</button>
     </div>
 
-    <div class="px-4 pb-3 flex gap-2 overflow-x-auto">
-      <!-- Bulk action buttons -->
-      <button class="tap bg-green-600 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-green-700 transition"
-              onclick="openApproveModal('full')">אשר ✅</button>
-
-      <button class="tap bg-amber-500 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-amber-600 transition"
-              onclick="openApproveModal('partial')">אשר חלקית ⚖️</button>
-
-      <button class="tap bg-red-600 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-red-700 transition"
-              onclick="openRejectModal()">דחה ❌</button>
-
-      <div class="ml-auto flex gap-3">
-        <button class="tap text-sm font-semibold text-blue-700" onclick="toggleSelectAll()">בחר הכול</button>
-      </div>
+    <div class="mt-2 text-[12px] text-gray-500 text-center">
+      <button class="tap underline" onclick="toggleSelectTab('#panelOnTime')">בחר הכול (בזמן)</button>
+      <span class="mx-2">•</span>
+      <button class="tap underline" onclick="toggleSelectTab('#panelLate')">בחר הכול (מאוחר)</button>
     </div>
+  </div>
+</header>
 
-    <!-- Tabs -->
-    <div class="px-4 pb-3">
-      <div class="grid grid-cols-2 gap-2">
-        <button id="tabOnTime"
-                class="tap tab-btn bg-blue-600 text-white rounded-2xl py-2 text-sm font-semibold shadow"
-                data-target="#panelOnTime">בזמן</button>
-        <button id="tabLate"
-                class="tap tab-btn bg-gray-100 text-gray-700 rounded-2xl py-2 text-sm font-semibold"
-                data-target="#panelLate">מאוחר</button>
-      </div>
-      <div class="mt-2 text-[12px] text-gray-500">
-        <button class="tap underline" onclick="toggleSelectTab('#panelOnTime')">בחר הכול (בזמן)</button>
-        <span class="mx-2">•</span>
-        <button class="tap underline" onclick="toggleSelectTab('#panelLate')">בחר הכול (מאוחר)</button>
-      </div>
-    </div>
-  </header>
 
   <!-- ===== CONTENT PANELS ===== -->
 
@@ -73,145 +101,213 @@
   {% regroup late_completions by instance.task as late_grouped %}
 
   <!-- On-Time Panel -->
-  <div id="panelOnTime" class="animate-in">
-    {% if ontime_grouped %}
-      {% for group in ontime_grouped %}
-      <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
-        <!-- Task header -->
-        <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
-          <div class="min-w-0">
-            <h2 class="text-base font-bold text-gray-900 truncate">{{ group.grouper.title }}</h2>
-            <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button class="tap text-sm text-blue-700 font-semibold"
-                    onclick="toggleTaskGroup('ontime-{{ forloop.counter }}')">בחר קבוצה</button>
-            <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
-                    onclick="collapseToggle('ontime-wrap-{{ forloop.counter }}', this)">כווץ</button>
-          </div>
-        </header>
+  <div id="groupedView">
+    <div id="panelOnTime" class="animate-in">
+      {% if ontime_grouped %}
+        {% for group in ontime_grouped %}
+        <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <!-- Task header -->
+          <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
+            <div class="min-w-0">
+              <h2 class="text-base font-bold text-gray-900 truncate">{{ group.grouper.title }}</h2>
+              <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="tap text-sm text-blue-700 font-semibold"
+                      onclick="toggleTaskGroup('ontime-{{ forloop.counter }}')">בחר קבוצה</button>
+              <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
+                      onclick="collapseToggle('ontime-wrap-{{ forloop.counter }}', this)">כווץ</button>
+            </div>
+          </header>
 
-        <!-- Task items -->
-        <div id="ontime-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
-          {% for item in group.list %}
-            {% with comp=item.instance %}
-            <label class="flex items-center gap-3 p-3 active:bg-gray-50">
-              <input type="checkbox"
-                     class="task-checkbox accent-blue-600 w-5 h-5"
-                     value="{{ comp.id }}"
-                     data-panel="panelOnTime"
-                     data-group="ontime-{{ forloop.parentloop.counter }}"
-                     onchange="updateCounter()">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="truncate font-medium text-gray-900">
-                    {{ comp.child.user.get_full_name|default:comp.child }}
+          <!-- Task items -->
+          <div id="ontime-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
+            {% for item in group.list %}
+              {% with comp=item.instance %}
+              <label class="flex items-center gap-3 p-3 active:bg-gray-50">
+                <input type="checkbox"
+                      class="task-checkbox accent-blue-600 w-5 h-5"
+                      value="{{ comp.id }}"
+                      data-panel="panelOnTime"
+                      data-group="ontime-{{ forloop.parentloop.counter }}"
+                      onchange="updateCounter()">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="truncate font-medium text-gray-900">
+                      {{ comp.child.user.get_full_name|default:comp.child }}
+                    </div>
+                    <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
                   </div>
-                  <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
+                  {% if comp.mentor_feedback %}
+                    <div class="text-[11px] text-gray-500 mt-0.5 truncate">הערה קודמת: {{ comp.mentor_feedback }}</div>
+                  {% endif %}
                 </div>
-                {% if comp.mentor_feedback %}
-                  <div class="text-[11px] text-gray-500 mt-0.5 truncate">הערה קודמת: {{ comp.mentor_feedback }}</div>
-                {% endif %}
-              </div>
 
-              <!-- Thumbnails (lazy) -->
-              <div class="flex gap-1 shrink-0">
-                {% if comp.checkin_img %}
-                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
-                    <img data-src="{{ comp.checkin_img.url }}"
-                         alt="צ׳ק-אין"
-                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
-                         onclick="openImage('{{ comp.checkin_img.url }}')">
+                <!-- Thumbnails (lazy) -->
+                <div class="flex gap-1 shrink-0">
+                  {% if comp.checkin_img %}
+                    <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                      <img data-src="{{ comp.checkin_img.url }}"
+                          alt="צ׳ק-אין"
+                          class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                          onclick="openImage('{{ comp.checkin_img.url }}')">
+                    </div>
+                  {% endif %}
+                  {% if comp.checkout_img %}
+                    <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                      <img data-src="{{ comp.checkout_img.url }}"
+                          alt="צ׳ק-אאוט"
+                          class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                          onclick="openImage('{{ comp.checkout_img.url }}')">
+                    </div>
+                  {% endif %}
+                </div>
+              </label>
+              {% endwith %}
+            {% endfor %}
+          </div>
+        </section>
+        {% endfor %}
+      {% else %}
+        <p class="text-center text-gray-500 mt-6">אין הוכחות בזמן להצגה.</p>
+      {% endif %}
+    </div>
+
+    <!-- Late Panel -->
+    <div id="panelLate" class="hidden">
+      {% if late_grouped %}
+        {% for group in late_grouped %}
+        <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
+          <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
+            <div class="min-w-0">
+              <h2 class="text-base font-bold text-gray-900 truncate">
+                {{ group.grouper.title }} <span class="text-xs text-amber-600">(מאוחר)</span>
+              </h2>
+              <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="tap text-sm text-blue-700 font-semibold"
+                      onclick="toggleTaskGroup('late-{{ forloop.counter }}')">בחר קבוצה</button>
+              <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
+                      onclick="collapseToggle('late-wrap-{{ forloop.counter }}', this)">כווץ</button>
+            </div>
+          </header>
+
+          <div id="late-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
+            {% for item in group.list %}
+              {% with comp=item.instance %}
+              <label class="flex items-center gap-3 p-3 active:bg-gray-50">
+                <input type="checkbox"
+                      class="task-checkbox accent-blue-600 w-5 h-5"
+                      value="{{ comp.id }}"
+                      data-panel="panelLate"
+                      data-group="late-{{ forloop.parentloop.counter }}"
+                      onchange="updateCounter()">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="truncate font-medium text-gray-900">
+                      {{ comp.child.user.get_full_name|default:comp.child }}
+                    </div>
+                    <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
                   </div>
-                {% endif %}
-                {% if comp.checkout_img %}
-                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
-                    <img data-src="{{ comp.checkout_img.url }}"
-                         alt="צ׳ק-אאוט"
-                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
-                         onclick="openImage('{{ comp.checkout_img.url }}')">
-                  </div>
-                {% endif %}
-              </div>
-            </label>
-            {% endwith %}
-          {% endfor %}
-        </div>
-      </section>
-      {% endfor %}
-    {% else %}
-      <p class="text-center text-gray-500 mt-6">אין הוכחות בזמן להצגה.</p>
-    {% endif %}
+                  <div class="text-[11px] text-amber-600 mt-0.5">בדיקה: מאוחר</div>
+                </div>
+
+                <div class="flex gap-1 shrink-0">
+                  {% if comp.checkin_img %}
+                    <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                      <img data-src="{{ comp.checkin_img.url }}"
+                          alt="צ׳ק-אין"
+                          class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                          onclick="openImage('{{ comp.checkin_img.url }}')">
+                    </div>
+                  {% endif %}
+                  {% if comp.checkout_img %}
+                    <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                      <img data-src="{{ comp.checkout_img.url }}"
+                          alt="צ׳ק-אאוט"
+                          class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                          onclick="openImage('{{ comp.checkout_img.url }}')">
+                    </div>
+                  {% endif %}
+                </div>
+              </label>
+              {% endwith %}
+            {% endfor %}
+          </div>
+        </section>
+        {% endfor %}
+      {% else %}
+        <p class="text-center text-gray-500 mt-6">אין הוכחות מאוחרות להצגה.</p>
+      {% endif %}
+    </div>
   </div>
 
-  <!-- Late Panel -->
-  <div id="panelLate" class="hidden">
-    {% if late_grouped %}
-      {% for group in late_grouped %}
-      <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
-        <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
-          <div class="min-w-0">
-            <h2 class="text-base font-bold text-gray-900 truncate">
-              {{ group.grouper.title }} <span class="text-xs text-amber-600">(מאוחר)</span>
-            </h2>
-            <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button class="tap text-sm text-blue-700 font-semibold"
-                    onclick="toggleTaskGroup('late-{{ forloop.counter }}')">בחר קבוצה</button>
-            <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
-                    onclick="collapseToggle('late-wrap-{{ forloop.counter }}', this)">כווץ</button>
-          </div>
-        </header>
+  <!-- ===== Flat Mode ===== -->
+<div id="flatView" class="hidden">
+  {% for entry in on_time_completions %}
+    {% with comp=entry.instance %}
+      <label class="flex items-center gap-3 p-3 border-b border-gray-100 bg-white">
+        <input type="checkbox" class="task-checkbox accent-blue-600 w-5 h-5"
+               value="{{ comp.id }}" onchange="updateCounter()">
 
-        <div id="late-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
-          {% for item in group.list %}
-            {% with comp=item.instance %}
-            <label class="flex items-center gap-3 p-3 active:bg-gray-50">
-              <input type="checkbox"
-                     class="task-checkbox accent-blue-600 w-5 h-5"
-                     value="{{ comp.id }}"
-                     data-panel="panelLate"
-                     data-group="late-{{ forloop.parentloop.counter }}"
-                     onchange="updateCounter()">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="truncate font-medium text-gray-900">
-                    {{ comp.child.user.get_full_name|default:comp.child }}
-                  </div>
-                  <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
-                </div>
-                <div class="text-[11px] text-amber-600 mt-0.5">בדיקה: מאוחר</div>
-              </div>
-
-              <div class="flex gap-1 shrink-0">
-                {% if comp.checkin_img %}
-                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
-                    <img data-src="{{ comp.checkin_img.url }}"
-                         alt="צ׳ק-אין"
-                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
-                         onclick="openImage('{{ comp.checkin_img.url }}')">
-                  </div>
-                {% endif %}
-                {% if comp.checkout_img %}
-                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
-                    <img data-src="{{ comp.checkout_img.url }}"
-                         alt="צ׳ק-אאוט"
-                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
-                         onclick="openImage('{{ comp.checkout_img.url }}')">
-                  </div>
-                {% endif %}
-              </div>
-            </label>
-            {% endwith %}
-          {% endfor %}
+        <div class="flex-1">
+          <div class="font-medium text-gray-900 truncate">
+            {{ comp.child.user.get_full_name }}
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ comp.task.title }} — {{ comp.completion_date|date:"d/m H:i" }}
+          </div>
         </div>
-      </section>
-      {% endfor %}
-    {% else %}
-      <p class="text-center text-gray-500 mt-6">אין הוכחות מאוחרות להצגה.</p>
-    {% endif %}
-  </div>
+
+        <div class="flex gap-1 shrink-0">
+          {% if comp.checkin_img %}
+            <img data-src="{{ comp.checkin_img.url }}"
+                 class="lazy-img h-12 w-12 object-cover rounded-lg cursor-zoom-in"
+                 onclick="openImage('{{ comp.checkin_img.url }}')">
+          {% endif %}
+          {% if comp.checkout_img %}
+            <img data-src="{{ comp.checkout_img.url }}"
+                 class="lazy-img h-12 w-12 object-cover rounded-lg cursor-zoom-in"
+                 onclick="openImage('{{ comp.checkout_img.url }}')">
+          {% endif %}
+        </div>
+      </label>
+    {% endwith %}
+  {% endfor %}
+
+  {% for entry in late_completions %}
+    {% with comp=entry.instance %}
+      <label class="flex items-center gap-3 p-3 border-b border-gray-100 bg-white">
+        <input type="checkbox" class="task-checkbox accent-blue-600 w-5 h-5"
+               value="{{ comp.id }}" onchange="updateCounter()">
+
+        <div class="flex-1">
+          <div class="font-medium text-gray-900 truncate">
+            {{ comp.child.user.get_full_name }}
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ comp.task.title }} — {{ comp.completion_date|date:"d/m H:i" }}
+            <span class="text-amber-600">(מאוחר)</span>
+          </div>
+        </div>
+
+        <div class="flex gap-1 shrink-0">
+          {% if comp.checkin_img %}
+            <img data-src="{{ comp.checkin_img.url }}"
+                 class="lazy-img h-12 w-12 object-cover rounded-lg cursor-zoom-in"
+                 onclick="openImage('{{ comp.checkin_img.url }}')">
+          {% endif %}
+          {% if comp.checkout_img %}
+            <img data-src="{{ comp.checkout_img.url }}"
+                 class="lazy-img h-12 w-12 object-cover rounded-lg cursor-zoom-in"
+                 onclick="openImage('{{ comp.checkout_img.url }}')">
+          {% endif %}
+        </div>
+      </label>
+    {% endwith %}
+  {% endfor %}
+</div>
 
   <!-- ===== Bottom-Sheet Modal (Approve/Partial/Reject) ===== -->
   <div id="reviewModal" class="hidden fixed inset-0 z-50">
@@ -231,7 +327,7 @@
       <label class="block text-sm font-semibold text-gray-700 mt-3 mb-1">הערת מנטור (לא חובה)</label>
       <textarea id="mentorFeedback"
                 class="w-full border rounded-2xl px-3 py-2 h-20 focus-glow"
-                placeholder="הקלד/י משוב קצר לחניך..."></textarea>
+                placeholder="הקלד/י משוב קצר לילד/ה..."></textarea>
 
       <div class="flex gap-2 mt-4">
         <button id="submitBtn"
@@ -256,7 +352,16 @@
 
 <script>
   const CSRF_TOKEN = '{{ csrf_token }}';
+  let flatMode = false;
 
+  function toggleViewMode() {
+  flatMode = !flatMode;
+  document.getElementById('groupedView').classList.toggle('hidden', flatMode);
+  document.getElementById('flatView').classList.toggle('hidden', !flatMode);
+
+  const btn = document.getElementById('viewToggleBtn');
+  btn.textContent = flatMode ? 'הצג לפי משימות' : 'הצג רשימה שטוחה';
+}
   // ==== Sticky header elevation on scroll ====
   const stickyHeader = document.getElementById('stickyHeader');
   document.addEventListener('scroll', () => {
