@@ -29,9 +29,9 @@ class TaskForm(forms.ModelForm):
             'proof_requirement', 'send_whatsapp_on_assign'
         ]       
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'points': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'points': forms.NumberInput(attrs={'class': 'form-control'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'img': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
             'additional_details': forms.Textarea(attrs={'class': 'form-control'}),

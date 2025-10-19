@@ -300,6 +300,24 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
                 </a>
+                
+                <a href="{% url 'mentorApp:task_group_dashboard' %}" 
+                  class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
+                  <div class="orange-blue-gradient w-12 h-12 rounded-xl flex items-center justify-center ml-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 7h18M3 12h18M3 17h18M8 7v10M16 7v10" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-white font-semibold text-base">קבוצות משימות</h3>
+                    <p class="text-white/60 text-xs mt-0.5">נהל קבוצות משימות שלך</p>
+                  </div>
+                  <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 19l-7-7 7-7" />
+                  </svg>
+                </a>
 
                 <a href="{% url 'mentorApp:mentor_children_details' %}" class="flex items-center p-5 border-b border-white/10 active:bg-white/10 transition-colors">
                     <div class="orange-blue-gradient w-12 h-12 rounded-xl flex items-center justify-center ml-4">

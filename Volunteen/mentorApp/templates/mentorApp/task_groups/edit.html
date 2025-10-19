@@ -1,0 +1,230 @@
+{% extends 'mentor_primary_base.html' %} {% load static %} 
+{% block title %}עריכת קבוצת משימות - {{ task_group.name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          hebrew: ["Arial", "Tahoma", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  .rtl {
+    direction: rtl;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rtl">
+  <div class="max-w-md mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div class="flex items-center mb-4">
+        <a
+          href="{% url 'mentorApp:task_group_detail' task_group.id %}"
+          class="ml-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <i class="fas fa-arrow-right text-gray-600"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-800 font-hebrew">
+          עריכת קבוצה
+        </h1>
+      </div>
+      <p class="text-gray-600 font-hebrew">עדכן את פרטי הקבוצה</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Group Name -->
+        <div>
+          <label
+            for="name"
+            class="block text-sm font-bold text-gray-700 mb-2 font-hebrew"
+          >
+            שם הקבוצה <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{ name|default:task_group.name }}"
+            placeholder="שם הקבוצה"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-hebrew"
+            maxlength="120"
+            required
+          />
+          <div class="mt-1 text-xs text-gray-500 font-hebrew">
+            מקסימום 120 תווים
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label
+            for="description"
+            class="block text-sm font-bold text-gray-700 mb-2 font-hebrew"
+          >
+            תיאור הקבוצה
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            placeholder="תיאור הקבוצה..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none font-hebrew"
+          >
+{{ description|default:task_group.description }}</textarea
+          >
+        </div>
+
+        <!-- Active Status -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <label
+                for="is_active"
+                class="font-bold text-gray-700 text-sm font-hebrew"
+              >
+                קבוצה פעילה
+              </label>
+              <p class="text-xs text-gray-600 mt-1 font-hebrew">
+                קבוצות לא פעילות לא יוצגו במקומות מסוימים
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                id="is_active"
+                name="is_active"
+                class="sr-only peer"
+                {%
+                if
+                task_group.is_active
+                %}checked{%
+                endif
+                %}
+              />
+              <div
+                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
+              ></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Group Stats -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 class="font-bold text-blue-800 text-sm mb-2 font-hebrew">
+            <i class="fas fa-chart-bar ml-2"></i>
+            סטטיסטיקות הקבוצה
+          </h3>
+          <div class="grid grid-cols-2 gap-4 text-xs">
+            <div class="text-center">
+              <div class="font-bold text-blue-800">
+                {{ task_group.tasks.count }}
+              </div>
+              <div class="text-blue-600 font-hebrew">משימות</div>
+            </div>
+            <div class="text-center">
+              <div class="font-bold text-blue-800">
+                {{ task_group.created_at|date:"d/m/Y" }}
+              </div>
+              <div class="text-blue-600 font-hebrew">נוצר</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col space-y-3 pt-4">
+          <button
+            type="submit"
+            class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+          >
+            <i class="fas fa-save ml-2"></i>
+            שמור שינויים
+          </button>
+
+          <a
+            href="{% url 'mentorApp:task_group_detail' task_group.id %}"
+            class="w-full bg-gray-100 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times ml-2"></i>
+            ביטול
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+      <h3 class="font-bold text-gray-800 text-sm mb-4 font-hebrew">
+        <i class="fas fa-bolt text-yellow-500 ml-2"></i>
+        פעולות מהירות
+      </h3>
+      <div class="space-y-3">
+        <a
+          href="{% url 'mentorApp:task_group_detail' task_group.id %}"
+          class="w-full bg-blue-50 text-blue-600 font-medium py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flex items-center"
+        >
+          <i class="fas fa-users ml-2"></i>
+          נהל חניכים בקבוצה
+        </a>
+
+        <a
+          href="{% url 'mentorApp:delete_task_group' task_group.id %}"
+          class="w-full bg-red-50 text-red-600 font-medium py-2 px-4 rounded-lg hover:bg-red-100 transition-colors flex items-center"
+          onclick="return confirm('האם אתה בטוח שברצונך למחוק קבוצה זו?')"
+        >
+          <i class="fas fa-trash ml-2"></i>
+          מחק קבוצה
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-resize textarea
+  document.getElementById('description').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+  });
+
+  // Character counter
+  document.getElementById('name').addEventListener('input', function() {
+      const maxLength = 120;
+      const currentLength = this.value.length;
+
+      // You can add visual feedback here if needed
+      if (currentLength > maxLength - 10) {
+          this.classList.add('border-yellow-400');
+          this.classList.remove('border-gray-300');
+      } else {
+          this.classList.remove('border-yellow-400');
+          this.classList.add('border-gray-300');
+      }
+  });
+
+  // Show messages
+  {% if messages %}
+      {% for message in messages %}
+          setTimeout(() => {
+              const alert = document.createElement('div');
+              alert.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-medium ${message.tags === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+              alert.textContent = '{{ message }}';
+              document.body.appendChild(alert);
+
+              setTimeout(() => {
+                  alert.remove();
+              }, 4000);
+          }, 100);
+      {% endfor %}
+  {% endif %}
+</script>
+{% endblock %}

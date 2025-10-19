@@ -7,7 +7,7 @@ from childApp.models import Child
 from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponseBadRequest
 from mentorApp.models import Mentor,MentorGroup
-from teenApp.entities import Task, TimeWindowRule, TaskRecurrence, Frequency
+from teenApp.entities import Task, TimeWindowRule, TaskRecurrence, Frequency,TaskGroup
 from mentorApp.forms import TaskForm,MentorGroupForm, validate_timewindow_payload
 from teenApp.interface_adapters.forms import DateRangeForm
 from teenApp.utils.NotificationManager import NotificationManager
@@ -471,10 +471,23 @@ def mentor_task_images(request):
             late.append(entry)
         else:
             on_time.append(entry)
+            
+    task_groups = (
+        TaskGroup.objects.filter(created_by=mentor, is_active=True)
+        .order_by("name")
+        .distinct()
+    )
+    
+    all_dates = completions.values_list("completion_date", flat=True)
+    date_min = min(all_dates).date() if all_dates else None
+    date_max = max(all_dates).date() if all_dates else None
 
     context = {
         "on_time_completions": on_time,
         "late_completions": late,
+        "task_groups": task_groups,
+        "date_min": date_min,
+        "date_max": date_max,
     }
 
     return render(request, "mentor_task_images.html", context)
@@ -555,10 +568,11 @@ def template_list(request):
     paginator = Paginator(template_tasks, 7)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+    task_groups = TaskGroup.objects.filter(created_by=mentor)
     context = {
         'page_obj': page_obj,
         'search_query': search_query,
+        'task_groups': task_groups,
     }
     return render(request, 'mentor_template_list.html', context)
     

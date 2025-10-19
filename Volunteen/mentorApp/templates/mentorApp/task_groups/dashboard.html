@@ -1,0 +1,250 @@
+{% extends 'mentor_primary_base.html' %}
+{% load static %}
+{% block title %}לוח בקרת קבוצות משימות{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          hebrew: ["Arial", "Tahoma", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  .rtl {
+    direction: rtl;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rtl">
+  <div class="max-w-md mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-800 font-hebrew">
+          קבוצות משימות
+        </h1>
+        <div
+          class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+        >
+          {{ total_groups }} קבוצות
+        </div>
+      </div>
+
+      <!-- Create New Group Button -->
+      <a
+        href="{% url 'mentorApp:create_task_group' %}"
+        class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+      >
+        <i class="fas fa-plus ml-2"></i>
+        צור קבוצה חדשה
+      </a>
+    </div>
+
+    <!-- Groups List -->
+    {% if task_groups %}
+    <div class="space-y-4">
+      {% for group in task_groups %}
+      <div
+        class="bg-white rounded-xl shadow-lg p-5 hover:shadow-xl transition-shadow duration-300"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center mb-2">
+              <h3 class="text-lg font-bold text-gray-800 font-hebrew">
+                {{ group.name }}
+              </h3>
+              {% if not group.is_active %}
+              <span
+                class="mr-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full"
+              >
+                לא פעיל
+              </span>
+              {% endif %}
+            </div>
+
+            {% if group.description %}
+            <p class="text-gray-600 text-sm mb-3 font-hebrew">
+              {{ group.description }}
+            </p>
+            {% endif %}
+
+            <!-- Stats -->
+            <div
+              class="flex items-center space-x-4 space-x-reverse text-sm text-gray-500"
+            >
+              <div class="flex items-center">
+                <i class="fas fa-tasks ml-1 text-blue-500"></i>
+                <span>{{ group.task_count }} משימות</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-calendar ml-1 text-green-500"></i>
+                <span>{{ group.created_at|date:"d/m/Y" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Menu -->
+          <div class="relative">
+            <button
+              class="p-2 rounded-full hover:bg-gray-100 transition-colors group-menu-btn"
+              onclick="toggleMenu({{ group.id }})"
+            >
+              <i class="fas fa-ellipsis-v text-gray-400"></i>
+            </button>
+
+            <div
+              id="menu-{{ group.id }}"
+              class="hidden absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50"
+            >
+              <a
+                href="{% url 'mentorApp:task_group_detail' group.id %}"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
+              >
+                <i class="fas fa-eye ml-2 text-blue-500"></i>
+                צפה בפרטים
+              </a>
+              <a
+                href="{% url 'mentorApp:edit_task_group' group.id %}"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                <i class="fas fa-edit ml-2 text-green-500"></i>
+                ערוך
+              </a>
+              <a
+                href="{% url 'mentorApp:delete_task_group' group.id %}"
+                class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+                onclick="return confirm('האם אתה בטוח שברצונך למחוק קבוצה זו?')"
+              >
+                <i class="fas fa-trash ml-2"></i>
+                מחק
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <a
+            href="{% url 'mentorApp:task_group_detail' group.id %}"
+            class="w-full bg-blue-50 text-blue-600 font-medium py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-users ml-2"></i>
+            נהל חניכים
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if task_groups.has_other_pages %}
+    <div class="flex justify-center mt-8">
+      <nav class="bg-white rounded-lg shadow-md px-4 py-2">
+        <div class="flex items-center space-x-2 space-x-reverse">
+          {% if task_groups.has_previous %}
+          <a
+            href="?page={{ task_groups.previous_page_number }}"
+            class="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </a>
+          {% endif %}
+
+          <span class="px-3 py-1 text-gray-700 font-medium">
+            עמוד {{ task_groups.number }} מתוך {{ task_groups.paginator.num_pages }}
+          </span>
+
+          {% if task_groups.has_next %}
+          <a
+            href="?page={{ task_groups.next_page_number }}"
+            class="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+    {% endif %} {% else %}
+    <!-- Empty State -->
+    <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+      <div
+        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <i class="fas fa-layer-group text-2xl text-gray-400"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-2 font-hebrew">
+        אין קבוצות משימות
+      </h3>
+      <p class="text-gray-600 mb-6 font-hebrew">
+        התחל בארגון המשימות שלך ביצירת קבוצה ראשונה
+      </p>
+      <a
+        href="{% url 'mentorApp:create_task_group' %}"
+        class="inline-flex items-center bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors"
+      >
+        <i class="fas fa-plus ml-2"></i>
+        צור קבוצה ראשונה
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="mt-8 text-center">
+      <a
+        href="{% url 'mentorApp:mentor_home' %}"
+        class="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+      >
+        <i class="fas fa-arrow-right ml-2"></i>
+        חזור לדף הבית
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleMenu(groupId) {
+      // Close all other menus
+      document.querySelectorAll('[id^="menu-"]').forEach(menu => {
+          if (menu.id !== `menu-${groupId}`) {
+              menu.classList.add('hidden');
+          }
+      });
+
+      // Toggle current menu
+      const menu = document.getElementById(`menu-${groupId}`);
+      menu.classList.toggle('hidden');
+  }
+
+  // Close menus when clicking outside
+  document.addEventListener('click', function(event) {
+      if (!event.target.closest('.group-menu-btn') && !event.target.closest('[id^="menu-"]')) {
+          document.querySelectorAll('[id^="menu-"]').forEach(menu => {
+              menu.classList.add('hidden');
+          });
+      }
+  });
+
+  // Show messages with auto-hide
+  {% if messages %}
+      {% for message in messages %}
+          setTimeout(() => {
+              const alert = document.createElement('div');
+              alert.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-medium ${message.tags === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+              alert.textContent = '{{ message }}';
+              document.body.appendChild(alert);
+
+              setTimeout(() => {
+                  alert.remove();
+              }, 3000);
+          }, 100);
+      {% endfor %}
+  {% endif %}
+</script>
+{% endblock %}

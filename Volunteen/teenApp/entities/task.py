@@ -11,16 +11,30 @@ class TaskProofRequirement(models.TextChoices):
     NO_PROOF_REQUIRED = "none", "ללא צורך בהעלאת תמונה  "
 
 class TaskGroup(models.Model):
-    name = models.CharField(max_length=120, unique=True)
-    slug = models.SlugField(max_length=140, unique=True, db_index=True)
+    name = models.CharField(max_length=120)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    created_by = models.ForeignKey(
+        "mentorApp.Mentor",
+        on_delete=models.CASCADE,
+        related_name="task_groups",
+        help_text="Mentor who created this group",
+    )
+
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["created_by", "name"],
+                name="unique_group_name_per_mentor"
+            )
+        ]
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.created_by})"
+    
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name='Title')
     deadline = models.DateField(verbose_name='Deadline', help_text='Specify the deadline for the task', db_index=True)

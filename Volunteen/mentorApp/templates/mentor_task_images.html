@@ -1,774 +1,417 @@
 {% extends 'mentor_primary_base.html' %}
-{% load static %} 
-{% block title %}אישור משימות{% endblock %} 
+{% load static %}
+{% load tz %}
+
+{% block title %}סקירת הוכחות משימה{% endblock %}
+
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/mentorApp/mentor_task_images.css' %}">
+<style>
+  .animate-in { animation: fadeIn .25s ease-out both; }
+  .animate-up { animation: slideUp .25s ease-out both; }
+  @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+  @keyframes slideUp { from {transform:translateY(12px);opacity:.0} to {transform:translateY(0);opacity:1} }
+
+  .elevate { box-shadow: 0 10px 30px -15px rgba(0,0,0,.15); }
+
+  .focus-glow:focus { outline: none; box-shadow: 0 0 0 3px rgba(26,124,240,.25); }
+
+  .tap { -webkit-tap-highlight-color: transparent; }
+
+  .skeleton { background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%); background-size:400% 100%; animation: shimmer 1.2s ease-in-out infinite; }
+  @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
+</style>
 {% endblock %}
+
 {% block content %}
-<div class="w-full px-2 py-5 mx-auto" dir="rtl">
-  <!-- Page Header -->
-  <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
-      <span class="text-indigo-600">סקירת</span> משימות
-    </h1>
-
-    <!-- Global Actions -->
-    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-      <button
-        id="selectAllBtn"
-        class="btn-primary bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 10h16M4 14h16M4 18h16"
-          />
-        </svg>
-        בחר הכל
-      </button>
-
-      <button
-        id="submitSelectedBtn"
-        disabled
-        class="btn-submit bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
-        אישור נבחרים
-      </button>
-
-      <button
-        id="rejectSelectedBtn"
-        disabled
-        class="btn-reject bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-        דחיית נבחרים
-      </button>
-    </div>
-  </div>
-
-  <!-- Task Status Summary - Now a one-liner -->
-  <div
-    class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-6"
-  >
-    <div class="flex items-center">
-      <div class="p-2 mr-3 rounded-full bg-indigo-100">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-indigo-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </div>
-      <div>
-        <div class="text-xs font-medium text-gray-500">בזמן</div>
-        <div class="text-lg font-bold text-indigo-600" id="onTimeCount">
-          {{ on_time_completions|length }}
-        </div>
+<section class="min-h-screen bg-gray-50 pb-24" dir="rtl">
+  <header id="stickyHeader" class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200 transition-shadow">
+    <div class="px-4 pt-3 pb-2 flex items-center justify-between">
+      <h1 class="text-xl font-extrabold tracking-tight text-gray-900">סקירת הוכחות</h1>
+      <div class="text-xs text-gray-600">
+        <span id="selectedCounter" class="font-semibold">נבחרו: 0</span>
       </div>
     </div>
 
-    <div class="h-10 mx-4 border-r border-gray-200"></div>
+    <div class="px-4 pb-3 flex gap-2 overflow-x-auto">
+      <!-- Bulk action buttons -->
+      <button class="tap bg-green-600 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-green-700 transition"
+              onclick="openApproveModal('full')">אשר ✅</button>
 
-    <div class="flex items-center">
-      <div class="p-2 mr-3 rounded-full bg-red-100">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-red-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      </div>
-      <div>
-        <div class="text-xs font-medium text-gray-500">באיחור</div>
-        <div class="text-lg font-bold text-red-600" id="lateCount">
-          {{ late_completions|length }}
-        </div>
-      </div>
-    </div>
-  </div>
+      <button class="tap bg-amber-500 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-amber-600 transition"
+              onclick="openApproveModal('partial')">אשר חלקית ⚖️</button>
 
-  <!-- On Time Tasks Section -->
-  <div id="onTimeSection"
-     class="rounded-2xl shadow-xl border border-green-400 overflow-hidden mb-6 bg-white transition-all duration-300">
+      <button class="tap bg-red-600 text-white px-3 py-2 rounded-2xl text-sm font-semibold shadow hover:bg-red-700 transition"
+              onclick="openRejectModal()">דחה ❌</button>
 
-    <!-- On-Time Header -->
-    <div id="onTimeHeader"
-       class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 via-green-500 to-green-400 text-white cursor-pointer select-none">
-
-      <!-- Title & Count -->
-      <div class="flex items-center gap-2">
-        <!-- Count Badge -->
-        <span class="bg-white text-green-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
-          {{ on_time_completions|length }}
-        </span>
-
-        <!-- Title -->
-        <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
-          משימות בזמן
-        </h2>
-
-        <!-- Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-5 h-5 text-white opacity-90"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-
-      <!-- Select All + Collapse -->
-      <div class="flex items-center gap-3">
-        <!-- Select All -->
-        <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
-          <input
-            type="checkbox"
-            class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-green-600 bg-white border-white rounded-md selectAllInSection"
-            data-section="ontime"
-          />
-          בחר הכל
-        </label>
-
-        <!-- Collapse Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             id="onTimeToggleIcon"
-             class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 9l-7 7-7-7" />
-        </svg>
+      <div class="ml-auto flex gap-3">
+        <button class="tap text-sm font-semibold text-blue-700" onclick="toggleSelectAll()">בחר הכול</button>
       </div>
     </div>
 
-    <!-- On-Time Content -->
-    <div class="p-0 sm:p-2 bg-gray-50" id="onTimeContent">
-      {% if on_time_completions %}
-      <div class="w-full">
-        <table class="w-full table-fixed divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="w-[5%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <span class="sr-only sm:not-sr-only">בחירה</span>
-              </th>
-              <th class="w-[35%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <span class="sr-only sm:not-sr-only">שם</span>
-              </th>
-              <th class="w-[25%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                משימה
-              </th>
-              <th class="w-[10%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                תאריך
-              </th>
-              <th class="w-[25%] p-1 sm:p-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                צילומים
-              </th>
-             
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for item in on_time_completions %}
-            <tr class="task-card hover:bg-gray-50 transition-colors duration-150" data-task-id="{{ item.instance.id }}">
-              <td class="p-1 sm:p-2">
-                <input
-                  type="checkbox"
-                  class="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 task-checkbox"
-                  data-task-id="{{ item.instance.id }}"
-                  data-points="{{ item.instance.task.points }}"
-                />
-              </td>
-              <td class="p-1 sm:p-2">
-                <div
-                  class="break-words whitespace-normal text-sm"
-                  onclick="this.classList.toggle('whitespace-normal')"
-                  title="{{ item.instance.child.user.username }}"
-                >
-                  {{ item.instance.child.user.username }}
-                </div>
-
-              </td>
-              <td class="p-1 sm:p-2">
-                <div
-                  class="break-words whitespace-normal text-sm"
-                  onclick="this.classList.toggle('whitespace-normal')"
-                  title="{{ item.instance.child.user.username }}"
-                >
-                  {{ item.instance.task.title }} ({{ item.instance.task.points }} 🪙)
-                </div>
-              </td>
-              <td class="p-1 sm:p-2 text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
-                {{ item.instance.completion_date|date:"d/m/Y" }}
-              </td>
-              <td class="p-1 sm:p-2">
-                <div class="flex items-center justify-center space-x-2 rtl:space-x-reverse">
-                  <div class="relative h-10 w-10 flex-shrink-0">
-                    {% if item.instance.checkin_img %}
-                    <img 
-                      src="{{ item.instance.checkin_img.url }}" 
-                      alt="Check-in image" 
-                      class="h-full w-full object-cover rounded-md cursor-pointer view-image"
-                      data-src="{{ item.instance.checkin_img.url }}"
-                    />
-                    <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
-                    {% else %}
-                    <div class="h-full w-full flex items-center justify-center bg-gray-100 rounded-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
-                    </div>
-                    {% endif %}
-                  </div>
-                  <div class="relative h-10 w-10 flex-shrink-0">
-                    {% if item.instance.checkout_img %}
-                    <img 
-                      src="{{ item.instance.checkout_img.url }}" 
-                      alt="Check-out image" 
-                      class="h-full w-full object-cover rounded-md cursor-pointer view-image"
-                      data-src="{{ item.instance.checkout_img.url }}"
-                    />
-                    <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
-                    {% else %}
-                    <div class="h-full w-full flex items-center justify-center bg-gray-100 rounded-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
-                    </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </td>
-              
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <!-- Tabs -->
+    <div class="px-4 pb-3">
+      <div class="grid grid-cols-2 gap-2">
+        <button id="tabOnTime"
+                class="tap tab-btn bg-blue-600 text-white rounded-2xl py-2 text-sm font-semibold shadow"
+                data-target="#panelOnTime">בזמן</button>
+        <button id="tabLate"
+                class="tap tab-btn bg-gray-100 text-gray-700 rounded-2xl py-2 text-sm font-semibold"
+                data-target="#panelLate">מאוחר</button>
       </div>
-      {% else %}
-      <div class="text-center py-10">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="mx-auto h-12 w-12 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-          />
-        </svg>
-        <p class="mt-2 text-sm text-gray-500">אין משימות בזמן לסקירה</p>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- Late Tasks Section -->
-  <div id="lateSection"
-     class="rounded-2xl shadow-xl border border-red-400 overflow-hidden mb-6 bg-white transition-all duration-300">
-
-    <!-- Late Header -->
-    <div id="lateHeader"
-       class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-white cursor-pointer select-none">
-
-      <!-- Title & Count -->
-      <div class="flex items-center gap-2">
-        <!-- Count Badge -->
-        <span class="bg-white text-red-600 rounded-full px-2 h-6 min-w-[28px] text-sm font-bold flex items-center justify-center">
-          {{ late_completions|length }}
-        </span>
-
-        <!-- Title -->
-        <h2 class="text-lg sm:text-xl font-extrabold tracking-tight whitespace-nowrap">
-          משימות באיחור
-        </h2>
-
-        <!-- Icon (info or exclamation) -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             class="w-5 h-5 text-white opacity-80"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-
-      <!-- Select All + Collapse -->
-      <div class="flex items-center gap-3">
-        <!-- Select All -->
-        <label class="flex items-center gap-2 text-white text-sm font-semibold hover:text-white/90 transition">
-          <input
-            type="checkbox"
-            class="form-checkbox w-5 h-5 sm:w-6 sm:h-6 text-red-600 bg-white border-white rounded-md selectAllInSection"
-            data-section="late"
-          />
-          בחר הכל
-        </label>
-
-        <!-- Collapse Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg"
-             id="lateToggleIcon"
-             class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 9l-7 7-7-7" />
-        </svg>
+      <div class="mt-2 text-[12px] text-gray-500">
+        <button class="tap underline" onclick="toggleSelectTab('#panelOnTime')">בחר הכול (בזמן)</button>
+        <span class="mx-2">•</span>
+        <button class="tap underline" onclick="toggleSelectTab('#panelLate')">בחר הכול (מאוחר)</button>
       </div>
     </div>
+  </header>
 
-    <!-- Late Content -->
-    <div class="p-0 sm:p-2 bg-gray-50" id="lateContent">
-      {% if late_completions %}
-      <div class="w-full">
-        <table class="w-full table-fixed divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="w-[5%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <span class="sr-only sm:not-sr-only">בחירה</span>
-              </th>
-              <th class="w-[15%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <span class="sr-only sm:not-sr-only">שם</span>
-              </th>
-              <th class="w-[25%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                משימה
-              </th>
-              <th class="w-[10%] p-1 sm:p-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                תאריך
-              </th>
-              <th class="w-[30%] p-1 sm:p-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                צילומים
-              </th>
-             
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for item in late_completions %}
-            <tr class="task-card hover:bg-gray-50 transition-colors duration-150" data-task-id="{{ item.instance.id }}">
-              <td class="p-1 sm:p-2">
-                <input
-                  type="checkbox"
-                  class="form-checkbox h-4 w-4 sm:h-5 sm:w-5 text-red-600 task-checkbox"
-                  data-task-id="{{ item.instance.id }}"
-                  data-points="{{ item.instance.task.points }}"
-                />
-              </td>
-              <td class="p-1 sm:p-2">
-                <div
-                  class="break-words whitespace-normal text-sm"
-                  onclick="this.classList.toggle('whitespace-normal')"
-                  title="{{ item.instance.child.user.username }}"
-                >
-                  {{ item.instance.child.user.username }}
-                </div>
+  <!-- ===== CONTENT PANELS ===== -->
 
-              </td>
-              <td class="p-1 sm:p-2">
-                <div
-                  class="break-words whitespace-normal text-sm"
-                  onclick="this.classList.toggle('whitespace-normal')"
-                  title="{{ item.instance.child.user.username }}"
-                >
-                  {{ item.instance.task.title }} ({{ item.instance.task.points }} 🪙)
-                </div>
+  {% regroup on_time_completions by instance.task as ontime_grouped %}
+  {% regroup late_completions by instance.task as late_grouped %}
 
-              </td>
-              <td class="p-1 sm:p-2 text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
-                {{ item.instance.completion_date|date:"d/m/Y" }}
-              </td>
-              <td class="p-1 sm:p-2">
-                <div class="flex items-center justify-center space-x-2 rtl:space-x-reverse">
-                  <div class="relative h-10 w-10 flex-shrink-0">
-                    {% if item.late_checkin %}
-                    <div class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full pulse-alert"></div>
-                    {% endif %}
-                    <div class="{% if item.late_checkin %}border-2 border-red-500{% endif %} h-full w-full rounded-md overflow-hidden">
-                      {% if item.instance.checkin_img %}
-                      <img 
-                        src="{{ item.instance.checkin_img.url }}" 
-                        alt="Check-in image" 
-                        class="h-full w-full object-cover cursor-pointer view-image"
-                        data-src="{{ item.instance.checkin_img.url }}"
-                      />
-                      {% else %}
-                      <div class="h-full w-full flex items-center justify-center bg-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      {% endif %}
-                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">IN</div>
-                    </div>
-                  </div>
-                  <div class="relative h-10 w-10 flex-shrink-0">
-                    {% if item.late_checkout %}
-                    <div class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full pulse-alert"></div>
-                    {% endif %}
-                    <div class="{% if item.late_checkout %}border-2 border-red-500{% endif %} h-full w-full rounded-md overflow-hidden">
-                      {% if item.instance.checkout_img %}
-                      <img 
-                        src="{{ item.instance.checkout_img.url }}" 
-                        alt="Check-out image" 
-                        class="h-full w-full object-cover cursor-pointer view-image"
-                        data-src="{{ item.instance.checkout_img.url }}"
-                      />
-                      {% else %}
-                      <div class="h-full w-full flex items-center justify-center bg-gray-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      {% endif %}
-                      <div class="absolute -bottom-1 left-0 bg-gray-800 bg-opacity-75 text-white text-[8px] px-1 rounded">OUT</div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-              
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="text-center py-10">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="mx-auto h-12 w-12 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-          />
-        </svg>
-        <p class="mt-2 text-sm text-gray-500">אין משימות באיחור לסקירה</p>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-<!-- Image Modal and other modal content remains unchanged -->
-<!-- Image Modal -->
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center hidden"
-  id="imageModal"
->
-  <div
-    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
-    id="modalBackdrop"
-  ></div>
-  <div
-    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-3xl w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
-    id="modalContent"
-  >
-    <div class="absolute top-0 right-0 p-4">
-      <button
-        type="button"
-        class="text-gray-400 hover:text-gray-500"
-        id="closeModal"
-      >
-        <svg
-          class="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
-    </div>
-
-    <div class="p-6">
-      <div
-        class="w-full aspect-auto max-h-[70vh] flex items-center justify-center"
-      >
-        <img
-          src=""
-          alt="Full size image"
-          id="modalImage"
-          class="max-w-full max-h-[70vh] object-contain"
-        />
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Approval Modal -->
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center hidden"
-  id="approvalModal"
->
-  <div
-    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
-    id="approvalModalBackdrop"
-  ></div>
-  <div
-    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-md w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
-    id="approvalModalContent"
-    dir="rtl"
-  >
-    <div class="p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">אישור משימות</h3>
-      <p class="text-sm text-gray-500 mb-6">האם לאשר את המשימות שנבחרו?</p>
-
-      <div class="flex flex-col gap-4">
-        <button
-          type="button"
-          id="fullApprovalBtn"
-          class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none"
-        >
-          <div id="fullApprovalSpinner" class="hidden mr-2">
-            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+  <!-- On-Time Panel -->
+  <div id="panelOnTime" class="animate-in">
+    {% if ontime_grouped %}
+      {% for group in ontime_grouped %}
+      <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
+        <!-- Task header -->
+        <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-gray-900 truncate">{{ group.grouper.title }}</h2>
+            <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
           </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            id="fullApprovalIcon"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span id="fullApprovalText">אישור מלא</span>
-        </button>
+          <div class="flex items-center gap-3">
+            <button class="tap text-sm text-blue-700 font-semibold"
+                    onclick="toggleTaskGroup('ontime-{{ forloop.counter }}')">בחר קבוצה</button>
+            <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
+                    onclick="collapseToggle('ontime-wrap-{{ forloop.counter }}', this)">כווץ</button>
+          </div>
+        </header>
 
-        <div class="relative">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            אישור חלקי (טווח: <span id="minPointsDisplay">0</span>-<span id="maxPointsDisplay2">0</span> נקודות)
-          </label>
-          <div class="mt-1 flex rounded-md shadow-sm">
-            <input
-              type="number"
-              id="partialApprovalInput"
-              min="1"
-              max="100"
-              class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
-              placeholder="מספר נקודות"
-            />
-            <button
-              type="button"
-              id="partialApprovalBtn"
-              class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 rounded-l-md bg-gray-50 text-gray-500 text-sm"
-            >
-              <div id="partialApprovalSpinner" class="hidden mr-2">
-                <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+        <!-- Task items -->
+        <div id="ontime-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
+          {% for item in group.list %}
+            {% with comp=item.instance %}
+            <label class="flex items-center gap-3 p-3 active:bg-gray-50">
+              <input type="checkbox"
+                     class="task-checkbox accent-blue-600 w-5 h-5"
+                     value="{{ comp.id }}"
+                     data-panel="panelOnTime"
+                     data-group="ontime-{{ forloop.parentloop.counter }}"
+                     onchange="updateCounter()">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="truncate font-medium text-gray-900">
+                    {{ comp.child.user.get_full_name|default:comp.child }}
+                  </div>
+                  <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
+                </div>
+                {% if comp.mentor_feedback %}
+                  <div class="text-[11px] text-gray-500 mt-0.5 truncate">הערה קודמת: {{ comp.mentor_feedback }}</div>
+                {% endif %}
               </div>
-              אישור חלקי
-            </button>
-          </div>
-          <p id="pointsValidationMessage" class="mt-1 text-sm text-red-600 hidden">יש להזין מספר נקודות בטווח המותר</p>
+
+              <!-- Thumbnails (lazy) -->
+              <div class="flex gap-1 shrink-0">
+                {% if comp.checkin_img %}
+                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                    <img data-src="{{ comp.checkin_img.url }}"
+                         alt="צ׳ק-אין"
+                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                         onclick="openImage('{{ comp.checkin_img.url }}')">
+                  </div>
+                {% endif %}
+                {% if comp.checkout_img %}
+                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                    <img data-src="{{ comp.checkout_img.url }}"
+                         alt="צ׳ק-אאוט"
+                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                         onclick="openImage('{{ comp.checkout_img.url }}')">
+                  </div>
+                {% endif %}
+              </div>
+            </label>
+            {% endwith %}
+          {% endfor %}
         </div>
-
-        <button
-          type="button"
-          id="cancelApprovalBtn"
-          class="mt-2 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-        >
-          ביטול
-        </button>
-      </div>
-    </div>
+      </section>
+      {% endfor %}
+    {% else %}
+      <p class="text-center text-gray-500 mt-6">אין הוכחות בזמן להצגה.</p>
+    {% endif %}
   </div>
-</div>
 
-<!-- Rejection Modal -->
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center hidden"
-  id="rejectionModal"
->
-  <div
-    class="absolute inset-0 bg-black bg-opacity-75 transition-opacity duration-300"
-    id="rejectionModalBackdrop"
-  ></div>
-  <div
-    class="relative bg-white rounded-xl overflow-hidden shadow-2xl max-w-md w-full mx-4 transition-all duration-300 transform scale-95 opacity-0"
-    id="rejectionModalContent"
-    dir="rtl"
-  >
-    <div class="p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-4">דחיית משימות</h3>
-      <p class="text-sm text-gray-500 mb-4">האם לדחות את המשימות שנבחרו?</p>
-
-      <div class="mb-4">
-        <label
-          for="rejectionFeedback"
-          class="block text-sm font-medium text-gray-700 mb-1"
-          >משוב למשתתף (אופציונלי)</label
-        >
-        <textarea
-          id="rejectionFeedback"
-          rows="3"
-          class="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          placeholder="הסבר מדוע המשימה נדחתה"
-        ></textarea>
-      </div>
-
-      <div class="flex flex-col gap-4">
-        <button
-          type="button"
-          id="confirmRejectBtn"
-          class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none"
-        >
-          <div id="rejectSpinner" class="hidden mr-2">
-            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+  <!-- Late Panel -->
+  <div id="panelLate" class="hidden">
+    {% if late_grouped %}
+      {% for group in late_grouped %}
+      <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
+        <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-gray-900 truncate">
+              {{ group.grouper.title }} <span class="text-xs text-amber-600">(מאוחר)</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
           </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            id="rejectIcon"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-          דחה משימות
-        </button>
+          <div class="flex items-center gap-3">
+            <button class="tap text-sm text-blue-700 font-semibold"
+                    onclick="toggleTaskGroup('late-{{ forloop.counter }}')">בחר קבוצה</button>
+            <button class="tap text-xs bg-gray-100 px-2 py-1 rounded-lg"
+                    onclick="collapseToggle('late-wrap-{{ forloop.counter }}', this)">כווץ</button>
+          </div>
+        </header>
 
-        <button
-          type="button"
-          id="cancelRejectBtn"
-          class="mt-2 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-        >
-          ביטול
-        </button>
+        <div id="late-wrap-{{ forloop.counter }}" class="divide-y divide-gray-100">
+          {% for item in group.list %}
+            {% with comp=item.instance %}
+            <label class="flex items-center gap-3 p-3 active:bg-gray-50">
+              <input type="checkbox"
+                     class="task-checkbox accent-blue-600 w-5 h-5"
+                     value="{{ comp.id }}"
+                     data-panel="panelLate"
+                     data-group="late-{{ forloop.parentloop.counter }}"
+                     onchange="updateCounter()">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="truncate font-medium text-gray-900">
+                    {{ comp.child.user.get_full_name|default:comp.child }}
+                  </div>
+                  <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
+                </div>
+                <div class="text-[11px] text-amber-600 mt-0.5">בדיקה: מאוחר</div>
+              </div>
+
+              <div class="flex gap-1 shrink-0">
+                {% if comp.checkin_img %}
+                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                    <img data-src="{{ comp.checkin_img.url }}"
+                         alt="צ׳ק-אין"
+                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                         onclick="openImage('{{ comp.checkin_img.url }}')">
+                  </div>
+                {% endif %}
+                {% if comp.checkout_img %}
+                  <div class="h-12 w-12 rounded-lg overflow-hidden skeleton">
+                    <img data-src="{{ comp.checkout_img.url }}"
+                         alt="צ׳ק-אאוט"
+                         class="lazy-img h-12 w-12 object-cover cursor-zoom-in"
+                         onclick="openImage('{{ comp.checkout_img.url }}')">
+                  </div>
+                {% endif %}
+              </div>
+            </label>
+            {% endwith %}
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    {% else %}
+      <p class="text-center text-gray-500 mt-6">אין הוכחות מאוחרות להצגה.</p>
+    {% endif %}
+  </div>
+
+  <!-- ===== Bottom-Sheet Modal (Approve/Partial/Reject) ===== -->
+  <div id="reviewModal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/50" onclick="closeModal()"></div>
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-4 animate-up">
+      <div class="mx-auto h-1 w-10 rounded-full bg-gray-200 mb-3"></div>
+      <h3 id="modalTitle" class="text-lg font-extrabold text-gray-900 mb-2">אישור</h3>
+
+      <div id="partialWrap" class="hidden">
+        <label class="block text-sm font-semibold text-gray-700 mb-1">כמות נקודות (לכל הפריטים שנבחרו)</label>
+        <input id="awardedCoins" type="number" min="1" inputmode="numeric"
+               class="w-full border rounded-2xl px-3 py-2 focus-glow"
+               placeholder="לדוגמה: 5">
+        <p class="text-[11px] text-gray-500 mt-1">במקרה של אישור חלקי — יש להציב מספר נקודות קטן/שווה לנקודות המשימה.</p>
+      </div>
+
+      <label class="block text-sm font-semibold text-gray-700 mt-3 mb-1">הערת מנטור (לא חובה)</label>
+      <textarea id="mentorFeedback"
+                class="w-full border rounded-2xl px-3 py-2 h-20 focus-glow"
+                placeholder="הקלד/י משוב קצר לחניך..."></textarea>
+
+      <div class="flex gap-2 mt-4">
+        <button id="submitBtn"
+                class="flex-1 bg-blue-600 text-white py-2.5 rounded-2xl font-semibold shadow hover:bg-blue-700 transition"
+                onclick="submitReviewAction()">אישור</button>
+        <button class="flex-1 bg-gray-100 py-2.5 rounded-2xl font-semibold"
+                onclick="closeModal()">ביטול</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Success Toast -->
-<div
-  class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50"
-  id="successToast"
->
-  <div class="flex items-center">
-    <svg
-      class="w-6 h-6 mr-2"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M5 13l4 4L19 7"
-      ></path>
-    </svg>
-    <span id="toastMessage">הפעולה הושלמה בהצלחה!</span>
+  <!-- ===== Fullscreen Image Viewer ===== -->
+  <div id="imageViewer" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4">
+    <img id="viewerImg" class="max-h-[85vh] max-w-[95vw] rounded-2xl shadow-2xl animate-in" alt="Proof">
+    <button class="absolute top-4 left-4 bg-white/10 text-white backdrop-blur px-3 py-1.5 rounded-xl text-sm"
+            onclick="closeImage()">סגור ✕</button>
   </div>
-</div>
 
-<!-- Error Toast -->
-<div
-  class="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50"
-  id="errorToast"
->
-  <div class="flex items-center">
-    <svg
-      class="w-6 h-6 mr-2"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M6 18L18 6M6 6l12 12"
-      ></path>
-    </svg>
-    <span id="errorToastMessage">אירעה שגיאה. אנא נסה שוב.</span>
-  </div>
-</div>
+  <!-- ===== Toast ===== -->
+  <div id="toast" class="hidden fixed bottom-4 right-4 left-4 mx-auto w-fit max-w-[90vw] px-3 py-2 rounded-xl text-sm text-white bg-gray-900/90 shadow-xl animate-in"></div>
+</section>
 
 <script>
-    const REVIEW_TASK_URL = "{% url 'mentorApp:review_task' %}";
-    const CSRF_TOKEN = "{{ csrf_token }}";
+  const CSRF_TOKEN = '{{ csrf_token }}';
+
+  // ==== Sticky header elevation on scroll ====
+  const stickyHeader = document.getElementById('stickyHeader');
+  document.addEventListener('scroll', () => {
+    if (window.scrollY > 8) stickyHeader.classList.add('elevate');
+    else stickyHeader.classList.remove('elevate');
+  });
+
+  // ==== Tab switch ====
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  tabButtons.forEach(btn => btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('bg-blue-600','text-white'));
+    tabButtons.forEach(b => b.classList.add('bg-gray-100','text-gray-700'));
+    btn.classList.remove('bg-gray-100','text-gray-700');
+    btn.classList.add('bg-blue-600','text-white');
+
+    document.querySelectorAll('#panelOnTime, #panelLate').forEach(p => p.classList.add('hidden'));
+    document.querySelector(btn.dataset.target).classList.remove('hidden');
+  }));
+
+  // ==== Lazy-load images with skeleton ====
+  const lazyImgs = document.querySelectorAll('img.lazy-img');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const img = e.target;
+        img.src = img.dataset.src;
+        img.addEventListener('load', () => {
+          img.parentElement.classList.remove('skeleton');
+        }, { once: true });
+        io.unobserve(img);
+      }
+    });
+  }, { rootMargin: '200px 0px 200px 0px' });
+  lazyImgs.forEach(img => io.observe(img));
+
+  // ==== Fullscreen viewer ====
+  function openImage(url) {
+    document.getElementById('viewerImg').src = url;
+    document.getElementById('imageViewer').classList.remove('hidden');
+  }
+  function closeImage() {
+    document.getElementById('imageViewer').classList.add('hidden');
+    document.getElementById('viewerImg').src = '';
+  }
+
+  // ==== Select logic ====
+  function updateCounter() {
+    const count = document.querySelectorAll('.task-checkbox:checked').length;
+    document.getElementById('selectedCounter').innerText = `נבחרו: ${count}`;
+  }
+
+  function toggleSelectAll() {
+    const boxes = document.querySelectorAll('.task-checkbox');
+    const anyUnchecked = Array.from(boxes).some(cb => !cb.checked);
+    boxes.forEach(cb => cb.checked = anyUnchecked);
+    updateCounter();
+  }
+
+  function toggleSelectTab(panelSelector) {
+    const panel = document.querySelector(panelSelector);
+    const boxes = panel.querySelectorAll('.task-checkbox');
+    const anyUnchecked = Array.from(boxes).some(cb => !cb.checked);
+    boxes.forEach(cb => cb.checked = anyUnchecked);
+    updateCounter();
+  }
+
+  // Toggle per grouped task
+  function toggleTaskGroup(groupKey) {
+    const boxes = document.querySelectorAll(`.task-checkbox[data-group="${groupKey}"]`);
+    const anyUnchecked = Array.from(boxes).some(cb => !cb.checked);
+    boxes.forEach(cb => cb.checked = anyUnchecked);
+    updateCounter();
+  }
+
+  // Collapse/expand task list
+  function collapseToggle(id, btn) {
+    const el = document.getElementById(id);
+    el.classList.toggle('hidden');
+    btn.textContent = el.classList.contains('hidden') ? 'פתח' : 'כווץ';
+  }
+
+  // ==== Modal flows ====
+  let currentAction = 'approve'; // 'approve' | 'partial' | 'reject'
+  function openApproveModal(kind) {
+    currentAction = (kind === 'partial') ? 'partial' : 'approve';
+    document.getElementById('modalTitle').textContent = (currentAction === 'partial') ? 'אישור חלקי' : 'אישור';
+    document.getElementById('partialWrap').classList.toggle('hidden', currentAction !== 'partial');
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+  function openRejectModal() {
+    currentAction = 'reject';
+    document.getElementById('modalTitle').textContent = 'דחיית משימות';
+    document.getElementById('partialWrap').classList.add('hidden');
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+  function closeModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+  }
+
+  // ==== Toast helper ====
+  function showToast(text, ok=true) {
+    const t = document.getElementById('toast');
+    t.textContent = text;
+    t.classList.remove('hidden');
+    t.style.background = ok ? 'rgba(17,24,39,.92)' : 'rgba(220,38,38,.92)';
+    setTimeout(() => t.classList.add('hidden'), 2200);
+  }
+
+  // ==== Submit bulk review ====
+  async function submitReviewAction() {
+    const ids = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(cb => cb.value);
+    if (!ids.length) { showToast('לא נבחרו משימות.', false); return; }
+
+    const payload = {
+      task_ids: ids,
+      action: (currentAction === 'reject') ? 'reject' : 'approve',
+      mentor_feedback: document.getElementById('mentorFeedback').value || null
+    };
+
+    if (currentAction === 'partial') {
+      const val = document.getElementById('awardedCoins').value;
+      if (!val || Number(val) <= 0) { showToast('נא להזין כמות נקודות תקינה.', false); return; }
+      payload.awarded_coins = Number(val);
+    }
+
+    // Button loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const prevText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'מבצע...';
+
+    try {
+      const res = await fetch("{% url 'mentorApp:review_task' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": CSRF_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast(json.message || 'בוצע בהצלחה ✅', true);
+        // Soft reload after short pause for nicer UX
+        setTimeout(() => window.location.reload(), 700);
+      } else {
+        showToast(json.error || 'שגיאה בביצוע.', false);
+      }
+    } catch (e) {
+      showToast('שגיאת רשת. נסה/י שוב.', false);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = prevText;
+      closeModal();
+    }
+  }
 </script>
-<script src="{% static 'js/mentorApp/mentor_task_images.js' %}"></script>
 {% endblock %}

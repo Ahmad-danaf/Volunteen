@@ -1,5 +1,5 @@
 from django.urls import path
-from mentorApp.views import *
+from mentorApp.views import core, recurrence, task_groups
 
 app_name='mentorApp'
 
@@ -37,4 +37,15 @@ urlpatterns = [
     path("recurrences/<int:rec_id>/update/", recurrence.recurrence_update, name="recurrence_update"),
     path("recurrences/<int:rec_id>/delete/", recurrence.recurrence_delete, name="recurrence_delete"),
     path("recurrences/<int:rec_id>/runs/", recurrence.recurrence_runs, name="recurrence_runs"),
+    
+    # TaskGroup URLs
+    path('task-groups/', task_groups.task_group_dashboard, name='task_group_dashboard'),
+    path('task-groups/add-task-to-group/', task_groups.add_task_to_group, name='add_task_to_group'),
+    path('task-groups/create/', task_groups.create_task_group, name='create_task_group'),
+    path('task-groups/<int:group_id>/', task_groups.task_group_detail, name='task_group_detail'),
+    path('task-groups/<int:group_id>/edit/', task_groups.edit_task_group, name='edit_task_group'),
+    path('task-groups/<int:group_id>/delete/', task_groups.delete_task_group, name='delete_task_group'),
+    path('task-groups/<int:group_id>/add-children/', task_groups.add_children_to_group, name='add_children_to_group'),
+    path('task-groups/<int:group_id>/remove-child/<int:child_id>/', task_groups.remove_child_from_group, name='remove_child_from_group'),
+    path('task-groups/<int:group_id>/search-children/', task_groups.search_children_ajax, name='search_children_ajax'),
 ]

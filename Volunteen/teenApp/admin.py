@@ -77,10 +77,10 @@ class TaskRecurrenceInline(admin.StackedInline):
     
 @admin.register(TaskGroup)
 class TaskGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "is_active", "created_at")
-    list_filter  = ("is_active",)
-    search_fields = ("name", "slug")
-    prepopulated_fields = {"slug": ("name",)}
+    list_display = ('name', 'is_active', 'created_at')
+    search_fields = ('name',)
+    list_filter = ('is_active', 'created_at')
+    ordering = ('name',)
     
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):

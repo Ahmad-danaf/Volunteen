@@ -1,0 +1,184 @@
+{% extends 'mentor_primary_base.html' %}
+{% load static %}
+{% block title %}יצירת קבוצת משימות חדשה{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          hebrew: ["Arial", "Tahoma", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  .rtl {
+    direction: rtl;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rtl">
+  <div class="max-w-md mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div class="flex items-center mb-4">
+        <a
+          href="{% url 'mentorApp:task_group_dashboard' %}"
+          class="ml-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <i class="fas fa-arrow-right text-gray-600"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-800 font-hebrew">
+          יצירת קבוצה חדשה
+        </h1>
+      </div>
+      <p class="text-gray-600 font-hebrew">
+        ארגן את המשימות שלך בקבוצות לוגיות
+      </p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Group Name -->
+        <div>
+          <label
+            for="name"
+            class="block text-sm font-bold text-gray-700 mb-2 font-hebrew"
+          >
+            שם הקבוצה <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{ name|default:'' }}"
+            placeholder="לדוגמה: משימות שבועיות, פעילות קהילתית..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-hebrew"
+            maxlength="120"
+            required
+          />
+          <div class="mt-1 text-xs text-gray-500 font-hebrew">
+            מקסימום 120 תווים
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label
+            for="description"
+            class="block text-sm font-bold text-gray-700 mb-2 font-hebrew"
+          >
+            תיאור הקבוצה
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            placeholder="תאר את מטרת הקבוצה והמשימות שתכלול..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none font-hebrew"
+          >
+{{ description|default:'' }}</textarea
+          >
+          <div class="mt-1 text-xs text-gray-500 font-hebrew">
+            תיאור אופציונלי לעזור לך לזכור את מטרת הקבוצה
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <i class="fas fa-lightbulb text-blue-500 mt-1 ml-3"></i>
+            <div>
+              <h3 class="font-bold text-blue-800 text-sm mb-2 font-hebrew">
+                טיפים ליצירת קבוצה:
+              </h3>
+              <ul class="text-xs text-blue-700 space-y-1 font-hebrew">
+                <li>• בחר שם ברור ומתאר</li>
+                <li>• קבץ משימות דומות או מאותו נושא</li>
+                <li>• השתמש בתיאור להסביר את המטרה</li>
+                <li>• ניתן לערוך ולעדכן בכל זמן</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col space-y-3 pt-4">
+          <button
+            type="submit"
+            class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
+          >
+            <i class="fas fa-plus ml-2"></i>
+            צור קבוצה
+          </button>
+
+          <a
+            href="{% url 'mentorApp:task_group_dashboard' %}"
+            class="w-full bg-gray-100 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times ml-2"></i>
+            ביטול
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+      <h3 class="font-bold text-gray-800 text-sm mb-3 font-hebrew">
+        <i class="fas fa-question-circle text-blue-500 ml-2"></i>
+        איך זה עובד?
+      </h3>
+      <div class="space-y-2 text-xs text-gray-600 font-hebrew">
+        <p>1. <strong>צור קבוצה</strong> - הגדר שם ותיאור לקבוצה</p>
+        <p>2. <strong>הוסף משימות</strong> - צרף משימות קיימות לקבוצה</p>
+        <p>
+          3. <strong>הוסף חניכים</strong> - הקצה חניכים לכל המשימות בקבוצה בבת
+          אחת
+        </p>
+        <p>4. <strong>נהל בקלות</strong> - עקוב ונהל את כל החניכים מממשק אחד</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Character counter for name field
+  document.getElementById('name').addEventListener('input', function() {
+      const maxLength = 120;
+      const currentLength = this.value.length;
+      const remaining = maxLength - currentLength;
+
+      // You can add a character counter here if needed
+  });
+
+  // Auto-resize textarea
+  document.getElementById('description').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+  });
+
+  // Show messages
+  {% if messages %}
+      {% for message in messages %}
+          setTimeout(() => {
+              const alert = document.createElement('div');
+              alert.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-medium ${message.tags === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+              alert.textContent = '{{ message }}';
+              document.body.appendChild(alert);
+
+              setTimeout(() => {
+                  alert.remove();
+              }, 4000);
+          }, 100);
+      {% endfor %}
+  {% endif %}
+</script>
+{% endblock %}

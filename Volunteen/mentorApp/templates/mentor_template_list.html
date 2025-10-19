@@ -108,6 +108,31 @@
   animation: successPop .4s ease forwards;
   z-index: 10000;
 }
+.btn-action {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 36px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-action i {
+  font-size: 0.85rem;
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .btn-action {
+    width: 100% !important;
+  }
+}
 </style>
 {% endblock %}
 
@@ -176,34 +201,46 @@
             </td>
 
               <td>{{ task.points }}</td>
-              <td>
-                <div class="d-flex flex-wrap justify-content-center gap-2">
+              <td class="align-middle">
+                <div class="d-flex flex-column align-items-center gap-2" style="min-width: 160px;">
+                  <!-- Row 1 -->
+                  <div class="d-flex justify-content-center gap-2 w-100">
+                    <a href="{% url 'mentorApp:mentor_duplicate_task' task.id %}"
+                      class="btn btn-outline-primary btn-sm btn-action w-50">
+                      <i class="fas fa-copy"></i> שכפל
+                    </a>
 
-                  <a href="{% url 'mentorApp:mentor_duplicate_task' task.id %}"
-                     class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center">
-                     <i class="fas fa-copy"></i><span class="ms-1">שכפל</span>
-                  </a>
+                    <a href="{% url 'mentorApp:edit_task' task.id %}"
+                      class="btn btn-outline-secondary btn-sm btn-action w-50">
+                      <i class="fas fa-edit"></i> ערוך
+                    </a>
+                  </div>
 
-                  <a href="{% url 'mentorApp:edit_task' task.id %}"
-                     class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center">
-                     <i class="fas fa-edit"></i><span class="ms-1">ערוך</span>
-                  </a>
+                  <!-- Row 2 -->
+                  <div class="d-flex justify-content-center gap-2 w-100">
+                    <button type="button"
+                            class="btn btn-success btn-sm btn-action w-50"
+                            onclick="openGroupModal({{ task.id }}, '{{ task.title|escapejs }}')">
+                      <i class="fas fa-layer-group"></i> קבוצה
+                    </button>
 
-                  <a href="{% url 'mentorApp:remove_from_templates' task.id %}"
-                     class="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center"
-                     onclick="return confirm('האם אתה בטוח שברצונך להסיר את התבנית?');">
-                     <i class="fas fa-trash-alt"></i><span class="ms-1">הסר</span>
-                  </a>
-
-                  {% if not task.recurrence %}
-                  <button type="button" class="btn btn-warning btn-sm d-flex align-items-center justify-content-center"
-                          onclick="openRecurrenceModal({{ task.id }}, '{{ task.title|escapejs }}')">
-                    <i class="fas fa-sync-alt"></i><span class="ms-1">חוזרת</span>
-                  </button>
-                {% endif %}
-
+                    {% if not task.recurrence %}
+                    <button type="button"
+                            class="btn btn-warning btn-sm btn-action w-50"
+                            onclick="openRecurrenceModal({{ task.id }}, '{{ task.title|escapejs }}')">
+                      <i class="fas fa-sync-alt"></i> חוזרת
+                    </button>
+                    {% else %}
+                    <a href="{% url 'mentorApp:remove_from_templates' task.id %}"
+                      class="btn btn-outline-danger btn-sm btn-action w-50"
+                      onclick="return confirm('האם אתה בטוח שברצונך להסיר את התבנית?');">
+                      <i class="fas fa-trash-alt"></i> הסר
+                    </a>
+                    {% endif %}
+                  </div>
                 </div>
               </td>
+
             </tr>
             {% empty %}
             <tr><td colspan="3" class="text-center">לא נמצאו תבניות.</td></tr>
@@ -292,11 +329,40 @@
   </div>
 </div>
 
+<!-- === Add Task to Group Modal === -->
+<div id="groupModal" class="modal-overlay" dir="rtl">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h5 id="groupModalTitle">הוסף משימה לקבוצה</h5>
+      <button class="modal-close" onclick="closeGroupModal()">&times;</button>
+    </div>
+
+    <form id="groupForm">
+      {% csrf_token %}
+      <label for="groupSelect">בחר קבוצה</label>
+      <select id="groupSelect" name="group_id" required>
+        <option value="">בחר קבוצה...</option>
+        {% for group in task_groups %}
+          <option value="{{ group.id }}">{{ group.name }}</option>
+        {% empty %}
+          <option disabled>אין קבוצות זמינות</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn-orange mt-3">שמור</button>
+      <button type="button" class="btn-outline-gray" onclick="closeGroupModal()">ביטול</button>
+    </form>
+  </div>
+</div>
+
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let currentTaskId = null;
+let currentGroupTaskId = null;
+
 function openRecurrenceModal(taskId, title) {
   currentTaskId = taskId;
   document.getElementById("modalTitle").innerText = "הגדרת חזרה: " + title;
@@ -355,5 +421,48 @@ function showToast(msg) {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
+
+function openGroupModal(taskId, title) {
+  currentGroupTaskId = taskId;
+  document.getElementById("groupModalTitle").innerText = "הוסף לקבוצה: " + title;
+  document.getElementById("groupModal").classList.add("active");
+}
+
+function closeGroupModal() {
+  document.getElementById("groupModal").classList.remove("active");
+  currentGroupTaskId = null;
+}
+
+// Handle form submission
+document.getElementById("groupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const groupId = form.group_id.value;
+  if (!groupId || !currentGroupTaskId) return alert("בחר קבוצה תקינה");
+
+  try {
+    const res = await fetch("{% url 'mentorApp:add_task_to_group' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+      },
+      body: new URLSearchParams({
+        task_id: currentGroupTaskId,
+        group_id: groupId,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ ${data.message}`);
+      closeGroupModal();
+    } else {
+      alert(data.error || "שגיאה בלתי צפויה");
+    }
+  } catch (err) {
+    alert("שגיאת רשת או שרת. נסה שוב.");
+  }
+});
 </script>
 {% endblock %}

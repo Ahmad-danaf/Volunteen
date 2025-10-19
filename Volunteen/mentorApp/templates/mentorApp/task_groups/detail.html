@@ -1,0 +1,566 @@
+{% extends 'mentor_primary_base.html' %} {% load static %} 
+{% block title %}{{ task_group.name }} - ניהול קבוצה{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          hebrew: ["Arial", "Tahoma", "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  .rtl {
+    direction: rtl;
+  }
+  .loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
+{% endblock %} {% block content %} {% csrf_token %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rtl">
+  <div class="max-w-md mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div class="flex items-center mb-4">
+        <a
+          href="{% url 'mentorApp:task_group_dashboard' %}"
+          class="ml-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        >
+          <i class="fas fa-arrow-right text-gray-600"></i>
+        </a>
+        <div class="flex-1">
+          <h1 class="text-xl font-bold text-gray-800 font-hebrew">
+            {{ task_group.name }}
+          </h1>
+          {% if not task_group.is_active %}
+          <span
+            class="inline-block bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full mt-1"
+          >
+            לא פעיל
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Action Menu -->
+        <div class="relative">
+          <button
+            class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            onclick="toggleMainMenu()"
+          >
+            <i class="fas fa-ellipsis-v text-gray-400"></i>
+          </button>
+
+          <div
+            id="main-menu"
+            class="hidden absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50"
+          >
+            <a
+              href="{% url 'mentorApp:edit_task_group' task_group.id %}"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
+            >
+              <i class="fas fa-edit ml-2 text-green-500"></i>
+              ערוך קבוצה
+            </a>
+            <a
+              href="{% url 'mentorApp:delete_task_group' task_group.id %}"
+              class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+            >
+              <i class="fas fa-trash ml-2"></i>
+              מחק קבוצה
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {% if task_group.description %}
+      <p class="text-gray-600 text-sm mb-4 font-hebrew">
+        {{ task_group.description }}
+      </p>
+      {% endif %}
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="bg-blue-50 rounded-lg p-3">
+          <div class="font-bold text-blue-800">{{ tasks_in_group.count }}</div>
+          <div class="text-xs text-blue-600 font-hebrew">משימות</div>
+        </div>
+        <div class="bg-green-50 rounded-lg p-3">
+          <div class="font-bold text-green-800">
+            {{ total_children_in_group }}
+          </div>
+          <div class="text-xs text-green-600 font-hebrew">חניכים</div>
+        </div>
+        <div class="bg-purple-50 rounded-lg p-3">
+          <div class="font-bold text-purple-800">
+            {{ total_available_children }}
+          </div>
+          <div class="text-xs text-purple-600 font-hebrew">זמינים</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Children Section -->
+    {% if total_available_children > 0 %}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 font-hebrew">
+        <i class="fas fa-user-plus text-blue-500 ml-2"></i>
+        הוסף חניכים לקבוצה
+      </h2>
+
+      <!-- Search -->
+      <div class="mb-4">
+        <div class="relative">
+          <input
+            type="text"
+            id="search_children"
+            placeholder="חיפוש חניכים..."
+            class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-hebrew"
+          />
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Available Children List -->
+      <div id="available_children_container">
+        <div
+          class="space-y-2 max-h-64 overflow-y-auto"
+          id="available_children_list"
+        >
+          {% for child in available_children %}
+          <label
+            class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+          >
+            <input
+              type="checkbox"
+              class="child-checkbox ml-3"
+              value="{{ child.id }}"
+              data-name="{{ child.user.username }}"
+            />
+            <div class="flex-1">
+              <div class="font-medium text-gray-800 font-hebrew">
+                {{ child.user.username }}
+              </div>
+              <div class="text-xs text-gray-500 font-hebrew">
+                מזהה: {{ child.identifier }} | נרשם:
+                {{child.user.date_joined|date:"d/m/Y" }}
+              </div>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination for Available Children -->
+        {% if available_children.has_other_pages %}
+        <div class="flex justify-center mt-4">
+          <div class="flex items-center space-x-2 space-x-reverse text-sm">
+            {% if available_children.has_previous %}
+            <a
+              href="?available_page={{ available_children.previous_page_number }}"
+              class="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+
+            <span class="px-2 py-1 text-gray-600 font-hebrew">
+              {{ available_children.number }} / {{ available_children.paginator.num_pages }}
+            </span>
+
+            {% if available_children.has_next %}
+            <a
+              href="?available_page={{ available_children.next_page_number }}"
+              class="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Add Button -->
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <button
+          onclick="addSelectedChildren()"
+          id="add_children_btn"
+          disabled
+          class="w-full bg-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-all duration-200"
+        >
+          <i class="fas fa-plus ml-2"></i>
+          הוסף חניכים נבחרים
+        </button>
+        <div
+          id="selected_count"
+          class="text-xs text-gray-500 text-center mt-2 font-hebrew"
+        >
+          לא נבחרו חניכים
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Children in Group -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 font-hebrew">
+        <i class="fas fa-users text-green-500 ml-2"></i>
+        חניכים בקבוצה ({{ total_children_in_group }})
+      </h2>
+
+      {% if children_in_group %}
+      <div class="space-y-3">
+        {% for child in children_in_group %}
+        <div
+          class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <div class="flex-1">
+            <div class="font-medium text-gray-800 font-hebrew">
+              {{ child.user.username }}
+            </div>
+            <div class="text-xs text-gray-500 font-hebrew">
+              מזהה: {{ child.identifier }} | נקודות: {{ child.points }} | רמה:
+              {{ child.level }}
+            </div>
+            <div class="text-xs text-gray-400 font-hebrew">
+              נרשם: {{ child.user.date_joined|date:"d/m/Y" }}
+            </div>
+          </div>
+
+          <button
+            onclick="removeChildFromGroup({{ child.id }}, '{{ child.user.username }}')"
+            class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            title="הסר מהקבוצה"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination for Children in Group -->
+      {% if children_in_group.has_other_pages %}
+      <div class="flex justify-center mt-6">
+        <div class="flex items-center space-x-2 space-x-reverse text-sm">
+          {% if children_in_group.has_previous %}
+          <a
+            href="?children_page={{ children_in_group.previous_page_number }}"
+            class="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </a>
+          {% endif %}
+
+          <span class="px-3 py-1 text-gray-600 font-hebrew">
+            עמוד {{ children_in_group.number }} מתוך {{ children_in_group.paginator.num_pages }}
+          </span>
+
+          {% if children_in_group.has_next %}
+          <a
+            href="?children_page={{ children_in_group.next_page_number }}"
+            class="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %} {% else %}
+      <div class="text-center py-8">
+        <div
+          class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <i class="fas fa-user-slash text-2xl text-gray-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2 font-hebrew">
+          אין חניכים בקבוצה
+        </h3>
+        <p class="text-gray-600 font-hebrew">
+          הוסף חניכים כדי להתחיל לנהל את הקבוצה
+        </p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Tasks in Group Info -->
+    {% if tasks_in_group %}
+    <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+      <h3 class="text-lg font-bold text-gray-800 mb-4 font-hebrew">
+        <i class="fas fa-tasks text-purple-500 ml-2"></i>
+        משימות בקבוצה ({{ tasks_in_group.count }})
+      </h3>
+      <div class="space-y-2">
+        {% for task in tasks_in_group %}
+        <div
+          class="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+        >
+          <div class="font-medium text-gray-800 font-hebrew">
+            {{ task.title }}
+          </div>
+          <div class="text-xs text-gray-500 font-hebrew">
+            {{ task.points }} נקודות
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div
+  id="loading_overlay"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg p-6 text-center">
+    <div
+      class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"
+    ></div>
+    <div class="text-gray-700 font-hebrew">מעדכן...</div>
+  </div>
+</div>
+
+<script>
+  let selectedChildrenIds = new Set();
+
+  // Toggle main menu
+  function toggleMainMenu() {
+      const menu = document.getElementById('main-menu');
+      menu.classList.toggle('hidden');
+  }
+
+  // Close menus when clicking outside
+  document.addEventListener('click', function(event) {
+      if (!event.target.closest('#main-menu') && !event.target.closest('button')) {
+          document.getElementById('main-menu').classList.add('hidden');
+      }
+  });
+
+  // Handle child selection
+  document.addEventListener('change', function(event) {
+      if (event.target.classList.contains('child-checkbox')) {
+          const childId = event.target.value;
+
+          if (event.target.checked) {
+              selectedChildrenIds.add(childId);
+          } else {
+              selectedChildrenIds.delete(childId);
+          }
+
+          updateAddButton();
+      }
+  });
+
+  // Update add button state
+  function updateAddButton() {
+      const button = document.getElementById('add_children_btn');
+      const countDiv = document.getElementById('selected_count');
+      const count = selectedChildrenIds.size;
+
+      button.disabled = count === 0;
+
+      if (count === 0) {
+          button.classList.add('bg-gray-300', 'cursor-not-allowed');
+          button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+          countDiv.textContent = 'לא נבחרו חניכים';
+      } else {
+          button.classList.remove('bg-gray-300', 'cursor-not-allowed');
+          button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+          countDiv.textContent = `נבחרו ${count} חניכים`;
+      }
+  }
+
+  // Search children
+  let searchTimeout;
+  document.getElementById('search_children').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
+
+      searchTimeout = setTimeout(() => {
+          searchChildren(query);
+      }, 300);
+  });
+
+  // Search children via AJAX
+  function searchChildren(query) {
+      const container = document.getElementById('available_children_list');
+      container.classList.add('loading');
+
+      fetch(`{% url 'mentorApp:search_children_ajax' task_group.id %}?q=${encodeURIComponent(query)}`)
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  updateAvailableChildrenList(data.children);
+              } else {
+                  console.error('Search error:', data.error);
+              }
+          })
+          .catch(error => {
+              console.error('Search failed:', error);
+          })
+          .finally(() => {
+              container.classList.remove('loading');
+          });
+  }
+
+  // Update available children list
+  function updateAvailableChildrenList(children) {
+      const container = document.getElementById('available_children_list');
+
+      if (children.length === 0) {
+          container.innerHTML = `
+              <div class="text-center py-4 text-gray-500 font-hebrew">
+                  לא נמצאו חניכים
+              </div>
+          `;
+          return;
+      }
+
+      container.innerHTML = children.map(child => `
+          <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+              <input type="checkbox"
+                     class="child-checkbox ml-3"
+                     value="${child.id}"
+                     data-name="${child.username}">
+              <div class="flex-1">
+                  <div class="font-medium text-gray-800 font-hebrew">${child.username}</div>
+                  <div class="text-xs text-gray-500 font-hebrew">
+                      מזהה: ${child.identifier} | נרשם: ${child.join_date}
+                  </div>
+              </div>
+          </label>
+      `).join('');
+  }
+
+  // Add selected children to group
+  function addSelectedChildren() {
+      if (selectedChildrenIds.size === 0) return;
+
+      showLoading(true);
+
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                       document.querySelector('meta[name=csrf-token]')?.content ||
+                       '{{ csrf_token }}';
+
+      fetch(`{% url 'mentorApp:add_children_to_group' task_group.id %}`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({
+              child_ids: Array.from(selectedChildrenIds)
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              showMessage(data.message, 'success');
+              setTimeout(() => {
+                  location.reload();
+              }, 1000);
+          } else {
+              showMessage(data.error, 'error');
+          }
+      })
+      .catch(error => {
+          showMessage('אירעה שגיאה במערכת', 'error');
+          console.error('Error:', error);
+      })
+      .finally(() => {
+          showLoading(false);
+      });
+  }
+
+  // Remove child from group
+  function removeChildFromGroup(childId, childName) {
+      if (!confirm(`האם אתה בטוח שברצונך להסיר את ${childName} מהקבוצה?`)) {
+          return;
+      }
+
+      showLoading(true);
+
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                       document.querySelector('meta[name=csrf-token]')?.content ||
+                       '{{ csrf_token }}';
+
+      fetch(`{% url 'mentorApp:remove_child_from_group' task_group.id 0 %}`.replace('0', childId), {
+          method: 'POST',
+          headers: {
+              'X-CSRFToken': csrfToken
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              showMessage(data.message, 'success');
+              setTimeout(() => {
+                  location.reload();
+              }, 1000);
+          } else {
+              showMessage(data.error, 'error');
+          }
+      })
+      .catch(error => {
+          showMessage('אירעה שגיאה במערכת', 'error');
+          console.error('Error:', error);
+      })
+      .finally(() => {
+          showLoading(false);
+      });
+  }
+
+  // Show loading overlay
+  function showLoading(show) {
+      const overlay = document.getElementById('loading_overlay');
+      if (show) {
+          overlay.classList.remove('hidden');
+      } else {
+          overlay.classList.add('hidden');
+      }
+  }
+
+  // Show message
+  function showMessage(message, type) {
+      const alert = document.createElement('div');
+      alert.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg text-white font-medium ${type === 'error' ? 'bg-red-500' : 'bg-green-500'}`;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+
+      setTimeout(() => {
+          alert.remove();
+      }, 4000);
+  }
+
+  // Add CSRF token to all AJAX requests
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ||
+                   document.querySelector('meta[name="csrf-token"]');
+  if (!csrfToken) {
+      // Create a hidden CSRF token for AJAX requests if it doesn't exist
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'csrfmiddlewaretoken';
+      tokenInput.value = '{{ csrf_token }}';
+      document.body.appendChild(tokenInput);
+  }
+
+  // Show any Django messages
+  {% if messages %}
+      {% for message in messages %}
+          setTimeout(() => {
+              showMessage('{{ message }}', '{{ message.tags }}');
+          }, 100);
+      {% endfor %}
+  {% endif %}
+</script>
+{% endblock %}
