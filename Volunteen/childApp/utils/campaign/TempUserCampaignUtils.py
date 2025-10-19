@@ -306,7 +306,8 @@ class TempUserCampaignUtils:
                 pass
 
         today = timezone.now().date()
-        live_tasks = Task.objects.filter(deadline__gte=today)
+        mentor = CampaignManagerUtils.get_campaign_mentor()
+        live_tasks = Task.objects.filter(deadline__gte=today, assigned_mentors=mentor)
 
         for task in live_tasks:
             if not task.assigned_children.filter(id=child.id).exists():

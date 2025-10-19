@@ -246,15 +246,20 @@ CSRF_FAILURE_VIEW = 'teenApp.interface_adapters.views.csrf_failure_view'
 
 Q_CLUSTER = {
     'name': 'volunteen_qcluster',
-    'workers': 6,   # number of workers
-    'recycle': 300,  
-    'timeout': 60,
-    'ack_failures': True,
+
+    'workers': 10,
+    'recycle': 500,
+    'timeout': 300,
+    'retry': 600,
     'max_attempts': 1,
-    'retry': 90,  
-    'queue_limit': 100, 
-    'bulk': 10,  
-    'poll': 0.3,  
-    'orm': 'default',  # Use Django ORM as broker
-    "sync": False,
+    'ack_failures': True,
+    'requeue': False,
+
+    'orm': 'default',
+    'poll': 0.2,
+    'bulk': 10,
+    'queue_limit': 800,
+    'save_limit': 250,
+    'sync': False,
 }
+
