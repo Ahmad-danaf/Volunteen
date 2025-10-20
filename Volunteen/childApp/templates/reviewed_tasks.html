@@ -74,6 +74,12 @@
                 <strong>הערת מנטור:</strong> {{ task.mentor_feedback }}
               </td>
             </tr>
+          {% elif task.status == 'approved' and task.mentor_feedback %}
+            <tr class="bg-green-50 text-green-700 text-sm task-row" data-status="approved">
+              <td colspan="5" class="px-4 py-2 text-right">
+                <strong>הערת מנטור:</strong> {{ task.mentor_feedback }}
+              </td>
+            </tr>
           {% endif %}
         {% empty %}
           <tr>

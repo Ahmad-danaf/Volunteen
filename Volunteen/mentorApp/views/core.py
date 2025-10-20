@@ -515,7 +515,7 @@ def review_task(request):
 
                 if action == 'approve':
                     task_completion.status = 'approved'
-
+                    task_completion.mentor_feedback = feedback
                     base_points = task_completion.task.points
                     bonus_points = task_completion.bonus_points or 0
 
