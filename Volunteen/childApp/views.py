@@ -811,12 +811,12 @@ def submit_check_in(request):
         return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
     child = request.user.child
-
-    # Read the image file into bytes so it can be passed to the task.
-    image_data = image.read()
-
-    # Enqueue the task. (child.id and task_id are integers/strings; image_data is bytes.)
-    async_task('childApp.utils.check_in_out_utils.process_check_in', child.id, task_id, image_data)
+    task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
+    task_completion.checkin_img = image
+    task_completion.checkin_at = timezone.localtime()
+    task_completion.status = 'checked_in'
+    task_completion.save()
+    async_task('childApp.utils.check_in_out_utils.process_check_in', task_completion.id)
 
     return JsonResponse({'success': True, 'message': "צ'ק-אין נשלח לעיבוד ברקע."})
 
@@ -833,12 +833,12 @@ def submit_check_out(request):
         return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
 
     child = request.user.child
-
-    # Read the image file into bytes.
-    image_data = image.read()
-
-    # Enqueue the check-out task.
-    async_task('childApp.utils.check_in_out_utils.process_check_out', child.id, task_id, image_data)
+    task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
+    task_completion.checkout_img = image
+    task_completion.checkout_at = timezone.localtime()
+    task_completion.status = 'checked_out'
+    task_completion.save()
+    async_task('childApp.utils.check_in_out_utils.process_check_out', task_completion.id)
 
     return JsonResponse({'success': True, 'message': "צ'ק-אאוט נשלח לעיבוד ברקע."})
 
