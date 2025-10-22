@@ -13,11 +13,13 @@ class RecurringTaskUtils:
 
     @staticmethod
     def _log_run(task_template, period_start, status, reason=""):
-        RecurringRun.objects.create(
+        RecurringRun.objects.get_or_create(
             task_template=task_template,
             period_start=period_start,
-            status=status,
-            reason=reason[:500],
+            defaults={
+                "status": status,
+                "reason": reason[:500],
+            }
         )
 
     @staticmethod
@@ -41,16 +43,14 @@ class RecurringTaskUtils:
             return today + timedelta(days=interval - 1)
         elif recurrence.frequency == Frequency.WEEKLY:
             weekdays = recurrence.by_weekday or []
-            if weekdays:
-                now_weekday = today.weekday()
-                days_ahead = min(
-                    ((d - now_weekday) % 7) or 7
-                    for d in weekdays
-                    if d != now_weekday
-                )
-                next_day = today + timedelta(days=days_ahead)
-                return next_day - timedelta(days=1)
-            return today + timedelta(days=6)  
+            now_weekday = today.weekday()
+            if not weekdays:
+                return today + timedelta(days=6)
+    
+            deltas = [((d - now_weekday) % 7) or 7 for d in weekdays]
+            days_ahead = min(deltas) if deltas else 6
+            next_day = today + timedelta(days=days_ahead)
+            return next_day 
         elif recurrence.frequency == Frequency.MONTHLY:
             return today + timedelta(days=30)
         return today + timedelta(days=1)
@@ -127,8 +127,8 @@ class RecurringTaskUtils:
                     RecurringTaskUtils._clone_task_data(template, rec),
                     timewindows,
                 )
-                RecurringTaskUtils._log_run(template, now.date(), RecurringRun.Status.CREATED)
                 with transaction.atomic():
+                    RecurringTaskUtils._log_run(template, now.date(), RecurringRun.Status.CREATED)
                     rec.last_run_at = now
                     rec.next_run_at = rec.compute_next_run_at(from_dt_local=timezone.localtime(now))
                     rec.save(update_fields=["last_run_at", "next_run_at"])

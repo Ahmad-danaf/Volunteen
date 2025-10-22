@@ -40,29 +40,31 @@ def create_recurrence(request, task_id):
 
     try:
         interval_days = int(interval_days) if interval_days else None
-    except ValueError:
+    except Exception:
         interval_days = None
 
     try:
         day_of_month = int(day_of_month) if day_of_month else None
-    except ValueError:
+    except Exception:
         day_of_month = None
 
-    if isinstance(by_weekday, list):
-        by_weekday = [int(x) for x in by_weekday if str(x).isdigit()]
+    if isinstance(by_weekday, int):
+        by_weekday = [by_weekday]
+    elif isinstance(by_weekday, list):
+        by_weekday = sorted(set(int(x) for x in by_weekday if str(x).isdigit() and 0 <= int(x) <= 6))
     else:
         by_weekday = []
         
     try:
         deadline_offset_days = int(deadline_offset_days) if deadline_offset_days else None
-    except ValueError:
+    except Exception:
         deadline_offset_days = None
 
     end_date = None
     if end_date_str:
         try:
             end_date = datetime.strptime(str(end_date_str), "%Y-%m-%d").date()
-        except ValueError:
+        except Exception:
             return JsonResponse({"success": False, "message": "תאריך סיום לא תקין."}, status=400)
 
     rec = TaskRecurrence.objects.create(
