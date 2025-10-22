@@ -1,36 +1,37 @@
 {% extends 'child_base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}קיר התהילה{% endblock %}
+{% block title %}{% trans "קיר התהילה" %}{% endblock %}
 {% block content %}
 <div class="leaderboard-container">
   <!-- Page Heading -->
-  <h1 class="leaderboard-title text-center">קיר התהילה</h1>
+  <h1 class="leaderboard-title text-center">{% trans "קיר התהילה" %}</h1>
   
   <!-- Filter Form -->
   <form method="GET" class="leaderboard-filters">
     <!-- Date Range Radio Buttons -->
     <div class="filter-group">
-      <label class="filter-label">בחירת טווח תאריכים</label>
+      <label class="filter-label">{% trans "בחירת טווח תאריכים" %}</label>
       {{ form.date_range_selection }}
     </div>
     
     <!-- Custom Date Fields (show when 'טווח מותאם' is selected) -->
     <div class="filter-group" id="customDateFields">
-      <label for="id_start_date" class="filter-label">תאריך התחלה</label>
+      <label for="id_start_date" class="filter-label">{% trans "תאריך התחלה" %}</label>
       {{ form.start_date }}
-      <label for="id_end_date" class="filter-label">תאריך סיום</label>
+      <label for="id_end_date" class="filter-label">{% trans "תאריך סיום" %}</label>
       {{ form.end_date }}
     </div>
     
     <!-- City Selection -->
     <div class="filter-group">
-      <label for="id_city" class="filter-label">עיר</label>
+      <label for="id_city" class="filter-label">{% trans "עיר" %}</label>
       {{ form.city }}
     </div>
     
     <div class="filter-submit">
-      <button type="submit" class="btn-filter">סנן</button>
+      <button type="submit" class="btn-filter">{% trans "סנן" %}</button>
     </div>
   </form>
   
@@ -57,7 +58,7 @@
         <div class="leaderboard-name">
           {{ child.user.username }}
           {% if child.is_current_user %}
-            <span class="you-label">(את/ה)</span>
+            <span class="you-label">{% trans "(את/ה)" %}</span>
           {% endif %}
         </div>
         
@@ -75,7 +76,7 @@
         </div>
       </div>
     {% empty %}
-      <div class="no-results">לא נמצאו ילדים</div>
+      <div class="no-results">{% trans "לא נמצאו ילדים" %}</div>
     {% endfor %}
 
     {% if show_divider %}
@@ -100,7 +101,7 @@
     <div class="leaderboard-name">
       {{ child.user.username }}
       {% if child.is_current_user %}
-        <span class="you-label">(את/ה)</span>
+        <span class="you-label">{% trans "(את/ה)" %}</span>
       {% endif %}
     </div>
     

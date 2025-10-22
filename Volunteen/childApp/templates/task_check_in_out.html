@@ -1,32 +1,33 @@
 {% load hebrew_extras %}
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משימות לביצוע</title>
+    <title>{% trans "משימות לביצוע" %}</title>
     <link rel="stylesheet" href="{% static 'childApp/css/task_check_in_out.css' %}">
 </head>
 <body>
     <div class="task-list">
-        <h1>משימות לביצוע</h1>
+        <h1>{% trans "משימות לביצוע" %}</h1>
         <div style="text-align: center;">
-            <a href="{% url 'childApp:child_home' %}" class="home-button">חזרה לדף הבית</a>
+            <a href="{% url 'childApp:child_home' %}" class="home-button">{% trans "חזרה לדף הבית" %}</a>
         </div>
         
         <!-- Tab Navigation -->
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'no-checkin')">
-                עדיין לא התחלתי
+                {% trans "עדיין לא התחלתי" %}
                 <span class="tab-badge" id="no-checkin-count">0</span>
             </button>
             <button class="tab-button" onclick="openTab(event, 'with-checkin')">
-                התחלתי (עם צ'ק-אין)
+                {% trans "התחלתי (עם צ'ק-אין)" %}
                 <span class="tab-badge" id="with-checkin-count">0</span>
             </button>
             <button class="tab-button" onclick="openTab(event, 'with-checkout')">
-                סיימתי (עם צ'ק-אאוט)
+                {% trans "סיימתי (עם צ'ק-אאוט)" %}
                 <span class="tab-badge" id="with-checkout-count">0</span>
             </button>
         </div>
@@ -38,67 +39,67 @@
                     {% if not task.status %}
                     <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
+                        <img src="{{ task.img.url }}" alt="{% trans 'תמונת משימה' %}" class="task-image">
                         {% endif %}
                         <div class="task-title" onclick="toggleDetails({{ task.id }})">
                             {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                                <span class="pin-icon" title="{% trans 'משימה מוצמדת' %}">📌</span>
                             {% endif %}
                              {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
+                                <span class="time-icon" title="{% trans 'יש חלון זמן' %}">⏰</span>
                             {% endif %}
 
                             {{ task.title }}
                         </div>
                         <div id="details-{{ task.id }}" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
+                            <p><strong>{% trans "תיאור:" %}</strong> {{ task.description }}</p>
                             {% if task.additional_details %}
-                              <p><strong>פרטים נוספים:</strong> {{ task.additional_details }}</p>
+                              <p><strong>{% trans "פרטים נוספים:" %}</strong> {{ task.additional_details }}</p>
                             {% endif %}
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
+                            <p><strong>{% trans "תאריך יעד:" %}</strong> {{ task.deadline|date:"d/m/Y" }}</p>
                             <span class="status-badge">
                                 {% if task.proof_requirement == "camera" %}
-                                        📷 העלאה מהמצלמה
+                                        {% trans "📷 העלאה מהמצלמה" %}
                                     {% elif task.proof_requirement == "gallery" %}
-                                        🖼️ מהמצלמה או הגלריה
+                                        {% trans "🖼️ מהמצלמה או הגלריה" %}
                                     {% elif task.proof_requirement == "auto_checkin" %}
-                                        ✅ אוטומטי בצ'ק-אין
+                                        {% trans "✅ אוטומטי בצ'ק-אין" %}
                                     {% elif task.proof_requirement == "auto_checkout" %}
-                                        ✅ אוטומטי בצ'ק-אאוט
+                                        {% trans "✅ אוטומטי בצ'ק-אאוט" %}
                                     {% elif task.proof_requirement == "none" %}
-                                        ❌ אין צורך בהעלאה
+                                        {% trans "❌ אין צורך בהעלאה" %}
                                 {% endif %}
                             </span>
                             {% if task.time_window_rules.all|length > 0 %}
 
                                 <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
+                                    <strong>{% trans "⏰ חלונות זמן:" %}</strong>
                                     <ul>
                                     {% for rule in task.time_window_rules.all %}
                                         <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
+                                            {% if rule.window_type == "check_in" %} {% trans "צ'ק-אין" %}{% else %}{% trans "צ'ק-אאוט" %}{% endif %} <br>
                                             {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                                                {% blocktrans %}רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}{% endblocktrans %}
                                             {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
+                                                {% blocktrans %}כל יום {{ rule.weekday|hebrew_weekday }}{% endblocktrans %}
                                             {% else %}
-                                                בכל יום
+                                                {% trans "בכל יום" %}
                                             {% endif %}
                                             – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
+                                            {% blocktrans with start=rule.start_time|time:"H:i" end=rule.end_time|time:"H:i" %}בין {{ start }} ל-{{ end }}{% endblocktrans %}
                                         </li>
                                     {% endfor %}
                                     </ul>
                                 </div>
                             {% endif %}
                             <div class="button-group">
-                                <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין</a>
+                                <a href="{% url 'childApp:check_in' task.id %}" class="button">{% trans "צ'ק-אין" %}</a>
                             </div>
                         </div>
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">! אין משימות ממתינות</div>
+                    <div class="empty-message">{% trans "! אין משימות ממתינות" %}</div>
                 {% endfor %}
             </ul>
         </div>
@@ -110,63 +111,63 @@
                     {% if task.status == 'checked_in' %}
                     <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
+                        <img src="{{ task.img.url }}" alt="{% trans 'תמונת משימה' %}" class="task-image">
                         {% endif %}
                         <div class="task-title" onclick="toggleDetails({{ task.id }})">
                             {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                                <span class="pin-icon" title="{% trans 'משימה מוצמדת' %}">📌</span>
                             {% endif %}
                             {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
+                                <span class="time-icon" title="{% trans 'יש חלון זמן' %}">⏰</span>
                             {% endif %}
                             {{ task.title }}
                         </div>
                         <div id="details-{{ task.id }}-checkin" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
+                            <p><strong>{% trans "תיאור:" %}</strong> {{ task.description }}</p>
+                            <p><strong>{% trans "תאריך יעד:" %}</strong> {{ task.deadline|date:"d/m/Y" }}</p>
                             <span class="status-badge">
                                 {% if task.proof_requirement == "camera" %}
-                                        📷 העלאה מהמצלמה
+                                        {% trans "📷 העלאה מהמצלמה" %}
                                     {% elif task.proof_requirement == "gallery" %}
-                                        🖼️ מהמצלמה או הגלריה
+                                        {% trans "🖼️ מהמצלמה או הגלריה" %}
                                     {% elif task.proof_requirement == "auto_checkin" %}
-                                        ✅ אוטומטי בצ'ק-אין
+                                        {% trans "✅ אוטומטי בצ'ק-אין" %}
                                     {% elif task.proof_requirement == "auto_checkout" %}
-                                        ✅ אוטומטי בצ'ק-אאוט
+                                        {% trans "✅ אוטומטי בצ'ק-אאוט" %}
                                     {% elif task.proof_requirement == "none" %}
-                                        ❌ אין צורך בהעלאה
+                                        {% trans "❌ אין צורך בהעלאה" %}
                                 {% endif %}
                             </span>
                              {% if task.time_window_rules.all|length > 0 %}
                                 <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
+                                    <strong>{% trans "⏰ חלונות זמן:" %}</strong>
                                     <ul>
                                     {% for rule in task.time_window_rules.all %}
                                         <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
+                                            {% if rule.window_type == "check_in" %} {% trans "צ'ק-אין" %}{% else %}{% trans "צ'ק-אאוט" %}{% endif %} <br>
                                             {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                                                {% blocktrans %}רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}{% endblocktrans %}
                                             {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
+                                                {% blocktrans %}כל יום {{ rule.weekday|hebrew_weekday }}{% endblocktrans %}
                                             {% else %}
-                                                בכל יום
+                                                {% trans "בכל יום" %}
                                             {% endif %}
                                             – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
+                                            {% blocktrans with start=rule.start_time|time:"H:i" end=rule.end_time|time:"H:i" %}בין {{ start }} ל-{{ end }}{% endblocktrans %}
                                         </li>
                                     {% endfor %}
                                     </ul>
                                 </div>
                             {% endif %}
                             <div class="button-group">
-                                <a href="{% url 'childApp:check_in' task.id %}" class="button">צ'ק-אין מחדש</a>
-                                <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט</a>
+                                <a href="{% url 'childApp:check_in' task.id %}" class="button">{% trans "צ'ק-אין מחדש" %}</a>
+                                <a href="{% url 'childApp:check_out' task.id %}" class="button">{% trans "צ'ק-אאוט" %}</a>
                             </div>
                         </div>
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">! אין משימות עם צ'ק-אין בלבד</div>
+                    <div class="empty-message">{% trans "! אין משימות עם צ'ק-אין בלבד" %}</div>
                 {% endfor %}
             </ul>
         </div>
@@ -178,50 +179,50 @@
                     {% if task.status == 'checked_out' or task.status == 'pending' %}
                     <li class="{% if task.is_pinned %}pinned-task{% endif %}">
                         {% if task.img %}
-                        <img src="{{ task.img.url }}" alt="תמונת משימה" class="task-image">
+                        <img src="{{ task.img.url }}" alt="{% trans 'תמונת משימה' %}" class="task-image">
                         {% endif %}
                         <div class="task-title" onclick="toggleDetails({{ task.id }})">
                             {% if task.is_pinned %}
-                                <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                                <span class="pin-icon" title="{% trans 'משימה מוצמדת' %}">📌</span>
                             {% endif %}
                              {% if task.time_window_rules.all|length > 0 %}
-                                <span class="time-icon" title="יש חלון זמן">⏰</span>
+                                <span class="time-icon" title="{% trans 'יש חלון זמן' %}">⏰</span>
                             {% endif %}
                             {{ task.title }}
                         </div>
                         <div id="details-{{ task.id }}-checkout" class="task-details">
-                            <p><strong>תיאור:</strong> {{ task.description }}</p>
-                            <p><strong>תאריך יעד:</strong> {{ task.deadline|date:"d/m/Y" }}</p>
-                            <p><strong>סטטוס:</strong> {% if task.status == "pending" or task.status == "checked_out" %}ממתין לאישור{% else %}הושלם{% endif %}</p>
+                            <p><strong>{% trans "תיאור:" %}</strong> {{ task.description }}</p>
+                            <p><strong>{% trans "תאריך יעד:" %}</strong> {{ task.deadline|date:"d/m/Y" }}</p>
+                            <p><strong>{% trans "סטטוס:" %}</strong> {% if task.status == "pending" or task.status == "checked_out" %}{% trans "ממתין לאישור" %}{% else %}{% trans "הושלם" %}{% endif %}</p>
                             <span class="status-badge">
                                 {% if task.proof_requirement == "camera" %}
-                                        📷 העלאה מהמצלמה
+                                        {% trans "📷 העלאה מהמצלמה" %}
                                     {% elif task.proof_requirement == "gallery" %}
-                                        🖼️ מהמצלמה או הגלריה
+                                        {% trans "🖼️ מהמצלמה או הגלריה" %}
                                     {% elif task.proof_requirement == "auto_checkin" %}
-                                        ✅ אוטומטי בצ'ק-אין
+                                        {% trans "✅ אוטומטי בצ'ק-אין" %}
                                     {% elif task.proof_requirement == "auto_checkout" %}
-                                        ✅ אוטומטי בצ'ק-אאוט
+                                        {% trans "✅ אוטומטי בצ'ק-אאוט" %}
                                     {% elif task.proof_requirement == "none" %}
-                                        ❌ אין צורך בהעלאה
+                                        {% trans "❌ אין צורך בהעלאה" %}
                                 {% endif %}
                             </span>
                              {% if task.time_window_rules.all|length > 0 %}
                                 <div class="time-window-list">
-                                    <strong>⏰ חלונות זמן:</strong>
+                                    <strong>{% trans "⏰ חלונות זמן:" %}</strong>
                                     <ul>
                                     {% for rule in task.time_window_rules.all %}
                                         <li>
-                                            {% if rule.window_type == "check_in" %} צ'ק-אין{% else %}צ'ק-אאוט{% endif %} <br>
+                                            {% if rule.window_type == "check_in" %} {% trans "צ'ק-אין" %}{% else %}{% trans "צ'ק-אאוט" %}{% endif %} <br>
                                             {% if rule.specific_date %}
-                                                רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                                                {% blocktrans %}רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}{% endblocktrans %}
                                             {% elif rule.weekday != None %}
-                                                כל יום {{ rule.weekday|hebrew_weekday }}
+                                                {% blocktrans %}כל יום {{ rule.weekday|hebrew_weekday }}{% endblocktrans %}
                                             {% else %}
-                                                בכל יום
+                                                {% trans "בכל יום" %}
                                             {% endif %}
                                             – 
-                                            בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}
+                                            {% blocktrans with start=rule.start_time|time:"H:i" end=rule.end_time|time:"H:i" %}בין {{ start }} ל-{{ end }}{% endblocktrans %}
                                         </li>
                                     {% endfor %}
                                     </ul>
@@ -229,13 +230,13 @@
                             {% endif %}
 
                             <div class="button-group">
-                                <a href="{% url 'childApp:check_out' task.id %}" class="button">צ'ק-אאוט מחדש</a>
+                                <a href="{% url 'childApp:check_out' task.id %}" class="button">{% trans "צ'ק-אאוט מחדש" %}</a>
                             </div>
                         </div>
                     </li>
                     {% endif %}
                 {% empty %}
-                    <div class="empty-message">! אין משימות שהושלמו</div>
+                    <div class="empty-message">{% trans "! אין משימות שהושלמו" %}</div>
                 {% endfor %}
             </ul>
         </div>

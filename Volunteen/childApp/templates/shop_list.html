@@ -1,10 +1,11 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>פרסים ומבצעים</title>
+  <title>{% trans "פרסים ומבצעים" %}</title>
   <link rel="stylesheet" href="https://unpkg.com/@shoelace-style/shoelace@2.0.0-beta.87/dist/shoelace/shoelace.css">
 
   <style>
@@ -243,13 +244,13 @@
     <div class="nav-bar">
       <a href="{% url 'teenApp:home_redirect' %}">🏠</a>
       <select class="city-select" id="citySelect">
-        <option value="">כל הערים</option>
+        <option value="">{% trans "כל הערים" %}</option>
         {% for code, name in available_cities %}
           <option value="{{ code }}" {% if child_city == code %}selected{% endif %}>{{ name }}</option>
         {% endfor %}
       </select>
       <select class="city-select" id="categorySelect">
-        <option value="">כל הקטגריות</option>
+        <option value="">{% trans "כל הקטגריות" %}</option>
         {% for cat in categories_list %}
           <option value="{{ cat.code }}">{{ cat.name }}</option>
         {% endfor %}
@@ -274,13 +275,13 @@
       >
         <div class="shop-header" style="background-image: url('{{ shop.img_url }}')">
           <!-- Info Icon - Top Right -->
-          <a href="{% url 'childApp:shop_detail' shop.id %}" class="shop-info-icon" title="פרטים נוספים על החנות" aria-label="פרטים נוספים על {{ shop.name }}">
+          <a href="{% url 'childApp:shop_detail' shop.id %}" class="shop-info-icon" title="{% trans 'פרטים נוספים על החנות' %}" aria-label="{% blocktrans with shop_name=shop.name %}פרטים נוספים על {{ shop_name }}{% endblocktrans %}">
             <i class="fa-solid fa-circle-info"></i>
           </a>
 
           <!-- Shop Status - Top Left -->
           <div class="shop-status {% if shop.is_open %}open{% else %}closed{% endif %}" style="position: absolute; top: 1rem; left: 1rem;">
-            {% if shop.is_open %}פתוח עכשיו{% else %}סגור כעת{% endif %}
+            {% if shop.is_open %}{% trans "פתוח עכשיו" %}{% else %}{% trans "סגור כעת" %}{% endif %}
           </div>
 
           <!-- Overlay with Shop Info -->
@@ -293,7 +294,7 @@
                     {% if code == shop.city %}{{ name }}{% endif %}
                   {% endfor %}
                 </span> •
-                <span>{{ shop.points_left_to_spend }} טינקואינס נותרו למימוש</span>
+                <span>{% blocktrans with points=shop.points_left_to_spend %}{{ points }} טינקואינס נותרו למימוש{% endblocktrans %}</span>
               </div>
             </div>
           </div>
@@ -301,18 +302,18 @@
         <a href="{% url 'childApp:shop_rewards' shop.id %}">
           <button class="buy-btn"
                   {% if not shop.can_redeem or not shop.is_open %}disabled{% endif %}>
-            בחר פרס מהחנות
+            {% trans "בחר פרס מהחנות" %}
           </button>
         </a>
 
         {% if not shop.can_redeem %}
           <div class="disabled-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:0.5rem 1rem;border-radius:15px;font-size:0.9rem;z-index:2;">
             {% if shop.reason == "banned" %}
-              חנות זו אינה זמינה כרגע עקב איסור רכישה
+              {% trans "חנות זו אינה זמינה כרגע עקב איסור רכישה" %}
             {% elif shop.reason == "no_rewards_available" %}
-              אין פרסים זמינים
+              {% trans "אין פרסים זמינים" %}
             {% elif shop.reason == "max_shops_reached" %}
-              הגעת למגבלת חנויות
+              {% trans "הגעת למגבלת חנויות" %}
             {% endif %}
           </div>
         {% endif %}
@@ -324,10 +325,10 @@
                 <img src="{{ reward.img_url }}" alt="{{ reward.title }}" 
                      class="reward-image {% if not reward.sufficient_points %}grey-scale{% endif %}">
                 <h3>{{ reward.title }}</h3>
-                <div class="reward-points">{{ reward.points }} טינקואינס</div>
+                <div class="reward-points">{% blocktrans with points=reward.points %}{{ points }} טינקואינס{% endblocktrans %}</div>
               </div>
             {% empty %}
-              <div class="no-rewards">אין פרסים זמינים כרגע</div>
+              <div class="no-rewards">{% trans "אין פרסים זמינים כרגע" %}</div>
             {% endfor %}
           </div>
         </div>

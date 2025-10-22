@@ -8,6 +8,7 @@ from teenApp.entities.TaskCompletion import TaskCompletion
 from teenApp.entities.task import TimeWindowRule
 from teenApp.utils.TimeWindowUtils import TimeWindowUtils
 from django.utils import timezone
+from django.utils.translation import gettext as _
 def process_check_in(child_id, task_id, image_data):
     """
     Background task that processes a check-in:
@@ -56,7 +57,7 @@ def process_check_out(child_id, task_id, image_data):
     task_completion, created = TaskCompletion.objects.get_or_create(task=task, child=child)
 
     if not task_completion.checkin_img:
-        return "Error: No check-in image found. Cannot process check-out."
+        return _("Error: No check-in image found. Cannot process check-out.")
 
     file_path = f'checkout_images/{child.id}_{task.id}_checkout.jpg'
     content_file = ContentFile(image_data, name=f'{child.id}_{task.id}_checkout.jpg')

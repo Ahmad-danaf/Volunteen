@@ -1,6 +1,7 @@
 {% extends 'child_base.html' %}
 {% load static %}
-{% block title %}בקשת מימוש טינקוינס{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "בקשת מימוש טינקוינס" %}{% endblock %}
 
 {% block content %}
 <!-- Container to center content and add padding -->
@@ -15,7 +16,7 @@
   {% endif %}
 
   <!-- Page Heading -->
-  <h2 class="page-title">בקשת מימוש טינקוינס</h2>
+  <h2 class="page-title">{% trans "בקשת מימוש טינקוינס" %}</h2>
 
   <!-- Form for redemption request -->
   <form dir="rtl" method="post" id="redeem-form">
@@ -23,18 +24,18 @@
       
       <!-- Daily Limits & TeenCoins Summary -->
       <div class="limit-box">
-        <h3>מגבלות יומיות</h3>
+        <h3>{% trans "מגבלות יומיות" %}</h3>
         <div class="limit-values">
           <span class="limit-item">
             <i class="fas fa-trophy" aria-hidden="true"></i>
-            פרסים שנותרו: <span id="remaining-rewards">{{ remaining_rewards }}</span>
+            {% trans "פרסים שנותרו:" %} <span id="remaining-rewards">{{ remaining_rewards }}</span>
           </span>
           <span class="limit-item">
             <i class="fas fa-coins" aria-hidden="true"></i>
-            טינקואינס זמינים: <span id="available-teencoins">{{ available_teencoins }}</span>
+            {% trans "טינקואינס זמינים:" %} <span id="available-teencoins">{{ available_teencoins }}</span>
           </span>
         </div>
-        <p class="limit-remark">זכרו: אפשר לממש פרסים רק ב-{{ MAX_SHOPS_PER_DAY }} חנויות ביום</p>
+        <p class="limit-remark">{% blocktrans %}זכרו: אפשר לממש פרסים רק ב-{{ MAX_SHOPS_PER_DAY }} חנויות ביום{% endblocktrans %}</p>
       </div>
 
       <!-- Rewards Grid -->
@@ -46,7 +47,7 @@
             </div>
             <div class="reward-details">
               <h4 class="reward-title">{{ reward.title }}</h4>
-              <p class="reward-points">{{ reward.points_required }} טינקוינס</p>
+              <p class="reward-points">{% blocktrans %}{{ reward.points_required }} טינקוינס{% endblocktrans %}</p>
             </div>
             <div class="reward-actions">
                 <button type="button" class="btn btn-secondary btn-remove"
@@ -67,12 +68,12 @@
       </div>
      
       <!-- Receipt -->
-      <h3 class="receipt-title">הקבלה שלך</h3>
+      <h3 class="receipt-title">{% trans "הקבלה שלך" %}</h3>
       <ul id="receipt" class="receipt-list"></ul>
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-          <button type="button" class="btn cancel-btn" onclick="cancelRequest()">ביטול בקשה</button>
+          <button type="button" class="btn cancel-btn" onclick="cancelRequest()">{% trans "ביטול בקשה" %}</button>
           <button
             type="button"
             id="submit-request-btn"
@@ -80,7 +81,7 @@
             onclick="submitRequest()"
             {% if purchase_ban.is_banned %}disabled aria-disabled="true" title="{{ purchase_ban.note }}"{% endif %}
           >
-            שלח בקשת פרס
+            {% trans "שלח בקשת פרס" %}
           </button>
       </div>
 
@@ -98,6 +99,18 @@
   // Ban flags from server
   const IS_BANNED = {{ purchase_ban.is_banned|yesno:"true,false" }};
   const BAN_NOTE = {% if purchase_ban.is_banned %}"{{ purchase_ban.note|escapejs }}"{% else %}""{% endif %};
+
+  // i18n strings for UI messages
+  const MSG_DAILY_LIMIT = "{% trans 'הגעת למגבלת הפרסים היומית!' %}";
+  const MSG_NOT_ENOUGH_COINS = "{% trans 'אין מספיק טינקואינס למימוש נוסף!' %}";
+  const MSG_SELECT_AT_LEAST_ONE = "{% trans 'אנא בחר לפחות פרס אחד.' %}";
+  const MSG_SENDING_REQUEST = "{% trans 'שולח בקשה...' %}";
+  const MSG_POPUP_ALLOW = "{% trans 'אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה.' %}";
+  const MSG_TALLY_OPEN_ERROR = "{% trans 'שגיאה בפתיחת הטופס, נסה שוב מאוחר יותר.' %}";
+  const MSG_UNEXPECTED_ERROR = "{% trans 'שגיאה לא צפויה. נסה שוב מאוחר יותר.' %}";
+  const MSG_REQUEST_ERROR = "{% trans 'שגיאה בבקשה.' %}";
+  const DEFAULT_BAN_MESSAGE = "{% trans 'הקנייה חסומה כרגע.' %}";
+  const COIN_LABEL = "{% trans 'טינקוינס' %}";
 
   // Initial daily-limit & TeenCoin values from the server
   let initialRemainingRewards = parseInt('{{ remaining_rewards }}') || 0;
@@ -169,7 +182,7 @@
       receipt.innerHTML = '';
       selectedRewards.forEach(reward => {
           let li = document.createElement('li');
-          li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} טינקוינס`;
+          li.textContent = `${reward.title}: ${reward.quantity} x ${reward.points} ` + COIN_LABEL;
           li.style.opacity = 0;
           receipt.appendChild(li);
           setTimeout(() => { li.style.opacity = 1; }, 50);
@@ -199,9 +212,9 @@
 
           // Show feedback message
           if (totalQuantity >= initialRemainingRewards) {
-              feedbackMessage.textContent = "הגעת למגבלת הפרסים היומית!";
+              feedbackMessage.textContent = MSG_DAILY_LIMIT;
           } else if (totalPoints >= initialTeencoins) {
-              feedbackMessage.textContent = "אין מספיק טינקואינס למימוש נוסף!";
+              feedbackMessage.textContent = MSG_NOT_ENOUGH_COINS;
           }
           feedbackMessage.style.display = "block";
       } else {
@@ -222,12 +235,12 @@
 
   function submitRequest() {
   if (IS_BANNED) {
-    showErrorMessage(BAN_NOTE || "הקנייה חסומה כרגע.");
+    showErrorMessage(BAN_NOTE || DEFAULT_BAN_MESSAGE);
     return;
   }
 
   if (selectedRewards.length === 0) {
-    alert("אנא בחר לפחות פרס אחד.");
+    alert(MSG_SELECT_AT_LEAST_ONE);
     return;
   }
 
@@ -239,7 +252,7 @@
   // Disable both buttons and show loader
   submitBtn.disabled = true;
   cancelBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="loading-spinner"></span> שולח בקשה...';
+  submitBtn.innerHTML = '<span class="loading-spinner"></span> ' + MSG_SENDING_REQUEST;
   cancelBtn.innerHTML = '<span class="loading-spinner"></span>';
 
   const shopId = getShopIdFromURL();
@@ -271,7 +284,7 @@
         window.location.href = "{% url 'childApp:child_home' %}";
       }, 1200);
     } else {
-      showErrorMessage(data.message || "שגיאה בבקשה.");
+      showErrorMessage(data.message || MSG_REQUEST_ERROR);
       submitBtn.disabled = false;
       cancelBtn.disabled = false;
       submitBtn.innerHTML = originalSubmitHTML;
@@ -280,7 +293,7 @@
   })
   .catch(error => {
     console.error("Error:", error);
-    showErrorMessage("שגיאה לא צפויה. נסה שוב מאוחר יותר.");
+    showErrorMessage(MSG_UNEXPECTED_ERROR);
     submitBtn.disabled = false;
     cancelBtn.disabled = false;
     submitBtn.innerHTML = originalSubmitHTML;
@@ -298,13 +311,13 @@ function openTallyForm(url, hiddenFields) {
     );
     if (!popup) {
       console.warn("Popup blocked — please allow popups for this site.");
-      showErrorMessage("אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה.");
+      showErrorMessage(MSG_POPUP_ALLOW);
     } else {
       popup.focus();
     }
   } catch (error) {
     console.error("Error opening Tally form:", error);
-    showErrorMessage("שגיאה בפתיחת הטופס, נסה שוב מאוחר יותר.");
+    showErrorMessage(MSG_TALLY_OPEN_ERROR);
   }
 }
 
@@ -348,7 +361,7 @@ function openTallyForm(url, hiddenFields) {
     if (IS_BANNED && submitBtn) {
       submitBtn.disabled = true;
       submitBtn.setAttribute('aria-disabled', 'true');
-      if (!submitBtn.title) submitBtn.title = BAN_NOTE || "הקנייה חסומה כרגע.";
+      if (!submitBtn.title) submitBtn.title = BAN_NOTE || DEFAULT_BAN_MESSAGE;
     }
   });
 </script>

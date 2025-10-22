@@ -1,11 +1,12 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,maximum-scale=1,user-scalable=no">
-  <title>צ'ק‑אין למשימה</title>
+  <title>{% trans "צ'ק‑אין למשימה" %}</title>
 
   <!-- Tailwind CSS CDN (JIT) -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
@@ -74,7 +75,7 @@
                        bg-cyan-600 hover:bg-cyan-700 active:scale-95
                        animate-glow shadow-xl"
                 onclick="document.getElementById('cameraInput').click()">
-          לבחור תמונה
+          {% trans "לבחור תמונה" %}
         </button>
       {% else %}
         <input type="file" id="cameraInput" accept="image/*" capture="camera"
@@ -84,7 +85,7 @@
                        bg-cyan-600 hover:bg-cyan-700 active:scale-95
                        animate-glow shadow-xl"
                 onclick="document.getElementById('cameraInput').click()">
-          📷 צלם תמונה
+          {% trans "📷 צלם תמונה" %}
         </button>
       {% endif %}
     {% endif %}
@@ -93,7 +94,7 @@
     <button id="backBtn"
             class="w-full py-4 text-lg font-bold rounded-2xl
                    bg-amber-400 hover:bg-amber-500 active:scale-95 shadow-xl">
-      חזרה למשימות
+      {% trans "חזרה למשימות" %}
     </button>
   </header>
 
@@ -104,7 +105,7 @@
       <p class="text-sm mb-2 leading-snug">{{ task.description }}</p>
       <p class="text-sm font-medium text-pink-600">
         <span class="material-symbols-outlined align-middle text-base"></span>
-        תאריך יעד: {{ task.deadline|date:"d/m/Y" }}
+        {% trans "תאריך יעד:" %} {{ task.deadline|date:"d/m/Y" }}
       </p>
     </section>
     <!-- Submit button (hidden until preview) -->
@@ -116,9 +117,7 @@
                shadow-2xl hover:shadow-green-500/60 active:scale-95
                flex items-center justify-center gap-3 animate-glow-ring animate-bounce-delay
                border-4 border-white border-opacity-20 transition-all duration-300">
-
-  🚀 לחצו כאן כדי לסיים את הצ'ק‑אין
-
+  {% trans "🚀 לחצו כאן כדי לסיים את הצ'ק‑אין" %}
   <!-- Spinner inside button -->
   <svg id="spinner" class="spin w-6 h-6 hidden" viewBox="0 0 24 24" fill="none">
     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" opacity=".25"/>
@@ -144,8 +143,8 @@
             stroke="#10B981" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <p class="text-2xl font-bold mb-2">כל הכבוד!</p>
-    <p class="text-sm">הצ'ק‑אין נשלח בהצלחה 🎉</p>
+    <p class="text-2xl font-bold mb-2">{% trans "כל הכבוד!" %}</p>
+    <p class="text-sm">{% trans "הצ'ק‑אין נשלח בהצלחה 🎉" %}</p>
   </div>
 
   <!-- Leave‑modal -->
@@ -153,18 +152,18 @@
        class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden
               items-center justify-center z-50">
     <div class="bg-white rounded-3xl w-80 p-6 text-center space-y-4 shadow-2xl fade-in">
-      <h3 class="text-xl font-bold text-rose-600">לא שלחת צ'ק‑אין!</h3>
-      <p class="text-sm">האם לצאת בלי לשלוח את התמונה?</p>
+      <h3 class="text-xl font-bold text-rose-600">{% trans "לא שלחת צ'ק‑אין!" %}</h3>
+      <p class="text-sm">{% trans "האם לצאת בלי לשלוח את התמונה?" %}</p>
       <div class="flex gap-3">
         <button id="stayBtn"
                 class="flex-1 py-3 rounded-xl bg-emerald-600 text-white
                        font-semibold hover:bg-emerald-700">
-          להישאר
+          {% trans "להישאר" %}
         </button>
         <button id="leaveConfirmBtn"
                 class="flex-1 py-3 rounded-xl bg-rose-500 text-white
                        font-semibold hover:bg-rose-600">
-          לעזוב
+          {% trans "לעזוב" %}
         </button>
       </div>
     </div>
@@ -233,7 +232,7 @@
     function submitCheckIn() {
       const dataURL = document.getElementById('preview').src;
       if (!dataURL.trim()) {
-        alert("אנא בחר תמונה לפני ביצוע צ'ק‑אין.");
+        alert("{% trans 'אנא בחר תמונה לפני ביצוע צ\'ק‑אין.' %}");
         return;
       }
 
@@ -241,7 +240,7 @@
             spin  = document.getElementById('spinner');
       btn.disabled = true;
       spin.classList.remove('hidden');
-      btn.childNodes[0].textContent = " שולח...";
+      btn.childNodes[0].textContent = " {% trans 'שולח...' %}";
 
       fetch(dataURL)
         .then(res => res.blob())
@@ -266,14 +265,14 @@
             document.getElementById('successOverlay').classList.remove('hidden');
             setTimeout(() => window.location.href = "{% url 'childApp:child_home' %}", 1800);
           } else {
-            throw new Error(d.error || "שגיאה בלתי צפויה.");
+            throw new Error(d.error || "{% trans 'שגיאה בלתי צפויה.' %}");
           }
         })
         .catch(err => alert(err.message))
         .finally(() => {
           spin.classList.add('hidden');
           btn.disabled = false;
-          btn.childNodes[0].textContent = " 🚀 לחצו כאן כדי לסיים את הצ'ק‑אין";
+          btn.childNodes[0].textContent = " {% trans '🚀 לחצו כאן כדי לסיים את הצ\'ק‑אין' %}";
         });
     }
 

@@ -4,6 +4,7 @@ from shopApp.models import Redemption, Shop, RedemptionRequest
 from django.shortcuts import get_object_or_404
 from childApp.models import BanScope,DEFAULT_BAN_NOTES,ChildBan
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 class ChildRedemptionManager:
 
@@ -59,13 +60,13 @@ class ChildRedemptionManager:
         redemption = get_object_or_404(Redemption, id=redemption_id, child=child)
 
         if not redemption.can_rate():
-            return {"status": "error", "message": "דירוג אינו אפשרי לאחר 7 ימים מהקנייה."}
+            return {"status": "error", "message": _("דירוג אינו אפשרי לאחר 7 ימים מהקנייה.")}
 
         redemption.service_rating = service_rating
         redemption.reward_rating = reward_rating
         redemption.save()
 
-        return {"status": "success", "message": "הדירוג עודכן בהצלחה!"}
+        return {"status": "success", "message": _("הדירוג עודכן בהצלחה!")}
 
     @staticmethod
     def get_most_frequent_shops(child, limit=5):

@@ -1,11 +1,12 @@
 {% extends 'child_base.html' %}
 {% load static %}
+{% load i18n %}
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 {% block content %}
 <div class="min-h-screen bg-gray-50 p-4">
-  <h1 class="text-2xl font-bold text-center mb-6">קמפיינים פעילים</h1>
+  <h1 class="text-2xl font-bold text-center mb-6">{% trans "קמפיינים פעילים" %}</h1>
 
   <!-- Grid layout: one column on mobile, gap between items -->
   <div class="grid gap-4">
@@ -35,28 +36,28 @@
         <div class="flex justify-between items-center">
           <!-- Slot indicator -->
           <span class="text-sm text-gray-500">
-            {{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} משתתפים
+            {{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} {% trans "משתתפים" %}
           </span>
 
           {% if campaign.has_joined and not campaign.has_finished %}
           <!-- Joined badge -->
           <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-            נרשמת
+            {% trans "נרשמת" %}
           </span>
           {% elif campaign.has_joined and campaign.has_finished %}
           <!-- Finished badge -->
           <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-            הושלם
+            {% trans "הושלם" %}
           </span>
           {% elif is_child_banned %}
           <!-- Banned badge -->
           <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs">
-            חסום
+            {% trans "חסום" %}
           </span>
           {% else %}
           <!-- Join prompt badge -->
           <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-            הצטרף
+            {% trans "הצטרף" %}
           </span>
           {% endif %}
         </div>
@@ -68,14 +69,14 @@
       <div class="bg-white p-8 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105">
         <div class="text-6xl mb-4">🎯</div>
         <h2 class="text-xl font-semibold text-gray-800 mb-2">
-          אין קמפיינים זמינים כרגע
+          {% trans "אין קמפיינים זמינים כרגע" %}
         </h2>
         <p class="text-gray-600">
-          אבל אל דאגה! קמפיינים חדשים בדרך...<br>
-          תבדוק שוב בקרוב!
+          {% trans "אבל אל דאגה! קמפיינים חדשים בדרך..." %}<br>
+          {% trans "תבדוק שוב בקרוב!" %}
         </p>
         <div class="mt-4 text-blue-600 animate-pulse">
-          ↻ תרענן את הדף מדי פעם
+          {% trans "↻ תרענן את הדף מדי פעם" %}
         </div>
       </div>
     </div>

@@ -1,9 +1,10 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he">
 <head>
     <meta charset="UTF-8">
-    <title>Volunteen - דף משחקים לילדים</title>
+    <title>{% trans "Volunteen - דף משחקים לילדים" %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Favicon for most browsers -->
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
@@ -148,53 +149,53 @@
 </head>
 <body>
     <section class="hero">
-        <h1>שחקו, צברו נקודות, וזכו בפרסים! 🎁</h1>
-        <p>הצטרפו לאתגר הגדול - השלימו משימות, אספו נקודות, והתחרו עם חברים!</p>
+        <h1>{% trans "שחקו, צברו נקודות, וזכו בפרסים! 🎁" %}</h1>
+        <p>{% trans "הצטרפו לאתגר הגדול - השלימו משימות, אספו נקודות, והתחרו עם חברים!" %}</p>
         <div class="cta-buttons">
-            <a href="/login" class="login-btn">יש לכם חשבון? התחברו!</a>
+            <a href="/login" class="login-btn">{% trans "יש לכם חשבון? התחברו!" %}</a>
             <a href="{% url 'childApp:child_signup' %}" class="child-signup-btn">
-                🎈 ילדים – התחילו עכשיו ב־7 ימי ניסיון חינם!
+                {% trans "🎈 ילדים – התחילו עכשיו ב־7 ימי ניסיון חינם!" %}
             </a>
-            <a href="/" class="home-button">🏠 חזרה לדף הבית</a>
+            <a href="/" class="home-button">{% trans "🏠 חזרה לדף הבית" %}</a>
         </div>
     </section>
     
     <section class="game-steps">
-        <h2>איך זה עובד?</h2>
+        <h2>{% trans "איך זה עובד?" %}</h2>
         <div class="steps">
-            <div class="step">🎮 שחקו ובצעו משימות מהנות!</div>
-            <div class="step">💎 צברו נקודות על ההצלחות שלכם!</div>
-            <div class="step">🏆 השתמשו בנקודות כדי לקבל פרסים שווים בבתי העסק!</div>
+            <div class="step">{% trans "🎮 שחקו ובצעו משימות מהנות!" %}</div>
+            <div class="step">{% trans "💎 צברו נקודות על ההצלחות שלכם!" %}</div>
+            <div class="step">{% trans "🏆 השתמשו בנקודות כדי לקבל פרסים שווים בבתי העסק!" %}</div>
         </div>
     </section>
     
     <section class="leaderboard">
-        <h2>מצטייני החודש 🎖️</h2>
+        <h2>{% trans "מצטייני החודש 🎖️" %}</h2>
         <ul>
             {% for child in top_children %}
                 <li>
                     {% if forloop.counter == 1 %}🏅{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% endif %}
-                    {{ child.user.username }} - {{ child.total_points }} טינקאוינס
+                    {% blocktrans with username=child.user.username points=child.total_points %}{{ username }} - {{ points }} טינקאוינס{% endblocktrans %}
                 </li>
             {% empty %}
-                <li>עוד אין מצטיינים לחודש זה! היו הראשונים לשחק 🎮</li>
+                <li>{% trans "עוד אין מצטיינים לחודש זה! היו הראשונים לשחק 🎮" %}</li>
             {% endfor %}
         </ul>
     </section>
     
     <section class="prizes">
-        <h2>מה מחכה לכם? 🎁</h2>
-        <p>קבלו פרסים שווים מהעסקים המקומיים המשתתפים!</p>
-        <img src="{% static 'images/prizes1.jpg' %}" alt="פרסים" width="50%">
-        <img src="{% static 'images/prizes.jpg' %}" alt="פרסים" width="50%">
-        <img src="{% static 'images/prizes2.jpg' %}" alt="פרסים" width="50%">
+        <h2>{% trans "מה מחכה לכם? 🎁" %}</h2>
+        <p>{% trans "קבלו פרסים שווים מהעסקים המקומיים המשתתפים!" %}</p>
+        <img src="{% static 'images/prizes1.jpg' %}" alt="{% trans 'פרסים' %}" width="50%">
+        <img src="{% static 'images/prizes.jpg' %}" alt="{% trans 'פרסים' %}" width="50%">
+        <img src="{% static 'images/prizes2.jpg' %}" alt="{% trans 'פרסים' %}" width="50%">
     </section>
     
     <section class="activity-photos">
-        <h2>רגעים בלתי נשכחים 🎉</h2>
-        <img src="{% static 'images/ACTIVITY.jpg' %}" alt="פעילות 1">
-        <img src="{% static 'images/ACTIVITY11.jpg' %}" alt="פעילות 2">
-        <img src="{% static 'images/activity3.jpg' %}" alt="פעילות 3">
+        <h2>{% trans "רגעים בלתי נשכחים 🎉" %}</h2>
+        <img src="{% static 'images/ACTIVITY.jpg' %}" alt="{% trans 'פעילות 1' %}">
+        <img src="{% static 'images/ACTIVITY11.jpg' %}" alt="{% trans 'פעילות 2' %}">
+        <img src="{% static 'images/activity3.jpg' %}" alt="{% trans 'פעילות 3' %}">
     </section>
     
     {% include "includes/floating_socials.html" %}

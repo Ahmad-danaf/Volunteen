@@ -1,6 +1,7 @@
 {% extends 'child_base.html' %}
 
-{% block title %}Rate Redemption{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Rate Redemption" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -228,9 +229,9 @@
 
 {% block content %}
 <div class="container rating-container">
-  <h2>דרג את המימוש שלך</h2>
+  <h2>{% trans "דרג את המימוש שלך" %}</h2>
   <br>
-  <h2>תאריך מימוש: {{ redemption.date_redeemed|date:"d/m/Y H:i" }}</h2>
+  <h2>{% blocktrans with date=redemption.date_redeemed|date:"d/m/Y H:i" %}תאריך מימוש: {{ date }}{% endblocktrans %}</h2>
   <form method="post">
     {% csrf_token %}
     <div class="feedback" id="ratingForm">
@@ -267,7 +268,7 @@
 
     <!-- Submit Button -->
     <div class="feedback">
-      <button type="submit" class="btn-submit">שמור דירוג</button>
+      <button type="submit" class="btn-submit">{% trans "שמור דירוג" %}</button>
     </div>
   </form>
 </div>

@@ -1,5 +1,6 @@
 {% load static %}
 {% load static hebrew_extras %}
+{% load i18n %}
 
 <div x-data="{ isOpen: false }" 
      @click="isOpen = !isOpen"
@@ -11,7 +12,7 @@
         <!-- NEW Badge -->
         {% if task.is_new %}
         <span class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs animate-pulse">
-            חדש
+            {% trans "חדש" %}
         </span>
         {% endif %}
 
@@ -21,7 +22,7 @@
                 <img src="{{ task.img.url }}" alt="{{ task.title }}" class="w-full h-full object-cover rounded-lg" />
             {% else %}
                 <div class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                    <img src="{% static 'images/logo.png' %}" alt="logo" class="w-full h-full object-cover rounded-lg" />
+                    <img src="{% static 'images/logo.png' %}" alt="{% trans 'logo' %}" class="w-full h-full object-cover rounded-lg" />
                 </div>
             {% endif %}
         </div>
@@ -32,17 +33,17 @@
                 {{ task.title }}
 
                 {% if task.is_pinned %}
-                    <span class="pin-icon" title="משימה מוצמדת">📌</span>
+                    <span class="pin-icon" title="{% trans 'משימה מוצמדת' %}">📌</span>
                 {% endif %}
 
                 {% if task.time_window_rules.all|length > 0 %}
                     <!-- time window indicator -->
-                    <span class="text-orange-500 text-lg" title="יש חלון זמן">⏰</span>
+                    <span class="text-orange-500 text-lg" title="{% trans 'יש חלון זמן' %}">⏰</span>
                 {% endif %}
             </h2>
 
-            <p class="text-sm text-gray-600">תאריך יעד: {{ task.deadline|date:"d/m/Y" }}</p>
-            <p class="text-sm text-gray-600">טינקוינס: {{ task.points }}</p>
+            <p class="text-sm text-gray-600">{% trans "תאריך יעד:" %} {{ task.deadline|date:"d/m/Y" }}</p>
+            <p class="text-sm text-gray-600">{% trans "טינקוינס:" %} {{ task.points }}</p>
         </div>
    
         
@@ -52,18 +53,18 @@
             <div class="w-12 flex items-center justify-center">
                 {% if task.status %}
                     {% if task.status == "checked_out" %}
-                        <span class="text-xs text-white px-2 py-1 rounded-full bg-yellow-500">ממתין לאישור המנטור</span>
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-yellow-500">{% trans "ממתין לאישור המנטור" %}</span>
                     {% elif task.status == "approved" %}
-                        <span class="text-xs text-white px-2 py-1 rounded-full bg-green-500">מאושר</span>
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-green-500">{% trans "מאושר" %}</span>
                     {% elif task.status == "rejected" %}
-                        <span class="text-xs text-white px-2 py-1 rounded-full bg-red-500">נדחה</span>
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-red-500">{% trans "נדחה" %}</span>
                     {% elif task.status == "checked_in" %}
-                        <span class="text-xs text-white px-2 py-1 rounded-full bg-blue-500">צ`ק אין</span>
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-blue-500">{% trans "צ`ק אין" %}</span>
                     {% elif task.status == "pending" %}
-                        <span class="text-xs text-white px-2 py-1 rounded-full bg-gray-500">ממתין לאישור המנטור</span>
+                        <span class="text-xs text-white px-2 py-1 rounded-full bg-gray-500">{% trans "ממתין לאישור המנטור" %}</span>
                     {% endif %}
                 {% else %}
-                    <span class="text-xs text-white px-2 py-1 rounded-full bg-indigo-500">לא התחיל</span>
+                    <span class="text-xs text-white px-2 py-1 rounded-full bg-indigo-500">{% trans "לא התחיל" %}</span>
                 {% endif %}
             </div>
 
@@ -84,20 +85,20 @@
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100">
         <div class="pt-3">
-            <p class="text-gray-700 font-medium">תיאור המשימה:</p>
+            <p class="text-gray-700 font-medium">{% trans "תיאור המשימה:" %}</p>
             <p class="text-gray-600">{{ task.description }}</p>
         </div>
 
         {% if task.additional_details %}
         <div>
-            <p class="text-gray-700 font-medium">פרטים נוספים:</p>
+            <p class="text-gray-700 font-medium">{% trans "פרטים נוספים:" %}</p>
             <p class="text-gray-600">{{ task.additional_details }}</p>
         </div>
         {% endif %}
 
         {% if task.assigned_mentors.all %}
         <div>
-            <p class="text-gray-700 font-medium">מנטורים אחראים:</p>
+            <p class="text-gray-700 font-medium">{% trans "מנטורים אחראים:" %}</p>
             <p class="text-gray-600">
                 {% for mentor in task.assigned_mentors.all %}
                     {{ mentor.user.username }}{% if not forloop.last %}, {% endif %}
@@ -109,27 +110,27 @@
         {% if task.time_window_rules.all|length > 0 %}
             <div class="bg-orange-50 rounded-lg p-3 space-y-2">
                 <p class="font-medium text-orange-600 flex items-center gap-1 text-sm">
-                ⏰ <span>חלונות זמן</span>
+                ⏰ <span>{% trans "חלונות זמן" %}</span>
                 </p>
 
                 <ul class="space-y-2">
                 {% for rule in task.time_window_rules.all %}
                     <li class="bg-white rounded-md p-2 shadow-sm text-sm leading-relaxed space-y-1 rtl:text-right">
                     <div class="font-semibold">
-                        {% if rule.window_type == "check_in" %}צ'ק-אין{% else %}צ'ק-אאוט{% endif %}
+                        {% if rule.window_type == "check_in" %}{% trans "צ'ק-אין" %}{% else %}{% trans "צ'ק-אאוט" %}{% endif %}
                     </div>
 
                     <div>
                         {% if rule.specific_date %}
-                        📅 רק בתאריך {{ rule.specific_date|date:"d/m/Y" }}
+                        {% blocktrans with date=rule.specific_date|date:"d/m/Y" %}📅 רק בתאריך {{ date }}{% endblocktrans %}
                         {% elif rule.weekday != None %}
-                        📅 כל יום {{ rule.weekday|hebrew_weekday }}
+                        {% blocktrans with weekday=rule.weekday|hebrew_weekday %}📅 כל יום {{ weekday }}{% endblocktrans %}
                         {% else %}
-                        📅 בכל יום
+                        {% trans "📅 בכל יום" %}
                         {% endif %}
                     </div>
 
-                    <div>🕒 בין {{ rule.start_time|time:"H:i" }} ל-{{ rule.end_time|time:"H:i" }}</div>
+                    <div>{% blocktrans with st=rule.start_time|time:"H:i" en=rule.end_time|time:"H:i" %}🕒 בין {{ st }} ל-{{ en }}{% endblocktrans %}</div>
                     </li>
                 {% endfor %}
                 </ul>
@@ -140,9 +141,9 @@
             {% if task.proof_required %}bg-green-100 text-green-700
             {% else %}bg-gray-100 text-gray-500{% endif %}">
             {% if task.proof_required %}
-                ✔️ עם תמונה
+                {% trans "✔️ עם תמונה" %}
             {% else %}
-                ❌ בלי תמונה
+                {% trans "❌ בלי תמונה" %}
             {% endif %}
         </span>
 

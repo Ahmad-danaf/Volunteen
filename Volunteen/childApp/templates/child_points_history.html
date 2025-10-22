@@ -1,4 +1,5 @@
 {% extends 'child_base.html' %}
+{% load i18n %}
 {% block extra_css %}
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&display=swap');
@@ -138,20 +139,20 @@
 {% block content %}
   <div class="container">
     <header>
-      <h1>חשבון הנקודות שלי</h1>
-      <p class="balance">סה"כ נקודות: {{ active_points }}</p>
+      <h1>{% trans "חשבון הנקודות שלי" %}</h1>
+      <p class="balance">{% blocktrans %}סה"כ נקודות: {{ active_points }}{% endblocktrans %}</p>
     </header>
 
     <!-- Toggle Buttons for Switching Views -->
     <div class="toggle-buttons">
-      <button id="toggleTasks" class="toggle-btn active">נקודות שהרווחת</button>
-      <button id="toggleRedemptions" class="toggle-btn">נקודות שמומשו</button>
-      <button id="toggleDonations" class="toggle-btn">תרומות</button>
+      <button id="toggleTasks" class="toggle-btn active">{% trans "נקודות שהרווחת" %}</button>
+      <button id="toggleRedemptions" class="toggle-btn">{% trans "נקודות שמומשו" %}</button>
+      <button id="toggleDonations" class="toggle-btn">{% trans "תרומות" %}</button>
     </div>
 
     <!-- Earned Points Section -->
     <section id="tasksSection">
-      <h2 style="color: #4caf50;"><i class="fas fa-check-circle"></i> נקודות שהושגו</h2>
+      <h2 style="color: #4caf50;"><i class="fas fa-check-circle"></i> {% trans "נקודות שהושגו" %}</h2>
       <div class="transaction-list">
         {% for comp in task_completions %}
           <div class="transaction-card green">
@@ -161,24 +162,24 @@
             <div class="transaction-details">
               <div class="transaction-title">{{ comp.task_title }}</div>
               <div class="transaction-meta">
-                תאריך: {{ comp.completion_date|date:"d/m/Y" }}<br>
-                נקודות מקוריות: {{ comp.original_points }}, בונוס: {{ comp.bonus_points }}<br>
-                נקודות שנותרו: {{ comp.remaining_coins }}
+                {% trans "תאריך:" %} {{ comp.completion_date|date:"d/m/Y" }}<br>
+                {% trans "נקודות מקוריות:" %} {{ comp.original_points }}, {% trans "בונוס:" %} {{ comp.bonus_points }}<br>
+                {% trans "נקודות שנותרו:" %} {{ comp.remaining_coins }}
               </div>
               <div class="expiration-info">
-                תפוגה: {{ comp.expires_on|date:"d/m/Y" }}
+                {% trans "תפוגה:" %} {{ comp.expires_on|date:"d/m/Y" }}
               </div>
             </div>
           </div>
         {% empty %}
-          <p>לא נמצאו נקודות שהרוויחת.</p>
+          <p>{% trans "לא נמצאו נקודות שהרוויחת." %}</p>
         {% endfor %}
       </div>
     </section>
 
     <!-- Redeemed Points Section -->
     <section id="redemptionsSection" style="display: none;">
-      <h2 style="color: #f44336;"><i class="fas fa-shopping-cart"></i> נקודות שנממשו</h2>
+      <h2 style="color: #f44336;"><i class="fas fa-shopping-cart"></i> {% trans "נקודות שנממשו" %}</h2>
       <div class="transaction-list">
         {% for red in redemptions %}
           <div class="transaction-card red">
@@ -186,22 +187,22 @@
               <i class="fas fa-hand-holding-usd" style="color: #f44336;"></i>
             </div>
             <div class="transaction-details">
-              <div class="transaction-title">מימוש ב-{{ red.shop.name }}</div>
+              <div class="transaction-title">{% blocktrans with shop=red.shop.name %}מימוש ב-{{ shop }}{% endblocktrans %}</div>
               <div class="transaction-meta">
-                תאריך מימוש: {{ red.date_redeemed|date:"d/m/Y" }}<br>
-                נקודות בשימוש: {{ red.points_used }}
+                {% trans "תאריך מימוש:" %} {{ red.date_redeemed|date:"d/m/Y" }}<br>
+                {% trans "נקודות בשימוש:" %} {{ red.points_used }}
               </div>
             </div>
           </div>
         {% empty %}
-          <p>לא בוצעו מימושים עדיין.</p>
+          <p>{% trans "לא בוצעו מימושים עדיין." %}</p>
         {% endfor %}
       </div>
     </section>
 
     <!-- Donation Transactions Section -->
     <section id="donationsSection" style="display: none;">
-      <h2 style="color: #2196F3;"><i class="fas fa-hand-holding-heart"></i> תרומות</h2>
+      <h2 style="color: #2196F3;"><i class="fas fa-hand-holding-heart"></i> {% trans "תרומות" %}</h2>
       <div class="transaction-list">
         {% for donation in donations %}
           <div class="transaction-card blue">
@@ -209,15 +210,15 @@
               <i class="fas fa-donate" style="color: #2196F3;"></i>
             </div>
             <div class="transaction-details">
-              <div class="transaction-title">תרומה ל-{{ donation.category.name }}</div>
+              <div class="transaction-title">{% blocktrans with category=donation.category.name %}תרומה ל-{{ category }}{% endblocktrans %}</div>
               <div class="transaction-meta">
-                תאריך: {{ donation.date_donated|date:"d/m/Y" }}<br>
-                כמות: {{ donation.amount }}{% if donation.note %} ({{ donation.note }}){% endif %}
+                {% trans "תאריך:" %} {{ donation.date_donated|date:"d/m/Y" }}<br>
+                {% trans "כמות:" %} {{ donation.amount }}{% if donation.note %} ({{ donation.note }}){% endif %}
               </div>
             </div>
           </div>
         {% empty %}
-          <p>לא בוצעו תרומות עדיין.</p>
+          <p>{% trans "לא בוצעו תרומות עדיין." %}</p>
         {% endfor %}
       </div>
     </section>

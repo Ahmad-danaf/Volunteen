@@ -1,6 +1,7 @@
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 import datetime
+from django.utils.translation import gettext as _
 
 def validate_image_metadata(image):
     try:
@@ -8,7 +9,7 @@ def validate_image_metadata(image):
         exif_data = img._getexif()
 
         if not exif_data:
-            return False, "לא נמצאו נתוני EXIF בתמונה."
+            return False, _("לא נמצאו נתוני EXIF בתמונה.")
 
         exif = {TAGS.get(tag): value for tag, value in exif_data.items() if tag in TAGS}
 
@@ -18,8 +19,8 @@ def validate_image_metadata(image):
             current_time = datetime.datetime.now()
 
             if (current_time - photo_time).total_seconds() > 3600:
-                return False, "התמונה צולמה לפני זמן רב מדי."
+                return False, _("התמונה צולמה לפני זמן רב מדי.")
 
-        return True, "התמונה תקינה."
+        return True, _("התמונה תקינה.")
     except Exception as e:
-        return False, f"שגיאה בבדיקת נתוני התמונה: {str(e)}"
+        return False, _(f"שגיאה בבדיקת נתוני התמונה: {str(e)}")

@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from django.db.models import Q
 from teenApp.entities.task import Task
 from teenApp.entities.TaskAssignment import TaskAssignment
@@ -114,7 +115,7 @@ class ChildTaskManager:
         task_assignment = TaskAssignment.objects.filter(task=task, child=child).first()
 
         if not task_assignment:
-            raise ValidationError("Task assignment not found for this child.")
+            raise ValidationError(_("Task assignment not found for this child."))
 
         task_assignment.is_new = True
         task_assignment.save()
@@ -128,7 +129,7 @@ class ChildTaskManager:
         task_assignment = TaskAssignment.objects.filter(task=task, child=child).first()
 
         if not task_assignment:
-            raise ValidationError("Task assignment not found for this child.")
+            raise ValidationError(_("Task assignment not found for this child."))
 
         task_assignment.is_new = False
         task_assignment.save()

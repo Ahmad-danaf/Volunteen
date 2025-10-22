@@ -1,6 +1,7 @@
 {% extends 'child_base.html' %}
 {% load static %}
 {% load static hebrew_extras %}
+{% load i18n %}
 
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
@@ -16,14 +17,14 @@
 {% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-6" dir="rtl" x-data="{ tab: 'core' }">
-  <h1 class="text-2xl font-bold text-center mb-6">משימות פעילות</h1>
+  <h1 class="text-2xl font-bold text-center mb-6">{% trans "משימות פעילות" %}</h1>
 
   <!-- Tab Buttons -->
   <div class="flex justify-center mb-6 space-x-2 rtl:space-x-reverse">
     <button @click="tab = 'core'" :class="{ 'bg-blue-500 text-white': tab === 'core', 'bg-gray-200 text-gray-700': tab !== 'core' }"
-            class="px-4 py-2 rounded-full transition">משימות רגילות</button>
+            class="px-4 py-2 rounded-full transition">{% trans "משימות רגילות" %}</button>
     <button @click="tab = 'campaign'" :class="{ 'bg-blue-500 text-white': tab === 'campaign', 'bg-gray-200 text-gray-700': tab !== 'campaign' }"
-            class="px-4 py-2 rounded-full transition">משימות קמפיין</button>
+            class="px-4 py-2 rounded-full transition">{% trans "משימות קמפיין" %}</button>
   </div>
 
   <!-- Core Tasks -->
@@ -32,7 +33,7 @@
       {% for task in core_tasks %}
         {% include "childApp/partials/task_card.html" with task=task %}
       {% empty %}
-        <p class="text-center text-gray-600">אין משימות רגילות.</p>
+        <p class="text-center text-gray-600">{% trans "אין משימות רגילות." %}</p>
       {% endfor %}
     </div>
   </div>
@@ -43,7 +44,7 @@
       {% for task in campaign_tasks %}
         {% include "childApp/partials/task_card.html" with task=task %}
       {% empty %}
-        <p class="text-center text-gray-600">אין משימות קמפיין פעילות.</p>
+        <p class="text-center text-gray-600">{% trans "אין משימות קמפיין פעילות." %}</p>
       {% endfor %}
     </div>
   </div>

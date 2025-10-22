@@ -1,10 +1,11 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>צ'ק-אאוט למשימה!</title>
+    <title>{% trans "צ'ק-אאוט למשימה!" %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -118,30 +119,30 @@
         </div>
 
         <div id="screenImagePreview" class="screen hidden text-center space-y-5 sm:space-y-6 p-5 sm:p-8 glass-card-orange shadow-2xl">
-            <h2 class="text-2xl sm:text-3xl font-bold text-amber-300">איזה יופי! 🔥</h2>
+            <h2 class="text-2xl sm:text-3xl font-bold text-amber-300">{% trans "איזה יופי! 🔥" %}</h2>
             <div id="preview-container" class="relative w-full aspect-[4/3] bg-orange-900/30 rounded-2xl shadow-lg overflow-hidden border-2 border-orange-500/70 flex items-center justify-center">
-              <img id="preview" src="" alt="תצוגה מקדימה של התמונה" class="max-w-full max-h-full object-contain"/>
+              <img id="preview" src="" alt="{% trans "תצוגה מקדימה של התמונה" %}" class="max-w-full max-h-full object-contain"/>
           </div>
             <div class="flex gap-3">
                 <button id="retakeButton" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3 px-4 rounded-xl shadow-md text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-slate-400/50 transform active:scale-95 transition-colors duration-150">
-                    <span class="inline-block rtl:ml-2 ltr:mr-2">🔄</span> צלם שוב
+                    <span class="inline-block rtl:ml-2 ltr:mr-2">🔄</span> {% trans "צלם שוב" %}
                 </button>
                 <button id="submitCheckInButton" class="flex-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-xl text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-orange-300/70 transform active:scale-95 transition-all duration-150 ease-in-out animate-pulse-glow-orange">
-                    <span class="inline-block rtl:ml-2 ltr:mr-2">🚀</span>  לחצו כאן כדי לסיים את הצ'ק‑אאוט 
+                    <span class="inline-block rtl:ml-2 ltr:mr-2">🚀</span>  {% trans "לחצו כאן כדי לסיים את הצ'ק‑אאוט" %} 
                 </button>
             </div>
         </div>
 
         <div id="screenLoading" class="screen hidden text-center space-y-6 p-8">
             <dotlottie-player src="{% static 'animations/rocket_loading.lottie' %}" fallbackPlayerSrc="{% static 'animations/rocket_loading.lottie' %}" background="transparent" speed="1.2" style="width: 180px; height: 180px; margin:auto;" loop autoplay></dotlottie-player>
-            <p class="text-xl font-semibold text-orange-300 animate-pulse">משגרים את התמונה... ☄️</p>
+            <p class="text-xl font-semibold text-orange-300 animate-pulse">{% trans "משגרים את התמונה... ☄️" %}</p>
         </div>
 
         <div id="screenSuccess" class="screen hidden text-center space-y-6 p-8">
             <dotlottie-player id="successAnimationPlayer" src="{% static 'animations/stars_confetti_success.lottie' %}" fallbackPlayerSrc="{% static 'animations/stars_confetti_success.lottie' %}" background="transparent" speed="1" style="width: 250px; height: 250px; margin:auto;" autoplay></dotlottie-player>
-            <h2 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent success-title-gradient-orange">מעולה! התמונה טסה למנטור כמו טיל 🚀</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent success-title-gradient-orange">{% trans "מעולה! התמונה טסה למנטור כמו טיל 🚀" %}</h2>
             <button id="backToHomeButton" class="w-full max-w-xs mx-auto bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-bold py-3 sm:py-3.5 px-6 rounded-xl shadow-lg text-md sm:text-lg focus:outline-none focus:ring-4 focus:ring-orange-400/60 transform active:scale-95 transition-colors duration-150">
-                חזרה למשימות
+                {% trans "חזרה למשימות" %}
             </button>
         </div>
     </div>
@@ -150,12 +151,12 @@
 
     <div id="customLeaveModal" class="modal-overlay">
         <div class="modal-content space-y-6">
-            <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="קמע חושב" class="w-24 h-24 mx-auto"/>
-            <h3 class="text-2xl font-bold text-orange-300">רגע לפני שיוצאים...</h3>
-            <p class="text-orange-100/90 text-md">התמונה שלך עוד לא נשלחה. האם אתה בטוח שברצונך לחזור?</p>
+            <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="{% trans "קמע חושב" %}" class="w-24 h-24 mx-auto"/>
+            <h3 class="text-2xl font-bold text-orange-300">{% trans "רגע לפני שיוצאים..." %}</h3>
+            <p class="text-orange-100/90 text-md">{% trans "התמונה שלך עוד לא נשלחה. האם אתה בטוח שברצונך לחזור?" %}</p>
             <div class="flex gap-3 justify-center pt-2">
-                <button id="modalConfirmLeaveButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">כן, צא</button>
-                <button id="modalCancelLeaveButton" class="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">לא, המשך</button>
+                <button id="modalConfirmLeaveButton" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">{% trans "כן, צא" %}</button>
+                <button id="modalCancelLeaveButton" class="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transform active:scale-95 transition-colors">{% trans "לא, המשך" %}</button>
             </div>
         </div>
     </div>
@@ -289,7 +290,7 @@
                         imageLoadedForPreview = true;
                         switchScreen('preview');
                     } else {
-                        alert("אופס! הייתה בעיה בעיבוד התמונה. נסה שוב.");
+                        alert("{% trans "אופס! הייתה בעיה בעיבוד התמונה. נסה שוב." %}");
                         buildIntroScreen(); // Rebuild intro if it was bypassed
                         switchScreen('intro');
                     }
@@ -301,7 +302,7 @@
 
         function triggerDefaultImageProcess() { // Renamed from useDefaultImage for clarity
             if (!DEFAULT_IMAGE_PATH) { // This path should be for the *actual* default image, not tied to USE_DEFAULT_IMAGE_FLAG for its existence
-                alert("קובץ תמונת ברירת המחדל אינו מוגדר כראוי.");
+                alert("{% trans "קובץ תמונת ברירת המחדל אינו מוגדר כראוי." %}");
                 buildIntroScreen(); // Show manual options if default is misconfigured
                 switchScreen('intro');
                 return;
@@ -316,7 +317,7 @@
                     imageLoadedForPreview = true;
                     switchScreen('preview');
                 } else {
-                    alert("אופס! הייתה בעיה בטעינת תמונת ברירת המחדל.");
+                    alert("{% trans "אופס! הייתה בעיה בטעינת תמונת ברירת המחדל." %}");
                     buildIntroScreen(); // Rebuild intro if it was bypassed
                     switchScreen('intro');
                 }
@@ -326,7 +327,7 @@
         function submitCheckIn() {
             const dataURL = previewImageEl.src;
             if (!dataURL || dataURL.startsWith('file://') || dataURL === window.location.href || !imageLoadedForPreview) {
-                alert("אנא בחר/י או צלם/י תמונה לפני השליחה.");
+                alert("{% trans "אנא בחר/י או צלם/י תמונה לפני השליחה." %}");
                 return;
             }
             switchScreen('loading');
@@ -347,21 +348,21 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        return response.json().then(errData => { throw new Error(errData.error || `שגיאת שרת: ${response.status}`); });
+                        return response.json().then(errData => { throw new Error(errData.error || `{% trans "שגיאת שרת:" %} ${response.status}`); });
                     }
                     return response.json();
                 })
-                .then(data => {
+                .then data => {
                     if (data.success) {
                         imageSubmitted = true; 
                         switchScreen('success');
                     } else {
-                        throw new Error(data.error || "שגיאה לא צפויה בעת השמירה.");
+                        throw new Error(data.error || "{% trans "שגיאה לא צפויה בעת השמירה." %}");
                     }
                 })
                 .catch(error => {
                     console.error("Submit Error:", error);
-                    alert(`אוי לא! ${error.message}`);
+                    alert(`{% trans "אוי לא!" %} ${error.message}`);
                     switchScreen('preview'); // Go back to preview on error
                 })
                 .finally(() => {
@@ -373,21 +374,21 @@
         // --- Build Intro Screen Dynamically ---
         function buildIntroScreen() {
             screens.intro.innerHTML = `
-                <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="קמע כתום וחברותי" class="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-3 rounded-full border-4 border-orange-500 shadow-xl transform transition-transform duration-300 hover:scale-110"/>
-                <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 drop-shadow-md">צ'ק-אאוט למשימה!</h1>
+                <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="{% trans "קמע כתום וחברותי" %}" class="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-3 rounded-full border-4 border-orange-500 shadow-xl transform transition-transform duration-300 hover:scale-110"/>
+                <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 drop-shadow-md">{% trans "צ'ק-אאוט למשימה!" %}</h1>
                 <div class="bg-orange-400/10 p-4 rounded-xl shadow-inner">
-                    <h2 class="text-2xl sm:text-3xl font-semibold text-orange-300">${TASK_TITLE}</h2>
-                    ${TASK_DESCRIPTION ? `<p class="text-orange-200/80 mt-2 text-xs sm:text-sm">${TASK_DESCRIPTION}</p>` : ''}
+                    <h2 class="text-2xl sm:text-3xl font-semibold text-orange-300">\${TASK_TITLE}</h2>
+                    \${TASK_DESCRIPTION ? `<p class="text-orange-200/80 mt-2 text-xs sm:text-sm">\${TASK_DESCRIPTION}</p>` : ''}
                 </div>
-                <p class="text-md sm:text-lg text-amber-400">משימת הצ'ק־אאוט מוכנה לשיגור... 📸 לחץ כדי להתחיל!</p>
+                <p class="text-md sm:text-lg text-amber-400">{% trans "משימת הצ'ק־אאוט מוכנה לשיגור... 📸 לחץ כדי להתחיל!" %}</p>
                 <button id="startCaptureButtonDynamic" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl shadow-xl text-lg sm:text-xl focus:outline-none focus:ring-4 focus:ring-orange-300/70 transform active:scale-95 transition-all duration-150 ease-in-out animate-pulse-glow-orange">
-                    ${HAS_SPECIAL_PERMISSIONS ? '<span class="inline-block rtl:ml-2 ltr:mr-2">🖼️</span> בחר/י תמונה' : '<span class="inline-block rtl:ml-2 ltr:mr-2">📸</span> צלם/י תמונה'}
+                    \${HAS_SPECIAL_PERMISSIONS ? '<span class="inline-block rtl:ml-2 ltr:mr-2">🖼️</span> {% trans "בחר/י תמונה" %}' : '<span class="inline-block rtl:ml-2 ltr:mr-2">📸</span> {% trans "צלם/י תמונה" %}'}
                 </button>
-                ${DEFAULT_IMAGE_PATH ? ` <button id="useDefaultImageButtonDynamic" class="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-lg text-sm sm:text-base focus:outline-none focus:ring-4 focus:ring-amber-400/60 transform active:scale-95 transition-all duration-150 ease-in-out">
-                    השתמש בתמונת ברירת מחדל
+                \${DEFAULT_IMAGE_PATH ? ` <button id="useDefaultImageButtonDynamic" class="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-lg text-sm sm:text-base focus:outline-none focus:ring-4 focus:ring-amber-400/60 transform active:scale-95 transition-all duration-150 ease-in-out">
+                    {% trans "השתמש בתמונת ברירת מחדל" %}
                 </button>` : ''}
                 <a href="#" id="goBackButtonDynamic" class="block w-full mt-4 text-orange-300 hover:text-orange-100 border-2 border-orange-500/60 hover:border-orange-400 font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-300/50 transform active:scale-95 transition-all duration-150 ease-in-out">
-                    <span class="inline-block rtl:ml-1 ltr:mr-1">⬅️</span> חזרה לבחירת משימות
+                    <span class="inline-block rtl:ml-1 ltr:mr-1">⬅️</span> {% trans "חזרה לבחירת משימות" %}
                 </a>
             `;
             // Re-assign and re-attach event listeners for dynamically created buttons
@@ -447,7 +448,7 @@
         // --- Browser Unload Warning ---
         window.addEventListener('beforeunload', (e) => {
             if (imageLoadedForPreview && !imageSubmitted) {
-                const confirmationMessage = ' 🤔 רגע! עוד לא שלחת את התמונה. בטוח שאת/ה רוצה לצאת?';
+                const confirmationMessage = '{% trans " 🤔 רגע! עוד לא שלחת את התמונה. בטוח שאת/ה רוצה לצאת?" %}';
                 e.returnValue = confirmationMessage; // Standard for most browsers.
                 return confirmationMessage;        // For some older browsers.
             }

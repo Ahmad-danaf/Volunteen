@@ -1,22 +1,22 @@
 {% extends 'child_base.html' %}
 {% load static %}
-
-{% block title %}מסך הבית - Volunteen{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "מסך הבית - Volunteen" %}{% endblock %}
 
 {% block content %}
 
 <div class="header-section">
-    <h1 class="welcome-message">ברוך הבא, {{ child.user.username }}!</h1>
+    <h1 class="welcome-message">{% blocktrans with username=child.user.username %}ברוך הבא, {{ username }}!{% endblocktrans %}</h1>
     <p class="tagline">{{ greeting|safe }}</p>
 </div>
 {% if can_show_expiration_warning %}
 <div class="premium-warning">
   <div class="warning-content">
-    <h2>רוצים להמשיך ליהנות מוולונטין?</h2>
-    <p>המנוי שלך מתקרב לסיום בעוד {{ days_left_to_expire }} ימים.<br>
-    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!</p>
+    <h2>{% trans "רוצים להמשיך ליהנות מוולונטין?" %}</h2>
+    <p>{% blocktrans with days=days_left_to_expire %}המנוי שלך מתקרב לסיום בעוד {{ days }} ימים.<br>
+    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!{% endblocktrans %}</p>
     <a href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20" class="warning-cta">
-    לחדש מנוי
+    {% trans "לחדש מנוי" %}
     </a>
   </div>
 </div>
@@ -28,7 +28,7 @@
   <!-- Avatar bubble -->
   <div class="avatar-badge">
     <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}"
-         alt="Avatar" class="avatar-image">
+         alt="{% trans 'Avatar' %}" class="avatar-image">
   </div>
 
   <!-- Streak card -->
@@ -44,20 +44,20 @@
 
     </div>
 
-    <h2 class="streak-title">🔥 רצף ההתחברויות שלך</h2>
+    <h2 class="streak-title">{% trans "🔥 רצף ההתחברויות שלך" %}</h2>
     <p class="streak-count">
       <strong id="streak-count">{{ child.streak_count }}</strong>
-      ימים ברצף
+      {% trans "ימים ברצף" %}
     </p>
 
     <button id="streak-button"
             class="streak-btn"
             onclick="saveStreak()">
-      ✅ שמור על הרצף שלך
+      {% trans "✅ שמור על הרצף שלך" %}
     </button>
 
     <p id="streak-success" class="streak-success">
-      🎉 כל הכבוד! שמרת על הרצף שלך! 🔥
+      {% trans "🎉 כל הכבוד! שמרת על הרצף שלך! 🔥" %}
     </p>
   </div>
 </div>
@@ -65,22 +65,22 @@
 <div class="user-info-panel">
     <div class="user-level">
         <i class="fas fa-star" style="color: gold; font-size: 1.5em;"></i>
-        <span>הרמה שלך: <strong>{{ level_name }}</strong> ({{ level }})</span>
+        <span>{% trans "הרמה שלך:" %} <strong>{{ level_name }}</strong> ({{ level }})</span>
     </div>
     <div class="user-teencoins">
         <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
-        <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+        <span>{% trans "טינקוינס בארנק:" %} <strong>{{ active_points }}</strong></span>
     </div>
 </div>
 
 <div class="cta-section">
     <button class="cta-button" onclick="scrollToTasks()">
-        בוא נאסוף עוד טינקאוינס!
+        {% trans "בוא נאסוף עוד טינקאוינס!" %}
     </button>
 </div>
 
 <div class="progress-container">
-    <p>התקדמות לרמה הבאה:</p>
+    <p>{% trans "התקדמות לרמה הבאה:" %}</p>
     <div class="progress-bar">
         <div class="progress-bar-fill" style="width: {{ progress_percent }}%;"></div>
     </div>
@@ -88,9 +88,9 @@
 </div>
 
 <div class="qr-center-row">
-  <button type="button" class="secret-code-button" onclick="openQRModal()" aria-label="חבר מביא חבר – הצג קוד QR">
+  <button type="button" class="secret-code-button" onclick="openQRModal()" aria-label="{% trans 'חבר מביא חבר – הצג קוד QR' %}">
     <i class="fas fa-qrcode" aria-hidden="true"></i>
-    חבר מביא חבר 📱
+    {% trans "חבר מביא חבר 📱" %}
   </button>
 </div>
 
@@ -98,12 +98,12 @@
 <!-- QR Modal -->
 <div id="qrModal" class="qr-modal" aria-hidden="true" role="dialog" aria-labelledby="qrModalTitle">
   <div class="qr-modal__content">
-    <button class="qr-modal__close" type="button" aria-label="סגור" onclick="closeQRModal()">&times;</button>
-    <h3 id="qrModalTitle" class="qr-modal__title">סרקו את הקוד והצטרפו למשחק! 🎮</h3>
+    <button class="qr-modal__close" type="button" aria-label="{% trans 'סגור' %}" onclick="closeQRModal()">&times;</button>
+    <h3 id="qrModalTitle" class="qr-modal__title">{% trans "סרקו את הקוד והצטרפו למשחק! 🎮" %}</h3>
 
     <img
       src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data={{ referral_url|urlencode }}"
-      alt="קוד QR להזמנה"
+      alt="{% trans 'קוד QR להזמנה' %}"
       class="qr-modal__img"
       width="280" height="280"
     />
@@ -113,15 +113,15 @@
 
 {% if new_tasks_count > 0 %}
 <div id="newTaskNotification" class="notification">
-    <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
+    <p>{% blocktrans with count=new_tasks_count %}יש לך {{ count }} משימות חדשות!{% endblocktrans %}</p>
     
     <p>
         <a href="{% url 'childApp:child_active_list' %}" class="button close-button task-button">
-            קדימה למשימות! 🧡
+            {% trans "קדימה למשימות! 🧡" %}
         </a>
     </p>
         <button type="button" onclick="markTasksAsViewed()" class="button close-button">
-            סימנתי כנקרא
+            {% trans "סימנתי כנקרא" %}
         </button>   
 </div>
 {% endif %}
@@ -131,48 +131,48 @@
 <div class="navigation-grid">
     <a href="{% url 'childApp:child_active_list' %}" class="nav-button" style="background-color: #28a745;">
         <i class="fas fa-tasks"></i>
-        <span>רשימת משימות</span>
+        <span>{% trans "רשימת משימות" %}</span>
     </a>
     <a href="{% url 'childApp:reward' %}" class="nav-button" style="background-color: #ff4081;">
         <i class="fas fa-gift"></i>
-        <span>רשימת פרסים</span>
+        <span>{% trans "רשימת פרסים" %}</span>
     </a>
     <a href="{% url 'childApp:child_redemption_history' %}" class="nav-button" style="background-color: #17a2b8;">
         <i class="fas fa-history"></i>
-        <span>היסטוריית רכישה</span>
+        <span>{% trans "היסטוריית רכישה" %}</span>
     </a>
     <a href="{% url 'childApp:child_not_approved_requests' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-clock"></i>
-        <span>בקשות בתהליך</span>
+        <span>{% trans "בקשות בתהליך" %}</span>
     </a>
     <a href="{% url 'childApp:child-campaigns' %}" class="nav-button" style="background-color: #c542a4;">
         <i class="fas fa-bullhorn"></i>
-        <span>קמפיינים</span>
+        <span>{% trans "קמפיינים" %}</span>
     </a>
     
     <a href="{% url 'childApp:child_points_history' %}" class="nav-button" style="background-color: #9175c8;">
         <i class="fas fa-coins"></i>
-        <span>היסטוריית טינקוינס</span>
+        <span>{% trans "היסטוריית טינקוינס" %}</span>
     </a>
     <a href="{% url 'childApp:points_leaderboard' %}" class="nav-button" style="background-color: #ff9800;">
         <i class="fas fa-trophy"></i>
-        <span>קיר התהילה</span>
+        <span>{% trans "קיר התהילה" %}</span>
     </a>
     <a href="{% url 'childApp:top_streaks' %}" class="nav-button" style="background-color: #f44336;">
         <i class="fas fa-fire"></i>
-        <span>שיאני רצף</span>
+        <span>{% trans "שיאני רצף" %}</span>
     </a>
     <a href="{% url 'childApp:donation_leaderboard' %}" class="nav-button" style="background-color: #2196F3;">
         <i class="fas fa-donate"></i>
-        <span>קיר התרומות</span>
+        <span>{% trans "קיר התרומות" %}</span>
     </a>
     <a href="{% url 'childApp:child_invite_qr' %}" class="nav-button" style="background-color: #ff7a18;">
         <i class="fas fa-user-friends"></i>
-        <span>הזמן חברים</span>
+        <span>{% trans "הזמן חברים" %}</span>
     </a>
     <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-map-marker-alt"></i>
-        <span>צ'ק אין/אאוט</span>
+        <span>{% trans "צ'ק אין/אאוט" %}</span>
     </a>
    
     <a
@@ -181,28 +181,28 @@
     style="background-color: #8bc34a"
   >
     <i class="fas fa-hand-holding-heart"></i>
-    <span>צדקה</span>
+    <span>{% trans "צדקה" %}</span>
   </a>
   <a href="{% url 'childApp:get_reviewed_tasks' %}" class="nav-button" style="background-color: #5d22ff;">
     <i class="fas fa-history"></i>
-    <span>היסטוריית משימות</span>
+    <span>{% trans "היסטוריית משימות" %}</span>
 </a>
     <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>
-        <span>יציאה</span>
+        <span>{% trans "יציאה" %}</span>
     </a>
 </div>
 
 {% if child.medals.exists %}
 <div class="achievements-section">
-    <h2>הישגים ומדליות</h2>
+    <h2>{% trans "הישגים ומדליות" %}</h2>
     <div class="medals-container">
         {% for medal in child.medals.all %}
         <div class="medal-card">
             <div class="medal-icon">🏅</div>
             <h3>{{ medal.name }}</h3>
             <p>{{ medal.description }}</p>
-            <small>+{{ medal.points_reward }} נק'</small>
+            <small>+{{ medal.points_reward }} {% trans "נק'" %}</small>
         </div>
         {% endfor %}
     </div>
