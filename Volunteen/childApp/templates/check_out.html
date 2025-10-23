@@ -352,7 +352,7 @@
                     }
                     return response.json();
                 })
-                .then data => {
+                .then((data) => {
                     if (data.success) {
                         imageSubmitted = true; 
                         switchScreen('success');
@@ -377,16 +377,14 @@
                 <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}" alt="{% trans "קמע כתום וחברותי" %}" class="w-28 h-28 sm:w-36 sm:h-36 mx-auto mb-3 rounded-full border-4 border-orange-500 shadow-xl transform transition-transform duration-300 hover:scale-110"/>
                 <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 drop-shadow-md">{% trans "צ'ק-אאוט למשימה!" %}</h1>
                 <div class="bg-orange-400/10 p-4 rounded-xl shadow-inner">
-                    <h2 class="text-2xl sm:text-3xl font-semibold text-orange-300">\${TASK_TITLE}</h2>
-                    \${TASK_DESCRIPTION ? `<p class="text-orange-200/80 mt-2 text-xs sm:text-sm">\${TASK_DESCRIPTION}</p>` : ''}
+                    <h2 class="text-2xl sm:text-3xl font-semibold text-orange-300">${TASK_TITLE}</h2>
+                    ${TASK_DESCRIPTION ? `<p class="text-orange-200/80 mt-2 text-xs sm:text-sm">${TASK_DESCRIPTION}</p>` : ''}
                 </div>
                 <p class="text-md sm:text-lg text-amber-400">{% trans "משימת הצ'ק־אאוט מוכנה לשיגור... 📸 לחץ כדי להתחיל!" %}</p>
                 <button id="startCaptureButtonDynamic" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl shadow-xl text-lg sm:text-xl focus:outline-none focus:ring-4 focus:ring-orange-300/70 transform active:scale-95 transition-all duration-150 ease-in-out animate-pulse-glow-orange">
-                    \${HAS_SPECIAL_PERMISSIONS ? '<span class="inline-block rtl:ml-2 ltr:mr-2">🖼️</span> {% trans "בחר/י תמונה" %}' : '<span class="inline-block rtl:ml-2 ltr:mr-2">📸</span> {% trans "צלם/י תמונה" %}'}
+                    ${HAS_SPECIAL_PERMISSIONS ? '<span class="inline-block rtl:ml-2 ltr:mr-2">🖼️</span> {% trans "בחר/י תמונה" %}' : '<span class="inline-block rtl:ml-2 ltr:mr-2">📸</span> {% trans "צלם/י תמונה" %}'}
                 </button>
-                \${DEFAULT_IMAGE_PATH ? ` <button id="useDefaultImageButtonDynamic" class="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-lg text-sm sm:text-base focus:outline-none focus:ring-4 focus:ring-amber-400/60 transform active:scale-95 transition-all duration-150 ease-in-out">
-                    {% trans "השתמש בתמונת ברירת מחדל" %}
-                </button>` : ''}
+                ${DEFAULT_IMAGE_PATH ? '<button id="useDefaultImageButtonDynamic" class="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-lg text-sm sm:text-base focus:outline-none focus:ring-4 focus:ring-amber-400/60 transform active:scale-95 transition-all duration-150 ease-in-out">{% trans "השתמש בתמונת ברירת מחדל" %}</button>' : ''}
                 <a href="#" id="goBackButtonDynamic" class="block w-full mt-4 text-orange-300 hover:text-orange-100 border-2 border-orange-500/60 hover:border-orange-400 font-semibold py-2.5 sm:py-3 px-6 rounded-xl shadow-md text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-orange-300/50 transform active:scale-95 transition-all duration-150 ease-in-out">
                     <span class="inline-block rtl:ml-1 ltr:mr-1">⬅️</span> {% trans "חזרה לבחירת משימות" %}
                 </a>
