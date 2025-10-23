@@ -177,7 +177,7 @@ LANGUAGES = [
     ('he', _('Hebrew')),
     ('ar', _('Arabic')),
 ]
-LANGUAGE_CODE = 'he'
+LANGUAGE_CODE = 'ar'
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Jerusalem'
@@ -185,9 +185,8 @@ TIME_ZONE = 'Asia/Jerusalem'
 USE_I18N = True
 USE_L10N = True
 LOCALE_PATHS = [
-    BASE_DIR / 'locale',
+    BASE_DIR.parent / 'locale',
 ]
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
