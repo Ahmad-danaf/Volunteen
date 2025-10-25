@@ -209,16 +209,14 @@
         <div class="language-select-wrapper">
             <select name="language" id="language-select" onchange="this.form.submit()" class="language-select-dropdown">
                 {% get_current_language as LANGUAGE_CODE %}
-                {% get_available_languages as LANGUAGES %}
-                {% for lang_code, lang_name in LANGUAGES %}
-                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
-                    {{ lang_name }}
-                </option>
-                {% endfor %}
+                
+                <option value="he" {% if LANGUAGE_CODE == 'he' %}selected{% endif %}>עברית</option>
+                <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
             </select>
         </div>
     </form>
 </div>
+
 
 
 {% endblock content %}

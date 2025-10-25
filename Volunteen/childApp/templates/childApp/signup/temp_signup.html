@@ -247,6 +247,28 @@
         </p>
       </div>
 
+  <div class="mt-8 text-center">
+        <form action="{% url 'set_language' %}" method="post" class="relative inline-block w-full max-w-xs">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            
+            <span class_contribute="absolute right-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">🌍</span>
+            
+            <label for="language-select" class="sr-only">{% trans "שנה שפה" %}</label> 
+            
+            <select name="language" id="language-select" onchange="this.form.submit()"
+                    class="w-full pr-12 pl-10 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/95 font-semibold appearance-none cursor-pointer shadow-md hover:shadow-lg"> {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                <option value="he" {% if LANGUAGE_CODE == 'he' %}selected{% endif %}>עברית</option>
+            <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
+            </select>
+
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </form>
+      </div>
+
       <!-- Fun footer -->
       <div class="flex justify-center mt-8 space-x-4 space-x-reverse">
         <span class="text-3xl animate-float" style="animation-delay: 0s">🌈</span>

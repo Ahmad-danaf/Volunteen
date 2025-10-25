@@ -135,7 +135,7 @@ def child_home(request):
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
         'referral_url': referral_url,
-        'level_name': LEVELS[child.level],
+        'level_name': _(LEVELS[child.level]),
         'level': child.level,
         'progress_percent': progress_to_next_level,
         'can_show_expiration_warning': child.subscription.can_show_expiration_warning(),

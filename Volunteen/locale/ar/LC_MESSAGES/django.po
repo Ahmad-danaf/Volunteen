@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volunteen 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-23 07:07+0300\n"
+"POT-Creation-Date: 2025-10-25 21:47+0300\n"
 "PO-Revision-Date: 2025-10-22 23:49+0300\n"
 "Last-Translator: Volunteen Team <info@volunteen.com>\n"
 "Language-Team: Arabic\n"
@@ -498,7 +498,7 @@ msgstr "لوح الشرف"
 
 #: .\Volunteen\frameworks_and_drivers\settings.py:177
 msgid "Hebrew"
-msgstr "عبري"
+msgstr "עברית"
 
 #: .\Volunteen\frameworks_and_drivers\settings.py:178
 msgid "Arabic"
@@ -771,15 +771,15 @@ msgstr "اختار/ي صورة"
 msgid "צלם/י תמונה"
 msgstr "صوّر/ي صورة"
 
-#: .\childApp\templates\check_out.html:388
+#: .\childApp\templates\check_out.html:387
 msgid "השתמש בתמונת ברירת מחדל"
 msgstr "استعمل صورة افتراضية"
 
-#: .\childApp\templates\check_out.html:391
+#: .\childApp\templates\check_out.html:389
 msgid "חזרה לבחירת משימות"
 msgstr "رجوع لاختيار المهام"
 
-#: .\childApp\templates\check_out.html:451
+#: .\childApp\templates\check_out.html:449
 msgid " 🤔 רגע! עוד לא שלחת את התמונה. בטוח שאת/ה רוצה לצאת?"
 msgstr " 🤔 لحظة! لسه ما بعثت الصورة. أكيد بدك تطلع؟"
 
@@ -975,27 +975,27 @@ msgid "🎉 הניסיון שלך בתוקף עד %(child.trial_end)s"
 msgstr "🎉 تجربتك شغّالة لحد %(child.trial_end)s"
 
 #: .\childApp\templates\childApp\inactive_home.html:246
-#: .\childApp\templates\child_home.html:72
+#: .\childApp\templates\child_home.html:74
 msgid "טינקוינס בארנק:"
 msgstr "تينكوينز بالمحفظة:"
 
 #: .\childApp\templates\childApp\inactive_home.html:255
-#: .\childApp\templates\child_home.html:138
+#: .\childApp\templates\child_home.html:140
 msgid "רשימת פרסים"
 msgstr "قائمة الجوائز"
 
 #: .\childApp\templates\childApp\inactive_home.html:263
-#: .\childApp\templates\child_home.html:146
+#: .\childApp\templates\child_home.html:148
 msgid "בקשות בתהליך"
 msgstr "طلبات قيد التنفيذ"
 
 #: .\childApp\templates\childApp\inactive_home.html:271
-#: .\childApp\templates\child_home.html:184
+#: .\childApp\templates\child_home.html:186
 msgid "צדקה"
 msgstr "صدقة"
 
 #: .\childApp\templates\childApp\inactive_home.html:275
-#: .\childApp\templates\child_home.html:192
+#: .\childApp\templates\child_home.html:194
 msgid "יציאה"
 msgstr "خروج"
 
@@ -1144,7 +1144,7 @@ msgstr "ساعات الدوام"
 
 #: .\childApp\templates\childApp\shop\shop_detail.html:293
 #: .\childApp\templates\childApp\shop\shop_detail.html:297
-#: .\childApp\templates\child_home.html:101
+#: .\childApp\templates\child_home.html:103
 msgid "סגור"
 msgstr "مسكّر"
 
@@ -1165,7 +1165,7 @@ msgid "שתף את הקוד וצבור נקודות יחד עם החברים ש�
 msgstr "شارك الكود واجمع نقاط مع أصحابك"
 
 #: .\childApp\templates\childApp\signup\invite_qr.html:47
-#: .\childApp\templates\child_home.html:106
+#: .\childApp\templates\child_home.html:108
 msgid "קוד QR להזמנה"
 msgstr "كود QR للدعوة"
 
@@ -1282,27 +1282,32 @@ msgstr "مسجّل من قبل؟"
 msgid "התחבר כאן"
 msgstr "سجّل دخول من هون"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:264
+#: .\childApp\templates\childApp\signup\temp_signup.html:257
+#: .\childApp\templates\child_home.html:202
+msgid "שנה שפה"
+msgstr "تغيير اللغة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:286
 msgid "נא להכניס שם מלא תקין"
 msgstr "دخل اسم كامل صحيح"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:265
+#: .\childApp\templates\childApp\signup\temp_signup.html:287
 msgid "נא להכניס שם פרטי ושם משפחה"
 msgstr "اكتب اسمك الأول واسم العيلة"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:266
+#: .\childApp\templates\childApp\signup\temp_signup.html:288
 msgid "הסיסמה חייבת להכיל לפחות 6 תווים"
 msgstr "كلمة السر لازم تكون 6 حروف/أرقام على الأقل"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:267
+#: .\childApp\templates\childApp\signup\temp_signup.html:289
 msgid "מספרי הטלפון אינם תואמים"
 msgstr "أرقام التلفون مش متطابقة"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:268
+#: .\childApp\templates\childApp\signup\temp_signup.html:290
 msgid "יש לאשר קבלת הסכמת הורים"
 msgstr "لازم تأكد موافقة الأهل"
 
-#: .\childApp\templates\childApp\signup\temp_signup.html:269
+#: .\childApp\templates\childApp\signup\temp_signup.html:291
 msgid "מעבד..."
 msgstr "عم بمعالج..."
 
@@ -1339,7 +1344,7 @@ msgid "צ'ק אין"
 msgstr "تسجيل دخول"
 
 #: .\childApp\templates\child_base.html:221
-#: .\childApp\templates\child_home.html:159
+#: .\childApp\templates\child_home.html:161
 #: .\childApp\templates\points_leaderboard.html:5
 #: .\childApp\templates\points_leaderboard.html:9
 msgid "קיר התהילה"
@@ -1353,16 +1358,16 @@ msgstr "للمساعدة أو الدعم، تواصلوا عبر"
 msgid "מסך הבית - Volunteen"
 msgstr "الصفحة الرئيسية - Volunteen"
 
-#: .\childApp\templates\child_home.html:9
+#: .\childApp\templates\child_home.html:11
 #, python-format
 msgid "ברוך הבא, %(username)s!"
 msgstr "أهلًا فيك، %(username)s!"
 
-#: .\childApp\templates\child_home.html:15
+#: .\childApp\templates\child_home.html:17
 msgid "רוצים להמשיך ליהנות מוולונטין?"
 msgstr "بدكم تضلّوا تستمتعوا بـ Volunteen؟"
 
-#: .\childApp\templates\child_home.html:16
+#: .\childApp\templates\child_home.html:18
 #, python-format
 msgid ""
 "המנוי שלך מתקרב לסיום בעוד %(days)s ימים.<br>\n"
@@ -1371,112 +1376,104 @@ msgstr ""
 "اشتراكك قرب يخلص بعد %(days)s أيام.<br>\n"
 "    عشان ما تفوّت مهام، جوائز ومفاجآت — فيك تجدّد وتضلّ معنا بالمغامرة!"
 
-#: .\childApp\templates\child_home.html:19
+#: .\childApp\templates\child_home.html:21
 msgid "לחדש מנוי"
 msgstr "جدّد الاشتراك"
 
-#: .\childApp\templates\child_home.html:31
+#: .\childApp\templates\child_home.html:33
 msgid "Avatar"
 msgstr "أفاتار"
 
-#: .\childApp\templates\child_home.html:47
+#: .\childApp\templates\child_home.html:49
 msgid "🔥 רצף ההתחברויות שלך"
 msgstr "🔥 سلسلة دخولك المتتالية"
 
-#: .\childApp\templates\child_home.html:50
+#: .\childApp\templates\child_home.html:52
 msgid "ימים ברצף"
 msgstr "أيام وراك بعض"
 
-#: .\childApp\templates\child_home.html:56
+#: .\childApp\templates\child_home.html:58
 msgid "✅ שמור על הרצף שלך"
 msgstr "✅ حافظ على السلسلة تبعتك"
 
-#: .\childApp\templates\child_home.html:60
+#: .\childApp\templates\child_home.html:62
 msgid "🎉 כל הכבוד! שמרת על הרצף שלך! 🔥"
 msgstr "🎉 برافو! حافظت على سلسلتك! 🔥"
 
-#: .\childApp\templates\child_home.html:68
+#: .\childApp\templates\child_home.html:70
 msgid "הרמה שלך:"
 msgstr "مستواك:"
 
-#: .\childApp\templates\child_home.html:78
+#: .\childApp\templates\child_home.html:80
 msgid "בוא נאסוף עוד טינקאוינס!"
 msgstr "يلا نجمع كمان تينكوينز!"
 
-#: .\childApp\templates\child_home.html:83
+#: .\childApp\templates\child_home.html:85
 msgid "התקדמות לרמה הבאה:"
 msgstr "تقدّم للمستوى الجاي:"
 
-#: .\childApp\templates\child_home.html:91
+#: .\childApp\templates\child_home.html:93
 msgid "חבר מביא חבר – הצג קוד QR"
 msgstr "صاحب بيجيب صاحب — ورّجي كود QR"
 
-#: .\childApp\templates\child_home.html:93
+#: .\childApp\templates\child_home.html:95
 msgid "חבר מביא חבר 📱"
 msgstr "صاحب بيجيب صاحب 📱"
 
-#: .\childApp\templates\child_home.html:102
+#: .\childApp\templates\child_home.html:104
 msgid "סרקו את הקוד והצטרפו למשחק! 🎮"
 msgstr "إمسحوا الكود وانضمّوا للعبة! 🎮"
 
-#: .\childApp\templates\child_home.html:116
+#: .\childApp\templates\child_home.html:118
 #, python-format
 msgid "יש לך %(count)s משימות חדשות!"
 msgstr "إلك %(count)s مهام جديدة!"
 
-#: .\childApp\templates\child_home.html:120
+#: .\childApp\templates\child_home.html:122
 msgid "קדימה למשימות! 🧡"
 msgstr "يلا على المهام! 🧡"
 
-#: .\childApp\templates\child_home.html:124
+#: .\childApp\templates\child_home.html:126
 msgid "סימנתי כנקרא"
 msgstr "علّمت كمقروء"
 
-#: .\childApp\templates\child_home.html:134
+#: .\childApp\templates\child_home.html:136
 msgid "רשימת משימות"
 msgstr "قائمة المهام"
 
-#: .\childApp\templates\child_home.html:142
+#: .\childApp\templates\child_home.html:144
 #: .\childApp\templates\child_redemption_history.html:4
 #: .\childApp\templates\child_redemption_history.html:107
 msgid "היסטוריית רכישה"
 msgstr "سجلّ المشتريات"
 
-#: .\childApp\templates\child_home.html:150
+#: .\childApp\templates\child_home.html:152
 msgid "קמפיינים"
 msgstr "حملات"
 
-#: .\childApp\templates\child_home.html:155
+#: .\childApp\templates\child_home.html:157
 msgid "היסטוריית טינקוינס"
 msgstr "سجلّ التينكوينز"
 
-#: .\childApp\templates\child_home.html:163
+#: .\childApp\templates\child_home.html:165
 msgid "שיאני רצף"
 msgstr "أبطال السلسلة"
 
-#: .\childApp\templates\child_home.html:167
+#: .\childApp\templates\child_home.html:169
 msgid "קיר התרומות"
 msgstr "لوح التبرعات"
 
-#: .\childApp\templates\child_home.html:171
+#: .\childApp\templates\child_home.html:173
 msgid "הזמן חברים"
 msgstr "اعزم أصحابك"
 
-#: .\childApp\templates\child_home.html:175
+#: .\childApp\templates\child_home.html:177
 msgid "צ'ק אין/אאוט"
 msgstr "تسجيل دخول/خروج"
 
-#: .\childApp\templates\child_home.html:188
+#: .\childApp\templates\child_home.html:190
 msgid "היסטוריית משימות"
 msgstr "سجلّ المهام"
-
-#: .\childApp\templates\child_home.html:198
-msgid "הישגים ומדליות"
-msgstr "إنجازات وميداليات"
-
-#: .\childApp\templates\child_home.html:205
-msgid "נק'"
-msgstr "نقطة"
 
 #: .\childApp\templates\child_landing.html:7
 msgid "Volunteen - דף משחקים לילדים"
@@ -2464,3 +2461,9 @@ msgstr "هالإعدادات بتتحكم بصلاحيات خاصّة لهالم
 #: .\teenApp\admin.py:241
 msgid "Configure based on frequency type"
 msgstr "اضبط حسب نوع التكرار"
+
+#~ msgid "הישגים ומדליות"
+#~ msgstr "إنجازات وميداليات"
+
+#~ msgid "נק'"
+#~ msgstr "نقطة"
