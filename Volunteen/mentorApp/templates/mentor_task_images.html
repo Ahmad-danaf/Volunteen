@@ -21,7 +21,17 @@
   @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
   #groupedView, #flatView { transition: opacity .3s ease; }
 .hidden { opacity: 0; pointer-events: none; }
+ .allow-wrap {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word;
+  }
 
+  .flex-1.min-w-0 {
+    min-width: 8rem !important;
+  }
+  
 </style>
 <script>
   tailwind.config = {
@@ -109,7 +119,7 @@
           <!-- Task header -->
           <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
             <div class="min-w-0">
-              <h2 class="text-base font-bold text-gray-900 truncate">{{ group.grouper.title }}</h2>
+              <h2 class="text-base font-bold text-gray-900 allow-wrap">{{ group.grouper.title }}</h2>
               <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
             </div>
             <div class="flex items-center gap-3">
@@ -132,12 +142,15 @@
                       data-group="ontime-{{ forloop.parentloop.counter }}"
                       onchange="updateCounter()">
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-2">
-                    <div class="truncate font-medium text-gray-900">
-                      {{ comp.child.user.get_full_name|default:comp.child }}
-                    </div>
-                    <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
-                  </div>
+                 <div class="flex flex-col items-start">
+  <div class="font-medium text-gray-900 truncate w-full">
+    {{ comp.child.user.username|default:comp.child }}
+  </div>
+  <div class="text-[11px] text-gray-500 mt-0.5">
+    {{ comp.completion_date|localtime|date:"d/m H:i" }}
+  </div>
+</div>
+
                   {% if comp.mentor_feedback %}
                     <div class="text-[11px] text-gray-500 mt-0.5 truncate">הערה קודמת: {{ comp.mentor_feedback }}</div>
                   {% endif %}
@@ -180,7 +193,7 @@
         <section class="m-3 bg-white rounded-2xl shadow-sm overflow-hidden">
           <header class="flex items-center justify-between p-3 border-b border-gray-100 bg-white">
             <div class="min-w-0">
-              <h2 class="text-base font-bold text-gray-900 truncate">
+              <h2 class="text-base font-bold text-gray-900 allow-wrap">
                 {{ group.grouper.title }} <span class="text-xs text-amber-600">(מאוחר)</span>
               </h2>
               <p class="text-xs text-gray-500 mt-0.5">סה״כ: {{ group.list|length }} הוכחות</p>
@@ -204,12 +217,15 @@
                       data-group="late-{{ forloop.parentloop.counter }}"
                       onchange="updateCounter()">
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between gap-2">
-                    <div class="truncate font-medium text-gray-900">
-                      {{ comp.child.user.get_full_name|default:comp.child }}
-                    </div>
-                    <div class="text-[11px] text-gray-500 shrink-0">{{ comp.completion_date|localtime|date:"d/m H:i" }}</div>
-                  </div>
+                 <div class="flex flex-col items-start">
+  <div class="font-medium text-gray-900 truncate w-full">
+    {{ comp.child.user.username|default:comp.child }}
+  </div>
+  <div class="text-[11px] text-gray-500 mt-0.5">
+    {{ comp.completion_date|localtime|date:"d/m H:i" }}
+  </div>
+</div>
+
                   <div class="text-[11px] text-amber-600 mt-0.5">בדיקה: מאוחר</div>
                 </div>
 
@@ -253,7 +269,7 @@
 
         <div class="flex-1">
           <div class="font-medium text-gray-900 truncate">
-            {{ comp.child.user.get_full_name }}
+            {{ comp.child.user.username }}
           </div>
           <div class="text-xs text-gray-500">
             {{ comp.task.title }} — {{ comp.completion_date|date:"d/m H:i" }}
@@ -283,8 +299,8 @@
                value="{{ comp.id }}" onchange="updateCounter()">
 
         <div class="flex-1">
-          <div class="font-medium text-gray-900 truncate">
-            {{ comp.child.user.get_full_name }}
+          <div class="font-medium text-gray-800 allow-wrap">
+            {{ comp.child.user.username }}
           </div>
           <div class="text-xs text-gray-500">
             {{ comp.task.title }} — {{ comp.completion_date|date:"d/m H:i" }}
@@ -340,11 +356,15 @@
   </div>
 
   <!-- ===== Fullscreen Image Viewer ===== -->
-  <div id="imageViewer" class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4">
-    <img id="viewerImg" class="max-h-[85vh] max-w-[95vw] rounded-2xl shadow-2xl animate-in" alt="Proof">
-    <button class="absolute top-4 left-4 bg-white/10 text-white backdrop-blur px-3 py-1.5 rounded-xl text-sm"
-            onclick="closeImage()">סגור ✕</button>
-  </div>
+  <div id="imageViewer"
+     class="hidden fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+     onclick="closeImage()">
+  <img id="viewerImg"
+       class="max-h-[85vh] max-w-[95vw] rounded-2xl shadow-2xl animate-in pointer-events-none select-none"
+       alt="Proof">
+</div>
+
+
 
   <!-- ===== Toast ===== -->
   <div id="toast" class="hidden fixed bottom-4 right-4 left-4 mx-auto w-fit max-w-[90vw] px-3 py-2 rounded-xl text-sm text-white bg-gray-900/90 shadow-xl animate-in"></div>
@@ -399,13 +419,19 @@
 
   // ==== Fullscreen viewer ====
   function openImage(url) {
-    document.getElementById('viewerImg').src = url;
-    document.getElementById('imageViewer').classList.remove('hidden');
-  }
-  function closeImage() {
-    document.getElementById('imageViewer').classList.add('hidden');
-    document.getElementById('viewerImg').src = '';
-  }
+  const viewer = document.getElementById('imageViewer');
+  const img = document.getElementById('viewerImg');
+  img.src = url;
+  viewer.classList.remove('hidden');
+}
+
+function closeImage() {
+  const viewer = document.getElementById('imageViewer');
+  const img = document.getElementById('viewerImg');
+  viewer.classList.add('hidden');
+  img.src = '';
+}
+
 
   // ==== Select logic ====
   function updateCounter() {
