@@ -475,7 +475,7 @@ def rewards_view(request):
             'disabled_note': disabled_note if is_banned else "",
         })
 
-    categories_list = [{'code': cat['code'], 'name': cat['name']} for cat in available_categories]
+    categories_list = [{'code': cat['code'], 'name': _(cat['name'])} for cat in available_categories]
 
     context = {
         'shops': shops_with_data,

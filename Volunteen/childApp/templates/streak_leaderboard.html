@@ -15,7 +15,11 @@
                 <tr>
                     <td class="rank">{% blocktrans %}🥇 {{ forloop.counter }}{% endblocktrans %}</td>
                     <td class="username">{{ child.user.username }}</td>
-                    <td class="streak">{% blocktrans %}{{ child.streak_count }} ימים{% endblocktrans %}</td>
+                    <td class="streak">
+                        {% blocktrans with days=child.streak_count %}
+                            {{ days }} ימים
+                        {% endblocktrans %}
+                        </td>
                 </tr>
                 {% endfor %}
             </tbody>

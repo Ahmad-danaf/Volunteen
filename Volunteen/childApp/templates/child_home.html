@@ -317,10 +317,10 @@ function saveStreak() {
 
         const daysToNext = 10 - (data.streak % 10);
         if (data.reward_given) {
-            alert(`🎁 קיבלת בונוס על רצף של ${data.milestone} ימים!`);
-            message.innerText = `התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥`;
+            alert(`🎁 {% blocktrans %}קיבלת בונוס על רצף של {{ data.milestone }} ימים!{% endblocktrans %}`);
+            message.innerText = `{% trans "התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥" %}`;
         } else if (daysToNext !== 10) {
-            message.innerText = `עוד ${daysToNext} ימים לבונוס הבא ✨`;
+            message.innerText = `{% blocktrans with daysToNext=daysToNext %}עוד {{ daysToNext }} ימים לבונוס הבא ✨{% endblocktrans %}`;
         }
 
         const streakSection = document.querySelector(".streak-card");

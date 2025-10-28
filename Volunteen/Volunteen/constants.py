@@ -5,7 +5,12 @@ AVAILABLE_CITIES = [
     ('SKN', _('סכנין')),
 ]
 SHOP_CATEGORIES=[
- ('fast_food', _('אוכל מהיר')),
+    ('grocery', _('מכולת')),
+    ('shawarma', _('שווארמה')),
+    ('falafel', _('פלאפל')),
+    ('haircut', _('תספורת')),
+    ('clothing', _('לבוש')),
+    ('fast_food', _('אוכל מהיר')),
     ('cafes', _('בתי קפה')),
     ('bakeries', _('מאפיות')),
     ('desserts', _('קינוחים')),

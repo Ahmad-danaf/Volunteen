@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volunteen 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-25 21:47+0300\n"
+"POT-Creation-Date: 2025-10-28 15:29+0200\n"
 "PO-Revision-Date: 2025-10-22 23:49+0300\n"
 "Last-Translator: Volunteen Team <info@volunteen.com>\n"
 "Language-Team: Arabic\n"
@@ -28,469 +28,489 @@ msgid "סכנין"
 msgstr "سخنين"
 
 #: .\Volunteen\constants.py:8
+msgid "מכולת"
+msgstr ""
+
+#: .\Volunteen\constants.py:9
+msgid "שווארמה"
+msgstr ""
+
+#: .\Volunteen\constants.py:10
+msgid "פלאפל"
+msgstr ""
+
+#: .\Volunteen\constants.py:11
+msgid "תספורת"
+msgstr ""
+
+#: .\Volunteen\constants.py:12
+msgid "לבוש"
+msgstr ""
+
+#: .\Volunteen\constants.py:13
 msgid "אוכל מהיר"
 msgstr "أكل سريع"
 
-#: .\Volunteen\constants.py:9
+#: .\Volunteen\constants.py:14
 msgid "בתי קפה"
 msgstr "مقاهي"
 
-#: .\Volunteen\constants.py:10
+#: .\Volunteen\constants.py:15
 msgid "מאפיות"
 msgstr "مخابز"
 
-#: .\Volunteen\constants.py:11
+#: .\Volunteen\constants.py:16
 msgid "קינוחים"
 msgstr "حلويات"
 
-#: .\Volunteen\constants.py:12
+#: .\Volunteen\constants.py:17
 msgid "טבעוני"
 msgstr "نباتي"
 
-#: .\Volunteen\constants.py:13
+#: .\Volunteen\constants.py:18
 msgid "סושי"
 msgstr "سوشي"
 
-#: .\Volunteen\constants.py:14
+#: .\Volunteen\constants.py:19
 msgid "פיצה"
 msgstr "بيتزا"
 
-#: .\Volunteen\constants.py:15
+#: .\Volunteen\constants.py:20
 msgid "גלידות"
 msgstr "بوظة"
 
-#: .\Volunteen\constants.py:16
+#: .\Volunteen\constants.py:21
 msgid "מזון בריאות"
 msgstr "أكل صحي"
 
-#: .\Volunteen\constants.py:17
+#: .\Volunteen\constants.py:22
 #, fuzzy
 #| msgid "הישגים ומדליות"
 msgid "בשרים וגריל"
 msgstr "إنجازات وميداليات"
 
-#: .\Volunteen\constants.py:18
+#: .\Volunteen\constants.py:23
 msgid "אסייתי"
 msgstr "آسيوي"
 
-#: .\Volunteen\constants.py:19
+#: .\Volunteen\constants.py:24
 msgid "איטלקי"
 msgstr "إيطالي"
 
-#: .\Volunteen\constants.py:20
+#: .\Volunteen\constants.py:25
 msgid "שתייה"
 msgstr "مشروبات"
 
-#: .\Volunteen\constants.py:21
+#: .\Volunteen\constants.py:26
 msgid "ביגוד"
 msgstr "ملابس"
 
-#: .\Volunteen\constants.py:22
+#: .\Volunteen\constants.py:27
 msgid "צעצועים"
 msgstr "ألعاب"
 
-#: .\Volunteen\constants.py:23
+#: .\Volunteen\constants.py:28
 msgid "אלקטרוניקה"
 msgstr "إلكترونيات"
 
-#: .\Volunteen\constants.py:24
+#: .\Volunteen\constants.py:29
 msgid "ספרים"
 msgstr "كتب"
 
-#: .\Volunteen\constants.py:25
+#: .\Volunteen\constants.py:30
 #, fuzzy
 #| msgid "אושר"
 msgid "אחר"
 msgstr "اتوافق"
 
-#: .\Volunteen\constants.py:45
+#: .\Volunteen\constants.py:50
 #, fuzzy
 #| msgid "לא התחיל"
 msgid "מתחיל"
 msgstr "ما بلّش"
 
-#: .\Volunteen\constants.py:46 .\Volunteen\constants.py:98
+#: .\Volunteen\constants.py:51 .\Volunteen\constants.py:103
 msgid "עוזר"
 msgstr "مساعد"
 
-#: .\Volunteen\constants.py:47
+#: .\Volunteen\constants.py:52
 msgid "שואף"
 msgstr "طموح"
 
-#: .\Volunteen\constants.py:48
+#: .\Volunteen\constants.py:53
 msgid "שגריר"
 msgstr "سفير"
 
-#: .\Volunteen\constants.py:49
+#: .\Volunteen\constants.py:54
 #, fuzzy
 #| msgid "אין"
 msgid "מגן"
 msgstr "ما في"
 
-#: .\Volunteen\constants.py:50
+#: .\Volunteen\constants.py:55
 msgid "לוחם"
 msgstr "مقاتل"
 
-#: .\Volunteen\constants.py:51
+#: .\Volunteen\constants.py:56
 msgid "נועז"
 msgstr "جريء"
 
-#: .\Volunteen\constants.py:52
+#: .\Volunteen\constants.py:57
 #, fuzzy
 #| msgid "אושר"
 msgid "אור"
 msgstr "اتوافق"
 
-#: .\Volunteen\constants.py:53 .\Volunteen\constants.py:87
+#: .\Volunteen\constants.py:58 .\Volunteen\constants.py:92
 msgid "חולם"
 msgstr "حالم"
 
-#: .\Volunteen\constants.py:54 .\Volunteen\constants.py:102
-#: .\Volunteen\constants.py:131 .\Volunteen\constants.py:144
+#: .\Volunteen\constants.py:59 .\Volunteen\constants.py:107
+#: .\Volunteen\constants.py:136 .\Volunteen\constants.py:149
 msgid "אלוף"
 msgstr "بطل"
 
-#: .\Volunteen\constants.py:55 .\Volunteen\constants.py:136
+#: .\Volunteen\constants.py:60 .\Volunteen\constants.py:141
 msgid "כוכב"
 msgstr "نجم"
 
-#: .\Volunteen\constants.py:56 .\Volunteen\constants.py:141
+#: .\Volunteen\constants.py:61 .\Volunteen\constants.py:146
 #, fuzzy
 #| msgid "חדש"
 msgid "חזק"
 msgstr "جديد"
 
-#: .\Volunteen\constants.py:57
+#: .\Volunteen\constants.py:62
 msgid "נדיב"
 msgstr "كريم"
 
-#: .\Volunteen\constants.py:58 .\Volunteen\constants.py:139
+#: .\Volunteen\constants.py:63 .\Volunteen\constants.py:144
 #, fuzzy
 #| msgid "ראשון"
 msgid "רוח"
-msgstr "الأحد"
+msgstr "رِيح"
 
-#: .\Volunteen\constants.py:59 .\Volunteen\constants.py:83
-#: .\Volunteen\constants.py:132
+#: .\Volunteen\constants.py:64 .\Volunteen\constants.py:88
+#: .\Volunteen\constants.py:137
 msgid "נסיך"
 msgstr "أمير"
 
-#: .\Volunteen\constants.py:60 .\Volunteen\constants.py:104
+#: .\Volunteen\constants.py:65 .\Volunteen\constants.py:109
 msgid "מאיר"
 msgstr "مضيء"
 
-#: .\Volunteen\constants.py:61
+#: .\Volunteen\constants.py:66
 msgid "תותח"
 msgstr "مبدع"
 
-#: .\Volunteen\constants.py:62
+#: .\Volunteen\constants.py:67
 msgid "מנהיג"
 msgstr "قائد"
 
-#: .\Volunteen\constants.py:63
+#: .\Volunteen\constants.py:68
 msgid "שולט"
 msgstr "مسيطر"
 
-#: .\Volunteen\constants.py:64
+#: .\Volunteen\constants.py:69
 msgid "אגדי"
 msgstr "أسطوري"
 
-#: .\Volunteen\constants.py:65
+#: .\Volunteen\constants.py:70
 msgid "שליט"
 msgstr "حاكم"
 
-#: .\Volunteen\constants.py:66 .\Volunteen\constants.py:89
-#: .\Volunteen\constants.py:96
+#: .\Volunteen\constants.py:71 .\Volunteen\constants.py:94
+#: .\Volunteen\constants.py:101
 #, fuzzy
 #| msgid "שם"
 msgid "שר"
 msgstr "الاسم"
 
-#: .\Volunteen\constants.py:67
+#: .\Volunteen\constants.py:72
 msgid "נאמן"
 msgstr "وفيّ"
 
-#: .\Volunteen\constants.py:68
+#: .\Volunteen\constants.py:73
 msgid "מוביל"
 msgstr "رائد"
 
-#: .\Volunteen\constants.py:69
+#: .\Volunteen\constants.py:74
 msgid "תורם"
 msgstr "متبرّع"
 
-#: .\Volunteen\constants.py:70
+#: .\Volunteen\constants.py:75
 msgid "אביר"
 msgstr "فارس"
 
-#: .\Volunteen\constants.py:71 .\Volunteen\constants.py:135
+#: .\Volunteen\constants.py:76 .\Volunteen\constants.py:140
 #, fuzzy
 #| msgid "כמות:"
 msgid "כוח"
 msgstr "كمية:"
 
-#: .\Volunteen\constants.py:72
+#: .\Volunteen\constants.py:77
 msgid "זריז"
 msgstr "سريع"
 
-#: .\Volunteen\constants.py:73
+#: .\Volunteen\constants.py:78
 msgid "גדול"
 msgstr "كبير"
 
-#: .\Volunteen\constants.py:74
+#: .\Volunteen\constants.py:79
 msgid "עמיד"
 msgstr "صامد"
 
-#: .\Volunteen\constants.py:75
+#: .\Volunteen\constants.py:80
 #, fuzzy
 #| msgid "חסום"
 msgid "חכם"
 msgstr "محظور"
 
-#: .\Volunteen\constants.py:76
+#: .\Volunteen\constants.py:81
 msgid "לבבי"
 msgstr "حنون"
 
-#: .\Volunteen\constants.py:77
+#: .\Volunteen\constants.py:82
 msgid "מהיר"
 msgstr "סريع"
 
-#: .\Volunteen\constants.py:78
+#: .\Volunteen\constants.py:83
 #, fuzzy
 #| msgid "חסום"
 msgid "חסד"
 msgstr "محظور"
 
-#: .\Volunteen\constants.py:79
+#: .\Volunteen\constants.py:84
 #, fuzzy
 #| msgid "נק'"
 msgid "ענק"
 msgstr "نقطة"
 
-#: .\Volunteen\constants.py:80
+#: .\Volunteen\constants.py:85
 msgid "נחוש"
 msgstr "مُصرّ"
 
-#: .\Volunteen\constants.py:81
+#: .\Volunteen\constants.py:86
 msgid "עוצמתי"
 msgstr "قوي"
 
-#: .\Volunteen\constants.py:82
+#: .\Volunteen\constants.py:87
 msgid "זוהר"
 msgstr "لامع"
 
-#: .\Volunteen\constants.py:84
+#: .\Volunteen\constants.py:89
 msgid "עליון"
 msgstr "أعلى"
 
-#: .\Volunteen\constants.py:85
+#: .\Volunteen\constants.py:90
 msgid "שומר"
 msgstr "حارس"
 
-#: .\Volunteen\constants.py:86
+#: .\Volunteen\constants.py:91
 msgid "מקסים"
 msgstr "لطيف"
 
-#: .\Volunteen\constants.py:88
+#: .\Volunteen\constants.py:93
 msgid "משפיע"
 msgstr "مؤثّر"
 
-#: .\Volunteen\constants.py:90
+#: .\Volunteen\constants.py:95
 msgid "איתן"
 msgstr "متين"
 
-#: .\Volunteen\constants.py:91
+#: .\Volunteen\constants.py:96
 msgid "שליח"
 msgstr "مرسال"
 
-#: .\Volunteen\constants.py:92
+#: .\Volunteen\constants.py:97
 msgid "מעורר"
 msgstr "ملهم"
 
-#: .\Volunteen\constants.py:93
+#: .\Volunteen\constants.py:98
 msgid "מדהים"
 msgstr "مذهل"
 
-#: .\Volunteen\constants.py:94
+#: .\Volunteen\constants.py:99
 msgid "פלאי"
 msgstr "عجيب"
 
-#: .\Volunteen\constants.py:95
+#: .\Volunteen\constants.py:100
 msgid "מורה"
 msgstr "معلّم"
 
-#: .\Volunteen\constants.py:97
+#: .\Volunteen\constants.py:102
 msgid "מאסטר"
 msgstr "ماستر"
 
-#: .\Volunteen\constants.py:99
+#: .\Volunteen\constants.py:104
 msgid "תומך"
 msgstr "داعِم"
 
-#: .\Volunteen\constants.py:100 .\Volunteen\constants.py:120
+#: .\Volunteen\constants.py:105 .\Volunteen\constants.py:125
 #, fuzzy
 #| msgid "שבת"
 msgid "לב"
 msgstr "السبت"
 
-#: .\Volunteen\constants.py:101
+#: .\Volunteen\constants.py:106
 msgid "מתמיד"
 msgstr "مثابر"
 
-#: .\Volunteen\constants.py:103 .\Volunteen\constants.py:142
+#: .\Volunteen\constants.py:108 .\Volunteen\constants.py:147
 #, fuzzy
 #| msgid "שישי"
 msgid "שמש"
 msgstr "الجمعة"
 
-#: .\Volunteen\constants.py:105
+#: .\Volunteen\constants.py:110
 #, fuzzy
 #| msgid "שעה"
 msgid "רעם"
 msgstr "ساعة"
 
-#: .\Volunteen\constants.py:106
+#: .\Volunteen\constants.py:111
 msgid "חזון"
 msgstr "رؤية"
 
-#: .\Volunteen\constants.py:107
+#: .\Volunteen\constants.py:112
 #, fuzzy
 #| msgid "אושר"
 msgid "אש"
 msgstr "اتوافق"
 
-#: .\Volunteen\constants.py:108
+#: .\Volunteen\constants.py:113
 #, fuzzy
 #| msgid "בטל"
 msgid "גל"
 msgstr "إلغاء"
 
-#: .\Volunteen\constants.py:109
+#: .\Volunteen\constants.py:114
 #, fuzzy
 #| msgid "בטל"
 msgid "ברק"
 msgstr "إلغاء"
 
-#: .\Volunteen\constants.py:110
+#: .\Volunteen\constants.py:115
 msgid "חלוץ"
 msgstr "ريادي"
 
-#: .\Volunteen\constants.py:111
+#: .\Volunteen\constants.py:116
 #, fuzzy
 #| msgid "הושלם"
 msgid "מושלם"
 msgstr "اكتمل"
 
-#: .\Volunteen\constants.py:112
+#: .\Volunteen\constants.py:117
 #, fuzzy
 #| msgid "חדש"
 msgid "חבר"
 msgstr "جديد"
 
-#: .\Volunteen\constants.py:113
+#: .\Volunteen\constants.py:118
 msgid "ספיר"
 msgstr "ياقوت أزرق"
 
-#: .\Volunteen\constants.py:114
+#: .\Volunteen\constants.py:119
 msgid "נוצה"
 msgstr "ريشة"
 
-#: .\Volunteen\constants.py:115
+#: .\Volunteen\constants.py:120
 msgid "מלאך"
 msgstr "ملاك"
 
-#: .\Volunteen\constants.py:116
+#: .\Volunteen\constants.py:121
 #, fuzzy
 #| msgid "שעה"
 msgid "שקט"
 msgstr "ساعة"
 
-#: .\Volunteen\constants.py:117
+#: .\Volunteen\constants.py:122
 #, fuzzy
 #| msgid "נק'"
 msgid "נס"
 msgstr "نقطة"
 
-#: .\Volunteen\constants.py:118
+#: .\Volunteen\constants.py:123
 msgid "יוצר"
 msgstr "مُبدِع"
 
-#: .\Volunteen\constants.py:119
+#: .\Volunteen\constants.py:124
 #, fuzzy
 #| msgid "לעזוב"
 msgid "להב"
 msgstr "أطلع"
 
-#: .\Volunteen\constants.py:121
+#: .\Volunteen\constants.py:126
 msgid "אחדות"
 msgstr "وِحدة"
 
-#: .\Volunteen\constants.py:122
+#: .\Volunteen\constants.py:127
 msgid "חמלה"
 msgstr "رحمة"
 
-#: .\Volunteen\constants.py:123
+#: .\Volunteen\constants.py:128
 msgid "חלום"
 msgstr "حلم"
 
-#: .\Volunteen\constants.py:124
+#: .\Volunteen\constants.py:129
 msgid "תקווה"
 msgstr "أمل"
 
-#: .\Volunteen\constants.py:125
+#: .\Volunteen\constants.py:130
 #, fuzzy
 #| msgid "אושר"
 msgid "אשד"
 msgstr "اتوافق"
 
-#: .\Volunteen\constants.py:126
+#: .\Volunteen\constants.py:131
 msgid "שלווה"
 msgstr "هدوء"
 
-#: .\Volunteen\constants.py:127
+#: .\Volunteen\constants.py:132
 #, fuzzy
 #| msgid "חדש"
 msgid "תדר"
 msgstr "جديد"
 
-#: .\Volunteen\constants.py:128
+#: .\Volunteen\constants.py:133
 msgid "שמחה"
 msgstr "فرح"
 
-#: .\Volunteen\constants.py:129
+#: .\Volunteen\constants.py:134
 #, fuzzy
 #| msgid "דרג"
 msgid "פרץ"
 msgstr "قيّم"
 
-#: .\Volunteen\constants.py:130
+#: .\Volunteen\constants.py:135
 msgid "פלא"
 msgstr "عَجَب"
 
-#: .\Volunteen\constants.py:133
+#: .\Volunteen\constants.py:138
 msgid "סופה"
 msgstr "عاصفة"
 
-#: .\Volunteen\constants.py:134
+#: .\Volunteen\constants.py:139
 #, fuzzy
 #| msgid "אין"
 msgid "קרן"
 msgstr "ما في"
 
-#: .\Volunteen\constants.py:137
+#: .\Volunteen\constants.py:142
 #, fuzzy
 #| msgid "שבת"
 msgid "משב"
 msgstr "السبت"
 
-#: .\Volunteen\constants.py:138
+#: .\Volunteen\constants.py:143
 msgid "להבה"
 msgstr "شعلة"
 
-#: .\Volunteen\constants.py:140
+#: .\Volunteen\constants.py:145
 msgid "אגדה"
 msgstr "أسطورة"
 
-#: .\Volunteen\constants.py:143
+#: .\Volunteen\constants.py:148
 #, fuzzy
 #| msgid "קיר התהילה"
 msgid "תהילה"
@@ -1475,6 +1495,20 @@ msgstr "تسجيل دخول/خروج"
 msgid "היסטוריית משימות"
 msgstr "سجلّ المهام"
 
+#: .\childApp\templates\child_home.html:320
+#, python-format
+msgid "קיבלת בונוס על רצף של %(data.milestone)s ימים!"
+msgstr ""
+
+#: .\childApp\templates\child_home.html:321
+msgid "התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥"
+msgstr ""
+
+#: .\childApp\templates\child_home.html:323
+#, python-format
+msgid "עוד %(daysToNext)s ימים לבונוס הבא ✨"
+msgstr ""
+
 #: .\childApp\templates\child_landing.html:7
 msgid "Volunteen - דף משחקים לילדים"
 msgstr "Volunteen - صفحة ألعاب للأطفال"
@@ -1727,23 +1761,19 @@ msgstr "تبرّع تينكوينز"
 msgid "תרום את הטינקוינס שלך ועזור לקהילה"
 msgstr "تبرّع بتينكوينز تبعتك وساعد المجتمع"
 
-#: .\childApp\templates\donate_coins.html:215
-msgid "עברית"
-msgstr "عبريّة"
-
-#: .\childApp\templates\donate_coins.html:219
+#: .\childApp\templates\donate_coins.html:218
 msgid "יש לך"
 msgstr "عندك"
 
-#: .\childApp\templates\donate_coins.html:220
+#: .\childApp\templates\donate_coins.html:219
 msgid "טינקוינס זמינים לתרומה"
 msgstr "تينكوينز جاهزة للتبرّع"
 
-#: .\childApp\templates\donate_coins.html:228
+#: .\childApp\templates\donate_coins.html:227
 msgid "בחר קטגוריה לתרומה"
 msgstr "اختار فئة للتبرّع"
 
-#: .\childApp\templates\donate_coins.html:261
+#: .\childApp\templates\donate_coins.html:260
 msgid "תרום עכשיו"
 msgstr "تبرّع هسّه"
 
@@ -1801,12 +1831,7 @@ msgstr ""
 "إلا رفعه اللهُ) <br>\n"
 "      رواه مسلم."
 
-#: .\childApp\templates\donation_success.html:241
-#: .\childApp\templates\donation_success.html:288
-msgid "English"
-msgstr "English"
-
-#: .\childApp\templates\donation_success.html:255
+#: .\childApp\templates\donation_success.html:253
 msgid ""
 "وعن أبي سعيد الخدري رضي الله عنه عن النبي صلى الله عليه وسلم قال:<br>\n"
 "    ( أيما مسلم كسا مسلمًا ثوبًا على عري، كساه الله من خضر الجنة 👕،<br>\n"
@@ -1820,40 +1845,44 @@ msgstr ""
 "    وأيما مسلم سقى مسلما على ظمأ، سقاه الله من الرحيق المختوم 🍶 )<br>\n"
 "    رواه أبو داود وفي إسناده لين."
 
-#: .\childApp\templates\donation_success.html:264
+#: .\childApp\templates\donation_success.html:262
 msgid "תרמת"
 msgstr "تبرّعت"
 
-#: .\childApp\templates\donation_success.html:264
+#: .\childApp\templates\donation_success.html:262
 #: .\childApp\templates\reviewed_tasks.html:37
 #: .\childApp\templates\shop_rewards.html:113
 msgid "טינקוינס"
 msgstr "تينكوينز"
 
-#: .\childApp\templates\donation_success.html:265
+#: .\childApp\templates\donation_success.html:263
 msgid "לקטגוריה:"
 msgstr "للفئة:"
 
-#: .\childApp\templates\donation_success.html:270
+#: .\childApp\templates\donation_success.html:266
 #: .\childApp\templates\task_check_in_out.html:16
 msgid "חזרה לדף הבית"
 msgstr "رجوع للصفحة الرئيسية"
 
-#: .\childApp\templates\donation_success.html:285
+#: .\childApp\templates\donation_success.html:281
 msgid ""
 "ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ إلا رفعه "
 "اللهُ"
 msgstr ""
 "الصدقة ما بتنقص المال، والله برفع قدر اللي بعفو، واللي بتواضع الله برفعه"
 
-#: .\childApp\templates\donation_success.html:286
+#: .\childApp\templates\donation_success.html:282
 msgid ""
 "Charity does not decrease wealth. Allah increases the honor of one who "
 "forgives, and whoever humbles himself, Allah elevates him."
 msgstr ""
 "الصدقة ما بتنقص المال. الله بزود شرف اللي بيسامح، واللي بيتواضع الله برفعه."
 
-#: .\childApp\templates\donation_success.html:289
+#: .\childApp\templates\donation_success.html:284
+msgid "English"
+msgstr "English"
+
+#: .\childApp\templates\donation_success.html:285
 msgid "عربي"
 msgstr "عربي"
 
@@ -2096,12 +2125,15 @@ msgstr "🔥 سلسلة (أيام)"
 msgid "🥇 %(forloop.counter)s"
 msgstr "🥇 %(forloop.counter)s"
 
-#: .\childApp\templates\streak_leaderboard.html:18
+#: .\childApp\templates\streak_leaderboard.html:19
 #, python-format
-msgid "%(child.streak_count)s ימים"
-msgstr "%(child.streak_count)s أيام"
+msgid ""
+"\n"
+"                            %(days)s ימים\n"
+"                        "
+msgstr ""
 
-#: .\childApp\templates\streak_leaderboard.html:24
+#: .\childApp\templates\streak_leaderboard.html:28
 msgid "🔙 חזרה לבית"
 msgstr "🔙 رجوع للبيت"
 
@@ -2461,6 +2493,13 @@ msgstr "هالإعدادات بتتحكم بصلاحيات خاصّة لهالم
 #: .\teenApp\admin.py:241
 msgid "Configure based on frequency type"
 msgstr "اضبط حسب نوع التكرار"
+
+#~ msgid "עברית"
+#~ msgstr "عبريّة"
+
+#, python-format
+#~ msgid "%(child.streak_count)s ימים"
+#~ msgstr "%(child.streak_count)s أيام"
 
 #~ msgid "הישגים ומדליות"
 #~ msgstr "إنجازات وميداليات"

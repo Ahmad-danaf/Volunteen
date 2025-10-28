@@ -13,7 +13,7 @@ FRIEND_REFERRAL_TASK_DATA = {
     "description": (
         "תביא חבר שיצטרף לוולנטין ותקבל נקודות! כמה חברים תצליח לצרף השבוע?"
     ),
-    "points": 10,
+    "points": 5,
     "img": "defaults/friend_referral.png",
     "proof_required": True,
     "send_whatsapp_on_assign": True,
