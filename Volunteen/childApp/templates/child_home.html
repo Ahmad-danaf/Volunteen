@@ -218,6 +218,11 @@
 </div>
 
 
+<div id="messages"
+     data-reward-msg="{% blocktrans %}קיבלת בונוס על רצף של %(milestone)s ימים!{% endblocktrans %}"
+     data-new-streak-msg="{% trans 'התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥' %}"
+     data-next-bonus-msg="{% blocktrans %}עוד %(days)s ימים לבונוס הבא ✨{% endblocktrans %}">
+</div>
 
 {% endblock content %}
 
@@ -315,12 +320,16 @@ function saveStreak() {
         message.style.color = "#333";
         message.style.fontSize = "0.95rem";
 
+        const dataElem = document.getElementById('messages');
         const daysToNext = 10 - (data.streak % 10);
+
         if (data.reward_given) {
-            alert(`🎁 {% blocktrans %}קיבלת בונוס על רצף של {{ data.milestone }} ימים!{% endblocktrans %}`);
-            message.innerText = `{% trans "התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥" %}`;
+            const msg = dataElem.dataset.rewardMsg.replace('%(milestone)s', data.milestone);
+            alert(`🎁 ${msg}`);
+            message.innerText = dataElem.dataset.newStreakMsg;
         } else if (daysToNext !== 10) {
-            message.innerText = `{% blocktrans with daysToNext=daysToNext %}עוד {{ daysToNext }} ימים לבונוס הבא ✨{% endblocktrans %}`;
+            const msg = dataElem.dataset.nextBonusMsg.replace('%(days)s', daysToNext);
+            message.innerText = msg;
         }
 
         const streakSection = document.querySelector(".streak-card");

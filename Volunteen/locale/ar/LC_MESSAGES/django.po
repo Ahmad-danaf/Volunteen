@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volunteen 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-28 15:29+0200\n"
+"POT-Creation-Date: 2025-10-29 06:23+0200\n"
 "PO-Revision-Date: 2025-10-22 23:49+0300\n"
 "Last-Translator: Volunteen Team <info@volunteen.com>\n"
 "Language-Team: Arabic\n"
@@ -29,23 +29,23 @@ msgstr "سخنين"
 
 #: .\Volunteen\constants.py:8
 msgid "מכולת"
-msgstr ""
+msgstr "بقالة"
 
 #: .\Volunteen\constants.py:9
 msgid "שווארמה"
-msgstr ""
+msgstr "شاورما"
 
 #: .\Volunteen\constants.py:10
 msgid "פלאפל"
-msgstr ""
+msgstr "فلافل"
 
 #: .\Volunteen\constants.py:11
 msgid "תספורת"
-msgstr ""
+msgstr "صالون حلاقة"
 
 #: .\Volunteen\constants.py:12
 msgid "לבוש"
-msgstr ""
+msgstr "ملابس"
 
 #: .\Volunteen\constants.py:13
 msgid "אוכל מהיר"
@@ -1495,19 +1495,19 @@ msgstr "تسجيل دخول/خروج"
 msgid "היסטוריית משימות"
 msgstr "سجلّ المهام"
 
-#: .\childApp\templates\child_home.html:320
+#: .\childApp\templates\child_home.html:222
 #, python-format
-msgid "קיבלת בונוס על רצף של %(data.milestone)s ימים!"
-msgstr ""
+msgid "קיבלת בונוס על רצף של %(milestone)s ימים!"
+msgstr "أخذت بونص على سلسلة من %(milestone)s أيام!"
 
-#: .\childApp\templates\child_home.html:321
+#: .\childApp\templates\child_home.html:223
 msgid "התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥"
-msgstr ""
+msgstr "بلّشت سلسلة جديدة! ضايل 10 أيام للبونص الجاي 💥"
 
-#: .\childApp\templates\child_home.html:323
+#: .\childApp\templates\child_home.html:224
 #, python-format
-msgid "עוד %(daysToNext)s ימים לבונוס הבא ✨"
-msgstr ""
+msgid "עוד %(days)s ימים לבונוס הבא ✨"
+msgstr "ضايل %(days)s أيام للبونص الجاي ✨"
 
 #: .\childApp\templates\child_landing.html:7
 msgid "Volunteen - דף משחקים לילדים"
@@ -2132,6 +2132,9 @@ msgid ""
 "                            %(days)s ימים\n"
 "                        "
 msgstr ""
+"\n"
+"                            %(days)s أيام\n"
+"                        "
 
 #: .\childApp\templates\streak_leaderboard.html:28
 msgid "🔙 חזרה לבית"
