@@ -1,0 +1,2499 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Volunteen 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-29 07:23+0200\n"
+"PO-Revision-Date: 2025-10-22 23:49+0300\n"
+"Last-Translator: Volunteen Team <info@volunteen.com>\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: .\Volunteen\constants.py:4
+msgid "תל אביב יפו"
+msgstr "تل أبيب يافا"
+
+#: .\Volunteen\constants.py:5
+msgid "סכנין"
+msgstr "سخنين"
+
+#: .\Volunteen\constants.py:8
+msgid "מכולת"
+msgstr "بقالة"
+
+#: .\Volunteen\constants.py:9
+msgid "שווארמה"
+msgstr "شاورما"
+
+#: .\Volunteen\constants.py:10
+msgid "פלאפל"
+msgstr "فلافل"
+
+#: .\Volunteen\constants.py:11
+msgid "תספורת"
+msgstr "صالون حلاقة"
+
+#: .\Volunteen\constants.py:12
+msgid "לבוש"
+msgstr "ملابس"
+
+#: .\Volunteen\constants.py:13
+msgid "אוכל מהיר"
+msgstr "أكل سريع"
+
+#: .\Volunteen\constants.py:14
+msgid "בתי קפה"
+msgstr "مقاهي"
+
+#: .\Volunteen\constants.py:15
+msgid "מאפיות"
+msgstr "مخابز"
+
+#: .\Volunteen\constants.py:16
+msgid "קינוחים"
+msgstr "حلويات"
+
+#: .\Volunteen\constants.py:17
+msgid "טבעוני"
+msgstr "نباتي"
+
+#: .\Volunteen\constants.py:18
+msgid "סושי"
+msgstr "سوشي"
+
+#: .\Volunteen\constants.py:19
+msgid "פיצה"
+msgstr "بيتزا"
+
+#: .\Volunteen\constants.py:20
+msgid "גלידות"
+msgstr "بوظة"
+
+#: .\Volunteen\constants.py:21
+msgid "מזון בריאות"
+msgstr "أكل صحي"
+
+#: .\Volunteen\constants.py:22
+msgid "בשרים וגריל"
+msgstr "إنجازات وميداليات"
+
+#: .\Volunteen\constants.py:23
+msgid "אסייתי"
+msgstr "آسيوي"
+
+#: .\Volunteen\constants.py:24
+msgid "איטלקי"
+msgstr "إيطالي"
+
+#: .\Volunteen\constants.py:25
+msgid "שתייה"
+msgstr "مشروبات"
+
+#: .\Volunteen\constants.py:26
+msgid "ביגוד"
+msgstr "ملابس"
+
+#: .\Volunteen\constants.py:27
+msgid "צעצועים"
+msgstr "ألعاب"
+
+#: .\Volunteen\constants.py:28
+msgid "אלקטרוניקה"
+msgstr "إلكترونيات"
+
+#: .\Volunteen\constants.py:29
+msgid "ספרים"
+msgstr "كتب"
+
+#: .\Volunteen\constants.py:30
+msgid "אחר"
+msgstr "اتوافق"
+
+#: .\Volunteen\constants.py:50
+msgid "מתחיל"
+msgstr "ما بلّش"
+
+#: .\Volunteen\constants.py:51 .\Volunteen\constants.py:103
+msgid "עוזר"
+msgstr "مساعد"
+
+#: .\Volunteen\constants.py:52
+msgid "שואף"
+msgstr "طموح"
+
+#: .\Volunteen\constants.py:53
+msgid "שגריר"
+msgstr "سفير"
+
+#: .\Volunteen\constants.py:54
+msgid "מגן"
+msgstr "ما في"
+
+#: .\Volunteen\constants.py:55
+msgid "לוחם"
+msgstr "مقاتل"
+
+#: .\Volunteen\constants.py:56
+msgid "נועז"
+msgstr "جريء"
+
+#: .\Volunteen\constants.py:57
+msgid "אור"
+msgstr "اتوافق"
+
+#: .\Volunteen\constants.py:58 .\Volunteen\constants.py:92
+msgid "חולם"
+msgstr "حالم"
+
+#: .\Volunteen\constants.py:59 .\Volunteen\constants.py:107
+#: .\Volunteen\constants.py:136 .\Volunteen\constants.py:149
+msgid "אלוף"
+msgstr "بطل"
+
+#: .\Volunteen\constants.py:60 .\Volunteen\constants.py:141
+msgid "כוכב"
+msgstr "نجم"
+
+#: .\Volunteen\constants.py:61 .\Volunteen\constants.py:146
+msgid "חזק"
+msgstr "جديد"
+
+#: .\Volunteen\constants.py:62
+msgid "נדיב"
+msgstr "كريم"
+
+#: .\Volunteen\constants.py:63 .\Volunteen\constants.py:144
+msgid "רוח"
+msgstr "رِيح"
+
+#: .\Volunteen\constants.py:64 .\Volunteen\constants.py:88
+#: .\Volunteen\constants.py:137
+msgid "נסיך"
+msgstr "أمير"
+
+#: .\Volunteen\constants.py:65 .\Volunteen\constants.py:109
+msgid "מאיר"
+msgstr "مضيء"
+
+#: .\Volunteen\constants.py:66
+msgid "תותח"
+msgstr "مبدع"
+
+#: .\Volunteen\constants.py:67
+msgid "מנהיג"
+msgstr "قائد"
+
+#: .\Volunteen\constants.py:68
+msgid "שולט"
+msgstr "مسيطر"
+
+#: .\Volunteen\constants.py:69
+msgid "אגדי"
+msgstr "أسطوري"
+
+#: .\Volunteen\constants.py:70
+msgid "שליט"
+msgstr "حاكم"
+
+#: .\Volunteen\constants.py:71 .\Volunteen\constants.py:94
+#: .\Volunteen\constants.py:101
+msgid "שר"
+msgstr "الاسم"
+
+#: .\Volunteen\constants.py:72
+msgid "נאמן"
+msgstr "وفيّ"
+
+#: .\Volunteen\constants.py:73
+msgid "מוביל"
+msgstr "رائد"
+
+#: .\Volunteen\constants.py:74
+msgid "תורם"
+msgstr "متبرّع"
+
+#: .\Volunteen\constants.py:75
+msgid "אביר"
+msgstr "فارس"
+
+#: .\Volunteen\constants.py:76 .\Volunteen\constants.py:140
+msgid "כוח"
+msgstr "كمية:"
+
+#: .\Volunteen\constants.py:77
+msgid "זריז"
+msgstr "سريع"
+
+#: .\Volunteen\constants.py:78
+msgid "גדול"
+msgstr "كبير"
+
+#: .\Volunteen\constants.py:79
+msgid "עמיד"
+msgstr "صامد"
+
+#: .\Volunteen\constants.py:80
+msgid "חכם"
+msgstr "محظور"
+
+#: .\Volunteen\constants.py:81
+msgid "לבבי"
+msgstr "حنون"
+
+#: .\Volunteen\constants.py:82
+msgid "מהיר"
+msgstr "סريع"
+
+#: .\Volunteen\constants.py:83
+msgid "חסד"
+msgstr "محظور"
+
+#: .\Volunteen\constants.py:84
+msgid "ענק"
+msgstr "نقطة"
+
+#: .\Volunteen\constants.py:85
+msgid "נחוש"
+msgstr "مُصرّ"
+
+#: .\Volunteen\constants.py:86
+msgid "עוצמתי"
+msgstr "قوي"
+
+#: .\Volunteen\constants.py:87
+msgid "זוהר"
+msgstr "لامع"
+
+#: .\Volunteen\constants.py:89
+msgid "עליון"
+msgstr "أعلى"
+
+#: .\Volunteen\constants.py:90
+msgid "שומר"
+msgstr "حارس"
+
+#: .\Volunteen\constants.py:91
+msgid "מקסים"
+msgstr "لطيف"
+
+#: .\Volunteen\constants.py:93
+msgid "משפיע"
+msgstr "مؤثّر"
+
+#: .\Volunteen\constants.py:95
+msgid "איתן"
+msgstr "متين"
+
+#: .\Volunteen\constants.py:96
+msgid "שליח"
+msgstr "مرسال"
+
+#: .\Volunteen\constants.py:97
+msgid "מעורר"
+msgstr "ملهم"
+
+#: .\Volunteen\constants.py:98
+msgid "מדהים"
+msgstr "مذهل"
+
+#: .\Volunteen\constants.py:99
+msgid "פלאי"
+msgstr "عجيب"
+
+#: .\Volunteen\constants.py:100
+msgid "מורה"
+msgstr "معلّم"
+
+#: .\Volunteen\constants.py:102
+msgid "מאסטר"
+msgstr "ماستر"
+
+#: .\Volunteen\constants.py:104
+msgid "תומך"
+msgstr "داعِم"
+
+#: .\Volunteen\constants.py:105 .\Volunteen\constants.py:125
+msgid "לב"
+msgstr "السبت"
+
+#: .\Volunteen\constants.py:106
+msgid "מתמיד"
+msgstr "مثابر"
+
+#: .\Volunteen\constants.py:108 .\Volunteen\constants.py:147
+msgid "שמש"
+msgstr "الجمعة"
+
+#: .\Volunteen\constants.py:110
+msgid "רעם"
+msgstr "ساعة"
+
+#: .\Volunteen\constants.py:111
+msgid "חזון"
+msgstr "رؤية"
+
+#: .\Volunteen\constants.py:112
+msgid "אש"
+msgstr "اتوافق"
+
+#: .\Volunteen\constants.py:113
+msgid "גל"
+msgstr "إلغاء"
+
+#: .\Volunteen\constants.py:114
+msgid "ברק"
+msgstr "إلغاء"
+
+#: .\Volunteen\constants.py:115
+msgid "חלוץ"
+msgstr "ريادي"
+
+#: .\Volunteen\constants.py:116
+msgid "מושלם"
+msgstr "اكتمل"
+
+#: .\Volunteen\constants.py:117
+msgid "חבר"
+msgstr "جديد"
+
+#: .\Volunteen\constants.py:118
+msgid "ספיר"
+msgstr "ياقوت أزرق"
+
+#: .\Volunteen\constants.py:119
+msgid "נוצה"
+msgstr "ريشة"
+
+#: .\Volunteen\constants.py:120
+msgid "מלאך"
+msgstr "ملاك"
+
+#: .\Volunteen\constants.py:121
+msgid "שקט"
+msgstr "ساعة"
+
+#: .\Volunteen\constants.py:122
+msgid "נס"
+msgstr "نقطة"
+
+#: .\Volunteen\constants.py:123
+msgid "יוצר"
+msgstr "مُبدِع"
+
+#: .\Volunteen\constants.py:124
+msgid "להב"
+msgstr "أطلع"
+
+#: .\Volunteen\constants.py:126
+msgid "אחדות"
+msgstr "وِحدة"
+
+#: .\Volunteen\constants.py:127
+msgid "חמלה"
+msgstr "رحمة"
+
+#: .\Volunteen\constants.py:128
+msgid "חלום"
+msgstr "حلم"
+
+#: .\Volunteen\constants.py:129
+msgid "תקווה"
+msgstr "أمل"
+
+#: .\Volunteen\constants.py:130
+msgid "אשד"
+msgstr "اتوافق"
+
+#: .\Volunteen\constants.py:131
+msgid "שלווה"
+msgstr "هدوء"
+
+#: .\Volunteen\constants.py:132
+msgid "תדר"
+msgstr "جديد"
+
+#: .\Volunteen\constants.py:133
+msgid "שמחה"
+msgstr "فرح"
+
+#: .\Volunteen\constants.py:134
+msgid "פרץ"
+msgstr "قيّم"
+
+#: .\Volunteen\constants.py:135
+msgid "פלא"
+msgstr "عَجَب"
+
+#: .\Volunteen\constants.py:138
+msgid "סופה"
+msgstr "عاصفة"
+
+#: .\Volunteen\constants.py:139
+msgid "קרן"
+msgstr "ما في"
+
+#: .\Volunteen\constants.py:142
+msgid "משב"
+msgstr "السبت"
+
+#: .\Volunteen\constants.py:143
+msgid "להבה"
+msgstr "شعلة"
+
+#: .\Volunteen\constants.py:145
+msgid "אגדה"
+msgstr "أسطورة"
+
+#: .\Volunteen\constants.py:148
+msgid "תהילה"
+msgstr "لوح الشرف"
+
+#: .\Volunteen\frameworks_and_drivers\settings.py:177
+msgid "Hebrew"
+msgstr "עברית"
+
+#: .\Volunteen\frameworks_and_drivers\settings.py:178
+msgid "Arabic"
+msgstr "عربي"
+
+#: .\childApp\models.py:180
+msgid "Child"
+msgstr "طفل"
+
+#: .\childApp\models.py:183
+msgid "Streak Day"
+msgstr "يوم من أيام السلسلة"
+
+#: .\childApp\models.py:184
+msgid "Streak count at which this milestone was achieved."
+msgstr "قدّيش عدد الأيام المتتالية اللي عندها تحقق هالإنجاز."
+
+#: .\childApp\models.py:188
+msgid "Achieved At"
+msgstr "اتحقق بتاريخ"
+
+#: .\childApp\models.py:192
+msgid "Streak Milestone Achieved"
+msgstr "إنجاز بالسلسلة اتحقق"
+
+#: .\childApp\models.py:193
+msgid "Streak Milestones Achieved"
+msgstr "إنجازات السلسلة اللي اتحققت"
+
+#: .\childApp\templates\check_exists.html:118
+#, python-format
+msgid "%(action_label)s כבר בוצע"
+msgstr "%(action_label)s خلّصته قبل هيك"
+
+#: .\childApp\templates\check_exists.html:120
+msgid "כבר ביצעת"
+msgstr "إنت عملته قبل"
+
+#: .\childApp\templates\check_exists.html:120
+msgid "למשימה:"
+msgstr "للمهمّة:"
+
+#: .\childApp\templates\check_exists.html:125
+msgid "שימו לב! ⏰"
+msgstr "ديروا بالكم! ⏰"
+
+#: .\childApp\templates\check_exists.html:126
+msgid "אם תעלה תמונה חדשה עכשיו –"
+msgstr "لو ترفع صورة جديدة هلّق –"
+
+#: .\childApp\templates\check_exists.html:127
+#, python-format
+msgid "זמן %(action_label)s יתעדכן לשעה הנוכחית"
+msgstr "وقت %(action_label)s رح يتحدّث على الساعة الحاليّة"
+
+#: .\childApp\templates\check_exists.html:129
+msgid "וזה עלול להיחשב כאיחור!"
+msgstr "وممكن ينحسب تأخير!"
+
+#: .\childApp\templates\check_exists.html:136
+#, python-format
+msgid ""
+"שימו לב! זמן %(action_label)s יתעדכן לשעה הנוכחית וזה עלול להיחשב כאיחור. "
+"להמשיך?"
+msgstr ""
+"دير بالك! وقت %(action_label)s رح يتحدّث للوقت الحالي وممكن ينحسب تأخير. نكمل؟"
+
+#: .\childApp\templates\check_exists.html:137
+#: .\childApp\templates\check_exists.html:143
+msgid "כן, להעלות תמונה חדשה"
+msgstr "آه، ارفع صورة جديدة"
+
+#: .\childApp\templates\check_exists.html:142
+#, python-format
+msgid ""
+"האם אתה בטוח שברצונך להעלות תמונה חדשה? זמן %(action_label)s יתעדכן לשעה "
+"הנוכחית."
+msgstr "متأكد بدك ترفع صورة جديدة؟ وقت %(action_label)s رح يتحدّث للوقت الحالي."
+
+#: .\childApp\templates\check_exists.html:148
+msgid "חזרה לרשימת המשימות"
+msgstr "رجوع لقائمة المهام"
+
+#: .\childApp\templates\check_exists.html:153
+#, python-format
+msgid "שים לב: אם תבצע עכשיו את %(action_label)s, זה עלול להיחשב כאיחור."
+msgstr "دير بالك: لو بتعمل %(action_label)s هلّق، ممكن ينحسب تأخير."
+
+#: .\childApp\templates\check_exists.html:157
+#, python-format
+msgid "הכל בסדר! רק נעדכן את השעה של %(action_label)s."
+msgstr "تمام! بس رح نحدّث وقت %(action_label)s."
+
+#: .\childApp\templates\check_in.html:9
+msgid "צ'ק‑אין למשימה"
+msgstr "تسجيل دخول للمهمّة"
+
+#: .\childApp\templates\check_in.html:78
+msgid "לבחור תמונה"
+msgstr "اختار صورة"
+
+#: .\childApp\templates\check_in.html:88
+msgid "📷 צלם תמונה"
+msgstr "📷 صوّر صورة"
+
+#: .\childApp\templates\check_in.html:97
+#: .\childApp\templates\check_out.html:145
+msgid "חזרה למשימות"
+msgstr "رجوع للمهام"
+
+#: .\childApp\templates\check_in.html:108
+#: .\childApp\templates\childApp\partials\task_card.html:45
+#: .\childApp\templates\task_check_in_out.html:59
+#: .\childApp\templates\task_check_in_out.html:127
+#: .\childApp\templates\task_check_in_out.html:195
+msgid "תאריך יעד:"
+msgstr "تاريخ التسليم:"
+
+#: .\childApp\templates\check_in.html:120
+msgid "🚀 לחצו כאן כדי לסיים את הצ'ק‑אין"
+msgstr "🚀 اضغطوا هون عشان تخلصوا تسجيل الدخول"
+
+#: .\childApp\templates\check_in.html:146
+#: .\childApp\templates\donation_success.html:231
+msgid "כל הכבוד!"
+msgstr "برافو!"
+
+#: .\childApp\templates\check_in.html:147
+msgid "הצ'ק‑אין נשלח בהצלחה 🎉"
+msgstr "تم إرسال تسجيل الدخول بنجاح 🎉"
+
+#: .\childApp\templates\check_in.html:155
+msgid "לא שלחת צ'ק‑אין!"
+msgstr "ما بعثت تسجيل دخول!"
+
+#: .\childApp\templates\check_in.html:156
+msgid "האם לצאת בלי לשלוח את התמונה?"
+msgstr "بدك تطلع بدون ما تبعث الصورة؟"
+
+#: .\childApp\templates\check_in.html:161
+msgid "להישאר"
+msgstr "أضلّ"
+
+#: .\childApp\templates\check_in.html:166
+msgid "לעזוב"
+msgstr "أطلع"
+
+#: .\childApp\templates\check_in.html:235
+msgid "אנא בחר תמונה לפני ביצוע צ\\"
+msgstr "لو سمحت اختار صورة قبل ما تكمل"
+
+#: .\childApp\templates\check_in.html:243
+msgid "שולח..."
+msgstr "عم ببعث..."
+
+#: .\childApp\templates\check_in.html:268
+msgid "שגיאה בלתי צפויה."
+msgstr "غلط مش متوقّع."
+
+#: .\childApp\templates\check_in.html:275
+msgid "🚀 לחצו כאן כדי לסיים את הצ\\"
+msgstr "🚀 اضغطوا هون عشان تخلصوا التسجيل"
+
+#: .\childApp\templates\check_in_warning.html:7
+msgid "לא ניתן לבצע צ'ק-אאוט"
+msgstr "ما بقدر أعمل تسجيل خروج"
+
+#: .\childApp\templates\check_in_warning.html:39
+msgid "😞 לא ניתן לבצע צ'ק-אאוט"
+msgstr "😞 ما بنقدر نعمل تسجيل خروج"
+
+#: .\childApp\templates\check_in_warning.html:40
+msgid "עליך לבצע צ'ק-אין לפני שתוכל לבצע צ'ק-אאוט למשימה זו."
+msgstr "لازم تعمل تسجيل دخول قبل ما تقدر تعمل تسجيل خروج لهالمهمّة."
+
+#: .\childApp\templates\check_in_warning.html:41
+msgid "חזור למשימות"
+msgstr "ارجع للمهام"
+
+#: .\childApp\templates\check_out.html:8
+#: .\childApp\templates\check_out.html:378
+msgid "צ'ק-אאוט למשימה!"
+msgstr "تسجيل خروج للمهمّة!"
+
+#: .\childApp\templates\check_out.html:122
+msgid "איזה יופי! 🔥"
+msgstr "يا سلام! 🔥"
+
+#: .\childApp\templates\check_out.html:124
+msgid "תצוגה מקדימה של התמונה"
+msgstr "معاينة للصورة"
+
+#: .\childApp\templates\check_out.html:128
+msgid "צלם שוב"
+msgstr "صوّر كمان مرّة"
+
+#: .\childApp\templates\check_out.html:131
+msgid "לחצו כאן כדי לסיים את הצ'ק‑אאוט"
+msgstr "اضغطوا هون عشان تخلصوا تسجيل الخروج"
+
+#: .\childApp\templates\check_out.html:138
+msgid "משגרים את התמונה... ☄️"
+msgstr "منبعت الصورة... ☄️"
+
+#: .\childApp\templates\check_out.html:143
+msgid "מעולה! התמונה טסה למנטור כמו טיל 🚀"
+msgstr "تمام! الصورة طارت عالمرشد مثل الصاروخ 🚀"
+
+#: .\childApp\templates\check_out.html:154
+msgid "קמע חושב"
+msgstr "التميمة عم تفكّر"
+
+#: .\childApp\templates\check_out.html:155
+msgid "רגע לפני שיוצאים..."
+msgstr "لحظة قبل ما تطلع..."
+
+#: .\childApp\templates\check_out.html:156
+msgid "התמונה שלך עוד לא נשלחה. האם אתה בטוח שברצונך לחזור?"
+msgstr "صورتك لسه ما انبعتت. أكيد بدك ترجع؟"
+
+#: .\childApp\templates\check_out.html:158
+msgid "כן, צא"
+msgstr "آه، أطلع"
+
+#: .\childApp\templates\check_out.html:159
+msgid "לא, המשך"
+msgstr "لا، كمّل"
+
+#: .\childApp\templates\check_out.html:293
+msgid "אופס! הייתה בעיה בעיבוד התמונה. נסה שוב."
+msgstr "اوبس! صار مشكلة بمعالجة الصورة. جرّب كمان مرّة."
+
+#: .\childApp\templates\check_out.html:305
+msgid "קובץ תמונת ברירת המחדל אינו מוגדר כראוי."
+msgstr "ملف صورة الافتراضي مش مهيّأ صح."
+
+#: .\childApp\templates\check_out.html:320
+msgid "אופס! הייתה בעיה בטעינת תמונת ברירת המחדל."
+msgstr "اوبس! صار مشكلة بتحميل صورة الافتراضي."
+
+#: .\childApp\templates\check_out.html:330
+msgid "אנא בחר/י או צלם/י תמונה לפני השליחה."
+msgstr "لو سمحت اختار/ي أو صوّر/ي صورة قبل الإرسال."
+
+#: .\childApp\templates\check_out.html:351
+msgid "שגיאת שרת:"
+msgstr "غلط من الخادم:"
+
+#: .\childApp\templates\check_out.html:360
+msgid "שגיאה לא צפויה בעת השמירה."
+msgstr "غلط مش متوقّع وقت الحفظ."
+
+#: .\childApp\templates\check_out.html:365
+msgid "אוי לא!"
+msgstr "يا ويلي!"
+
+#: .\childApp\templates\check_out.html:377
+msgid "קמע כתום וחברותי"
+msgstr "تميمة برتقالية وطيّوبة"
+
+#: .\childApp\templates\check_out.html:383
+msgid "משימת הצ'ק־אאוט מוכנה לשיגור... 📸 לחץ כדי להתחיל!"
+msgstr "مهمّة تسجيل الخروج جاهزة للإقلاع... 📸 اضغط لتبلّش!"
+
+#: .\childApp\templates\check_out.html:385
+msgid "בחר/י תמונה"
+msgstr "اختار/ي صورة"
+
+#: .\childApp\templates\check_out.html:385
+msgid "צלם/י תמונה"
+msgstr "صوّر/ي صورة"
+
+#: .\childApp\templates\check_out.html:387
+msgid "השתמש בתמונת ברירת מחדל"
+msgstr "استعمل صورة افتراضية"
+
+#: .\childApp\templates\check_out.html:389
+msgid "חזרה לבחירת משימות"
+msgstr "رجوع لاختيار المهام"
+
+#: .\childApp\templates\check_out.html:449
+msgid " 🤔 רגע! עוד לא שלחת את התמונה. בטוח שאת/ה רוצה לצאת?"
+msgstr " 🤔 لحظة! لسه ما بعثت الصورة. أكيد بدك تطلع؟"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:17
+msgid "חזרה לקמפיינים"
+msgstr "رجوع للحملات"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:49
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:39
+msgid "משתתפים"
+msgstr "مشاركين"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:52
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:45
+msgid "נרשמת"
+msgstr "سجّلت"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:54
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:50
+#: .\childApp\templates\task_check_in_out.html:196
+msgid "הושלם"
+msgstr "اكتمل"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:56
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:55
+msgid "חסום"
+msgstr "محظور"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:58
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:60
+msgid "הצטרף"
+msgstr "انضمّ"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:71
+#, python-format
+msgid "נותרו: %(remaining)s לסיום הקמפיין"
+msgstr "ضلّ %(remaining)s لانتهاء الحملة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:73
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:200
+msgid "הקמפיין הסתיים!"
+msgstr "الحملة خلصت!"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:77
+msgid "זמן לא זמין"
+msgstr "الوقت مش متاح"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:91
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:112
+msgid "עזוב קמפיין"
+msgstr "اترك الحملة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:98
+msgid "האם אתה בטוח?"
+msgstr "متأكد؟"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:99
+msgid "אם תעזוב את הקמפיין, כל המשימות שלך יוסרו ."
+msgstr "إذا بتترك الحملة، كل مهامك رح تنشال ."
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:100
+#, python-format
+msgid "אתה תהיה חסום מהקמפיין למשך %(campaign_ban_duration)s שעות."
+msgstr "رح تنحظر عن الحملة لمدة %(campaign_ban_duration)s ساعات."
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:105
+msgid "בטל"
+msgstr "إلغاء"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:124
+msgid "הצטרף לקמפיין"
+msgstr "انضمّ للحملة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:131
+msgid "⚠️ חסום מהקמפיין עד"
+msgstr "⚠️ محظور من الحملة لحد"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:133
+msgid "בשעה"
+msgstr "بالساعة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:147
+msgid "סטטוס: מאושר ✔️"
+msgstr "الحالة: مقبول ✔️"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:149
+msgid "סטטוס: נדחה ❌"
+msgstr "الحالة: مرفوض ❌"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:151
+msgid "סטטוס: בהמתנה לאישור המנטור ⏳"
+msgstr "الحالة: بستنى موافقة المرشد ⏳"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:153
+msgid "לא התחלת"
+msgstr "لسه ما بلّشت"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:158
+msgid "משימה עם צילום"
+msgstr "مهمّة مع تصوير"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:158
+msgid "משימה בלי צילום"
+msgstr "مهمّة بدون تصوير"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:193
+msgid "שעה"
+msgstr "ساعة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:194
+msgid "שעות"
+msgstr "ساعات"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:195
+msgid "דקה"
+msgstr "دقيقة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:196
+msgid "דקות"
+msgstr "دقايق"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:197
+msgid "פחות מדקה"
+msgstr "أقل من دقيقة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:198
+msgid "נותרו:"
+msgstr "ضلّ:"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:199
+msgid "לסיום הקמפיין"
+msgstr "لانتهاء الحملة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_detail.html:201
+msgid "הושלם!"
+msgstr "اكتمل!"
+
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:9
+msgid "קמפיינים פעילים"
+msgstr "حملات شغّالة"
+
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:72
+msgid "אין קמפיינים זמינים כרגע"
+msgstr "ما في حملات متاحة هسه"
+
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:75
+msgid "אבל אל דאגה! קמפיינים חדשים בדרך..."
+msgstr "بس لا تقلق! حملات جديدة بالطريق..."
+
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:76
+msgid "תבדוק שוב בקרוב!"
+msgstr "ارجع تفقد قريب!"
+
+#: .\childApp\templates\childApp\campaigns\campaign_list.html:79
+msgid "↻ תרענן את הדף מדי פעם"
+msgstr "↻ حدّث الصفحة كل شوي"
+
+#: .\childApp\templates\childApp\inactive_home.html:7
+msgid "Volunteen"
+msgstr "Volunteen"
+
+#: .\childApp\templates\childApp\inactive_home.html:194
+msgid "היי גיבור 🦸, כולם המשיכו במשימות... ואתה?"
+msgstr "هَي بطل 🦸، الكل مكمل بالمهام... وإنت؟"
+
+#: .\childApp\templates\childApp\inactive_home.html:198
+msgid "כולם ממשיכים במשימות... ואתה? 😢"
+msgstr "الكل مكمل بالمهام... وإنت؟ 😢"
+
+#: .\childApp\templates\childApp\inactive_home.html:202
+msgid ""
+"המנוי שלך הסתיים ⏳ – חזור עכשיו ותחזור ליהנות ממשימות, פרסים ואתגרים\n"
+"        🎯🎁"
+msgstr ""
+"اشتراكك خلص ⏳ — ارجع هلّق وكمّل تستمتع بالمهام، الجوائز والتحدّيات\n"
+"        🎯🎁"
+
+#: .\childApp\templates\childApp\inactive_home.html:213
+msgid "תשלום במזומן"
+msgstr "دفع كاش"
+
+#: .\childApp\templates\childApp\inactive_home.html:218
+msgid "תשלום בכרטיס אשראי"
+msgstr "دفع ببطاقة"
+
+#: .\childApp\templates\childApp\inactive_home.html:234
+msgid "🚀 התחל תקופת ניסיון ל־7 ימים 🚀"
+msgstr "🚀 بلّش تجربة 7 أيام 🚀"
+
+#: .\childApp\templates\childApp\inactive_home.html:239
+#, python-format
+msgid "🎉 הניסיון שלך בתוקף עד %(child.trial_end)s"
+msgstr "🎉 تجربتك شغّالة لحد %(child.trial_end)s"
+
+#: .\childApp\templates\childApp\inactive_home.html:246
+#: .\childApp\templates\child_home.html:74
+msgid "טינקוינס בארנק:"
+msgstr "تينكوينز بالمحفظة:"
+
+#: .\childApp\templates\childApp\inactive_home.html:255
+#: .\childApp\templates\child_home.html:140
+msgid "רשימת פרסים"
+msgstr "قائمة الجوائز"
+
+#: .\childApp\templates\childApp\inactive_home.html:263
+#: .\childApp\templates\child_home.html:148
+msgid "בקשות בתהליך"
+msgstr "طلبات قيد التنفيذ"
+
+#: .\childApp\templates\childApp\inactive_home.html:271
+#: .\childApp\templates\child_home.html:186
+msgid "צדקה"
+msgstr "صدقة"
+
+#: .\childApp\templates\childApp\inactive_home.html:275
+#: .\childApp\templates\child_home.html:194
+msgid "יציאה"
+msgstr "خروج"
+
+#: .\childApp\templates\childApp\partials\task_card.html:15
+msgid "חדש"
+msgstr "جديد"
+
+#: .\childApp\templates\childApp\partials\task_card.html:25
+msgid "logo"
+msgstr "شعار"
+
+#: .\childApp\templates\childApp\partials\task_card.html:36
+#: .\childApp\templates\task_check_in_out.html:46
+#: .\childApp\templates\task_check_in_out.html:118
+#: .\childApp\templates\task_check_in_out.html:186
+msgid "משימה מוצמדת"
+msgstr "مهمّة مثبّتة"
+
+#: .\childApp\templates\childApp\partials\task_card.html:41
+#: .\childApp\templates\task_check_in_out.html:49
+#: .\childApp\templates\task_check_in_out.html:121
+#: .\childApp\templates\task_check_in_out.html:189
+msgid "יש חלון זמן"
+msgstr "فيه نافذة وقت"
+
+#: .\childApp\templates\childApp\partials\task_card.html:46
+msgid "טינקוינס:"
+msgstr "تينكوينز:"
+
+#: .\childApp\templates\childApp\partials\task_card.html:56
+#: .\childApp\templates\childApp\partials\task_card.html:64
+msgid "ממתין לאישור המנטור"
+msgstr "مستني موافقة المرشد"
+
+#: .\childApp\templates\childApp\partials\task_card.html:58
+msgid "מאושר"
+msgstr "مقبول"
+
+#: .\childApp\templates\childApp\partials\task_card.html:60
+#: .\childApp\templates\child_not_approved_requests.html:50
+#: .\childApp\templates\reviewed_tasks.html:66
+msgid "נדחה"
+msgstr "مرفوض"
+
+#: .\childApp\templates\childApp\partials\task_card.html:62
+#: .\childApp\views.py:761
+msgid "צ`ק אין"
+msgstr "تسجيل دخول"
+
+#: .\childApp\templates\childApp\partials\task_card.html:67
+msgid "לא התחיל"
+msgstr "ما بلّش"
+
+#: .\childApp\templates\childApp\partials\task_card.html:88
+msgid "תיאור המשימה:"
+msgstr "وصف المهمّة:"
+
+#: .\childApp\templates\childApp\partials\task_card.html:94
+#: .\childApp\templates\task_check_in_out.html:57
+msgid "פרטים נוספים:"
+msgstr "تفاصيل زيادة:"
+
+#: .\childApp\templates\childApp\partials\task_card.html:101
+msgid "מנטורים אחראים:"
+msgstr "المرشدين المسؤولين:"
+
+#: .\childApp\templates\childApp\partials\task_card.html:113
+msgid "חלונות זמן"
+msgstr "نوافذ الوقت"
+
+#: .\childApp\templates\childApp\partials\task_card.html:120
+#: .\childApp\templates\task_check_in_out.html:80
+#: .\childApp\templates\task_check_in_out.html:96
+#: .\childApp\templates\task_check_in_out.html:147
+#: .\childApp\templates\task_check_in_out.html:216
+msgid "צ'ק-אין"
+msgstr "تسجيل دخول"
+
+#: .\childApp\templates\childApp\partials\task_card.html:120
+#: .\childApp\templates\task_check_in_out.html:80
+#: .\childApp\templates\task_check_in_out.html:147
+#: .\childApp\templates\task_check_in_out.html:164
+#: .\childApp\templates\task_check_in_out.html:216
+msgid "צ'ק-אאוט"
+msgstr "تسجيل خروج"
+
+#: .\childApp\templates\childApp\partials\task_card.html:125
+#, python-format
+msgid "📅 רק בתאריך %(date)s"
+msgstr "📅 بس بتاريخ %(date)s"
+
+#: .\childApp\templates\childApp\partials\task_card.html:127
+#, python-format
+msgid "📅 כל יום %(weekday)s"
+msgstr "📅 كل يوم %(weekday)s"
+
+#: .\childApp\templates\childApp\partials\task_card.html:129
+msgid "📅 בכל יום"
+msgstr "📅 كل يوم"
+
+#: .\childApp\templates\childApp\partials\task_card.html:133
+#, python-format
+msgid "🕒 בין %(st)s ל-%(en)s"
+msgstr "🕒 بين %(st)s و-%(en)s"
+
+#: .\childApp\templates\childApp\partials\task_card.html:144
+msgid "✔️ עם תמונה"
+msgstr "✔️ مع صورة"
+
+#: .\childApp\templates\childApp\partials\task_card.html:146
+msgid "❌ בלי תמונה"
+msgstr "❌ بدون صورة"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:253
+#, python-format
+msgid "%(shop.city)s • %(points_left_to_redeem)s טינקואינס למימוש"
+msgstr "%(shop.city)s • %(points_left_to_redeem)s تينكوينز للاستخدام"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:259
+msgid "דירוגים"
+msgstr "تقييمات"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:261
+msgid "אין"
+msgstr "ما في"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:263
+msgid "שירות:"
+msgstr "الخدمة:"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:266
+msgid "פרסים:"
+msgstr "الجوائز:"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:271
+msgid "קטגוריות"
+msgstr "فئات"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:279
+msgid "אין קטגוריות זמינות"
+msgstr "ما في فئات متاحة"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:284
+msgid "שעות פתיחה"
+msgstr "ساعات الدوام"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:293
+#: .\childApp\templates\childApp\shop\shop_detail.html:297
+#: .\childApp\templates\child_home.html:103
+msgid "סגור"
+msgstr "مسكّر"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:306
+msgid "ניווט לחנות"
+msgstr "افتح خريطة للمتجر"
+
+#: .\childApp\templates\childApp\shop\shop_detail.html:337
+msgid "🎁 עבור לפרסים הזמינים"
+msgstr "🎁 روح للجوائز المتاحة"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:39
+msgid "הזמן חברים ל-Volunteen!"
+msgstr "عزّم أصحابك على Volunteen!"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:40
+msgid "שתף את הקוד וצבור נקודות יחד עם החברים שלך"
+msgstr "شارك الكود واجمع نقاط مع أصحابك"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:47
+#: .\childApp\templates\child_home.html:108
+msgid "קוד QR להזמנה"
+msgstr "كود QR للدعوة"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:52
+msgid "סרוק אותי כדי להצטרף!"
+msgstr "إمسحني لتِنضم!"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:57
+msgid "או העתק את הקישור:"
+msgstr "أو انسخ الرابط:"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:70
+msgid "העתק"
+msgstr "انسخ"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:73
+msgid "הועתק!"
+msgstr "اننسخ!"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:82
+msgid "טיפים לשיתוף מוצלח"
+msgstr "نصايح لمشاركة ناجحة"
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:87
+msgid "תן לחברים לסרוק את הקוד ישירות מהנייד שלך."
+msgstr "خلّي أصحابك يمسحوا الكود مباشرة من موبايلك."
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:91
+msgid "שלח את הקישור שהעתקת לחברים בקבוצת הווטסאפ."
+msgstr "ابعث الرابط اللي نسختُه لأصحابك بقروب الواتساب."
+
+#: .\childApp\templates\childApp\signup\invite_qr.html:95
+msgid "ספר להם על המשימות המגניבות והפרסים השווים שאפשר להשיג!"
+msgstr "احكيلهم عن المهام الحلوة والجوائز القوية اللي بتقدروا تاخدوها!"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:52
+msgid "הרשמה - Volunteen"
+msgstr "تسجيل - Volunteen"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:67
+msgid "הצטרף לקהילה שלנו! 🚀"
+msgstr "انضمّ لمجتمعنا! 🚀"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:110
+#: .\childApp\templates\childApp\signup\temp_signup.html:196
+msgid "שם מלא"
+msgstr "الاسم الكامل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:115
+msgid "הכנס את שמך המלא"
+msgstr "اكتب اسمك الكامل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:123
+msgid "סיסמה"
+msgstr "كلمة السر"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:128
+msgid "בחר סיסמה חזקה"
+msgstr "اختار كلمة سر قوية"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:140
+msgid "מספר טלפון"
+msgstr "رقم تلفون"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:153
+msgid "אימות מספר טלפון"
+msgstr "تأكيد رقم التلفون"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:158
+msgid "הכנס שוב את מספר הטלפון"
+msgstr "اكتب رقم التلفون كمان مرّة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:162
+msgid "המספרים אינם תואמים"
+msgstr "الأرقام مش متطابقة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:171
+msgid "אני מאשר/ת שקיבלתי את הסכמת ההורים שלי"
+msgstr "بأكّد إني أخذت موافقة أهلي"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:173
+msgid "(קרא את ההסכם)"
+msgstr "(اقرا الاتفاق)"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:200
+msgid "טלפון"
+msgstr "تلفون"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:205
+msgid "אישור הורים התקבל"
+msgstr "تم استلام موافقة الأهل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:213
+msgid "קוד אימות שנשלח ב־WhatsApp"
+msgstr "كود التحقّق المُرسل على واتساب"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:220
+msgid "הכנס את הקוד שקיבלת (6 ספרות)"
+msgstr "اكتب الكود اللي وصلك (6 أرقام)"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:233
+msgid "סיום הרשמה"
+msgstr "إنهاء التسجيل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:233
+msgid "שלח קוד אימות"
+msgstr "ابعت كود تحقّق"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:242
+msgid "כבר רשום?"
+msgstr "مسجّل من قبل؟"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:245
+msgid "התחבר כאן"
+msgstr "سجّل دخول من هون"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:257
+#: .\childApp\templates\child_home.html:202
+msgid "שנה שפה"
+msgstr "تغيير اللغة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:286
+msgid "נא להכניס שם מלא תקין"
+msgstr "دخل اسم كامل صحيح"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:287
+msgid "נא להכניס שם פרטי ושם משפחה"
+msgstr "اكتب اسمك الأول واسم العيلة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:288
+msgid "הסיסמה חייבת להכיל לפחות 6 תווים"
+msgstr "كلمة السر لازم تكون 6 حروف/أرقام على الأقل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:289
+msgid "מספרי הטלפון אינם תואמים"
+msgstr "أرقام التلفون مش متطابقة"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:290
+msgid "יש לאשר קבלת הסכמת הורים"
+msgstr "لازم تأكد موافقة الأهل"
+
+#: .\childApp\templates\childApp\signup\temp_signup.html:291
+msgid "מעבד..."
+msgstr "عم بمعالج..."
+
+#: .\childApp\templates\child_active_list.html:20
+msgid "משימות פעילות"
+msgstr "مهام شغّالة"
+
+#: .\childApp\templates\child_active_list.html:25
+msgid "משימות רגילות"
+msgstr "مهام عاديّة"
+
+#: .\childApp\templates\child_active_list.html:27
+msgid "משימות קמפיין"
+msgstr "مهام الحملة"
+
+#: .\childApp\templates\child_active_list.html:36
+msgid "אין משימות רגילות."
+msgstr "ما في مهام عاديّة."
+
+#: .\childApp\templates\child_active_list.html:47
+msgid "אין משימות קמפיין פעילות."
+msgstr "ما في مهام حملة شغّالة."
+
+#: .\childApp\templates\child_base.html:8
+msgid "פרופיל ילד"
+msgstr "ملف الطفل"
+
+#: .\childApp\templates\child_base.html:209
+msgid "מסך הבית"
+msgstr "الصفحة الرئيسية"
+
+#: .\childApp\templates\child_base.html:214
+msgid "צ'ק אין"
+msgstr "تسجيل دخول"
+
+#: .\childApp\templates\child_base.html:221
+#: .\childApp\templates\child_home.html:161
+#: .\childApp\templates\points_leaderboard.html:5
+#: .\childApp\templates\points_leaderboard.html:9
+msgid "קיר התהילה"
+msgstr "لوح الشرف"
+
+#: .\childApp\templates\child_base.html:233
+msgid "לעזרה או תמיכה, צרו קשר ב"
+msgstr "للمساعدة أو الدعم، تواصلوا عبر"
+
+#: .\childApp\templates\child_home.html:4
+msgid "מסך הבית - Volunteen"
+msgstr "الصفحة الرئيسية - Volunteen"
+
+#: .\childApp\templates\child_home.html:11
+#, python-format
+msgid "ברוך הבא, %(username)s!"
+msgstr "أهلًا فيك، %(username)s!"
+
+#: .\childApp\templates\child_home.html:17
+msgid "רוצים להמשיך ליהנות מוולונטין?"
+msgstr "بدكم تضلّوا تستمتعوا بـ Volunteen؟"
+
+#: .\childApp\templates\child_home.html:18
+#, python-format
+msgid ""
+"המנוי שלך מתקרב לסיום בעוד %(days)s ימים.<br>\n"
+"    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!"
+msgstr ""
+"اشتراكك قرب يخلص بعد %(days)s أيام.<br>\n"
+"    عشان ما تفوّت مهام، جوائز ومفاجآت — فيك تجدّد وتضلّ معنا بالمغامرة!"
+
+#: .\childApp\templates\child_home.html:21
+msgid "לחדש מנוי"
+msgstr "جدّد الاشتراك"
+
+#: .\childApp\templates\child_home.html:33
+msgid "Avatar"
+msgstr "أفاتار"
+
+#: .\childApp\templates\child_home.html:49
+msgid "🔥 רצף ההתחברויות שלך"
+msgstr "🔥 سلسلة دخولك المتتالية"
+
+#: .\childApp\templates\child_home.html:52
+msgid "ימים ברצף"
+msgstr "أيام وراك بعض"
+
+#: .\childApp\templates\child_home.html:58
+msgid "✅ שמור על הרצף שלך"
+msgstr "✅ حافظ على السلسلة تبعتك"
+
+#: .\childApp\templates\child_home.html:62
+msgid "🎉 כל הכבוד! שמרת על הרצף שלך! 🔥"
+msgstr "🎉 برافو! حافظت على سلسلتك! 🔥"
+
+#: .\childApp\templates\child_home.html:70
+msgid "הרמה שלך:"
+msgstr "مستواك:"
+
+#: .\childApp\templates\child_home.html:80
+msgid "בוא נאסוף עוד טינקאוינס!"
+msgstr "يلا نجمع كمان تينكوينز!"
+
+#: .\childApp\templates\child_home.html:85
+msgid "התקדמות לרמה הבאה:"
+msgstr "تقدّم للمستوى الجاي:"
+
+#: .\childApp\templates\child_home.html:93
+msgid "חבר מביא חבר – הצג קוד QR"
+msgstr "صاحب بيجيب صاحب — ورّجي كود QR"
+
+#: .\childApp\templates\child_home.html:95
+msgid "חבר מביא חבר 📱"
+msgstr "صاحب بيجيب صاحب 📱"
+
+#: .\childApp\templates\child_home.html:104
+msgid "סרקו את הקוד והצטרפו למשחק! 🎮"
+msgstr "إمسحوا الكود وانضمّوا للعبة! 🎮"
+
+#: .\childApp\templates\child_home.html:118
+#, python-format
+msgid "יש לך %(count)s משימות חדשות!"
+msgstr "إلك %(count)s مهام جديدة!"
+
+#: .\childApp\templates\child_home.html:122
+msgid "קדימה למשימות! 🧡"
+msgstr "يلا على المهام! 🧡"
+
+#: .\childApp\templates\child_home.html:126
+msgid "סימנתי כנקרא"
+msgstr "علّمت كمقروء"
+
+#: .\childApp\templates\child_home.html:136
+msgid "רשימת משימות"
+msgstr "قائمة المهام"
+
+#: .\childApp\templates\child_home.html:144
+#: .\childApp\templates\child_redemption_history.html:4
+#: .\childApp\templates\child_redemption_history.html:107
+msgid "היסטוריית רכישה"
+msgstr "سجلّ المشتريات"
+
+#: .\childApp\templates\child_home.html:152
+msgid "קמפיינים"
+msgstr "حملات"
+
+#: .\childApp\templates\child_home.html:157
+msgid "היסטוריית טינקוינס"
+msgstr "سجلّ التينكوينز"
+
+#: .\childApp\templates\child_home.html:165
+msgid "שיאני רצף"
+msgstr "أبطال السلسلة"
+
+#: .\childApp\templates\child_home.html:169
+msgid "קיר התרומות"
+msgstr "لوح التبرعات"
+
+#: .\childApp\templates\child_home.html:173
+msgid "הזמן חברים"
+msgstr "اعزم أصحابك"
+
+#: .\childApp\templates\child_home.html:177
+msgid "צ'ק אין/אאוט"
+msgstr "تسجيل دخول/خروج"
+
+#: .\childApp\templates\child_home.html:190
+msgid "היסטוריית משימות"
+msgstr "سجلّ المهام"
+
+#: .\childApp\templates\child_home.html:222
+#, fuzzy, python-format
+#| msgid "קיבלת בונוס על רצף של %(milestone)s ימים!"
+msgid "קיבלת בונוס על רצף של %%(milestone)s ימים!"
+msgstr "أخذت بونص على سلسلة من %(milestone)s أيام!"
+
+#: .\childApp\templates\child_home.html:223
+msgid "התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥"
+msgstr "بلّشت سلسلة جديدة! ضايل 10 أيام للبونص الجاي 💥"
+
+#: .\childApp\templates\child_home.html:224
+#, python-format
+msgid "עוד %(days)s ימים לבונוס הבא ✨"
+msgstr "ضايل %(days)s أيام للبونص الجاي ✨"
+
+#: .\childApp\templates\child_landing.html:7
+msgid "Volunteen - דף משחקים לילדים"
+msgstr "Volunteen - صفحة ألعاب للأطفال"
+
+#: .\childApp\templates\child_landing.html:152
+msgid "שחקו, צברו נקודות, וזכו בפרסים! 🎁"
+msgstr "العبوا، اجمعوا نقاط، واربَحوا جوائز! 🎁"
+
+#: .\childApp\templates\child_landing.html:153
+msgid "הצטרפו לאתגר הגדול - השלימו משימות, אספו נקודות, והתחרו עם חברים!"
+msgstr "انضمّوا للتحدّي الكبير — كمّلوا مهام، اجمعوا نقاط، وتنافسوا مع أصحابكم!"
+
+#: .\childApp\templates\child_landing.html:155
+msgid "יש לכם חשבון? התחברו!"
+msgstr "عندكم حساب؟ سجّلوا دخول!"
+
+#: .\childApp\templates\child_landing.html:157
+msgid "🎈 ילדים – התחילו עכשיו ב־7 ימי ניסיון חינם!"
+msgstr "🎈 يا ولاد — بلّشوا هلّق تجربة 7 أيام مجّان!"
+
+#: .\childApp\templates\child_landing.html:159
+msgid "🏠 חזרה לדף הבית"
+msgstr "🏠 رجوع للصفحة الرئيسية"
+
+#: .\childApp\templates\child_landing.html:164
+msgid "איך זה עובד?"
+msgstr "كيف بشتغل؟"
+
+#: .\childApp\templates\child_landing.html:166
+msgid "🎮 שחקו ובצעו משימות מהנות!"
+msgstr "🎮 العبوا واعمَلوا مهام ممتعة!"
+
+#: .\childApp\templates\child_landing.html:167
+msgid "💎 צברו נקודות על ההצלחות שלכם!"
+msgstr "💎 اجمعوا نقاط على نجاحاتكم!"
+
+#: .\childApp\templates\child_landing.html:168
+msgid "🏆 השתמשו בנקודות כדי לקבל פרסים שווים בבתי העסק!"
+msgstr "🏆 استخدموا النقاط لتاخدوا جوائز حلوة من المحلات!"
+
+#: .\childApp\templates\child_landing.html:173
+msgid "מצטייני החודש 🎖️"
+msgstr "مُتفوّقين الشهر 🎖️"
+
+#: .\childApp\templates\child_landing.html:178
+#, python-format
+msgid "%(username)s - %(points)s טינקאוינס"
+msgstr "%(username)s - %(points)s تينكوينز"
+
+#: .\childApp\templates\child_landing.html:181
+msgid "עוד אין מצטיינים לחודש זה! היו הראשונים לשחק 🎮"
+msgstr "لسّه ما في متفوّقين لهالشهر! كونوا الأوّل اللي بلّش 🎮"
+
+#: .\childApp\templates\child_landing.html:187
+msgid "מה מחכה לכם? 🎁"
+msgstr "شو بستناكم؟ 🎁"
+
+#: .\childApp\templates\child_landing.html:188
+msgid "קבלו פרסים שווים מהעסקים המקומיים המשתתפים!"
+msgstr "خدوا جوائز حلوة من المحلات المحلية المشاركة!"
+
+#: .\childApp\templates\child_landing.html:189
+#: .\childApp\templates\child_landing.html:190
+#: .\childApp\templates\child_landing.html:191
+msgid "פרסים"
+msgstr "جوائز"
+
+#: .\childApp\templates\child_landing.html:195
+msgid "רגעים בלתי נשכחים 🎉"
+msgstr "لحظات ما بتتنسى 🎉"
+
+#: .\childApp\templates\child_landing.html:196
+msgid "פעילות 1"
+msgstr "فعالية 1"
+
+#: .\childApp\templates\child_landing.html:197
+msgid "פעילות 2"
+msgstr "فعالية 2"
+
+#: .\childApp\templates\child_landing.html:198
+msgid "פעילות 3"
+msgstr "فعالية 3"
+
+#: .\childApp\templates\child_not_approved_requests.html:5
+msgid "בקשות הממתינות שלי"
+msgstr "طلباتي اللي بتستنى"
+
+#: .\childApp\templates\child_not_approved_requests.html:13
+msgid "בקשות פדיון ממתינות"
+msgstr "طلبات استبدال مستنيّة"
+
+#: .\childApp\templates\child_not_approved_requests.html:34
+msgid "חנות:"
+msgstr "متجر:"
+
+#: .\childApp\templates\child_not_approved_requests.html:35
+#: .\childApp\templates\child_points_history.html:216
+msgid "כמות:"
+msgstr "كمية:"
+
+#: .\childApp\templates\child_not_approved_requests.html:48
+#: .\childApp\templates\task_check_in_out.html:196
+msgid "ממתין לאישור"
+msgstr "مستني موافقة"
+
+#: .\childApp\templates\child_not_approved_requests.html:52
+msgid "פג תוקף"
+msgstr "منتهي"
+
+#: .\childApp\templates\child_not_approved_requests.html:61
+msgid "אין בקשות ממתינות."
+msgstr "ما في طلبات مستنيّة."
+
+#: .\childApp\templates\child_points_history.html:142
+msgid "חשבון הנקודות שלי"
+msgstr "حساب نقاطي"
+
+#: .\childApp\templates\child_points_history.html:143
+#, python-format
+msgid "סה\"כ נקודות: %(active_points)s"
+msgstr "المجموع الكلّي للنقاط: %(active_points)s"
+
+#: .\childApp\templates\child_points_history.html:148
+msgid "נקודות שהרווחת"
+msgstr "نقاط ربحتها"
+
+#: .\childApp\templates\child_points_history.html:149
+msgid "נקודות שמומשו"
+msgstr "نقاط تم استخدامها"
+
+#: .\childApp\templates\child_points_history.html:150
+#: .\childApp\templates\child_points_history.html:205
+msgid "תרומות"
+msgstr "تبرعات"
+
+#: .\childApp\templates\child_points_history.html:155
+msgid "נקודות שהושגו"
+msgstr "نقاط تم الحصول عليها"
+
+#: .\childApp\templates\child_points_history.html:165
+#: .\childApp\templates\child_points_history.html:215
+msgid "תאריך:"
+msgstr "تاريخ:"
+
+#: .\childApp\templates\child_points_history.html:166
+msgid "נקודות מקוריות:"
+msgstr "نقاط أصلية:"
+
+#: .\childApp\templates\child_points_history.html:166
+msgid "בונוס:"
+msgstr "بونص:"
+
+#: .\childApp\templates\child_points_history.html:167
+msgid "נקודות שנותרו:"
+msgstr "نقاط ضلّت:"
+
+#: .\childApp\templates\child_points_history.html:170
+msgid "תפוגה:"
+msgstr "تاريخ الانتهاء:"
+
+#: .\childApp\templates\child_points_history.html:175
+msgid "לא נמצאו נקודות שהרוויחת."
+msgstr "ما لقينا نقاط ربحتها."
+
+#: .\childApp\templates\child_points_history.html:182
+msgid "נקודות שנממשו"
+msgstr "نقاط اتستخدمت"
+
+#: .\childApp\templates\child_points_history.html:190
+#, python-format
+msgid "מימוש ב-%(shop)s"
+msgstr "استخدام بـ%(shop)s"
+
+#: .\childApp\templates\child_points_history.html:192
+msgid "תאריך מימוש:"
+msgstr "تاريخ الاستخدام:"
+
+#: .\childApp\templates\child_points_history.html:193
+msgid "נקודות בשימוש:"
+msgstr "نقاط مستخدمة:"
+
+#: .\childApp\templates\child_points_history.html:198
+msgid "לא בוצעו מימושים עדיין."
+msgstr "لسّه ما صار استخدام."
+
+#: .\childApp\templates\child_points_history.html:213
+#, python-format
+msgid "תרומה ל-%(category)s"
+msgstr "تبرّع لـ%(category)s"
+
+#: .\childApp\templates\child_points_history.html:221
+msgid "לא בוצעו תרומות עדיין."
+msgstr "لسّه ما صار تبرعات."
+
+#: .\childApp\templates\child_redemption_history.html:112
+#: .\childApp\templates\donation_leaderboard.html:263
+msgid "מתאריך:"
+msgstr "من تاريخ:"
+
+#: .\childApp\templates\child_redemption_history.html:116
+#: .\childApp\templates\donation_leaderboard.html:267
+msgid "עד תאריך:"
+msgstr "لِتاريخ:"
+
+#: .\childApp\templates\child_redemption_history.html:119
+#: .\childApp\templates\donation_leaderboard.html:275
+#: .\childApp\templates\points_leaderboard.html:34
+#: .\childApp\templates\reviewed_tasks.html:20
+msgid "סנן"
+msgstr "فلتر"
+
+#: .\childApp\templates\child_redemption_history.html:126
+#: .\childApp\templates\reviewed_tasks.html:38
+msgid "תאריך"
+msgstr "تاريخ"
+
+#: .\childApp\templates\child_redemption_history.html:127
+msgid "טינקוינס שמומשו"
+msgstr "تينكوينز تم استخدامها"
+
+#: .\childApp\templates\child_redemption_history.html:128
+msgid "בית עסק"
+msgstr "محل"
+
+#: .\childApp\templates\child_redemption_history.html:129
+msgid "פעולות"
+msgstr "إجراءات"
+
+#: .\childApp\templates\child_redemption_history.html:142
+msgid "דרג"
+msgstr "قيّم"
+
+#: .\childApp\templates\child_redemption_history.html:145
+msgid "לא ניתן לדרג"
+msgstr "ما بقدر أقيّم"
+
+#: .\childApp\templates\child_redemption_history.html:152
+msgid "אין עדיין רכישות."
+msgstr "لسّه ما في مشتريات."
+
+#: .\childApp\templates\donate_coins.html:4
+msgid "תרומת טינקוינס"
+msgstr "تبرّع تينكوينز"
+
+#: .\childApp\templates\donate_coins.html:208
+msgid "תרום טינקוינס"
+msgstr "تبرّع تينكوينز"
+
+#: .\childApp\templates\donate_coins.html:209
+msgid "תרום את הטינקוינס שלך ועזור לקהילה"
+msgstr "تبرّع بتينكوينز تبعتك وساعد المجتمع"
+
+#: .\childApp\templates\donate_coins.html:218
+msgid "יש לך"
+msgstr "عندك"
+
+#: .\childApp\templates\donate_coins.html:219
+msgid "טינקוינס זמינים לתרומה"
+msgstr "تينكوينز جاهزة للتبرّع"
+
+#: .\childApp\templates\donate_coins.html:227
+msgid "בחר קטגוריה לתרומה"
+msgstr "اختار فئة للتبرّع"
+
+#: .\childApp\templates\donate_coins.html:260
+msgid "תרום עכשיו"
+msgstr "تبرّع هسّه"
+
+#: .\childApp\templates\donation_leaderboard.html:234
+msgid "שם משתמש:"
+msgstr "اسم المستخدم:"
+
+#: .\childApp\templates\donation_leaderboard.html:237
+msgid "סך תרומות:"
+msgstr "مجموع التبرعات:"
+
+#: .\childApp\templates\donation_leaderboard.html:255
+msgid "לוח תרומות"
+msgstr "لوح التبرعات"
+
+#: .\childApp\templates\donation_leaderboard.html:256
+msgid "המובילים בתרומות - חודש נוכחי"
+msgstr "أكثر ناس متبرّعين — هالشهر"
+
+#: .\childApp\templates\donation_leaderboard.html:271
+msgid "עיר:"
+msgstr "مدينة:"
+
+#: .\childApp\templates\donation_leaderboard.html:285
+msgid "מיקום"
+msgstr "المركز"
+
+#: .\childApp\templates\donation_leaderboard.html:286
+#: .\childApp\templates\donation_leaderboard.html:304
+msgid "שם משתמש"
+msgstr "اسم المستخدم"
+
+#: .\childApp\templates\donation_leaderboard.html:287
+#: .\childApp\templates\donation_leaderboard.html:305
+msgid "סך תרומות"
+msgstr "مجموع التبرعات"
+
+#: .\childApp\templates\donation_leaderboard.html:312
+msgid "לא נמצאו תרומות בטווח התאריכים והעיר שנבחרו"
+msgstr "ما لقينا تبرعات بهالفترة والمدينة المختارة"
+
+#: .\childApp\templates\donation_success.html:4
+msgid "תרומה הושלמה בהצלחה"
+msgstr "التبرّع تمّ بنجاح"
+
+#: .\childApp\templates\donation_success.html:236
+msgid ""
+"عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم:<br>\n"
+"      (ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ "
+"إلا رفعه اللهُ) <br>\n"
+"      رواه مسلم."
+msgstr ""
+"عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم:<br>\n"
+"      (ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ "
+"إلا رفعه اللهُ) <br>\n"
+"      رواه مسلم."
+
+#: .\childApp\templates\donation_success.html:253
+msgid ""
+"وعن أبي سعيد الخدري رضي الله عنه عن النبي صلى الله عليه وسلم قال:<br>\n"
+"    ( أيما مسلم كسا مسلمًا ثوبًا على عري، كساه الله من خضر الجنة 👕،<br>\n"
+"    وأيما مسلم أطعم مسلما على جوع، أطعمه الله من ثمار الجنة 🍓،<br>\n"
+"    وأيما مسلم سقى مسلما على ظمأ، سقاه الله من الرحيق المختوم 🍶 )<br>\n"
+"    رواه أبو داود وفي إسناده لين."
+msgstr ""
+"وعن أبي سعيد الخدري رضي الله عنه عن النبي صلى الله عليه وسلم قال:<br>\n"
+"    ( أيما مسلم كسا مسلمًا ثوبًا على عري، كساه الله من خضر الجنة 👕،<br>\n"
+"    وأيما مسلم أطعم مسلما على جوع، أطعمه الله من ثمار الجنة 🍓،<br>\n"
+"    وأيما مسلم سقى مسلما على ظمأ، سقاه الله من الرحيق المختوم 🍶 )<br>\n"
+"    رواه أبو داود وفي إسناده لين."
+
+#: .\childApp\templates\donation_success.html:262
+msgid "תרמת"
+msgstr "تبرّعت"
+
+#: .\childApp\templates\donation_success.html:262
+#: .\childApp\templates\reviewed_tasks.html:37
+#: .\childApp\templates\shop_rewards.html:113
+msgid "טינקוינס"
+msgstr "تينكوينز"
+
+#: .\childApp\templates\donation_success.html:263
+msgid "לקטגוריה:"
+msgstr "للفئة:"
+
+#: .\childApp\templates\donation_success.html:266
+#: .\childApp\templates\task_check_in_out.html:16
+msgid "חזרה לדף הבית"
+msgstr "رجوع للصفحة الرئيسية"
+
+#: .\childApp\templates\donation_success.html:281
+msgid ""
+"ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ إلا رفعه "
+"اللهُ"
+msgstr ""
+"الصدقة ما بتنقص المال، والله برفع قدر اللي بعفو، واللي بتواضع الله برفعه"
+
+#: .\childApp\templates\donation_success.html:282
+msgid ""
+"Charity does not decrease wealth. Allah increases the honor of one who "
+"forgives, and whoever humbles himself, Allah elevates him."
+msgstr ""
+"الصدقة ما بتنقص المال. الله بزود شرف اللي بيسامح، واللي بيتواضع الله برفعه."
+
+#: .\childApp\templates\donation_success.html:284
+msgid "English"
+msgstr "English"
+
+#: .\childApp\templates\donation_success.html:285
+msgid "عربي"
+msgstr "عربي"
+
+#: .\childApp\templates\points_leaderboard.html:15
+msgid "בחירת טווח תאריכים"
+msgstr "اختيار مدى التواريخ"
+
+#: .\childApp\templates\points_leaderboard.html:21
+msgid "תאריך התחלה"
+msgstr "تاريخ البداية"
+
+#: .\childApp\templates\points_leaderboard.html:23
+msgid "תאריך סיום"
+msgstr "تاريخ النهاية"
+
+#: .\childApp\templates\points_leaderboard.html:29
+#: .\teenApp\interface_adapters\forms.py:44
+#: .\teenApp\interface_adapters\forms.py:78
+msgid "עיר"
+msgstr "مدينة"
+
+#: .\childApp\templates\points_leaderboard.html:61
+#: .\childApp\templates\points_leaderboard.html:104
+msgid "(את/ה)"
+msgstr "(إنت/ي)"
+
+#: .\childApp\templates\points_leaderboard.html:79
+msgid "לא נמצאו ילדים"
+msgstr "ما لقينا أولاد"
+
+#: .\childApp\templates\rate_redemption.html:4
+msgid "Rate Redemption"
+msgstr "تقييم المشتريات"
+
+#: .\childApp\templates\rate_redemption.html:232
+msgid "דרג את המימוש שלך"
+msgstr "قيّم استخدامك"
+
+#: .\childApp\templates\rate_redemption.html:234
+#, python-format
+msgid "תאריך מימוש: %(date)s"
+msgstr "تاريخ الاستخدام: %(date)s"
+
+#: .\childApp\templates\rate_redemption.html:271
+msgid "שמור דירוג"
+msgstr "احفظ التقييم"
+
+#: .\childApp\templates\reviewed_tasks.html:4
+#: .\childApp\templates\reviewed_tasks.html:12
+msgid "משימות שביצעתי"
+msgstr "المهام اللي عملتها"
+
+#: .\childApp\templates\reviewed_tasks.html:26
+msgid "הכל"
+msgstr "الكل"
+
+#: .\childApp\templates\reviewed_tasks.html:27
+msgid "מאושרות"
+msgstr "مقبولة"
+
+#: .\childApp\templates\reviewed_tasks.html:28
+msgid "נדחות"
+msgstr "مرفوضة"
+
+#: .\childApp\templates\reviewed_tasks.html:36
+msgid "משימה"
+msgstr "مهمّة"
+
+#: .\childApp\templates\reviewed_tasks.html:39
+msgid "הוקצה ע\"י"
+msgstr "تخصّص عن طريق"
+
+#: .\childApp\templates\reviewed_tasks.html:40
+msgid "סטטוס"
+msgstr "الحالة"
+
+#: .\childApp\templates\reviewed_tasks.html:64
+msgid "אושר"
+msgstr "اتوافق"
+
+#: .\childApp\templates\reviewed_tasks.html:75
+#: .\childApp\templates\reviewed_tasks.html:81
+msgid "הערת מנטור:"
+msgstr "ملاحظة المرشد:"
+
+#: .\childApp\templates\reviewed_tasks.html:88
+msgid "אין משימות שבוצעו עד כה."
+msgstr "ما في مهام منجزة لحد هسّه."
+
+#: .\childApp\templates\shop_list.html:8
+msgid "פרסים ומבצעים"
+msgstr "جوائز وعروض"
+
+#: .\childApp\templates\shop_list.html:247
+#: .\teenApp\interface_adapters\forms.py:42
+#: .\teenApp\interface_adapters\forms.py:76
+msgid "כל הערים"
+msgstr "كل المدن"
+
+#: .\childApp\templates\shop_list.html:253
+msgid "כל הקטגריות"
+msgstr "كل الفئات"
+
+#: .\childApp\templates\shop_list.html:278
+msgid "פרטים נוספים על החנות"
+msgstr "تفاصيل زيادة عن المتجر"
+
+#: .\childApp\templates\shop_list.html:278
+#, python-format
+msgid "פרטים נוספים על %(shop_name)s"
+msgstr "تفاصيل زيادة عن %(shop_name)s"
+
+#: .\childApp\templates\shop_list.html:284
+msgid "פתוח עכשיו"
+msgstr "مفتوح هلق"
+
+#: .\childApp\templates\shop_list.html:284
+msgid "סגור כעת"
+msgstr "مسكّر هلق"
+
+#: .\childApp\templates\shop_list.html:297
+#, python-format
+msgid "%(points)s טינקואינס נותרו למימוש"
+msgstr "%(points)s تينكوينز ضايل للاستخدام"
+
+#: .\childApp\templates\shop_list.html:305
+msgid "בחר פרס מהחנות"
+msgstr "اختار جائزة من المتجر"
+
+#: .\childApp\templates\shop_list.html:312
+msgid "חנות זו אינה זמינה כרגע עקב איסור רכישה"
+msgstr "هالمتجر مش متاح هسا بسبب منع الشراء"
+
+#: .\childApp\templates\shop_list.html:314
+msgid "אין פרסים זמינים"
+msgstr "ما في جوائز متاحة"
+
+#: .\childApp\templates\shop_list.html:316
+msgid "הגעת למגבלת חנויות"
+msgstr "وصلت لحدّ المحلات"
+
+#: .\childApp\templates\shop_list.html:328
+#, python-format
+msgid "%(points)s טינקואינס"
+msgstr "%(points)s تينكوينز"
+
+#: .\childApp\templates\shop_list.html:331
+msgid "אין פרסים זמינים כרגע"
+msgstr "ما في جوائز متاحة هسّه"
+
+#: .\childApp\templates\shop_rewards.html:4
+#: .\childApp\templates\shop_rewards.html:19
+msgid "בקשת מימוש טינקוינס"
+msgstr "طلب استخدام تينكوينز"
+
+#: .\childApp\templates\shop_rewards.html:27
+msgid "מגבלות יומיות"
+msgstr "قيود يومية"
+
+#: .\childApp\templates\shop_rewards.html:31
+msgid "פרסים שנותרו:"
+msgstr "جوائز ضايلة:"
+
+#: .\childApp\templates\shop_rewards.html:35
+msgid "טינקואינס זמינים:"
+msgstr "تينكوينز متاحين:"
+
+#: .\childApp\templates\shop_rewards.html:38
+#, python-format
+msgid "זכרו: אפשר לממש פרסים רק ב-%(MAX_SHOPS_PER_DAY)s חנויות ביום"
+msgstr "تذكّروا: فيكم تستخدموا جوائز بس بـ%(MAX_SHOPS_PER_DAY)s محلات باليوم"
+
+#: .\childApp\templates\shop_rewards.html:50
+#, python-format
+msgid "%(reward.points_required)s טינקוינס"
+msgstr "%(reward.points_required)s تينكوينز"
+
+#: .\childApp\templates\shop_rewards.html:71
+msgid "הקבלה שלך"
+msgstr "وصل الشراء تبعك"
+
+#: .\childApp\templates\shop_rewards.html:76
+msgid "ביטול בקשה"
+msgstr "إلغاء الطلب"
+
+#: .\childApp\templates\shop_rewards.html:84
+msgid "שלח בקשת פרס"
+msgstr "ابعت طلب جائزة"
+
+#: .\childApp\templates\shop_rewards.html:104
+msgid "הגעת למגבלת הפרסים היומית!"
+msgstr "وصلت لحدّ الجوائز اليومي!"
+
+#: .\childApp\templates\shop_rewards.html:105
+msgid "אין מספיק טינקואינס למימוש נוסף!"
+msgstr "ما في تينكوينز كفاية لاستخدام زيادة!"
+
+#: .\childApp\templates\shop_rewards.html:106
+msgid "אנא בחר לפחות פרס אחד."
+msgstr "لو سمحت اختار جائزة واحدة على الأقل."
+
+#: .\childApp\templates\shop_rewards.html:107
+msgid "שולח בקשה..."
+msgstr "عم نبعت الطلب..."
+
+#: .\childApp\templates\shop_rewards.html:108
+msgid "אנא אפשר חלונות קופצים כדי למלא את טופס הבקשה."
+msgstr "لو سمحت فعّل النوافذ المنبثقة عشان تعبي نموذج الطلب."
+
+#: .\childApp\templates\shop_rewards.html:109
+msgid "שגיאה בפתיחת הטופס, נסה שוב מאוחר יותר."
+msgstr "غلط بفتح النموذج، جرّب بعد شوي."
+
+#: .\childApp\templates\shop_rewards.html:110
+msgid "שגיאה לא צפויה. נסה שוב מאוחר יותר."
+msgstr "غلط مش متوقّع. جرّب بعد شوي."
+
+#: .\childApp\templates\shop_rewards.html:111
+msgid "שגיאה בבקשה."
+msgstr "غلط بالطلب."
+
+#: .\childApp\templates\shop_rewards.html:112
+msgid "הקנייה חסומה כרגע."
+msgstr "الشراء محظور هسا."
+
+#: .\childApp\templates\streak_leaderboard.html:3
+msgid "🏆 טבלת שיאני רצף"
+msgstr "🏆 جدول أبطال السلسلة"
+
+#: .\childApp\templates\streak_leaderboard.html:8
+msgid "מקום"
+msgstr "المركز"
+
+#: .\childApp\templates\streak_leaderboard.html:9
+msgid "שם"
+msgstr "الاسم"
+
+#: .\childApp\templates\streak_leaderboard.html:10
+msgid "🔥 רצף (ימים)"
+msgstr "🔥 سلسلة (أيام)"
+
+#: .\childApp\templates\streak_leaderboard.html:16
+#, python-format
+msgid "🥇 %(forloop.counter)s"
+msgstr "🥇 %(forloop.counter)s"
+
+#: .\childApp\templates\streak_leaderboard.html:19
+#, python-format
+msgid ""
+"\n"
+"                            %(days)s ימים\n"
+"                        "
+msgstr ""
+"\n"
+"                            %(days)s أيام\n"
+"                        "
+
+#: .\childApp\templates\streak_leaderboard.html:28
+msgid "🔙 חזרה לבית"
+msgstr "🔙 رجوع للبيت"
+
+#: .\childApp\templates\task_check_in_out.html:9
+#: .\childApp\templates\task_check_in_out.html:14
+msgid "משימות לביצוע"
+msgstr "مهام للتنفيذ"
+
+#: .\childApp\templates\task_check_in_out.html:22 .\childApp\views.py:733
+msgid "עדיין לא התחלתי"
+msgstr "لسّه ما بلّشت"
+
+#: .\childApp\templates\task_check_in_out.html:26 .\childApp\views.py:734
+msgid "התחלתי (עם צ'ק-אין)"
+msgstr "بلّشت (مع تسجيل دخول)"
+
+#: .\childApp\templates\task_check_in_out.html:30 .\childApp\views.py:735
+msgid "סיימתי (עם צ'ק-אאוט)"
+msgstr "خلصت (مع تسجيل خروج)"
+
+#: .\childApp\templates\task_check_in_out.html:42
+#: .\childApp\templates\task_check_in_out.html:114
+#: .\childApp\templates\task_check_in_out.html:182
+msgid "תמונת משימה"
+msgstr "صورة المهمّة"
+
+#: .\childApp\templates\task_check_in_out.html:55
+#: .\childApp\templates\task_check_in_out.html:126
+#: .\childApp\templates\task_check_in_out.html:194
+msgid "תיאור:"
+msgstr "وصف:"
+
+#: .\childApp\templates\task_check_in_out.html:62
+#: .\childApp\templates\task_check_in_out.html:130
+#: .\childApp\templates\task_check_in_out.html:199
+msgid "📷 העלאה מהמצלמה"
+msgstr "📷 رفع من الكاميرا"
+
+#: .\childApp\templates\task_check_in_out.html:64
+#: .\childApp\templates\task_check_in_out.html:132
+#: .\childApp\templates\task_check_in_out.html:201
+msgid "🖼️ מהמצלמה או הגלריה"
+msgstr "🖼️ من الكاميرا أو المعرض"
+
+#: .\childApp\templates\task_check_in_out.html:66
+#: .\childApp\templates\task_check_in_out.html:134
+#: .\childApp\templates\task_check_in_out.html:203
+msgid "✅ אוטומטי בצ'ק-אין"
+msgstr "✅ تلقائي وقت تسجيل الدخول"
+
+#: .\childApp\templates\task_check_in_out.html:68
+#: .\childApp\templates\task_check_in_out.html:136
+#: .\childApp\templates\task_check_in_out.html:205
+msgid "✅ אוטומטי בצ'ק-אאוט"
+msgstr "✅ تلقائي وقت تسجيل الخروج"
+
+#: .\childApp\templates\task_check_in_out.html:70
+#: .\childApp\templates\task_check_in_out.html:138
+#: .\childApp\templates\task_check_in_out.html:207
+msgid "❌ אין צורך בהעלאה"
+msgstr "❌ مش لازم ترفع"
+
+#: .\childApp\templates\task_check_in_out.html:76
+#: .\childApp\templates\task_check_in_out.html:143
+#: .\childApp\templates\task_check_in_out.html:212
+msgid "⏰ חלונות זמן:"
+msgstr "⏰ نوافذ الوقت:"
+
+#: .\childApp\templates\task_check_in_out.html:82
+#: .\childApp\templates\task_check_in_out.html:149
+#: .\childApp\templates\task_check_in_out.html:218
+#, python-format
+msgid "רק בתאריך %(rule.specific_date|date:\"d/m/Y\")s"
+msgstr "بس بتاريخ %(rule.specific_date|date:\"d/m/Y\")s"
+
+#: .\childApp\templates\task_check_in_out.html:84
+#: .\childApp\templates\task_check_in_out.html:151
+#: .\childApp\templates\task_check_in_out.html:220
+#, python-format
+msgid "כל יום %(rule.weekday|hebrew_weekday)s"
+msgstr "كل يوم %(rule.weekday|hebrew_weekday)s"
+
+#: .\childApp\templates\task_check_in_out.html:86
+#: .\childApp\templates\task_check_in_out.html:153
+#: .\childApp\templates\task_check_in_out.html:222
+msgid "בכל יום"
+msgstr "كل يوم"
+
+#: .\childApp\templates\task_check_in_out.html:89
+#: .\childApp\templates\task_check_in_out.html:156
+#: .\childApp\templates\task_check_in_out.html:225
+#, python-format
+msgid "בין %(start)s ל-%(end)s"
+msgstr "بين %(start)s و-%(end)s"
+
+#: .\childApp\templates\task_check_in_out.html:102
+msgid "! אין משימות ממתינות"
+msgstr "! ما في مهام مستنيّة"
+
+#: .\childApp\templates\task_check_in_out.html:163
+msgid "צ'ק-אין מחדש"
+msgstr "تسجيل دخول مرّة ثانية"
+
+#: .\childApp\templates\task_check_in_out.html:170
+msgid "! אין משימות עם צ'ק-אין בלבד"
+msgstr "! ما في مهام فيها بس تسجيل دخول"
+
+#: .\childApp\templates\task_check_in_out.html:196
+msgid "סטטוס:"
+msgstr "الحالة:"
+
+#: .\childApp\templates\task_check_in_out.html:233
+msgid "צ'ק-אאוט מחדש"
+msgstr "تسجيل خروج مرّة ثانية"
+
+#: .\childApp\templates\task_check_in_out.html:239
+msgid "! אין משימות שהושלמו"
+msgstr "! ما في مهام مكتملة"
+
+#: .\childApp\utils\CampaignUtils.py:91
+msgid "את/ה כבר נרשמת לקמפיין זה."
+msgstr "إنت/ي مسجّل/ة بهالحملة من قبل."
+
+#: .\childApp\utils\CampaignUtils.py:95
+msgid "הקמפיין מלא."
+msgstr "الحملة مليانة."
+
+#: .\childApp\utils\ChildRedemptionManager.py:63
+msgid "דירוג אינו אפשרי לאחר 7 ימים מהקנייה."
+msgstr "ما بنقدر نقيّم بعد 7 أيام من الشراء."
+
+#: .\childApp\utils\ChildRedemptionManager.py:69
+msgid "הדירוג עודכן בהצלחה!"
+msgstr "التقييم اتحدّث بنجاح!"
+
+#: .\childApp\utils\check_in_out_utils.py:60
+msgid "Error: No check-in image found. Cannot process check-out."
+msgstr "خطأ: ما لقينا صورة تسجيل الدخول. ما بنقدر نكمل تسجيل الخروج."
+
+#: .\childApp\utils\child_task_manager.py:118
+#: .\childApp\utils\child_task_manager.py:132
+msgid "Task assignment not found for this child."
+msgstr "ما لقينا تعيين المهمّة لهالطفل."
+
+#: .\childApp\utils\validate_image_metadata.py:12
+msgid "לא נמצאו נתוני EXIF בתמונה."
+msgstr "ما لقينا بيانات EXIF بالصورة."
+
+#: .\childApp\utils\validate_image_metadata.py:22
+msgid "התמונה צולמה לפני זמן רב מדי."
+msgstr "الصورة مصوّرة من زمان كتير."
+
+#: .\childApp\utils\validate_image_metadata.py:24
+msgid "התמונה תקינה."
+msgstr "الصورة تمام."
+
+#: .\childApp\views.py:76
+msgid "קיבלת 7 ימים ניסיון חינם 🎉"
+msgstr "أخذت 7 أيام تجربة مجّان 🎉"
+
+#: .\childApp\views.py:79
+msgid "כבר השתמשת בניסיון שלך 😢"
+msgstr "استخدمت تجربتك قبل 😢"
+
+#: .\childApp\views.py:104
+msgid "שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!"
+msgstr "إن شاء الله بداية قوية للأسبوع! بلّش تجمع نقاط وتحقّق أحلامك!"
+
+#: .\childApp\views.py:105
+msgid "זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!"
+msgstr "اليوم الاثنين! ظلّك تطمح وتعلّي — إنت بطريق النجاح!"
+
+#: .\childApp\views.py:106
+msgid "זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!"
+msgstr "اليوم التلات! وقت تفرجي قوّتك وإصرارك! بتقدر تعمل كل شي!"
+
+#: .\childApp\views.py:107
+msgid "זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!"
+msgstr "اليوم الأربعا! صرت بنص الأسبوع، كمّل وحقق أهدافك!"
+
+#: .\childApp\views.py:108
+msgid "זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!"
+msgstr "اليوم الخميس! قرّبت تخلّص الأسبوع، خليك قوي ووصل لهدفك!"
+
+#: .\childApp\views.py:109
+msgid "שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!"
+msgstr "جمعة مباركة! احتفل بإنجازاتك واستمتع باليوم! إنت ماشي صح!"
+
+#: .\childApp\views.py:110
+msgid "זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!"
+msgstr "اليوم السبت! كمّل وتجهّز لأسبوع جديد وناجح!"
+
+#: .\childApp\views.py:189
+msgid "שגיאה בתרומה"
+msgstr "غلط بالتبرّع"
+
+#: .\childApp\views.py:218
+msgid "Invalid request"
+msgstr "طلب غير صالح"
+
+#: .\childApp\views.py:234
+msgid "כבר לחצת היום!"
+msgstr "ضغطت اليوم من قبل!"
+
+#: .\childApp\views.py:268
+msgid "🔥 כל הכבוד! שמרת על הרצף!"
+msgstr "🔥 برافو! حافظت على السلسلة!"
+
+#: .\childApp\views.py:306
+msgid "לא ניתן לדרג מימוש זה. ייתכן שחלפו 7 ימים או שהמימוש כבר דורג."
+msgstr "ما بنقدر نقيّم هالاستخدام. ممكن مرّ 7 أيام أو قيّمته قبل."
+
+#: .\childApp\views.py:350
+msgid "הורה"
+msgstr "أهل"
+
+#: .\childApp\views.py:363
+msgid "You are not authorized to view this page."
+msgstr "ما إلك صلاحية تشوف هالصفحة."
+
+#: .\childApp\views.py:508
+msgid "שני"
+msgstr "الاثنين"
+
+#: .\childApp\views.py:509
+msgid "שלישי"
+msgstr "الثلاثاء"
+
+#: .\childApp\views.py:510
+msgid "רביעי"
+msgstr "الأربعاء"
+
+#: .\childApp\views.py:511
+msgid "חמישי"
+msgstr "الخميس"
+
+#: .\childApp\views.py:512
+msgid "שישי"
+msgstr "الجمعة"
+
+#: .\childApp\views.py:513
+msgid "שבת"
+msgstr "السبت"
+
+#: .\childApp\views.py:514
+msgid "ראשון"
+msgstr "الأحد"
+
+#: .\childApp\views.py:595
+msgid "Invalid request method."
+msgstr "طريقة الطلب مش صحيحة."
+
+#: .\childApp\views.py:603
+msgid "החנות אינה פתוחה כעת."
+msgstr "المتجر مش مفتوح هسّه."
+
+#: .\childApp\views.py:605
+msgid "לא נבחרו פרסים."
+msgstr "ما انختارت جوائز."
+
+#: .\childApp\views.py:647
+msgid "בקשת המימוש נשלחה בהצלחה!"
+msgstr "طلب الاستخدام انبعت بنجاح!"
+
+#: .\childApp\views.py:788
+msgid "צ`ק אאוט"
+msgstr "تسجيل خروج"
+
+#: .\childApp\views.py:806 .\childApp\views.py:828
+msgid "שיטה לא נתמכת."
+msgstr "طريقة مش مدعومة."
+
+#: .\childApp\views.py:811 .\childApp\views.py:833
+msgid "חסרים נתונים (task_id או image)."
+msgstr "في بيانات ناقصة (task_id أو image)."
+
+#: .\childApp\views.py:821
+msgid "צ'ק-אין נשלח לעיבוד ברקע."
+msgstr "تسجيل الدخول انبعت للمعالجة بالخلفية."
+
+#: .\childApp\views.py:843
+msgid "צ'ק-אאוט נשלח לעיבוד ברקע."
+msgstr "تسجيل الخروج انبعت للمعالجة بالخلفية."
+
+#: .\childApp\views.py:1024
+msgid "לא הצטרפת לקמפיין זה."
+msgstr "ما انضمّيت لهالحملة."
+
+#: .\childApp\views.py:1090
+msgid "שלחנו שוב קוד אימות ב־WhatsApp 📲"
+msgstr "بعثنا كود التحقّق مرّة ثانية على واتساب 📲"
+
+#: .\childApp\views.py:1101
+msgid "קוד אימות נשלח אליך ב־WhatsApp 📲"
+msgstr "انبعتلك كود تحقّق على واتساب 📲"
+
+#: .\childApp\views.py:1106
+msgid "קוד האימות שגוי או שפג תוקפו ❌"
+msgstr "كود التحقّق غلط أو خلص وقته ❌"
+
+#: .\childApp\views.py:1119
+msgid "נרשמת בהצלחה! נוצר לך חשבון זמני ✅"
+msgstr "تسجّلت بنجاح! انعملك حساب مؤقّت ✅"
+
+#: .\mentorApp\forms.py:204
+msgid "שם הקבוצה"
+msgstr "اسم المجموعة"
+
+#: .\mentorApp\forms.py:205
+msgid "ילדים בקבוצה"
+msgstr "أولاد بالمجموعة"
+
+#: .\mentorApp\forms.py:206
+msgid "תיאור"
+msgstr "وصف"
+
+#: .\mentorApp\forms.py:207
+msgid "צבע"
+msgstr "لون"
+
+#: .\shopApp\admin.py:91
+msgid "Approve selected redemption requests"
+msgstr "الموافقة على طلبات الاستبدال المحددة"
+
+#: .\teenApp\admin.py:61 .\teenApp\admin.py:238
+msgid "Schedule Settings"
+msgstr "إعدادات الجدولة"
+
+#: .\teenApp\admin.py:65 .\teenApp\admin.py:243
+msgid "Date Range"
+msgstr "مدى التواريخ"
+
+#: .\teenApp\admin.py:68 .\teenApp\admin.py:246
+msgid "Behavior"
+msgstr "سلوك"
+
+#: .\teenApp\admin.py:72 .\teenApp\admin.py:250
+msgid "Status"
+msgstr "الحالة"
+
+#: .\teenApp\admin.py:123 .\teenApp\admin.py:152
+msgid "Allowed Proof Options"
+msgstr "خيارات الإثبات المسموحة"
+
+#: .\teenApp\admin.py:124
+msgid "Select which proof options this mentor can assign to tasks"
+msgstr "اختار أي خيارات إثبات هالمرشد بقدر يعيّنها للمهام"
+
+#: .\teenApp\admin.py:158
+msgid "Advanced Permissions"
+msgstr "صلاحيات متقدّمة"
+
+#: .\teenApp\admin.py:161
+msgid "These settings control special permissions for this mentor"
+msgstr "هالإعدادات بتتحكم بصلاحيات خاصّة لهالمرشد"
+
+#: .\teenApp\admin.py:241
+msgid "Configure based on frequency type"
+msgstr "اضبط حسب نوع التكرار"
+
+#: .\teenApp\interface_adapters\forms.py:13
+msgid "Points to Redeem"
+msgstr ""
+
+#: .\teenApp\interface_adapters\forms.py:22
+#: .\teenApp\interface_adapters\forms.py:34
+#: .\teenApp\interface_adapters\forms.py:66
+msgid "מתאריך"
+msgstr "من تاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:27
+#: .\teenApp\interface_adapters\forms.py:39
+#: .\teenApp\interface_adapters\forms.py:72
+msgid "עד תאריך"
+msgstr "لِتاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:50
+msgid "חודש נוכחי"
+msgstr "الشهر الحالي"
+
+#: .\teenApp\interface_adapters\forms.py:51
+msgid "חודש שעבר"
+msgstr "الشهر اللي فات"
+
+#: .\teenApp\interface_adapters\forms.py:52
+msgid "כל הזמנים"
+msgstr "كل الوقت"
+
+#: .\teenApp\interface_adapters\forms.py:53
+msgid "טווח מותאם"
+msgstr "فترة مخصصة"
+
+#: .\teenApp\interface_adapters\forms.py:60
+msgid "סנן לפי תאריך"
+msgstr "لِتاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:91
+#: .\teenApp\interface_adapters\forms.py:92
+msgid "חובה לציין תאריך התחלה וסיום."
+msgstr "لازم تحط تاريخ بداية ونهاية."
+
+#~ msgid "עברית"
+#~ msgstr "عبريّة"
+
+#, python-format
+#~ msgid "%(child.streak_count)s ימים"
+#~ msgstr "%(child.streak_count)s أيام"
+
+#~ msgid "הישגים ומדליות"
+#~ msgstr "إنجازات وميداليات"
+
+#~ msgid "נק'"
+#~ msgstr "نقطة"

@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Volunteen</title>
+    <title>{% trans "Volunteen" %}</title>
     <!-- Google Font for modern Hebrew-friendly typography -->
     <link
       href="https://fonts.googleapis.com/css?family=Assistant:400,700&display=swap"
@@ -190,16 +191,16 @@
   <body>
     <div class="container">
       {% if not child %}
-      <div class="header">היי גיבור 🦸, כולם המשיכו במשימות... ואתה?</div>
+      <div class="header">{% trans "היי גיבור 🦸, כולם המשיכו במשימות... ואתה?" %}</div>
       {% else %}
       <div class="header rtl-text">
         <span class="username">{{ child.user.username }}, </span>
-        <span class="message">כולם ממשיכים במשימות... ואתה? 😢</span>
+        <span class="message">{% trans "כולם ממשיכים במשימות... ואתה? 😢" %}</span>
       </div>
       {% endif %}
       <div class="subheader">
-        המנוי שלך הסתיים ⏳ – חזור עכשיו ותחזור ליהנות ממשימות, פרסים ואתגרים
-        🎯🎁
+        {% blocktrans %}המנוי שלך הסתיים ⏳ – חזור עכשיו ותחזור ליהנות ממשימות, פרסים ואתגרים
+        🎯🎁{% endblocktrans %}
       </div>
       <!-- Call-to-Action to Rejoin -->
       <div class="cta-buttons">
@@ -209,12 +210,12 @@
           target="_blank"
           href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20"
         >
-          <i class="fas fa-shekel-sign"></i> תשלום במזומן
+          <i class="fas fa-shekel-sign"></i> {% trans "תשלום במזומן" %}
         </a>
 
         <!-- Credit Card Button -->
         <a class="cta-button credit-btn" href="#">
-          <i class="fas fa-credit-card"></i> תשלום בכרטיס אשראי
+          <i class="fas fa-credit-card"></i> {% trans "תשלום בכרטיס אשראי" %}
         </a>
       </div>
       <!-- Trial Section -->
@@ -230,19 +231,19 @@
           class="cta-button"
           style="background-color: #4caf50"
         >
-          🚀 התחל תקופת ניסיון ל־7 ימים 🚀
+          {% trans "🚀 התחל תקופת ניסיון ל־7 ימים 🚀" %}
         </button>
       </form>
       {% elif child.has_active_trial %}
       <div class="subheader" style="margin-top: 20px">
-        🎉 הניסיון שלך בתוקף עד {{ child.trial_end }}
+        {% blocktrans %}🎉 הניסיון שלך בתוקף עד {{ child.trial_end }}{% endblocktrans %}
       </div>
       {% endif %}
 
       <!-- Additional Navigation Buttons -->
       <div class="user-teencoins">
         <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em"></i>
-        <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+        <span>{% trans "טינקוינס בארנק:" %} <strong>{{ active_points }}</strong></span>
       </div>
       <div class="nav-buttons">
         <a
@@ -251,7 +252,7 @@
           style="background-color: #ff4081"
         >
           <i class="fas fa-gift"></i>
-          <span>רשימת פרסים</span>
+          <span>{% trans "רשימת פרסים" %}</span>
         </a>
         <a
           href="{% url 'childApp:child_not_approved_requests' %}"
@@ -259,7 +260,7 @@
           style="background-color: #ff5722"
         >
           <i class="fas fa-clock"></i>
-          <span>בקשות בתהליך</span>
+          <span>{% trans "בקשות בתהליך" %}</span>
         </a>
         <a
           href="{% url 'childApp:donate_coins' %}"
@@ -267,11 +268,11 @@
           style="background-color: #8bc34a"
         >
           <i class="fas fa-hand-holding-heart"></i>
-          <span>צדקה</span>
+          <span>{% trans "צדקה" %}</span>
         </a>
         <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
           <i class="fas fa-sign-out-alt"></i>
-          <span>יציאה</span>
+          <span>{% trans "יציאה" %}</span>
         </a>
       </div>
     </div>

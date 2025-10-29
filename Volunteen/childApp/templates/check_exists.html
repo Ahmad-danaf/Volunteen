@@ -1,4 +1,5 @@
 {% extends 'child_base.html' %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -114,46 +115,46 @@
 </style>
 
 <div class="container">
-    <h1>{{ action_label }} כבר בוצע</h1>
+    <h1>{% blocktrans %}{{ action_label }} כבר בוצע{% endblocktrans %}</h1>
 
-    <p>כבר ביצעת {{ action_label }} למשימה:  
+    <p>{% trans "כבר ביצעת" %} {{ action_label }} {% trans "למשימה:" %}  
         <strong>{{ task.title }}</strong>
     </p>
 
     <div class="warning-box">
-        <strong>שימו לב! ⏰</strong><br>
-        אם תעלה תמונה חדשה עכשיו –<br>
-        זמן {{ action_label }} יתעדכן לשעה הנוכחית<br>
+        <strong>{% trans "שימו לב! ⏰" %}</strong><br>
+        {% trans "אם תעלה תמונה חדשה עכשיו –" %}<br>
+        {% blocktrans %}זמן {{ action_label }} יתעדכן לשעה הנוכחית{% endblocktrans %}<br>
         {% if is_late_now %}
-            וזה עלול להיחשב כאיחור!
+            {% trans "וזה עלול להיחשב כאיחור!" %}
         {% endif %}
     </div>
 
     {% if is_late_now %}
         <a href="{% url action_url task.id %}?replace_image=true"
            class="btn btn-primary btn-late"
-           onclick="return confirm('שימו לב! זמן {{ action_label }} יתעדכן לשעה הנוכחית וזה עלול להיחשב כאיחור. להמשיך?')">
-            כן, להעלות תמונה חדשה
+           onclick="return confirm('{% blocktrans %}שימו לב! זמן {{ action_label }} יתעדכן לשעה הנוכחית וזה עלול להיחשב כאיחור. להמשיך?{% endblocktrans %}')">
+            {% trans "כן, להעלות תמונה חדשה" %}
         </a>
     {% else %}
         <a href="{% url action_url task.id %}?replace_image=true"
            class="btn btn-primary"
-           onclick="return confirm('האם אתה בטוח שברצונך להעלות תמונה חדשה? זמן {{ action_label }} יתעדכן לשעה הנוכחית.')">
-            כן, להעלות תמונה חדשה
+           onclick="return confirm('{% blocktrans %}האם אתה בטוח שברצונך להעלות תמונה חדשה? זמן {{ action_label }} יתעדכן לשעה הנוכחית.{% endblocktrans %}')">
+            {% trans "כן, להעלות תמונה חדשה" %}
         </a>
     {% endif %}
 
     <a href="{% url 'childApp:task_check_in_out' %}" class="btn btn-secondary">
-        חזרה לרשימת המשימות
+        {% trans "חזרה לרשימת המשימות" %}
     </a>
 
     {% if is_late_now %}
         <p class="info-message" style="color: #b71c1c;">
-            שים לב: אם תבצע עכשיו את {{ action_label }}, זה עלול להיחשב כאיחור.
+            {% blocktrans %}שים לב: אם תבצע עכשיו את {{ action_label }}, זה עלול להיחשב כאיחור.{% endblocktrans %}
         </p>
     {% else %}
         <p class="info-message" style="color: #388e3c;">
-            הכל בסדר! רק נעדכן את השעה של {{ action_label }}.
+            {% blocktrans %}הכל בסדר! רק נעדכן את השעה של {{ action_label }}.{% endblocktrans %}
         </p>
     {% endif %}
 </div>

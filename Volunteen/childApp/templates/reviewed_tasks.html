@@ -1,6 +1,7 @@
 {% extends 'child_base.html' %}
 {% load static %}
-{% block title %}משימות שביצעתי{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "משימות שביצעתי" %}{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
@@ -8,7 +9,7 @@
 
 {% block content %}
 <div class="container mx-auto p-4">
-  <h1 class="text-xl sm:text-2xl font-bold mb-6 text-center">משימות שביצעתי</h1>
+  <h1 class="text-xl sm:text-2xl font-bold mb-6 text-center">{% trans "משימות שביצעתי" %}</h1>
 
   <!-- Filter Form -->
   <form method="get" class="mb-4 flex flex-col sm:flex-row items-center gap-2">
@@ -16,15 +17,15 @@
       {{ form.as_p }}
     </div>
     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-      סנן
+      {% trans "סנן" %}
     </button>
   </form>
 
   <!-- Tabs -->
   <div class="flex justify-center mb-4">
-    <button onclick="filterTasks('all')" class="tab-btn active-tab" id="tab-all">הכל</button>
-    <button onclick="filterTasks('approved')" class="tab-btn" id="tab-approved">מאושרות</button>
-    <button onclick="filterTasks('rejected')" class="tab-btn" id="tab-rejected">נדחות</button>
+    <button onclick="filterTasks('all')" class="tab-btn active-tab" id="tab-all">{% trans "הכל" %}</button>
+    <button onclick="filterTasks('approved')" class="tab-btn" id="tab-approved">{% trans "מאושרות" %}</button>
+    <button onclick="filterTasks('rejected')" class="tab-btn" id="tab-rejected">{% trans "נדחות" %}</button>
   </div>
 
   <!-- Task Table -->
@@ -32,11 +33,11 @@
     <table class="min-w-full sm:table-fixed bg-white border border-gray-200 text-sm shadow-sm rounded-lg">
       <thead class="bg-blue-600 text-white">
         <tr>
-          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">משימה</th>
-          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">טינקוינס</th>
-          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">תאריך</th>
-          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">הוקצה ע"י</th>
-          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">סטטוס</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">{% trans "משימה" %}</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">{% trans "טינקוינס" %}</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">{% trans "תאריך" %}</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">{% trans "הוקצה ע\"י" %}</th>
+          <th class="px-1 sm:px-2 py-2 text-right whitespace-nowrap">{% trans "סטטוס" %}</th>
         </tr>
       </thead>
       <tbody class="text-gray-700">
@@ -60,9 +61,9 @@
             </td>
             <td class="px-1 sm:px-2 py-2 text-right">
               {% if task.status == 'approved' %}
-                <span class="text-green-600 font-bold">✓ אושר</span>
+                <span class="text-green-600 font-bold">✓ {% trans "אושר" %}</span>
               {% elif task.status == 'rejected' %}
-                <span class="text-red-600 font-bold">✗ נדחה</span>
+                <span class="text-red-600 font-bold">✗ {% trans "נדחה" %}</span>
               {% else %}
                 <span class="text-gray-500">—</span>
               {% endif %}
@@ -71,20 +72,20 @@
           {% if task.status == 'rejected' and task.mentor_feedback %}
             <tr class="bg-red-50 text-red-700 text-sm task-row" data-status="rejected">
               <td colspan="5" class="px-4 py-2 text-right">
-                <strong>הערת מנטור:</strong> {{ task.mentor_feedback }}
+                <strong>{% trans "הערת מנטור:" %}</strong> {{ task.mentor_feedback }}
               </td>
             </tr>
           {% elif task.status == 'approved' and task.mentor_feedback %}
             <tr class="bg-green-50 text-green-700 text-sm task-row" data-status="approved">
               <td colspan="5" class="px-4 py-2 text-right">
-                <strong>הערת מנטור:</strong> {{ task.mentor_feedback }}
+                <strong>{% trans "הערת מנטור:" %}</strong> {{ task.mentor_feedback }}
               </td>
             </tr>
           {% endif %}
         {% empty %}
           <tr>
             <td colspan="5" class="px-2 py-4 text-center text-gray-500">
-              אין משימות שבוצעו עד כה.
+              {% trans "אין משימות שבוצעו עד כה." %}
             </td>
           </tr>
         {% endfor %}

@@ -1,5 +1,6 @@
 {% extends "child_base.html" %}
 {% load static %}
+{% load i18n %}
 {% block extra_head %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endblock %}
@@ -230,10 +231,10 @@
           }
       
           .donation-leaderboard-table td:nth-child(2)::before {
-            content: "שם משתמש:";
+            content: "{% trans 'שם משתמש:' %}";
           }
           .donation-leaderboard-table td:nth-child(3)::before {
-            content: "סך תרומות:";
+            content: "{% trans 'סך תרומות:' %}";
           }
         }
       
@@ -251,27 +252,27 @@
 {% block content %}
 <div class="donation-leaderboard-container">
   <div class="leaderboard-header">
-    <h1>לוח תרומות</h1>
-    <p>המובילים בתרומות - חודש נוכחי</p>
+    <h1>{% trans "לוח תרומות" %}</h1>
+    <p>{% trans "המובילים בתרומות - חודש נוכחי" %}</p>
   </div>
 
   <div class="filter-container">
     <form method="get" class="date-filter-form">
       <div class="form-row">
         <div class="form-group">
-          <label for="id_start_date">מתאריך:</label>
+          <label for="id_start_date">{% trans "מתאריך:" %}</label>
           {{ form.start_date }}
         </div>
         <div class="form-group">
-          <label for="id_end_date">עד תאריך:</label>
+          <label for="id_end_date">{% trans "עד תאריך:" %}</label>
           {{ form.end_date }}
         </div>
         <div class="form-group">
-          <label for="id_city">עיר:</label>
+          <label for="id_city">{% trans "עיר:" %}</label>
           {{ form.city }}
         </div>
         <div class="form-group">
-          <button type="submit" class="filter-btn">סנן</button>
+          <button type="submit" class="filter-btn">{% trans "סנן" %}</button>
         </div>
       </div>
     </form>
@@ -281,9 +282,9 @@
     <table class="donation-leaderboard-table">
       <thead>
         <tr>
-          <th>מיקום</th>
-          <th>שם משתמש</th>
-          <th>סך תרומות</th>
+          <th>{% trans "מיקום" %}</th>
+          <th>{% trans "שם משתמש" %}</th>
+          <th>{% trans "סך תרומות" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -300,15 +301,15 @@
             {{ forloop.counter }}
             {% endif %}
           </td>
-          <td data-label="שם משתמש">{{ donation.child__user__username }}</td>
-          <td class="amount-cell" data-label="סך תרומות">
+          <td data-label="{% trans 'שם משתמש' %}">{{ donation.child__user__username }}</td>
+          <td class="amount-cell" data-label="{% trans 'סך תרומות' %}">
             {{ donation.total_donated|floatformat:2 }}
           </td>
         </tr>
         {% empty %}
         <tr>
             <td colspan="3" class="no-data">
-                לא נמצאו תרומות בטווח התאריכים והעיר שנבחרו
+                {% trans "לא נמצאו תרומות בטווח התאריכים והעיר שנבחרו" %}
             </td>
          </tr>
         {% endfor %}

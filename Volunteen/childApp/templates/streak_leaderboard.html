@@ -1,26 +1,31 @@
+{% load i18n %}
 <div class="leaderboard-container">
-    <h3 class="leaderboard-title">🏆 טבלת שיאני רצף</h3>
+    <h3 class="leaderboard-title">{% trans "🏆 טבלת שיאני רצף" %}</h3>
     <div class="table-wrapper">
         <table class="leaderboard-table">
             <thead>
                 <tr>
-                    <th>מקום</th>
-                    <th>שם</th>
-                    <th>🔥 רצף (ימים)</th>
+                    <th>{% trans "מקום" %}</th>
+                    <th>{% trans "שם" %}</th>
+                    <th>{% trans "🔥 רצף (ימים)" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for child in top_children %}
                 <tr>
-                    <td class="rank">🥇 {{ forloop.counter }}</td>
+                    <td class="rank">{% blocktrans %}🥇 {{ forloop.counter }}{% endblocktrans %}</td>
                     <td class="username">{{ child.user.username }}</td>
-                    <td class="streak">{{ child.streak_count }} ימים</td>
+                    <td class="streak">
+                        {% blocktrans with days=child.streak_count %}
+                            {{ days }} ימים
+                        {% endblocktrans %}
+                        </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <button class="home-button" onclick="window.location.href='{% url 'childApp:child_home' %}'">🔙 חזרה לבית</button>
+    <button class="home-button" onclick="window.location.href='{% url 'childApp:child_home' %}'">{% trans "🔙 חזרה לבית" %}</button>
 </div>
 
 <style>

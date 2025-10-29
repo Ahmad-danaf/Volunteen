@@ -101,13 +101,13 @@ def child_home(request):
     current_day = datetime.now().weekday()
     current_day = (current_day + 1) % 7  # Adjust for 0-Sunday format
     greetings = {
-        0: f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!",  # יום ראשון
-        1: f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!",
-        2: f"זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!",
-        3: f"זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!",
-        4: f"זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!",
-        5: f"שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!",  # יום שישי
-        6: f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!",
+        0: _(f"שיהיה לך פתיחה חזקה לשבוע! תתחיל לאסוף נקודות ולהגשים את החלומות שלך!"),  
+        1: _(f"זה יום שני! תמשיך לשאוף למעלה ולכוון גבוה! אתה בדרך להצלחה!"),
+        2: _(f"זה יום שלישי! הזמן להראות את הכוח והנחישות שלך! אתה יכול לעשות הכל!"),
+        3: _(f"זה יום רביעי! אתה כבר באמצע השבוע, תמשיך להתקדם ולכבוש מטרות!"),
+        4: _(f"זה יום חמישי! כמעט סיימת את השבוע, תשמור על קצב חזק ותגיע למטרה!"),
+        5: _(f"שישי שמח! תחגוג את ההישגים שלך ותהנה מהיום! אתה בדרך הנכונה!"),  
+        6: _(f"זה יום שבת! תמשיך לפעול ולהתקדם לקראת שבוע חדש ומוצלח!"),
     }
     todays_greeting = greetings[current_day]
     CampaignUtils.expire_campaign_reservations()
@@ -135,7 +135,7 @@ def child_home(request):
         'greeting': todays_greeting,
         'new_tasks_count': new_tasks_count,
         'referral_url': referral_url,
-        'level_name': LEVELS[child.level],
+        'level_name': _(LEVELS[child.level]),
         'level': child.level,
         'progress_percent': progress_to_next_level,
         'can_show_expiration_warning': child.subscription.can_show_expiration_warning(),
@@ -162,7 +162,7 @@ def donate_coins(request):
             note = form.cleaned_data['note']
             # Validate that the child has enough coins
             if amount > available_teencoins:
-                form.add_error('amount', f"אין לך מספיק טינקוינס. יש לך רק {available_teencoins} טינקוינס זמינים.")
+                form.add_error('amount', _(f"אין לך מספיק טינקוינס. יש לך רק {available_teencoins} טינקוינס זמינים."))
             else:
                 try:
                     # Redeem the coins using TeenCoinManager
@@ -186,7 +186,7 @@ def donate_coins(request):
                     
                 except ValueError as e:
                     # Handle insufficient coins error (though we already checked above)
-                    form.add_error(None, f"שגיאה בתרומה")
+                    form.add_error(None, _("שגיאה בתרומה"))
                     print(e)
         
         
@@ -215,7 +215,7 @@ def donate_coins(request):
 def update_streak(request):
     """Update the child's streak (no reset, just count days clicked)."""
     if request.method != "POST":
-        return JsonResponse({"error": "Invalid request"}, status=400)
+        return JsonResponse({"error": _("Invalid request")}, status=400)
 
     child = Child.objects.select_related("user").get(user=request.user)
     today = date.today()
@@ -231,7 +231,7 @@ def update_streak(request):
         ) or 0
 
         return JsonResponse({
-            "message": "כבר לחצת היום!",
+            "message": _("כבר לחצת היום!"),
             "streak": max(child.streak_count, last_milestone),
             "success": False
         })
@@ -265,7 +265,7 @@ def update_streak(request):
         visible_streak = max(child.streak_count, last_milestone)
 
     return JsonResponse({
-        "message": "🔥 כל הכבוד! שמרת על הרצף!",
+        "message": _("🔥 כל הכבוד! שמרת על הרצף!"),
         "streak": visible_streak,
         "milestone": milestone_day if reward_given else None,
         "reward_given": reward_given,
@@ -303,7 +303,7 @@ def rate_redemption_view(request, redemption_id):
 
     # Check if the redemption is within the 7-day scope and not already rated
     if not redemption.can_rate():
-        return HttpResponseForbidden("לא ניתן לדרג מימוש זה. ייתכן שחלפו 7 ימים או שהמימוש כבר דורג.")
+        return HttpResponseForbidden(_("לא ניתן לדרג מימוש זה. ייתכן שחלפו 7 ימים או שהמימוש כבר דורג."))
 
     if request.method == 'POST':
         form = RedemptionRatingForm(request.POST, instance=redemption)
@@ -347,7 +347,7 @@ def get_reviewed_tasks(request):
     }
     for tc in task_completions.order_by('-completion_date')
     ]
-    parent_username = child.parent.user.username if child.parent else 'הורה'
+    parent_username = child.parent.user.username if child.parent else _("הורה")
     return render(request, 'reviewed_tasks.html', {'tasks_with_bonus': tasks_with_bonus, 'form': form,'parent_username':parent_username})
 
 @child_subscription_required
@@ -360,7 +360,7 @@ def child_active_list(request):
         return render(request, 'child_active_list.html', {'core_tasks': core_tasks, 'campaign_tasks': campaign_tasks})
     
     except Child.DoesNotExist:
-        return render(request, 'list_tasks.html', {'error': 'You are not authorized to view this page.'})
+        return render(request, 'list_tasks.html', {'error': _("You are not authorized to view this page.")})
 
 
 @child_subscription_required
@@ -475,7 +475,7 @@ def rewards_view(request):
             'disabled_note': disabled_note if is_banned else "",
         })
 
-    categories_list = [{'code': cat['code'], 'name': cat['name']} for cat in available_categories]
+    categories_list = [{'code': cat['code'], 'name': _(cat['name'])} for cat in available_categories]
 
     context = {
         'shops': shops_with_data,
@@ -505,13 +505,13 @@ def shop_detail(request, shop_id):
     average_rating_reward = shop.average_reward_rating()
     HEBREW_WEEK_ORDER = [6, 0, 1, 2, 3, 4, 5]
     DAYS_OF_WEEK = {
-        0 : 'שני',
-        1: 'שלישי',
-        2: 'רביעי',
-        3: 'חמישי',
-        4: 'שישי',
-        5: 'שבת',
-        6: 'ראשון',
+        0 : _('שני'),
+        1: _('שלישי'),
+        2: _('רביעי'),
+        3: _('חמישי'),
+        4: _('שישי'),
+        5: _('שבת'),
+        6: _('ראשון'),
     }
     grouped_hours = defaultdict(list)
     for hour in shop.opening_hours.all():
@@ -592,7 +592,7 @@ def submit_redemption_request(request):
     """
     ShopManager.expire_old_requests()
     if request.method != "POST":
-        return JsonResponse({"status": "error", "message": "Invalid request method."}, status=400)
+        return JsonResponse({"status": "error", "message": _("Invalid request method.")}, status=400)
 
     try:
         data = json.loads(request.body)
@@ -600,9 +600,9 @@ def submit_redemption_request(request):
         shop = get_object_or_404(Shop, id=data.get("shop_id"))
         selected_rewards = data.get("selected_rewards", [])
         if not shop.is_open():
-            return JsonResponse({"status": "error", "message": "החנות אינה פתוחה כעת."})
+            return JsonResponse({"status": "error", "message": _("החנות אינה פתוחה כעת.")})
         if not selected_rewards:
-            return JsonResponse({"status": "error", "message": "לא נבחרו פרסים."})
+            return JsonResponse({"status": "error", "message": _("לא נבחרו פרסים.")})
 
        #check if the child can redeem these rewards
         validation_result = ShopManager.can_redeem_rewards(child, shop, selected_rewards)
@@ -644,7 +644,7 @@ def submit_redemption_request(request):
         return JsonResponse(
             {
                 "status": "success",
-                "message": "בקשת המימוש נשלחה בהצלחה!",
+                "message": _("בקשת המימוש נשלחה בהצלחה!"),
                 "tally_form": {
                     "url": TALLY_REDEMPTION_FORM_URL,
                     "hidden_fields": hidden_fields,
@@ -653,7 +653,7 @@ def submit_redemption_request(request):
         )
 
     except Exception as e:
-        return JsonResponse({"status": "error", "message": f"שגיאה: {str(e)}"}, status=500)
+        return JsonResponse({"status": "error", "message": _(f"שגיאה: {str(e)}")}, status=500)
     
     
 @require_POST
@@ -730,9 +730,9 @@ def task_check_in_out(request):
     )
 
     tab_definitions = [
-        {"label": "עדיין לא התחלתי", "value": "not_started"},
-        {"label": "התחלתי (עם צ'ק-אין)", "value": "checked_in"},
-        {"label": "סיימתי (עם צ'ק-אאוט)", "value": "checked_out"},
+        {"label": _("עדיין לא התחלתי"), "value": "not_started"},
+        {"label": _("התחלתי (עם צ'ק-אין)"), "value": "checked_in"},
+        {"label": _("סיימתי (עם צ'ק-אאוט)"), "value": "checked_out"},
     ]
 
     return render(request, 'task_check_in_out.html', {
@@ -758,7 +758,7 @@ def check_in(request, task_id):
     # Check if the child has already checked in
     task_completion = TaskCompletion.objects.filter(task=task, child=child).first()
     if task_completion and task_completion.checkin_img and not replace_image:
-        action_label="צ`ק אין"
+        action_label=_("צ`ק אין")
         action_url = "childApp:check_in"
         now=timezone.localtime()
         is_late_now = TimeWindowUtils.is_late(task,TimeWindowRule.WindowType.CHECK_IN, now)
@@ -785,7 +785,7 @@ def check_out(request, task_id):
     if not task_completion or not task_completion.checkin_img:
         return render(request, 'check_in_warning.html')
     if task_completion and task_completion.checkout_img and not replace_image:
-        action_label="צ`ק אאוט"
+        action_label=_("צ`ק אאוט")
         action_url = "childApp:check_out"
         now=timezone.localtime()
         is_late_now = TimeWindowUtils.is_late(task,TimeWindowRule.WindowType.CHECK_OUT, now)
@@ -803,12 +803,12 @@ def no_check_in(request):
 def submit_check_in(request):
     """Enqueue a background task to process a check-in image."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+        return JsonResponse({'success': False, 'error': _("שיטה לא נתמכת.")})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
     if not task_id or not image:
-        return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+        return JsonResponse({'success': False, 'error': _("חסרים נתונים (task_id או image).")})
 
     child = request.user.child
     task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
@@ -818,19 +818,19 @@ def submit_check_in(request):
     task_completion.save()
     async_task('childApp.utils.check_in_out_utils.process_check_in', task_completion.id)
 
-    return JsonResponse({'success': True, 'message': "צ'ק-אין נשלח לעיבוד ברקע."})
+    return JsonResponse({'success': True, 'message': _("צ'ק-אין נשלח לעיבוד ברקע.")})
 
 @csrf_exempt
 @child_subscription_required
 def submit_check_out(request):
     """Enqueue a background task to process a check-out image."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'שיטה לא נתמכת.'})
+        return JsonResponse({'success': False, 'error': _("שיטה לא נתמכת.")})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
     if not task_id or not image:
-        return JsonResponse({'success': False, 'error': 'חסרים נתונים (task_id או image).'})
+        return JsonResponse({'success': False, 'error': _("חסרים נתונים (task_id או image).")})
 
     child = request.user.child
     task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
@@ -840,7 +840,7 @@ def submit_check_out(request):
     task_completion.save()
     async_task('childApp.utils.check_in_out_utils.process_check_out', task_completion.id)
 
-    return JsonResponse({'success': True, 'message': "צ'ק-אאוט נשלח לעיבוד ברקע."})
+    return JsonResponse({'success': True, 'message': _("צ'ק-אאוט נשלח לעיבוד ברקע.")})
 
 @child_subscription_required
 def mark_tasks_as_viewed(request):
@@ -998,7 +998,7 @@ def join_campaign_view(request, pk):
         assigned_count = CampaignUtils.join_campaign(child, campaign)
         messages.success(
             request,
-            f"נרשמת לקמפיין בהצלחה! קיבלת {assigned_count} משימות ולך {CAMPAIGN_TIME_LIMIT_MINUTES} דקות לסיים אותן."
+            _(f"נרשמת לקמפיין בהצלחה! קיבלת {assigned_count} משימות ולך {CAMPAIGN_TIME_LIMIT_MINUTES} דקות לסיים אותן.")
         )
     except ValueError as err:
         messages.error(request, str(err))
@@ -1021,15 +1021,15 @@ def leave_campaign_view(request, pk):
     ).exists()
 
     if not has_joined:
-        messages.warning(request, "לא הצטרפת לקמפיין זה.")
+        messages.warning(request, _("לא הצטרפת לקמפיין זה."))
         return redirect("childApp:child-campaign-detail", pk=pk)
 
     try:
         removed = CampaignUtils.leave_campaign(child, campaign)
-        messages.success(request, f"הוסרת מהקמפיין. {removed} משימות נמחקו.")
-        messages.warning(request, f"עזבת את הקמפיין. לא תוכל להצטרף מחדש עד {CAMPAIGN_BAN_DURATION_HOURS} שעות.")
+        messages.success(request, _(f"הוסרת מהקמפיין. {removed} משימות נמחקו."))
+        messages.warning(request, _(f"עזבת את הקמפיין. לא תוכל להצטרף מחדש עד {CAMPAIGN_BAN_DURATION_HOURS} שעות."))
     except Exception as e:
-        messages.error(request, f"שגיאה בעת ההסרה מהקמפיין: {str(e)}")
+        messages.error(request, _(f"שגיאה בעת ההסרה מהקמפיין: {str(e)}"))
 
     return redirect("childApp:child-campaign-detail", pk=pk)
 
@@ -1087,7 +1087,7 @@ def child_signup(request):
                 return render(request, "childApp/signup/temp_signup.html", ctx)
 
             NotificationManager.send_verification_code(phone)
-            messages.info(request, "שלחנו שוב קוד אימות ב־WhatsApp 📲")
+            messages.info(request, _("שלחנו שוב קוד אימות ב־WhatsApp 📲"))
             ctx["code_step"] = True
             return render(request, "childApp/signup/temp_signup.html", ctx)
 
@@ -1098,12 +1098,12 @@ def child_signup(request):
                 return render(request, "childApp/signup/temp_signup.html", ctx)
 
             NotificationManager.send_verification_code(phone)
-            messages.info(request, "קוד אימות נשלח אליך ב־WhatsApp 📲")
+            messages.info(request, _("קוד אימות נשלח אליך ב־WhatsApp 📲"))
             ctx["code_step"] = True
             return render(request, "childApp/signup/temp_signup.html", ctx)
 
         if not NotificationManager.verify_code(phone, verification_code):
-            messages.error(request, "קוד האימות שגוי או שפג תוקפו ❌")
+            messages.error(request, _("קוד האימות שגוי או שפג תוקפו ❌"))
             ctx["code_step"] = True
             return render(request, "childApp/signup/temp_signup.html", ctx)
 
@@ -1116,7 +1116,7 @@ def child_signup(request):
             ctx["code_step"] = True 
             return render(request, "childApp/signup/temp_signup.html", ctx)
 
-        messages.success(request, "נרשמת בהצלחה! נוצר לך חשבון זמני ✅")
+        messages.success(request, _("נרשמת בהצלחה! נוצר לך חשבון זמני ✅"))
         return redirect("childApp:child_home")
 
     # GET

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+{% load i18n %}
 <html lang="he">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לא ניתן לבצע צ'ק-אאוט</title>
+    <title>{% trans "לא ניתן לבצע צ'ק-אאוט" %}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,8 +36,8 @@
     </style>
 </head>
 <body>
-    <h1>😞 לא ניתן לבצע צ'ק-אאוט</h1>
-    <p>עליך לבצע צ'ק-אין לפני שתוכל לבצע צ'ק-אאוט למשימה זו.</p>
-    <a href="{% url 'childApp:task_check_in_out' %}" class="btn">חזור למשימות</a>
+    <h1>{% trans "😞 לא ניתן לבצע צ'ק-אאוט" %}</h1>
+    <p>{% trans "עליך לבצע צ'ק-אין לפני שתוכל לבצע צ'ק-אאוט למשימה זו." %}</p>
+    <a href="{% url 'childApp:task_check_in_out' %}" class="btn">{% trans "חזור למשימות" %}</a>
 </body>
 </html>

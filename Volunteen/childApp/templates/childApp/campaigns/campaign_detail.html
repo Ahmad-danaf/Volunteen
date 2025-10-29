@@ -1,5 +1,6 @@
 {% extends 'child_base.html' %}
 {% load static %}
+{% load i18n %}
 {% block extra_head %}
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -13,7 +14,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
     </svg>
-    <span class="font-semibold">חזרה לקמפיינים</span>
+    <span class="font-semibold">{% trans "חזרה לקמפיינים" %}</span>
   </a>
   {% if messages %}
   <div class="mt-4">
@@ -45,16 +46,16 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 14l-3-3h6l-3 3z" />
           </svg>
-          <span class="text-orange-600 font-medium">{{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} משתתפים</span>
+          <span class="text-orange-600 font-medium">{{ campaign.current_slots }}/{{ campaign.max_children|default:'∞' }} {% trans "משתתפים" %}</span>
         </div>
         {% if has_joined and not has_child_finished %}
-        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">נרשמת</span>
+        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">{% trans "נרשמת" %}</span>
         {% elif has_joined and has_child_finished %}
-        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">הושלם</span>
+        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">{% trans "הושלם" %}</span>
         {% elif is_campaign_banned %}
-        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">חסום</span>
+        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">{% trans "חסום" %}</span>
         {% else %}
-        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">הצטרף</span>
+        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">{% trans "הצטרף" %}</span>
         {% endif %}
       </div>
 
@@ -67,13 +68,13 @@
         {% if time_left_end %}
             {% with remaining=time_left_end|timeuntil %}
                 {% if remaining %}
-                    נותרו: {{ remaining }} לסיום הקמפיין
+                    {% blocktrans %}נותרו: {{ remaining }} לסיום הקמפיין{% endblocktrans %}
                 {% else %}
-                    הקמפיין הסתיים!
+                    {% trans "הקמפיין הסתיים!" %}
                 {% endif %}
             {% endwith %}
         {% else %}
-            זמן לא זמין
+            {% trans "זמן לא זמין" %}
         {% endif %}
     </p>
       
@@ -87,28 +88,28 @@
       @click="showLeaveModal = true"
       type="button"
       class="w-full bg-red-600 text-white font-semibold py-3 rounded-2xl shadow-xl hover:bg-red-700 transition animate-pop">
-      עזוב קמפיין
+      {% trans "עזוב קמפיין" %}
     </button>
   </div>
 
   <!-- Confirmation Modal -->
   <div x-show="showLeaveModal" x-cloak x-transition.opacity  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-lg p-6 w-11/12 max-w-sm text-center">
-      <h2 class="text-lg font-bold mb-4 text-gray-800">האם אתה בטוח?</h2>
-      <p class="text-sm text-gray-600 mb-6">אם תעזוב את הקמפיין, כל המשימות שלך יוסרו . </p>
-      <p class="text-sm text-gray-600 mb-6">אתה תהיה חסום מהקמפיין למשך {{ campaign_ban_duration }} שעות.</p>
+      <h2 class="text-lg font-bold mb-4 text-gray-800">{% trans "האם אתה בטוח?" %}</h2>
+      <p class="text-sm text-gray-600 mb-6">{% trans "אם תעזוב את הקמפיין, כל המשימות שלך יוסרו ." %}</p>
+      <p class="text-sm text-gray-600 mb-6">{% blocktrans %}אתה תהיה חסום מהקמפיין למשך {{ campaign_ban_duration }} שעות.{% endblocktrans %}</p>
       <div class="flex justify-center gap-4">
         <!-- Cancel -->
         <button @click="showLeaveModal = false"
                 class="px-4 py-2 bg-gray-300 text-gray-800 rounded-xl hover:bg-gray-400 transition">
-          בטל
+          {% trans "בטל" %}
         </button>
         <!-- Confirm Leave -->
         <form method="post" action="{% url 'childApp:child-campaign-leave' campaign.pk %}">
           {% csrf_token %}
           <button type="submit"
                   class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition">
-            עזוב קמפיין
+            {% trans "עזוב קמפיין" %}
           </button>
         </form>
       </div>
@@ -120,16 +121,16 @@
     <form method="post" action="{% url 'childApp:child-campaign-join' campaign.pk %}">
       {% csrf_token %}
       <button class="w-full bg-white text-orange-600 font-semibold py-3 rounded-2xl shadow-xl hover:bg-gray-100 transition animate-pop">
-        הצטרף לקמפיין
+        {% trans "הצטרף לקמפיין" %}
       </button>
     </form>
   </div>
   {% elif is_campaign_banned %}
   <div class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-md shadow-sm max-w-md mx-auto">
     <p class="text-sm text-yellow-800 text-center font-medium">
-      ⚠️ חסום מהקמפיין עד
+      {% trans "⚠️ חסום מהקמפיין עד" %}
       <span class="font-semibold">{{child_campaign_ban_until|date:"d/m/Y" }}</span>
-      בשעה
+      {% trans "בשעה" %}
       <span class="font-semibold">{{ child_campaign_ban_until|date:"H:i" }}</span>.
     </p>
   </div>
@@ -143,18 +144,18 @@
         <div class="flex-1">
           <h2 class="text-lg font-semibold text-gray-800">{{ info.task.title }}</h2>
           {% if info.status == 'approved' %}
-          <p class="mt-1 text-green-600 font-medium">סטטוס: מאושר ✔️</p>
+          <p class="mt-1 text-green-600 font-medium">{% trans "סטטוס: מאושר ✔️" %}</p>
           {% elif info.status == 'rejected' %}
-          <p class="mt-1 text-red-600 font-medium">סטטוס: נדחה ❌</p>
+          <p class="mt-1 text-red-600 font-medium">{% trans "סטטוס: נדחה ❌" %}</p>
           {% elif info.status == 'pending' or info.status == 'checked_in' or info.status == 'checked_out' %}
-          <p class="mt-1 text-yellow-600 font-medium">סטטוס: בהמתנה לאישור המנטור ⏳</p>
+          <p class="mt-1 text-yellow-600 font-medium">{% trans "סטטוס: בהמתנה לאישור המנטור ⏳" %}</p>
           {% else %}
-          <p class="mt-1 text-gray-500 font-medium">לא התחלת</p>
+          <p class="mt-1 text-gray-500 font-medium">{% trans "לא התחלת" %}</p>
           {% endif %}
         </div>
         {% if has_joined and info.assignment %}
         <a href="{% url 'childApp:task_check_in_out' %}" class="ml-4 bg-gradient-to-r from-orange-500 to-indigo-500 text-white px-5 py-2 rounded-2xl shadow-md hover:from-orange-600 hover:to-indigo-600 transition">
-          {% if info.task.proof_required %}משימה עם צילום{% else %}משימה בלי צילום{% endif %}
+          {% if info.task.proof_required %}{% trans "משימה עם צילום" %}{% else %}{% trans "משימה בלי צילום" %}{% endif %}
         </a>
         {% endif %}
       </li>
@@ -189,15 +190,24 @@
 <script>
     const endDate = new Date("{{ time_left_end.isoformat }}");
     const hasFinished = "{{ has_child_finished }} ".trim()=="True" || "{{ has_child_finished }} ".trim()=="true" ;
+    const T_HOUR_SINGULAR = "{% trans 'שעה' %}";
+    const T_HOUR_PLURAL = "{% trans 'שעות' %}";
+    const T_MINUTE_SINGULAR = "{% trans 'דקה' %}";
+    const T_MINUTE_PLURAL = "{% trans 'דקות' %}";
+    const T_LESS_THAN_MINUTE = "{% trans 'פחות מדקה' %}";
+    const T_REMAINING_PREFIX = "{% trans 'נותרו:' %}";
+    const T_REMAINING_SUFFIX = "{% trans 'לסיום הקמפיין' %}";
+    const T_CAMPAIGN_FINISHED = "{% trans 'הקמפיין הסתיים!' %}";
+    const T_COMPLETED = "{% trans 'הושלם!' %}";
     function formatHebrewTime(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         
         let parts = [];
-        if (hours > 0) parts.push(`${hours} שע${hours === 1 ? 'ה' : 'ות'}`);
-        if (minutes > 0) parts.push(`${minutes} דק${minutes === 1 ? 'ה' : 'ות'}`);
+        if (hours > 0) parts.push(`${hours} ${hours === 1 ? T_HOUR_SINGULAR : T_HOUR_PLURAL}`);
+        if (minutes > 0) parts.push(`${minutes} ${minutes === 1 ? T_MINUTE_SINGULAR : T_MINUTE_PLURAL}`);
         
-        return parts.join(' ו') || 'פחות מדקה';
+        return parts.join(' ו') || T_LESS_THAN_MINUTE;
     }
 
     function updateHebrewCountdown() {
@@ -205,12 +215,12 @@
         const diff = Math.floor((endDate - now) / 1000); // seconds
         
         if (diff <= 0) {
-            document.getElementById('hebrew-countdown').textContent = 'הקמפיין הסתיים!';
+            document.getElementById('hebrew-countdown').textContent = T_CAMPAIGN_FINISHED;
             return;
         }
         
         document.getElementById('hebrew-countdown').textContent = 
-            `נותרו: ${formatHebrewTime(diff)} לסיום הקמפיין`;
+            `${T_REMAINING_PREFIX} ${formatHebrewTime(diff)} ${T_REMAINING_SUFFIX}`;
     }
     // Update every minute (60000ms)
     if(!hasFinished){
@@ -218,7 +228,7 @@
         updateHebrewCountdown(); // Initial call
     }
     else{
-        document.getElementById('hebrew-countdown').textContent = 'הושלם!';
+        document.getElementById('hebrew-countdown').textContent = T_COMPLETED;
     }
 
 </script>

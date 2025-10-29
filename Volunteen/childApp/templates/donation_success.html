@@ -1,6 +1,7 @@
 {% extends "child_base.html" %}
 {% load static %}
-{% block title %}תרומה הושלמה בהצלחה{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "תרומה הושלמה בהצלחה" %}{% endblock %}
 {% block extra_css %}
 <style>
   .success-container {
@@ -227,17 +228,15 @@
 {% endblock %}
 {% block content %}
 <div class="success-container">
-  <h1 class="success-title">כל הכבוד!</h1>
+  <h1 class="success-title">{% trans "כל הכבוד!" %}</h1>
 
   <!-- Hadith / Quran Verse Toggle Section -->
   <div class="saying-container">
     <p id="charity-hadith">
-      عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم:<br>
+      {% blocktrans %}عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم:<br>
       (ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ إلا رفعه اللهُ) <br>
-      رواه مسلم.
+      رواه مسلم.{% endblocktrans %}
     </p>
-    
-    <button class="verse-toggle" id="toggle-hadith">English</button>
   </div>
 
   <div class="animation-container">
@@ -251,22 +250,20 @@
   </div>
 
   <p class="success-message hadith">
-    وعن أبي سعيد الخدري رضي الله عنه عن النبي صلى الله عليه وسلم قال:<br>
+    {% blocktrans %}وعن أبي سعيد الخدري رضي الله عنه عن النبي صلى الله عليه وسلم قال:<br>
     ( أيما مسلم كسا مسلمًا ثوبًا على عري، كساه الله من خضر الجنة 👕،<br>
     وأيما مسلم أطعم مسلما على جوع، أطعمه الله من ثمار الجنة 🍓،<br>
     وأيما مسلم سقى مسلما على ظمأ، سقاه الله من الرحيق المختوم 🍶 )<br>
-    رواه أبو داود وفي إسناده لين.
+    رواه أبو داود وفي إسناده لين.{% endblocktrans %}
   </p>
   
 
   <div class="donation-details">
-    תרמת <span class="donation-amount">{{ amount }}</span> טינקוינס<br />
-    לקטגוריה: <span class="donation-category">{{ category }}</span>
-    <br>
-     <span class="donation-description">{{ category_description }}</span>
+    {% trans "תרמת" %} <span class="donation-amount">{{ amount }}</span> {% trans "טינקוינס" %}<br />
+    {% trans "לקטגוריה:" %} <span class="donation-category">{{ category }}</span>
   </div>
 
-  <a href="{% url 'childApp:child_home' %}" class="back-button">חזרה לדף הבית</a>
+  <a href="{% url 'childApp:child_home' %}" class="back-button">{% trans "חזרה לדף הבית" %}</a>
 </div>
 
 <script>
@@ -281,19 +278,21 @@
     // Quran Verse Toggle Code
     const verseText = document.getElementById("charity-hadith");
     const texts = {
-      arabic: 'ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ إلا رفعه اللهُ',
-      english: 'Charity does not decrease wealth. Allah increases the honor of one who forgives, and whoever humbles himself, Allah elevates him.'
+      arabic: "{% trans 'ما نقصت صدقةٌ من مالٍ، وما زاد اللهُ عبدًا بعفوٍ إلا عزًّا، وما تواضع عبدٌ إلا رفعه اللهُ' %}",
+      english: "{% trans 'Charity does not decrease wealth. Allah increases the honor of one who forgives, and whoever humbles himself, Allah elevates him.' %}"
     };
+    const T_BTN_ENGLISH = "{% trans 'English' %}";
+    const T_BTN_ARABIC = "{% trans 'عربي' %}";
     
     const toggleButton = document.getElementById("toggle-hadith");
     
     toggleButton.addEventListener("click", function () {
       if (verseText.innerHTML.includes("ما")) {
         verseText.innerHTML = texts.english;
-        toggleButton.textContent = "عربي";
+        toggleButton.textContent = T_BTN_ARABIC;
       } else {
         verseText.innerHTML = texts.arabic;
-        toggleButton.textContent = "English";
+        toggleButton.textContent = T_BTN_ENGLISH;
       }
     });
   });

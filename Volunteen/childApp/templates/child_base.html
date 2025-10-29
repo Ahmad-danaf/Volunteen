@@ -1,10 +1,11 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}פרופיל ילד{% endblock %}</title>
+    <title>{% block title %}{% trans "פרופיל ילד" %}{% endblock %}</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papNM6Qb4K8bIKGMiEwK5MFO0N6umx1N8iBt8n+V0g1LFeSTU1R+blXg1NRw0K5+eYhNqB5sBmXKZrKf5Qk5Kg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -205,19 +206,19 @@ body {
 
 <a href="{% url 'teenApp:home_redirect' %}" class="nav-btn home-btn">
             <i class="fas fa-home"></i>
-            <span>מסך הבית</span>
+            <span>{% trans "מסך הבית" %}</span>
         </a>
 
         <a href="{% url 'childApp:task_check_in_out' %}" class="nav-btn checkin-btn">
             <i class="fas fa-map-marker-alt"></i>
-            <span>צ'ק אין</span>
+            <span>{% trans "צ'ק אין" %}</span>
         </a>
 
 
 
           <a href="{% url 'childApp:points_leaderboard' %}" class="nav-btn leader-btn">
             <i class="fas fa-trophy"></i>
-            <span>קיר התהילה</span>
+            <span>{% trans "קיר התהילה" %}</span>
         </a>
     </div>
 </nav>
@@ -229,7 +230,7 @@ body {
 <footer>
     &copy; 2025 Volunteen
     <div class="support-email">
-        <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - לעזרה או תמיכה, צרו קשר ב
+        <a href="mailto:volunteen2023@gmail.com">volunteen2023@gmail.com</a> - {% trans "לעזרה או תמיכה, צרו קשר ב" %}
     </div>
 </footer>
 

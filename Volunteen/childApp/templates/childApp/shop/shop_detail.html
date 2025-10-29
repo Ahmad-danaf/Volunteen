@@ -1,5 +1,6 @@
 {% extends 'child_base.html' %} 
 {% load static %} 
+{% load i18n %}
 {% block content %}
 <style>
   .shop-hero {
@@ -249,24 +250,25 @@
   <div class="shop-hero-overlay">
     <h1>{{ shop.name }}</h1>
     <div class="shop-meta">
-      {{ shop.city }} • {{ points_left_to_redeem }} טינקואינס למימוש
+      {% blocktrans %}{{ shop.city }} • {{ points_left_to_redeem }} טינקואינס למימוש{% endblocktrans %}
     </div>
   </div>
 </div>
   
 <section class="section">
-  <div class="section-title">דירוגים</div>
+  <div class="section-title">{% trans "דירוגים" %}</div>
   <div>
+    {% trans "אין" as none_text %}
     <span class="rating-badge"
-      >שירות: {{ average_rating_service|default:"אין" }}</span
+      >{% trans "שירות:" %} {{ average_rating_service|default:none_text }}</span
     >
     <span class="rating-badge"
-      >פרסים: {{ average_rating_reward|default:"אין" }}</span
+      >{% trans "פרסים:" %} {{ average_rating_reward|default:none_text }}</span
     >
   </div>
 </section>
 <section class="section">
-    <div class="section-title">קטגוריות</div>
+    <div class="section-title">{% trans "קטגוריות" %}</div>
     {% if shop.categories.all %}
       <div class="category-tags">
         {% for category in shop.categories.all %}
@@ -274,12 +276,12 @@
         {% endfor %}
       </div>
     {% else %}
-      <p style="color: #636e72;">אין קטגוריות זמינות</p>
+      <p style="color: #636e72;">{% trans "אין קטגוריות זמינות" %}</p>
     {% endif %}
   </section>
   
 <section class="section">
-  <div class="section-title">שעות פתיחה</div>
+  <div class="section-title">{% trans "שעות פתיחה" %}</div>
   {% for day in ordered_opening_hours %}
   <div class="opening-hours-group">
     <h4>{{ day.day_name }}</h4>
@@ -288,11 +290,11 @@
       <li>
         <span>
           {% if entry.opening_hour and entry.closing_hour %}
-          {{entry.opening_hour|time:"H:i" }} - {{ entry.closing_hour|time:"H:i"}} {% else %} סגור {% endif %}
+          {{entry.opening_hour|time:"H:i" }} - {{ entry.closing_hour|time:"H:i"}} {% else %} {% trans "סגור" %} {% endif %}
         </span>
       </li>
       {% endfor %} {% if day.entries|length == 0 %}
-      <li><span>סגור</span></li>
+      <li><span>{% trans "סגור" %}</span></li>
       {% endif %}
     </ul>
   </div>
@@ -301,7 +303,7 @@
 
 {% if shop.address or shop.google_map_embed %}
 <section class="section">
-    <div class="section-title">ניווט לחנות</div>
+    <div class="section-title">{% trans "ניווט לחנות" %}</div>
     {% if shop.address %}
     <div class="section-subtitle copy-address" onclick="copyAddress('{{ shop.address|escapejs }}')">
       {{ shop.address }}
@@ -332,7 +334,7 @@
       font-weight: bold;
     "
   >
-    🎁 עבור לפרסים הזמינים
+    {% trans "🎁 עבור לפרסים הזמינים" %}
   </a>
 </section>
 

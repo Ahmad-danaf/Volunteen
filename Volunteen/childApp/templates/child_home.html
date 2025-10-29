@@ -1,22 +1,24 @@
 {% extends 'child_base.html' %}
 {% load static %}
-
-{% block title %}מסך הבית - Volunteen{% endblock %}
-
+{% load i18n %}
+{% block title %}{% trans "מסך הבית - Volunteen" %}{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'childApp/css/child_home.css' %}">
+{% endblock %}
 {% block content %}
 
 <div class="header-section">
-    <h1 class="welcome-message">ברוך הבא, {{ child.user.username }}!</h1>
+    <h1 class="welcome-message">{% blocktrans with username=child.user.username %}ברוך הבא, {{ username }}!{% endblocktrans %}</h1>
     <p class="tagline">{{ greeting|safe }}</p>
 </div>
 {% if can_show_expiration_warning %}
 <div class="premium-warning">
   <div class="warning-content">
-    <h2>רוצים להמשיך ליהנות מוולונטין?</h2>
-    <p>המנוי שלך מתקרב לסיום בעוד {{ days_left_to_expire }} ימים.<br>
-    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!</p>
+    <h2>{% trans "רוצים להמשיך ליהנות מוולונטין?" %}</h2>
+    <p>{% blocktrans with days=days_left_to_expire %}המנוי שלך מתקרב לסיום בעוד {{ days }} ימים.<br>
+    כדי לא לפספס משימות, פרסים והפתעות – אפשר לחדש ולהישאר איתנו בהרפתקה!{% endblocktrans %}</p>
     <a href="https://wa.me/972522865816?text=שלום,%20אני%20רוצה%20להצטרף%20לוולונטין!%20%F0%9F%8C%9F%0Aאני%20%5Bהורה%2Fילד%2Fעסק%2Fמוסד%5D%20%F0%9F%93%9D%0Aשמי%3A%20" class="warning-cta">
-    לחדש מנוי
+    {% trans "לחדש מנוי" %}
     </a>
   </div>
 </div>
@@ -28,7 +30,7 @@
   <!-- Avatar bubble -->
   <div class="avatar-badge">
     <img src="{% static 'images/volunteen_avatar_friendly_kid.png' %}"
-         alt="Avatar" class="avatar-image">
+         alt="{% trans 'Avatar' %}" class="avatar-image">
   </div>
 
   <!-- Streak card -->
@@ -44,20 +46,20 @@
 
     </div>
 
-    <h2 class="streak-title">🔥 רצף ההתחברויות שלך</h2>
+    <h2 class="streak-title">{% trans "🔥 רצף ההתחברויות שלך" %}</h2>
     <p class="streak-count">
       <strong id="streak-count">{{ child.streak_count }}</strong>
-      ימים ברצף
+      {% trans "ימים ברצף" %}
     </p>
 
     <button id="streak-button"
             class="streak-btn"
             onclick="saveStreak()">
-      ✅ שמור על הרצף שלך
+      {% trans "✅ שמור על הרצף שלך" %}
     </button>
 
     <p id="streak-success" class="streak-success">
-      🎉 כל הכבוד! שמרת על הרצף שלך! 🔥
+      {% trans "🎉 כל הכבוד! שמרת על הרצף שלך! 🔥" %}
     </p>
   </div>
 </div>
@@ -65,22 +67,22 @@
 <div class="user-info-panel">
     <div class="user-level">
         <i class="fas fa-star" style="color: gold; font-size: 1.5em;"></i>
-        <span>הרמה שלך: <strong>{{ level_name }}</strong> ({{ level }})</span>
+        <span>{% trans "הרמה שלך:" %} <strong>{{ level_name }}</strong> ({{ level }})</span>
     </div>
     <div class="user-teencoins">
         <i class="fas fa-coins" style="color: #ffca28; font-size: 1.5em;"></i>
-        <span>טינקוינס בארנק: <strong>{{ active_points }}</strong></span>
+        <span>{% trans "טינקוינס בארנק:" %} <strong>{{ active_points }}</strong></span>
     </div>
 </div>
 
 <div class="cta-section">
     <button class="cta-button" onclick="scrollToTasks()">
-        בוא נאסוף עוד טינקאוינס!
+        {% trans "בוא נאסוף עוד טינקאוינס!" %}
     </button>
 </div>
 
 <div class="progress-container">
-    <p>התקדמות לרמה הבאה:</p>
+    <p>{% trans "התקדמות לרמה הבאה:" %}</p>
     <div class="progress-bar">
         <div class="progress-bar-fill" style="width: {{ progress_percent }}%;"></div>
     </div>
@@ -88,9 +90,9 @@
 </div>
 
 <div class="qr-center-row">
-  <button type="button" class="secret-code-button" onclick="openQRModal()" aria-label="חבר מביא חבר – הצג קוד QR">
+  <button type="button" class="secret-code-button" onclick="openQRModal()" aria-label="{% trans 'חבר מביא חבר – הצג קוד QR' %}">
     <i class="fas fa-qrcode" aria-hidden="true"></i>
-    חבר מביא חבר 📱
+    {% trans "חבר מביא חבר 📱" %}
   </button>
 </div>
 
@@ -98,12 +100,12 @@
 <!-- QR Modal -->
 <div id="qrModal" class="qr-modal" aria-hidden="true" role="dialog" aria-labelledby="qrModalTitle">
   <div class="qr-modal__content">
-    <button class="qr-modal__close" type="button" aria-label="סגור" onclick="closeQRModal()">&times;</button>
-    <h3 id="qrModalTitle" class="qr-modal__title">סרקו את הקוד והצטרפו למשחק! 🎮</h3>
+    <button class="qr-modal__close" type="button" aria-label="{% trans 'סגור' %}" onclick="closeQRModal()">&times;</button>
+    <h3 id="qrModalTitle" class="qr-modal__title">{% trans "סרקו את הקוד והצטרפו למשחק! 🎮" %}</h3>
 
     <img
       src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data={{ referral_url|urlencode }}"
-      alt="קוד QR להזמנה"
+      alt="{% trans 'קוד QR להזמנה' %}"
       class="qr-modal__img"
       width="280" height="280"
     />
@@ -113,15 +115,15 @@
 
 {% if new_tasks_count > 0 %}
 <div id="newTaskNotification" class="notification">
-    <p>יש לך {{ new_tasks_count }} משימות חדשות!</p>
+    <p>{% blocktrans with count=new_tasks_count %}יש לך {{ count }} משימות חדשות!{% endblocktrans %}</p>
     
     <p>
         <a href="{% url 'childApp:child_active_list' %}" class="button close-button task-button">
-            קדימה למשימות! 🧡
+            {% trans "קדימה למשימות! 🧡" %}
         </a>
     </p>
         <button type="button" onclick="markTasksAsViewed()" class="button close-button">
-            סימנתי כנקרא
+            {% trans "סימנתי כנקרא" %}
         </button>   
 </div>
 {% endif %}
@@ -131,48 +133,48 @@
 <div class="navigation-grid">
     <a href="{% url 'childApp:child_active_list' %}" class="nav-button" style="background-color: #28a745;">
         <i class="fas fa-tasks"></i>
-        <span>רשימת משימות</span>
+        <span>{% trans "רשימת משימות" %}</span>
     </a>
     <a href="{% url 'childApp:reward' %}" class="nav-button" style="background-color: #ff4081;">
         <i class="fas fa-gift"></i>
-        <span>רשימת פרסים</span>
+        <span>{% trans "רשימת פרסים" %}</span>
     </a>
     <a href="{% url 'childApp:child_redemption_history' %}" class="nav-button" style="background-color: #17a2b8;">
         <i class="fas fa-history"></i>
-        <span>היסטוריית רכישה</span>
+        <span>{% trans "היסטוריית רכישה" %}</span>
     </a>
     <a href="{% url 'childApp:child_not_approved_requests' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-clock"></i>
-        <span>בקשות בתהליך</span>
+        <span>{% trans "בקשות בתהליך" %}</span>
     </a>
     <a href="{% url 'childApp:child-campaigns' %}" class="nav-button" style="background-color: #c542a4;">
         <i class="fas fa-bullhorn"></i>
-        <span>קמפיינים</span>
+        <span>{% trans "קמפיינים" %}</span>
     </a>
     
     <a href="{% url 'childApp:child_points_history' %}" class="nav-button" style="background-color: #9175c8;">
         <i class="fas fa-coins"></i>
-        <span>היסטוריית טינקוינס</span>
+        <span>{% trans "היסטוריית טינקוינס" %}</span>
     </a>
     <a href="{% url 'childApp:points_leaderboard' %}" class="nav-button" style="background-color: #ff9800;">
         <i class="fas fa-trophy"></i>
-        <span>קיר התהילה</span>
+        <span>{% trans "קיר התהילה" %}</span>
     </a>
     <a href="{% url 'childApp:top_streaks' %}" class="nav-button" style="background-color: #f44336;">
         <i class="fas fa-fire"></i>
-        <span>שיאני רצף</span>
+        <span>{% trans "שיאני רצף" %}</span>
     </a>
     <a href="{% url 'childApp:donation_leaderboard' %}" class="nav-button" style="background-color: #2196F3;">
         <i class="fas fa-donate"></i>
-        <span>קיר התרומות</span>
+        <span>{% trans "קיר התרומות" %}</span>
     </a>
     <a href="{% url 'childApp:child_invite_qr' %}" class="nav-button" style="background-color: #ff7a18;">
         <i class="fas fa-user-friends"></i>
-        <span>הזמן חברים</span>
+        <span>{% trans "הזמן חברים" %}</span>
     </a>
     <a href="{% url 'childApp:task_check_in_out' %}" class="nav-button" style="background-color: #ff5722;">
         <i class="fas fa-map-marker-alt"></i>
-        <span>צ'ק אין/אאוט</span>
+        <span>{% trans "צ'ק אין/אאוט" %}</span>
     </a>
    
     <a
@@ -181,34 +183,46 @@
     style="background-color: #8bc34a"
   >
     <i class="fas fa-hand-holding-heart"></i>
-    <span>צדקה</span>
+    <span>{% trans "צדקה" %}</span>
   </a>
   <a href="{% url 'childApp:get_reviewed_tasks' %}" class="nav-button" style="background-color: #5d22ff;">
     <i class="fas fa-history"></i>
-    <span>היסטוריית משימות</span>
+    <span>{% trans "היסטוריית משימות" %}</span>
 </a>
     <a href="{% url 'teenApp:logout_view' %}" class="nav-button nav-logout">
         <i class="fas fa-sign-out-alt"></i>
-        <span>יציאה</span>
+        <span>{% trans "יציאה" %}</span>
     </a>
 </div>
 
-{% if child.medals.exists %}
-<div class="achievements-section">
-    <h2>הישגים ומדליות</h2>
-    <div class="medals-container">
-        {% for medal in child.medals.all %}
-        <div class="medal-card">
-            <div class="medal-icon">🏅</div>
-            <h3>{{ medal.name }}</h3>
-            <p>{{ medal.description }}</p>
-            <small>+{{ medal.points_reward }} נק'</small>
+<div class="language-selector-container">
+    
+    <label for="language-select" class="language-select-label">
+        <i class="fas fa-globe" aria-hidden="true"></i>
+        {% trans "שנה שפה" %}
+    </label>
+    
+    <form action="{% url 'set_language' %}" method="post" class="language-select-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        
+        <div class="language-select-wrapper">
+            <select name="language" id="language-select" onchange="this.form.submit()" class="language-select-dropdown">
+                {% get_current_language as LANGUAGE_CODE %}
+                
+                <option value="he" {% if LANGUAGE_CODE == 'he' %}selected{% endif %}>עברית</option>
+                <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
+            </select>
         </div>
-        {% endfor %}
-    </div>
+    </form>
 </div>
-{% endif %}
 
+
+<div id="messages"
+     data-reward-msg="{% blocktrans %}קיבלת בונוס על רצף של %(milestone)s ימים!{% endblocktrans %}"
+     data-new-streak-msg="{% trans 'התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥' %}"
+    data-next-bonus-msg="{% blocktrans with days='%(days)s' %}עוד {{ days }} ימים לבונוס הבא ✨{% endblocktrans %}">
+</div>
 
 {% endblock content %}
 
@@ -306,12 +320,16 @@ function saveStreak() {
         message.style.color = "#333";
         message.style.fontSize = "0.95rem";
 
+        const dataElem = document.getElementById('messages');
         const daysToNext = 10 - (data.streak % 10);
+
         if (data.reward_given) {
-            alert(`🎁 קיבלת בונוס על רצף של ${data.milestone} ימים!`);
-            message.innerText = `התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥`;
+            const msg = dataElem.dataset.rewardMsg.replace('%(milestone)s', data.milestone);
+            alert(`🎁 ${msg}`);
+            message.innerText = dataElem.dataset.newStreakMsg;
         } else if (daysToNext !== 10) {
-            message.innerText = `עוד ${daysToNext} ימים לבונוס הבא ✨`;
+            const msg = dataElem.dataset.nextBonusMsg.replace('%(days)s', daysToNext);
+            message.innerText = msg;
         }
 
         const streakSection = document.querySelector(".streak-card");
@@ -374,688 +392,5 @@ document.addEventListener('keydown',function(e){
 });
 </script>
 
-<style>
-
-body {
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
-    font-family: 'Alef', Arial, sans-serif;
-}
-
-.header-section {
-    text-align: center;
-    margin-top: 20px;
-}
-.welcome-message {
-    font-size: 2em;
-    color: #5d22ff;
-}
-.tagline {
-    margin-top: 0;
-    font-size: 1.2em;
-    color: #555;
-}
-
-.avatar-streak-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 15px;
-}
-.avatar {
-    margin-right: 20px;
-}
-.avatar-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 2px solid #ddd;
-}
-.streak-info p {
-    font-size: 1em;
-    font-weight: bold;
-    color: #ff5722;
-}
-.streak-info small {
-    color: #666;
-}
-
-.user-info-panel {
-    display: flex;
-    justify-content: center;
-    margin: 15px 0;
-    gap: 30px;
-}
-.streak-button {
-    background: linear-gradient(45deg, #ff5722, #ff9800);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-size: 1.2em;
-    padding: 15px 30px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.streak-button:hover {
-    background: linear-gradient(45deg, #ff9800, #ff5722);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
-    transform: scale(1.05);
-}
-
-.streak-button:active {
-    background: linear-gradient(45deg, #e64a19, #f4511e);
-    transform: scale(0.95);
-}
-
-.fire-animation {
-    position: absolute;
-    top: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 100px;
-    background-image: url('{% static "images/fire.gif" %}');
-    background-size: cover;
-    z-index: 1000;
-    animation: fire-burst 1s ease-out forwards;
-}
-
-@keyframes fire-burst {
-    0% {
-        transform: translateX(-50%) scale(0.5);
-        opacity: 0.8;
-    }
-    50% {
-        transform: translateX(-50%) scale(1.2);
-        opacity: 1;
-    }
-    100% {
-        transform: translateX(-50%) scale(1);
-        opacity: 0;
-    }
-}
-.user-info-panel div {
-    background: #ffffff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 1px solid #eee;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1em;
-    color: #333;
-}
-
-.cta-section {
-    text-align: center;
-    margin: 20px 0;
-}
-.cta-button {
-    background-color: #ff4081;
-    border: none;
-    color: #fff;
-    font-size: 1.2em;
-    padding: 15px 30px;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
-}
-.cta-button:hover {
-    background-color: #ff1a66;
-}
-
-.progress-container {
-    width: 80%;
-    max-width: 400px;
-    margin: 20px auto;
-    text-align: center;
-}
-.progress-bar {
-    background-color: #e0e0e0;
-    border-radius: 50px;
-    overflow: hidden;
-    height: 20px;
-    position: relative;
-}
-.progress-bar-fill {
-    background-color: #5d22ff;
-    height: 100%;
-    transition: width 0.5s;
-}
-.progress-bar-text {
-    display: inline-block;
-    margin-top: 5px;
-    font-size: 0.9em;
-    color: #333;
-}
-
-.secret-code-button{
-  display:block;
-  margin:10px auto;
-  background:#2979ff;
-  color:#fff;
-  padding:14px 26px;
-  border-radius:30px;
-  border:none;
-  cursor:pointer;
-  font-weight:800;            
-  font-size:1.1rem;
-  letter-spacing:.2px;
-  box-shadow:0 10px 18px rgba(41,121,255,.35);
-  transform-origin:center bottom;
-  will-change: transform, box-shadow;
-  --hop: 12px;                  
-  --squash: .06;                
-  animation:
-    btn-jumpy 1.05s cubic-bezier(.2,.7,.2,1) infinite,
-    btn-glow  2.4s ease-in-out infinite;
-}
-
-.secret-code-button:hover,
-.secret-code-button:focus-visible{
-  --hop: 16px;
-  box-shadow:0 14px 26px rgba(21,101,192,.45);
-  outline: none;
-}
-
-.secret-code-button:hover{ background:#1565c0; }
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
-}
-.modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 350px;
-    text-align: center;
-    border-radius: 10px;
-    position: relative;
-}
-.modal-content .close {
-    position: absolute;
-    top: 10px; right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.notification {
-    background-color: #ff9800;
-    color: #fff;
-    padding: 15px;
-    margin: 20px auto;
-    border-radius: 8px;
-    max-width: 300px;
-    text-align: center;
-}
-.close-button {
-    margin-top: 10px;
-    background-color: #fff;
-    color: #ff9800;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-}
-.close-button:hover {
-    background-color: #f1f1f1;
-}
-
-.featured-tasks-container {
-    width: 90%;
-    max-width: 600px;
-    margin: 20px auto;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #eee;
-}
-
-.featured-tasks-container h2 {
-    text-align: center;
-    margin-bottom: 10px;
-    color: #333;
-}
-.task-list {
-    list-style-type: none;
-    padding: 0;
-}
-.task-list li {
-    background: #f7f7f7;
-    padding: 10px 10px 10px 35px; 
-    margin-bottom: 8px;
-    border-radius: 6px;
-    color: #555;
-    position: relative; 
-}
-
-.task-list li span {
-    display: inline-block;
-    margin-top: 5px;
-    color: #5d22ff;
-    font-weight: bold;
-}
-
-.pinned-task {
-    background-color: #fff8e1;
-    border: 2px solid #ffcc00;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.pin-icon {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    font-size: 1.2rem;
-    cursor: default;
-}
-
-
-.navigation-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
-    width: 90%;
-    max-width: 600px;
-    margin: 20px auto;
-}
-.nav-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 15px;
-    border-radius: 10px;
-    color: #fff;
-    text-decoration: none;
-    font-size: 0.9em;
-    text-align: center;
-    transition: transform 0.3s;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.2);
-}
-.nav-button i {
-    font-size: 1.5em;
-    margin-bottom: 5px;
-}
-.nav-button:hover {
-    transform: translateY(-3px);
-}
-.nav-logout {
-    background-color: #9e9e9e !important;
-}
-
-.achievements-section {
-    width: 90%;
-    max-width: 600px;
-    margin: 30px auto;
-    text-align: center;
-}
-.achievements-section h2 {
-    margin-bottom: 15px;
-    color: #333;
-}
-.medals-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-}
-.medal-card {
-    background: #fff;
-    border: 2px solid gold;
-    border-radius: 10px;
-    padding: 10px;
-    width: 120px;
-    text-align: center;
-}
-.medal-icon {
-    font-size: 2em;
-}
-.medal-card h3 {
-    margin: 5px 0;
-    font-size: 1em;
-    color: #333;
-}
-.medal-card p {
-    font-size: 0.9em;
-    color: #666;
-}
-.medal-card small {
-    display: block;
-    margin-top: 5px;
-    color: #5d22ff;
-}
-
-.medal-popup {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    border: 2px solid gold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    z-index: 1000;
-    border-radius: 10px;
-}
-.medal-popup h2 {
-    color: #ff9800;
-    font-size: 1.5em;
-}
-.medal-popup h3 {
-    color: #333;
-    font-size: 1.2em;
-}
-.medal-popup p {
-    color: #555;
-}
-.medal-popup button {
-    background: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    margin-top: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.medal-popup button:hover {
-    background: #0056b3;
-}
-
-.confetti {
-    position: fixed;
-    top: 0;
-    width: 10px;
-    height: 10px;
-    opacity: 0.7;
-    animation: confetti-fall 2s linear forwards;
-}
-@keyframes confetti-fall {
-    to {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 1;
-    }
-}
-.premium-warning {
-    background: linear-gradient(135deg, #ff4081, #ff6a9a);
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 10px;
-    position: relative;
-    animation: slideDown 1s ease-out forwards;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  }
-  
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .warning-content {
-    color: #fff;
-    text-align: center;
-  }
-  
-  .warning-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
-    animation: pulse 2s infinite;
-  }
-  
-  .warning-content p {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    line-height: 1.4;
-  }
-  
-  .warning-cta {
-    display: inline-block;
-    background-color: #ffffff;
-    color: #ff4081;
-    padding: 10px 20px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: transform 0.3s ease, background-color 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  }
-  
-  .warning-cta:hover {
-    transform: scale(1.05);
-    background-color: #f9f9f9;
-  }
-  
-  /* Pulse animation for the header */
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 480px) {
-    .premium-warning {
-      margin: 10px;
-      padding: 15px;
-    }
-    .warning-content h2 {
-      font-size: 1.5rem;
-    }
-    .warning-content p {
-      font-size: 1rem;
-    }
-    .warning-cta {
-      padding: 8px 16px;
-      font-size: 0.9rem;
-    }
-  }
-  .task-button {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    padding: 12px 20px;
-
-  }
-  .avatar-streak-container.redesigned{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:clamp(8px,4vw,20px);
-  margin-block:clamp(12px,6vw,32px);
-  max-width:380px;
-  margin-inline:auto;
-  perspective:1200px;                /* subtle 3-D feel */
-}
-
-/* Avatar bubble */
-.avatar-badge{
-  position:relative;
-  width:96px;height:96px;
-}
-.avatar-badge .avatar-image{
-  width:100%;height:100%;object-fit:cover;
-  border-radius:50%;
-  border:4px solid #fff;
-  box-shadow:0 4px 12px rgba(0,0,0,.25);
-  background:linear-gradient(135deg,#5d22ff 0%,#00d4ff 100%);
-  animation:floatAvatar 4s ease-in-out infinite;
-}
-@keyframes floatAvatar{
-  0%,100%{transform:translateY(0)}
-  50%   {transform:translateY(-6px)}
-}
-
-/* Streak glass-card */
-.streak-card{
-  position:relative;
-  width:100%;
-  padding:28px 22px 32px;
-  border-radius:24px;
-  background:rgba(255,255,255,0.65);
-  backdrop-filter:blur(12px) saturate(120%);
-  box-shadow:0 10px 24px rgba(93,34,255,.18);
-  overflow:hidden;
-  animation:riseIn .6s cubic-bezier(.22,.7,.36,1) both;
-}
-/* animated gradient border */
-.streak-card::before{
-  content:"";
-  position:absolute;inset:0;
-  padding:2px;border-radius:inherit;
-  background:conic-gradient(from var(--angle),
-    #5d22ff,#ff4081,#ff9800,#5d22ff);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-  animation:spinBorder 6s linear infinite;
-}
-@keyframes spinBorder{
-  to{--angle:1turn}
-}
-@keyframes riseIn{
-  from{opacity:0;transform:translateY(20px) scale(.95)}
-  to  {opacity:1;transform:translateY(0)    scale(1)}
-}
-
-/* Lottie flame sizing */
-.flame{width:94px;height:94px;margin-inline:auto;margin-bottom:8px}
-
-/* Text styles */
-.streak-title{
-  font-size:1.4rem;
-  margin:0 0 4px;
-  color:#ff5722;font-weight:700;
-}
-.streak-count{
-  font-size:1.9rem;
-  font-weight:600;
-  color:#4caf50;
-  margin:0 0 16px;
-}
-
-/* CTA button */
-.streak-btn{
-  display:inline-block;
-  padding:12px 32px;
-  font-size:1.15rem;
-  font-weight:700;
-  color:#fff;
-  background:linear-gradient(135deg,#ff9800,#ff5722);
-  border:none;border-radius:32px;
-  cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,.25);
-  transition:transform .2s,box-shadow .2s;
-}
-.streak-btn:hover{transform:translateY(-2px)}
-.streak-btn:active{transform:scale(.96);box-shadow:0 3px 8px rgba(0,0,0,.3)}
-
-/* Success label (hidden by default) */
-.streak-success{
-  display:none;margin-top:14px;
-  color:#43a047;font-weight:700;
-  font-size:1rem;
-  animation:bounceIn .5s ease-out both;
-}
-@keyframes bounceIn{
-  0%  {opacity:0;transform:scale(.6)}
-  60% {opacity:1;transform:scale(1.1)}
-  100%{transform:scale(1)}
-}
-
-/* Mobile fine-tuning */
-@media(max-width:420px){
-  .streak-count{font-size:1.6rem}
-  .streak-btn{font-size:1rem;padding:10px 26px}
-}
-/* ----------  compact Streak variant  ---------- */
-.avatar-badge         {width:72px; height:72px;}          
-.flame                {width:72px; height:72px; margin-bottom:4px;}  
-.streak-card          {padding:20px 18px 24px; max-width:320px;}     
-.streak-title         {font-size:1.2rem;}                 
-.streak-count         {font-size:1.6rem;}                 
-.streak-btn           {font-size:1rem; padding:10px 26px;} 
-/* ----------  MICRO-STREAK  ---------- */
-.avatar-streak-container.redesigned{gap:10px}
-
-.avatar-badge        {width:56px;height:56px}          
-.avatar-image        {border-width:3px}
-
-.flame               {width:56px;height:56px;margin-bottom:2px}
-
-.streak-card{
-  padding:16px 14px 18px;
-  max-width:260px;                   
-  border-radius:18px;
-  box-shadow:0 6px 16px rgba(93,34,255,.15);
-}
-
-.streak-title        {font-size:1rem;margin-bottom:2px}
-.streak-count        {font-size:1.2rem;margin-bottom:10px}
-
-.streak-btn{
-  font-size:.9rem;
-  padding:8px 22px;
-  border-radius:26px;
-  box-shadow:0 4px 10px rgba(0,0,0,.2);
-}
-
-@media(max-width:420px){
-  .streak-count{font-size:1.1rem}
-  .streak-btn {font-size:.85rem;padding:7px 18px}
-}
-.streak-card::before{
-  pointer-events:none; 
-}
-/* Button centered */
-.qr-btn{
-  display:inline-flex;align-items:center;gap:.5rem;justify-content:center;
-  background:#ff7a18;color:#fff;border:0;border-radius:12px;
-  padding:.65rem 1rem;font-weight:700;cursor:pointer;
-
-}
-
-/* Modal backdrop */
-.qr-modal{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000
-}
-
-/* Modal card */
-.qr-modal__content{
-  position:relative;width:92vw;max-width:420px;margin:8vh auto 0;
-  background:#fff;border-radius:16px;padding:16px 16px 20px;
-  box-shadow:0 20px 50px rgba(0,0,0,.28);text-align:center
-}
-
-/* Close button */
-.qr-modal__close{
-  position:absolute;top:8px;left:12px;background:transparent;border:0;
-  font-size:26px;line-height:1;cursor:pointer;color:#666
-}
-
-.qr-modal__title{margin:4px 0 10px;color:#222;font-size:1.05rem}
-.qr-modal__img{display:block;margin:0 auto;border-radius:12px}
-
-</style>
 
 {% endblock extra_scripts %}

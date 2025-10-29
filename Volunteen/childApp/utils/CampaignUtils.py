@@ -15,6 +15,7 @@ from teenApp.entities.TaskAssignment import TaskAssignment
 from teenApp.entities.TaskCompletion import TaskCompletion
 from shopApp.models import Campaign                    
 from Volunteen.constants import CAMPAIGN_MENTOR_USERNAME, CAMPAIGN_TIME_LIMIT_MINUTES, CAMPAIGN_BAN_DURATION_HOURS
+from django.utils.translation import gettext as _
 
 class CampaignUtils:
 
@@ -85,13 +86,13 @@ class CampaignUtils:
         campaign = Campaign.objects.select_for_update().get(pk=campaign.pk)
         CampaignUtils.clear_campaign_completions(child, campaign)
         if child.campaign_ban_until and timezone.localtime(timezone.now()) < child.campaign_ban_until:
-            raise ValueError(f"לא ניתן להצטרף לקמפיין כעת. נסה שוב בעוד {CAMPAIGN_BAN_DURATION_HOURS} שעות.")
+            raise ValueError(_(f"לא ניתן להצטרף לקמפיין כעת. נסה שוב בעוד {CAMPAIGN_BAN_DURATION_HOURS} שעות."))
         if CampaignUtils.current_approved_children_qs(campaign).filter(child=child.pk).exists():
-            raise ValueError("את/ה כבר נרשמת לקמפיין זה.")
+            raise ValueError(_("את/ה כבר נרשמת לקמפיין זה."))
 
         current_slots = CampaignUtils.current_approved_children_qs(campaign).count()
         if campaign.max_children and current_slots >= campaign.max_children:
-            raise ValueError("הקמפיין מלא.")
+            raise ValueError(_("הקמפיין מלא."))
 
         mentor = CampaignUtils.get_campaign_mentor()
         assignments = [

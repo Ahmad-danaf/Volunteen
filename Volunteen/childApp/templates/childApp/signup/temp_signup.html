@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block extra_head %}
 <script src="https://cdn.tailwindcss.com"></script>
@@ -48,7 +49,7 @@
 </style>
 {% endblock %}
 
-{% block title %}הרשמה - Volunteen{% endblock %}
+{% block title %}{% trans "הרשמה - Volunteen" %}{% endblock %}
 
 {% block content %}
 <div lang="he" dir="rtl" class="min-h-screen gradient-orange-blue relative overflow-hidden">
@@ -63,7 +64,7 @@
         <span class="text-4xl">🌟</span>
       </div>
       <h1 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">Volunteen</h1>
-      <p class="text-xl text-white/90 font-medium">הצטרף לקהילה שלנו! 🚀</p>
+      <p class="text-xl text-white/90 font-medium">{% trans "הצטרף לקהילה שלנו! 🚀" %}</p>
     </div>
 
     <!-- Django Messages -->
@@ -106,12 +107,12 @@
             <!-- Full Name -->
             <div class="mb-6">
               <label for="full_name" class="block text-gray-700 font-bold mb-2 text-sm">
-                שם מלא <span class="text-volunteen-orange">*</span>
+                {% trans "שם מלא" %} <span class="text-volunteen-orange">*</span>
               </label>
               <div class="relative">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">👤</span>
                 <input type="text" id="full_name" name="full_name" x-model="fullName" required
-                       placeholder="הכנס את שמך המלא"
+                       placeholder="{% trans 'הכנס את שמך המלא' %}"
                        class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
               </div>
             </div>
@@ -119,12 +120,12 @@
             <!-- Password -->
             <div class="mb-6">
               <label for="password" class="block text-gray-700 font-bold mb-2 text-sm">
-                סיסמה <span class="text-volunteen-orange">*</span>
+                {% trans "סיסמה" %} <span class="text-volunteen-orange">*</span>
               </label>
               <div class="relative">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">🔐</span>
                 <input :type="showPassword ? 'text' : 'password'" id="password" name="password" x-model="password" required
-                       placeholder="בחר סיסמה חזקה"
+                       placeholder="{% trans 'בחר סיסמה חזקה' %}"
                        class="w-full pr-12 pl-12 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
                 <button type="button" @click="showPassword = !showPassword"
                         class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
@@ -136,7 +137,7 @@
             <!-- Phone -->
             <div class="mb-6">
               <label for="phone" class="block text-gray-700 font-bold mb-2 text-sm">
-                מספר טלפון <span class="text-volunteen-orange">*</span>
+                {% trans "מספר טלפון" %} <span class="text-volunteen-orange">*</span>
               </label>
               <div class="relative">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">📱</span>
@@ -149,16 +150,16 @@
             <!-- Phone Confirm -->
             <div class="mb-6">
               <label for="phone_confirm" class="block text-gray-700 font-bold mb-2 text-sm">
-                אימות מספר טלפון <span class="text-volunteen-orange">*</span>
+                {% trans "אימות מספר טלפון" %} <span class="text-volunteen-orange">*</span>
               </label>
               <div class="relative">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">✅</span>
                 <input type="tel" id="phone_confirm" name="phone_confirm" x-model="phoneConfirm" @input="checkPhoneMatch()" required
-                       placeholder="הכנס שוב את מספר הטלפון" pattern="\d{10}"
+                       placeholder="{% trans 'הכנס שוב את מספר הטלפון' %}" pattern="\d{10}"
                        :class="{'border-red-400': !phoneMatch && phoneConfirm !== ''}"
                        class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
               </div>
-              <p x-show="!phoneMatch && phoneConfirm !== ''" x-transition class="text-red-500 text-sm mt-1">המספרים אינם תואמים</p>
+              <p x-show="!phoneMatch && phoneConfirm !== ''" x-transition class="text-red-500 text-sm mt-1">{% trans "המספרים אינם תואמים" %}</p>
             </div>
 
             <!-- Parent Approval -->
@@ -167,9 +168,9 @@
                 <input type="checkbox" id="parent_approval" name="parent_approval" x-model="parentApproval" required
                        class="custom-checkbox w-5 h-5 rounded border-2 border-gray-300 text-volunteen-orange focus:ring-volunteen-orange focus:ring-2 ml-3" />
                 <span class="text-gray-700 text-sm group-hover:text-gray-900 transition-colors">
-                  אני מאשר/ת שקיבלתי את הסכמת ההורים שלי
+                  {% trans "אני מאשר/ת שקיבלתי את הסכמת ההורים שלי" %}
                   <a href="https://drive.google.com/file/d/1X9wvdsyQE6amNxqKOC1k805hZvK4DyuX/view?usp=sharing"
-                     class="text-volunteen-blue hover:underline font-bold">(קרא את ההסכם)</a>
+                     class="text-volunteen-blue hover:underline font-bold">{% trans "(קרא את ההסכם)" %}</a>
                 </span>
               </label>
             </div>
@@ -192,16 +193,16 @@
             <div class="mb-6 glass rounded-xl p-4 border border-white/30">
               <div class="flex items-center justify-between gap-4">
                 <div>
-                  <div class="text-sm text-gray-500">שם מלא</div>
+                  <div class="text-sm text-gray-500">{% trans "שם מלא" %}</div>
                   <div class="font-semibold text-gray-800" x-text="fullName"></div>
                 </div>
                 <div class="text-left">
-                  <div class="text-sm text-gray-500">טלפון</div>
+                  <div class="text-sm text-gray-500">{% trans "טלפון" %}</div>
                   <div class="font-semibold text-gray-800"
                        x-text="phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3')"></div>
                 </div>
               </div>
-              <div class="mt-2 text-sm text-gray-600">✅ אישור הורים התקבל</div>
+              <div class="mt-2 text-sm text-gray-600">✅ {% trans "אישור הורים התקבל" %}</div>
 
           
             </div>
@@ -209,14 +210,14 @@
             <!-- verification code -->
             <div class="mb-6">
               <label for="verification_code" class="block text-gray-700 font-bold mb-2 text-sm">
-                קוד אימות שנשלח ב־WhatsApp <span class="text-volunteen-orange">*</span>
+                {% trans "קוד אימות שנשלח ב־WhatsApp" %} <span class="text-volunteen-orange">*</span>
               </label>
               <div class="relative">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xl">💬</span>
                 <input type="text" inputmode="numeric" pattern="\d{4,8}"
                        id="verification_code" name="verification_code" x-model="verificationCode"
                        :required="stepTwo" :disabled="!stepTwo"
-                       placeholder="הכנס את הקוד שקיבלת (6 ספרות)"
+                       placeholder="{% trans 'הכנס את הקוד שקיבלת (6 ספרות)' %}"
                        class="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/80" />
               </div>
             </div>
@@ -229,7 +230,7 @@
                 :class="{'opacity-50 cursor-not-allowed': !canSubmit}"
                 class="w-full py-4 gradient-orange-blue text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:transform-none">
           <span class="flex items-center justify-center">
-            <span x-text="stepTwo ? 'סיום הרשמה' : 'שלח קוד אימות'"></span>
+            <span x-text="stepTwo ? '{% trans 'סיום הרשמה' %}' : '{% trans 'שלח קוד אימות' %}'"></span>
             <span class="mr-2 text-2xl animate-pulse-slow">🎉</span>
           </span>
         </button>
@@ -238,12 +239,34 @@
       <!-- Login link -->
       <div class="text-center mt-6">
         <p class="text-white/90">
-          כבר רשום?
+          {% trans "כבר רשום?" %}
           <a href="{% url 'teenApp:login' %}"
              class="text-white font-bold hover:text-volunteen-blue-light transition-colors underline">
-            התחבר כאן
+            {% trans "התחבר כאן" %}
           </a>
         </p>
+      </div>
+
+  <div class="mt-8 text-center">
+        <form action="{% url 'set_language' %}" method="post" class="relative inline-block w-full max-w-xs">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            
+            <span class_contribute="absolute right-3 top-1/2 -translate-y-1/2 text-xl pointer-events-none">🌍</span>
+            
+            <label for="language-select" class="sr-only">{% trans "שנה שפה" %}</label> 
+            
+            <select name="language" id="language-select" onchange="this.form.submit()"
+                    class="w-full pr-12 pl-10 py-3 rounded-xl border-2 border-gray-200 focus:border-volunteen-orange input-glow transition-all text-gray-700 bg-white/95 font-semibold appearance-none cursor-pointer shadow-md hover:shadow-lg"> {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                <option value="he" {% if LANGUAGE_CODE == 'he' %}selected{% endif %}>עברית</option>
+            <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
+            </select>
+
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+        </form>
       </div>
 
       <!-- Fun footer -->
@@ -260,6 +283,12 @@
 <!-- Client-side helpers -->
 <script>
   // Minimal progressive enhancement: enforce phone format on step 1 only
+  const T_INVALID_FULLNAME = "{% trans 'נא להכניס שם מלא תקין' %}";
+  const T_NEED_NAME_PARTS = "{% trans 'נא להכניס שם פרטי ושם משפחה' %}";
+  const T_PASSWORD_TOO_SHORT = "{% trans 'הסיסמה חייבת להכיל לפחות 6 תווים' %}";
+  const T_PHONES_MISMATCH = "{% trans 'מספרי הטלפון אינם תואמים' %}";
+  const T_NEED_PARENT_APPROVAL = "{% trans 'יש לאשר קבלת הסכמת הורים' %}";
+  const T_PROCESSING = "{% trans 'מעבד...' %}";
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
 
@@ -277,7 +306,7 @@
           const label = btn.querySelector('[x-text]') || btn;
           if (label && !btn.dataset.originalText) {
             btn.dataset.originalText = label.textContent;
-            label.textContent = 'מעבד...';
+            label.textContent = T_PROCESSING;
           }
         });
         return;
@@ -295,11 +324,11 @@
       const phoneConfirm = phoneConfirmEl?.value || '';
       const parentApproval = parentEl?.checked;
 
-      if (fullName.length < 2) { e.preventDefault(); alert('נא להכניס שם מלא תקין'); return; }
-      if (!hasTwoNames) { e.preventDefault(); alert('נא להכניס שם פרטי ושם משפחה'); return; }
-      if (password.length < 6) { e.preventDefault(); alert('הסיסמה חייבת להכיל לפחות 6 תווים'); return; }
-      if (phone !== phoneConfirm) { e.preventDefault(); alert('מספרי הטלפון אינם תואמים'); return; }
-      if (!parentApproval) { e.preventDefault(); alert('יש לאשר קבלת הסכמת הורים'); return; }
+      if (fullName.length < 2) { e.preventDefault(); alert(T_INVALID_FULLNAME); return; }
+      if (!hasTwoNames) { e.preventDefault(); alert(T_NEED_NAME_PARTS); return; }
+      if (password.length < 6) { e.preventDefault(); alert(T_PASSWORD_TOO_SHORT); return; }
+      if (phone !== phoneConfirm) { e.preventDefault(); alert(T_PHONES_MISMATCH); return; }
+      if (!parentApproval) { e.preventDefault(); alert(T_NEED_PARENT_APPROVAL); return; }
 
       // === New: If we reached here, validation passed -> lock form to prevent double submit ===
       form.dataset.submitting = '1';
@@ -310,7 +339,7 @@
         const label = btn.querySelector('[x-text]') || btn;
         if (label && !btn.dataset.originalText) {
           btn.dataset.originalText = label.textContent;
-          label.textContent = 'מעבד...';
+          label.textContent = T_PROCESSING;
         }
       });
     });

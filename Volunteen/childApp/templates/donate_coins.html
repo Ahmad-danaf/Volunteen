@@ -1,6 +1,7 @@
 {% extends "child_base.html" %}
 {% load static %}
-{% block title %}תרומת טינקוינס{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "תרומת טינקוינס" %}{% endblock %}
 {% block extra_css %}
 <style>
   /* Orange theme and general styles */
@@ -204,19 +205,18 @@
 {% endblock %}
 {% block content %}
 <div class="donation-container">
-  <h1 class="donation-title">תרום טינקוינס</h1>
-  <p class="donation-subtitle">תרום את הטינקוינס שלך ועזור לקהילה</p>
+  <h1 class="donation-title">{% trans "תרום טינקוינס" %}</h1>
+  <p class="donation-subtitle">{% trans "תרום את הטינקוינס שלך ועזור לקהילה" %}</p>
   
   <div class="saying-container">
     <p id="verse-text">
       فَمَنْ يَعْمَلْ مِثْقَالَ ذَرَّةٍ خَيْرًا يَرَهُ <span class="verse-reference">(99:7)</span>
     </p>
-    <button class="verse-toggle" id="toggle-verse">עברית</button>
   </div>
   
   <div class="balance-info">
-    יש לך
-    <span class="balance-amount">{{ available_teencoins }}</span> טינקוינס זמינים לתרומה
+    {% trans "יש לך" %}
+    <span class="balance-amount">{{ available_teencoins }}</span> {% trans "טינקוינס זמינים לתרומה" %}
   </div>
   
   <!-- Category Selection Section (Now inside the form) -->
@@ -224,7 +224,7 @@
     {% csrf_token %}
     
     <div class="category-selection">
-      <h3>בחר קטגוריה לתרומה</h3>
+      <h3>{% trans "בחר קטגוריה לתרומה" %}</h3>
       <div class="category-options">
         {% for category in categories %}
           <div class="category-item {% if forloop.first %}selected{% endif %}" data-category-id="{{ category.id }}">
@@ -257,7 +257,7 @@
     </div>
     {% endif %}
     
-    <button type="submit" class="submit-button">תרום עכשיו</button>
+    <button type="submit" class="submit-button">{% trans "תרום עכשיו" %}</button>
   </form>
 </div>
 
