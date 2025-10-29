@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volunteen 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-29 06:23+0200\n"
+"POT-Creation-Date: 2025-10-29 07:23+0200\n"
 "PO-Revision-Date: 2025-10-22 23:49+0300\n"
 "Last-Translator: Volunteen Team <info@volunteen.com>\n"
 "Language-Team: Arabic\n"
@@ -84,8 +84,6 @@ msgid "מזון בריאות"
 msgstr "أكل صحي"
 
 #: .\Volunteen\constants.py:22
-#, fuzzy
-#| msgid "הישגים ומדליות"
 msgid "בשרים וגריל"
 msgstr "إنجازات وميداليات"
 
@@ -118,14 +116,10 @@ msgid "ספרים"
 msgstr "كتب"
 
 #: .\Volunteen\constants.py:30
-#, fuzzy
-#| msgid "אושר"
 msgid "אחר"
 msgstr "اتوافق"
 
 #: .\Volunteen\constants.py:50
-#, fuzzy
-#| msgid "לא התחיל"
 msgid "מתחיל"
 msgstr "ما بلّش"
 
@@ -142,8 +136,6 @@ msgid "שגריר"
 msgstr "سفير"
 
 #: .\Volunteen\constants.py:54
-#, fuzzy
-#| msgid "אין"
 msgid "מגן"
 msgstr "ما في"
 
@@ -156,8 +148,6 @@ msgid "נועז"
 msgstr "جريء"
 
 #: .\Volunteen\constants.py:57
-#, fuzzy
-#| msgid "אושר"
 msgid "אור"
 msgstr "اتوافق"
 
@@ -175,8 +165,6 @@ msgid "כוכב"
 msgstr "نجم"
 
 #: .\Volunteen\constants.py:61 .\Volunteen\constants.py:146
-#, fuzzy
-#| msgid "חדש"
 msgid "חזק"
 msgstr "جديد"
 
@@ -185,8 +173,6 @@ msgid "נדיב"
 msgstr "كريم"
 
 #: .\Volunteen\constants.py:63 .\Volunteen\constants.py:144
-#, fuzzy
-#| msgid "ראשון"
 msgid "רוח"
 msgstr "رِيح"
 
@@ -221,8 +207,6 @@ msgstr "حاكم"
 
 #: .\Volunteen\constants.py:71 .\Volunteen\constants.py:94
 #: .\Volunteen\constants.py:101
-#, fuzzy
-#| msgid "שם"
 msgid "שר"
 msgstr "الاسم"
 
@@ -243,8 +227,6 @@ msgid "אביר"
 msgstr "فارس"
 
 #: .\Volunteen\constants.py:76 .\Volunteen\constants.py:140
-#, fuzzy
-#| msgid "כמות:"
 msgid "כוח"
 msgstr "كمية:"
 
@@ -261,8 +243,6 @@ msgid "עמיד"
 msgstr "صامد"
 
 #: .\Volunteen\constants.py:80
-#, fuzzy
-#| msgid "חסום"
 msgid "חכם"
 msgstr "محظور"
 
@@ -275,14 +255,10 @@ msgid "מהיר"
 msgstr "סريع"
 
 #: .\Volunteen\constants.py:83
-#, fuzzy
-#| msgid "חסום"
 msgid "חסד"
 msgstr "محظور"
 
 #: .\Volunteen\constants.py:84
-#, fuzzy
-#| msgid "נק'"
 msgid "ענק"
 msgstr "نقطة"
 
@@ -347,8 +323,6 @@ msgid "תומך"
 msgstr "داعِم"
 
 #: .\Volunteen\constants.py:105 .\Volunteen\constants.py:125
-#, fuzzy
-#| msgid "שבת"
 msgid "לב"
 msgstr "السبت"
 
@@ -357,14 +331,10 @@ msgid "מתמיד"
 msgstr "مثابر"
 
 #: .\Volunteen\constants.py:108 .\Volunteen\constants.py:147
-#, fuzzy
-#| msgid "שישי"
 msgid "שמש"
 msgstr "الجمعة"
 
 #: .\Volunteen\constants.py:110
-#, fuzzy
-#| msgid "שעה"
 msgid "רעם"
 msgstr "ساعة"
 
@@ -373,20 +343,14 @@ msgid "חזון"
 msgstr "رؤية"
 
 #: .\Volunteen\constants.py:112
-#, fuzzy
-#| msgid "אושר"
 msgid "אש"
 msgstr "اتوافق"
 
 #: .\Volunteen\constants.py:113
-#, fuzzy
-#| msgid "בטל"
 msgid "גל"
 msgstr "إلغاء"
 
 #: .\Volunteen\constants.py:114
-#, fuzzy
-#| msgid "בטל"
 msgid "ברק"
 msgstr "إلغاء"
 
@@ -395,14 +359,10 @@ msgid "חלוץ"
 msgstr "ريادي"
 
 #: .\Volunteen\constants.py:116
-#, fuzzy
-#| msgid "הושלם"
 msgid "מושלם"
 msgstr "اكتمل"
 
 #: .\Volunteen\constants.py:117
-#, fuzzy
-#| msgid "חדש"
 msgid "חבר"
 msgstr "جديد"
 
@@ -419,14 +379,10 @@ msgid "מלאך"
 msgstr "ملاك"
 
 #: .\Volunteen\constants.py:121
-#, fuzzy
-#| msgid "שעה"
 msgid "שקט"
 msgstr "ساعة"
 
 #: .\Volunteen\constants.py:122
-#, fuzzy
-#| msgid "נק'"
 msgid "נס"
 msgstr "نقطة"
 
@@ -435,8 +391,6 @@ msgid "יוצר"
 msgstr "مُبدِع"
 
 #: .\Volunteen\constants.py:124
-#, fuzzy
-#| msgid "לעזוב"
 msgid "להב"
 msgstr "أطلع"
 
@@ -457,8 +411,6 @@ msgid "תקווה"
 msgstr "أمل"
 
 #: .\Volunteen\constants.py:130
-#, fuzzy
-#| msgid "אושר"
 msgid "אשד"
 msgstr "اتوافق"
 
@@ -467,8 +419,6 @@ msgid "שלווה"
 msgstr "هدوء"
 
 #: .\Volunteen\constants.py:132
-#, fuzzy
-#| msgid "חדש"
 msgid "תדר"
 msgstr "جديد"
 
@@ -477,8 +427,6 @@ msgid "שמחה"
 msgstr "فرح"
 
 #: .\Volunteen\constants.py:134
-#, fuzzy
-#| msgid "דרג"
 msgid "פרץ"
 msgstr "قيّم"
 
@@ -491,14 +439,10 @@ msgid "סופה"
 msgstr "عاصفة"
 
 #: .\Volunteen\constants.py:139
-#, fuzzy
-#| msgid "אין"
 msgid "קרן"
 msgstr "ما في"
 
 #: .\Volunteen\constants.py:142
-#, fuzzy
-#| msgid "שבת"
 msgid "משב"
 msgstr "السبت"
 
@@ -511,8 +455,6 @@ msgid "אגדה"
 msgstr "أسطورة"
 
 #: .\Volunteen\constants.py:148
-#, fuzzy
-#| msgid "קיר התהילה"
 msgid "תהילה"
 msgstr "لوح الشرف"
 
@@ -1496,8 +1438,9 @@ msgid "היסטוריית משימות"
 msgstr "سجلّ المهام"
 
 #: .\childApp\templates\child_home.html:222
-#, python-format
-msgid "קיבלת בונוס על רצף של %(milestone)s ימים!"
+#, fuzzy, python-format
+#| msgid "קיבלת בונוס על רצף של %(milestone)s ימים!"
+msgid "קיבלת בונוס על רצף של %%(milestone)s ימים!"
 msgstr "أخذت بونص على سلسلة من %(milestone)s أيام!"
 
 #: .\childApp\templates\child_home.html:223
@@ -1899,6 +1842,8 @@ msgid "תאריך סיום"
 msgstr "تاريخ النهاية"
 
 #: .\childApp\templates\points_leaderboard.html:29
+#: .\teenApp\interface_adapters\forms.py:44
+#: .\teenApp\interface_adapters\forms.py:78
 msgid "עיר"
 msgstr "مدينة"
 
@@ -1975,6 +1920,8 @@ msgid "פרסים ומבצעים"
 msgstr "جوائز وعروض"
 
 #: .\childApp\templates\shop_list.html:247
+#: .\teenApp\interface_adapters\forms.py:42
+#: .\teenApp\interface_adapters\forms.py:76
 msgid "כל הערים"
 msgstr "كل المدن"
 
@@ -2496,6 +2443,47 @@ msgstr "هالإعدادات بتتحكم بصلاحيات خاصّة لهالم
 #: .\teenApp\admin.py:241
 msgid "Configure based on frequency type"
 msgstr "اضبط حسب نوع التكرار"
+
+#: .\teenApp\interface_adapters\forms.py:13
+msgid "Points to Redeem"
+msgstr ""
+
+#: .\teenApp\interface_adapters\forms.py:22
+#: .\teenApp\interface_adapters\forms.py:34
+#: .\teenApp\interface_adapters\forms.py:66
+msgid "מתאריך"
+msgstr "من تاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:27
+#: .\teenApp\interface_adapters\forms.py:39
+#: .\teenApp\interface_adapters\forms.py:72
+msgid "עד תאריך"
+msgstr "لِتاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:50
+msgid "חודש נוכחי"
+msgstr "الشهر الحالي"
+
+#: .\teenApp\interface_adapters\forms.py:51
+msgid "חודש שעבר"
+msgstr "الشهر اللي فات"
+
+#: .\teenApp\interface_adapters\forms.py:52
+msgid "כל הזמנים"
+msgstr "كل الوقت"
+
+#: .\teenApp\interface_adapters\forms.py:53
+msgid "טווח מותאם"
+msgstr "فترة مخصصة"
+
+#: .\teenApp\interface_adapters\forms.py:60
+msgid "סנן לפי תאריך"
+msgstr "لِتاريخ:"
+
+#: .\teenApp\interface_adapters\forms.py:91
+#: .\teenApp\interface_adapters\forms.py:92
+msgid "חובה לציין תאריך התחלה וסיום."
+msgstr "لازم تحط تاريخ بداية ونهاية."
 
 #~ msgid "עברית"
 #~ msgstr "عبريّة"

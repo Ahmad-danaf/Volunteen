@@ -221,7 +221,7 @@
 <div id="messages"
      data-reward-msg="{% blocktrans %}קיבלת בונוס על רצף של %(milestone)s ימים!{% endblocktrans %}"
      data-new-streak-msg="{% trans 'התחלת רצף חדש! עוד 10 ימים לבונוס הבא 💥' %}"
-     data-next-bonus-msg="{% blocktrans %}עוד %(days)s ימים לבונוס הבא ✨{% endblocktrans %}">
+    data-next-bonus-msg="{% blocktrans with days='%(days)s' %}עוד {{ days }} ימים לבונוס הבא ✨{% endblocktrans %}">
 </div>
 
 {% endblock content %}
