@@ -215,7 +215,7 @@ def donate_coins(request):
 def update_streak(request):
     """Update the child's streak (no reset, just count days clicked)."""
     if request.method != "POST":
-        return JsonResponse({"error": _("Invalid request")}, status=400)
+        return JsonResponse({"error": str(_("Invalid request"))}, status=400)
 
     child = Child.objects.select_related("user").get(user=request.user)
     today = date.today()
@@ -231,7 +231,7 @@ def update_streak(request):
         ) or 0
 
         return JsonResponse({
-            "message": _("כבר לחצת היום!"),
+            "message": str(_("כבר לחצת היום!")),
             "streak": max(child.streak_count, last_milestone),
             "success": False
         })
@@ -265,7 +265,7 @@ def update_streak(request):
         visible_streak = max(child.streak_count, last_milestone)
 
     return JsonResponse({
-        "message": _("🔥 כל הכבוד! שמרת על הרצף!"),
+        "message": str(_("🔥 כל הכבוד! שמרת על הרצף!")),
         "streak": visible_streak,
         "milestone": milestone_day if reward_given else None,
         "reward_given": reward_given,
@@ -592,7 +592,7 @@ def submit_redemption_request(request):
     """
     ShopManager.expire_old_requests()
     if request.method != "POST":
-        return JsonResponse({"status": "error", "message": _("Invalid request method.")}, status=400)
+        return JsonResponse({"status": "error", "message": str(_("Invalid request method."))}, status=400)
 
     try:
         data = json.loads(request.body)
@@ -600,9 +600,9 @@ def submit_redemption_request(request):
         shop = get_object_or_404(Shop, id=data.get("shop_id"))
         selected_rewards = data.get("selected_rewards", [])
         if not shop.is_open():
-            return JsonResponse({"status": "error", "message": _("החנות אינה פתוחה כעת.")})
+            return JsonResponse({"status": "error", "message": str(_("החנות אינה פתוחה כעת."))})
         if not selected_rewards:
-            return JsonResponse({"status": "error", "message": _("לא נבחרו פרסים.")})
+            return JsonResponse({"status": "error", "message": str(_("לא נבחרו פרסים."))})
 
        #check if the child can redeem these rewards
         validation_result = ShopManager.can_redeem_rewards(child, shop, selected_rewards)
@@ -644,7 +644,7 @@ def submit_redemption_request(request):
         return JsonResponse(
             {
                 "status": "success",
-                "message": _("בקשת המימוש נשלחה בהצלחה!"),
+                "message": str(_("בקשת המימוש נשלחה בהצלחה!")),
                 "tally_form": {
                     "url": TALLY_REDEMPTION_FORM_URL,
                     "hidden_fields": hidden_fields,
@@ -653,7 +653,7 @@ def submit_redemption_request(request):
         )
 
     except Exception as e:
-        return JsonResponse({"status": "error", "message": _(f"שגיאה: {str(e)}")}, status=500)
+        return JsonResponse({"status": "error", "message": str(_(f"שגיאה: {str(e)}"))}, status=500)
     
     
 @require_POST
@@ -803,44 +803,44 @@ def no_check_in(request):
 def submit_check_in(request):
     """Enqueue a background task to process a check-in image."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': _("שיטה לא נתמכת.")})
+        return JsonResponse({'success': False, 'error': str(_("שיטה לא נתמכת."))})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
     if not task_id or not image:
-        return JsonResponse({'success': False, 'error': _("חסרים נתונים (task_id או image).")})
+        return JsonResponse({'success': False, 'error': str(_("חסרים נתונים (task_id או image)."))})
 
     child = request.user.child
-    task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
+    task_completion, created = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
     task_completion.checkin_img = image
     task_completion.checkin_at = timezone.localtime()
     task_completion.status = 'checked_in'
     task_completion.save()
     async_task('childApp.utils.check_in_out_utils.process_check_in', task_completion.id)
 
-    return JsonResponse({'success': True, 'message': _("צ'ק-אין נשלח לעיבוד ברקע.")})
+    return JsonResponse({'success': True, 'message': str(_("צ'ק-אין נשלח לעיבוד ברקע."))})
 
 @csrf_exempt
 @child_subscription_required
 def submit_check_out(request):
     """Enqueue a background task to process a check-out image."""
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': _("שיטה לא נתמכת.")})
+        return JsonResponse({'success': False, 'error': str(_("שיטה לא נתמכת."))})
 
     task_id = request.POST.get('task_id')
     image = request.FILES.get('image')
     if not task_id or not image:
-        return JsonResponse({'success': False, 'error': _("חסרים נתונים (task_id או image).")})
+        return JsonResponse({'success': False, 'error': str(_("חסרים נתונים (task_id או image)."))})
 
     child = request.user.child
-    task_completion, _ = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
+    task_completion, created = TaskCompletion.objects.get_or_create(child=child, task_id=task_id)
     task_completion.checkout_img = image
     task_completion.checkout_at = timezone.localtime()
     task_completion.status = 'checked_out'
     task_completion.save()
     async_task('childApp.utils.check_in_out_utils.process_check_out', task_completion.id)
 
-    return JsonResponse({'success': True, 'message': _("צ'ק-אאוט נשלח לעיבוד ברקע.")})
+    return JsonResponse({'success': True, 'message': str(_("צ'ק-אאוט נשלח לעיבוד ברקע."))})
 
 @child_subscription_required
 def mark_tasks_as_viewed(request):

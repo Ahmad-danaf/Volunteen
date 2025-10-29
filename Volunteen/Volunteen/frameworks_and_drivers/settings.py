@@ -177,7 +177,7 @@ LANGUAGES = [
     ('he', _('Hebrew')),
     ('ar', _('Arabic')),
 ]
-LANGUAGE_CODE = 'ar'
+LANGUAGE_CODE = 'he'
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Jerusalem'
