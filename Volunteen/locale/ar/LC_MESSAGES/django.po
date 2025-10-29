@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volunteen 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-29 07:23+0200\n"
+"POT-Creation-Date: 2025-10-29 07:33+0200\n"
 "PO-Revision-Date: 2025-10-22 23:49+0300\n"
 "Last-Translator: Volunteen Team <info@volunteen.com>\n"
 "Language-Team: Arabic\n"
@@ -2219,10 +2219,6 @@ msgstr "ما بنقدر نقيّم بعد 7 أيام من الشراء."
 msgid "הדירוג עודכן בהצלחה!"
 msgstr "التقييم اتحدّث بنجاح!"
 
-#: .\childApp\utils\check_in_out_utils.py:60
-msgid "Error: No check-in image found. Cannot process check-out."
-msgstr "خطأ: ما لقينا صورة تسجيل الدخول. ما بنقدر نكمل تسجيل الخروج."
-
 #: .\childApp\utils\child_task_manager.py:118
 #: .\childApp\utils\child_task_manager.py:132
 msgid "Task assignment not found for this child."
@@ -2484,6 +2480,9 @@ msgstr "لِتاريخ:"
 #: .\teenApp\interface_adapters\forms.py:92
 msgid "חובה לציין תאריך התחלה וסיום."
 msgstr "لازم تحط تاريخ بداية ونهاية."
+
+#~ msgid "Error: No check-in image found. Cannot process check-out."
+#~ msgstr "خطأ: ما لقينا صورة تسجيل الدخول. ما بنقدر نكمل تسجيل الخروج."
 
 #~ msgid "עברית"
 #~ msgstr "عبريّة"
